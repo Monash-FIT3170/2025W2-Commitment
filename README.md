@@ -12,3 +12,4 @@
 - Muhammad Yoonus Nazeem
 - Ishrat (Isha) Kaur 
 - Venuka Munasinghe
+- Rishard Jafferjee
