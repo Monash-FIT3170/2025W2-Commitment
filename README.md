@@ -13,3 +13,4 @@
 - Ishrat (Isha) Kaur 
 - Venuka Munasinghe
 - Rishard Jafferjee
+- Sami Abou Zolf
