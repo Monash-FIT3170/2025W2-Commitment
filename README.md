@@ -2,7 +2,5 @@
 ## Name List
 - Arosh Heenkenda
 - Bailey Chessum
-- Nicholas Bisse
-- Undram (Occa) Batdelger
-- Amy Tjea
-- Janidu Hathurusinghe
+- Nicholas Bisset
+- Ben McShanag
