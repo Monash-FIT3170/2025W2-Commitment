@@ -10,3 +10,4 @@
 - Amy Tjea
 - Janidu Hathurusinghe
 - Muhammad Yoonus Nazeem
+- Ishrat (Isha) Kaur 
