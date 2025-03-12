@@ -2,5 +2,5 @@
 ## Name List
 - Arosh Heenkenda
 - Bailey Chessum
-- Nicholas Bisset
-- Yoonus Nazeem
+- Nicholas Bisse
+- Undram (Occa) Batdelger
