@@ -1,0 +1,26 @@
+services:
+  dev-env:
+    build: .
+    image: commitment-img
+    container_name: 3170-env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./commitment:/projects/commitment
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/commitmentdb
+    depends_on:
+      - mongo
+    tty: true
+    stdin_open: true
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
