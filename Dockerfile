@@ -1,5 +1,5 @@
 # Start with Node.js base image
-FROM node:current
+FROM node:23-slim
 
 # Install curl and other dependencies
 RUN apt-get update && apt-get install -y curl git && rm -rf /var/lib/apt/lists/*
