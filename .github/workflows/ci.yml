@@ -18,3 +18,11 @@ jobs:
         with:
           node-version: 23.11.0
 
+      - name: Check Node.js and npm versions
+        run: |
+          node -v
+          npm -v
+
+      - name: Install dependencies
+        working-directory: commitment
+        run: npm install
