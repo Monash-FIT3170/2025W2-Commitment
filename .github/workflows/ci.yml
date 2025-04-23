@@ -19,4 +19,5 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
+        working-directory: commitment
         run: npm install
