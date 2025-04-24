@@ -15,7 +15,7 @@ jobs:
       
       - name: Install Meteor
         run: curl https://install.meteor.com/ | sh
-        
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -35,4 +35,4 @@ jobs:
 
       - name: Run Lint
         working-directory: commitment
-        run: meteor npm run lint
+        run: meteor npm exec eslint . --ext .js,.jsx,.ts,.tsx
