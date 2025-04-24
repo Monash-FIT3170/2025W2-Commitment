@@ -35,4 +35,4 @@ jobs:
 
       - name: Run Lint
         working-directory: commitment
-        run: meteor npm exec eslint . --ext .js,.jsx,.ts,.tsx
+        run: meteor npm exec eslint . --ext .js --ext .jsx --ext .ts --ext .tsx
