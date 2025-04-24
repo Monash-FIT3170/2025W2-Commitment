@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: commitment
-        run: npm install
+        run: meteor npm install
 
       - name: Confirm Node.js and npm versions
         run: |
