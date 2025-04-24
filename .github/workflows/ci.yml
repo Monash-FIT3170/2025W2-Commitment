@@ -29,3 +29,7 @@ jobs:
         run: |
           node -v
           npm -v
+
+      - name: Run Lint
+        working-directory: commitment
+        run: npm run lint
