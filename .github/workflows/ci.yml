@@ -1,0 +1,38 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Meteor
+        run: curl https://install.meteor.com/ | sh
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23.11.0
+
+      - name: Install Linux dependencies for nodegit (krb5)
+        run: sudo apt-get update && sudo apt-get install -y libkrb5-dev
+
+      - name: Install dependencies
+        working-directory: commitment
+        run: meteor npm install
+
+      - name: Confirm Node.js and npm versions
+        run: |
+          node -v
+          npm -v
+
+      - name: Run Lint
+        working-directory: commitment
+        run: meteor npm exec eslint . --ext .js --ext .jsx --ext .ts --ext .tsx
