@@ -32,4 +32,4 @@ jobs:
 
       - name: Run Lint
         working-directory: commitment
-        run: npm run lint
+        run: meteor npm run lint
