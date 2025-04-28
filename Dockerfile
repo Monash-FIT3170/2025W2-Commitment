@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y curl git && rm -rf /var/lib/apt/lists/*
 # Install Meteor 3.2 (allowing superuser)
 RUN METEOR_ALLOW_SUPERUSER=true curl https://install.meteor.com/ | sh
 
+# Upgrade NPM version
+RUN npm install -g npm@11.3.0
+
 # Create a non-root user
 RUN useradd -ms /bin/bash devuser
 

@@ -13,7 +13,6 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.501.0",
     "meteor-node-stubs": "^1.2.5",
-    "nodegit": "^0.27.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^3.2.0",
