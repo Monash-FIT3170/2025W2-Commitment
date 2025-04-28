@@ -1,6 +1,8 @@
 import React from "react";
 import { useFind, useSubscribe } from "meteor/react-meteor-data";
 import { LinksCollection, Link } from "../api/links";
+import {Card, CardContent, CardHeader, CardTitle} from "@ui/components/ui/card";
+import {Button} from "@ui/components/ui/button";
 
 export const Info = () => {
   const isLoading = useSubscribe("links");
@@ -13,15 +15,22 @@ export const Info = () => {
   const makeLink = (link: Link) => {
     return (
       <li key={ link._id }>
-        <a href={ link.url } target="_blank">{ link.title }</a>
+        <Button variant="link" onClick={()=> window.open(link.url, "_blank")}>{ link.title }</Button>
       </li>
     );
   }
 
   return (
-    <div>
-      <h2>Learn Meteor!</h2>
-      <ul>{ links.map(makeLink) }</ul>
-    </div>
+
+    <Card>
+      <CardHeader>
+        <CardTitle>Learn Meteor!</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 content-center">
+        <div>
+          <ul>{ links.map(makeLink) }</ul>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
