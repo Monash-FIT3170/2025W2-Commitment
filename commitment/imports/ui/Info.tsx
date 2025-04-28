@@ -21,7 +21,6 @@ export const Info = () => {
   }
 
   return (
-
     <Card>
       <CardHeader>
         <CardTitle>Learn Meteor!</CardTitle>
