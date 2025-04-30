@@ -6,6 +6,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@ui/components/ui/form";
 import {Checkbox} from "@ui/components/ui/checkbox";
+import useFocusOnEnter from "@ui/hooks/useFocusOnEnter";
 
 export interface LoginFormProps {
 
@@ -92,23 +93,5 @@ const LoginForm: FC<LoginFormProps> = (props) => {
     </Form>
   );
 }
-
-/*
-    <Card className="w-80">
-      <CardHeader>
-        <CardTitle>Log in</CardTitle>
-        <CardDescription>
-          Make changes to your account here. Click save when you're done.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <Input id="email" defaultValue="" placeholder="Email" aria-label="Email" type="email"/>
-        <Input id="password" defaultValue="" placeholder="Password" aria-label="Password" type="password"/>
-      </CardContent>
-      <CardFooter>
-        <Button className="w-full">Save changes</Button>
-      </CardFooter>
-    </Card>
- */
 
 export default LoginForm;
