@@ -1,5 +1,5 @@
 import React from 'react';
-import Purpose from '/imports/ui/components/landing-page/PurposePage';
+import Purpose from '@ui/components/landing-page/PurposePage';
 import MainPage from '@ui/components/landing-page/MainPage';
 
 export const LandingPage = () => (

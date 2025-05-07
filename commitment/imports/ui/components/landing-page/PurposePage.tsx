@@ -1,6 +1,7 @@
 import React from "react";
 import { Separator } from "@ui/components/ui/separator";
 import { Card, CardContent } from "@ui/components/ui/card";
+import GetStartedButton from "../ui/getStartedButton";
 
 const purpose = () => {
   return (
@@ -10,6 +11,7 @@ const purpose = () => {
       <CircleNumber />
 
       <PurposeCard />
+      <GetStartedButton className="mt-12"/>
     </div>
   );
 };
@@ -48,15 +50,37 @@ const PurposeCard = () => {
     <Card className="max-w-4xl shadow-md">
       <CardContent className="grid grid-row-2 gap-4 text-center pt-4">
         <div className="grid grid-cols-3 gap-4 items-center justify-items-center">
-          <img src="/github_logo.svg" alt="Github Logo" className="max-h-32"/>
-          <img src="/git_search_bar.svg" alt="Commitment Search Bar" className="shadow-md rounded-[52px]"/>
-          <img src="/num_of_commit_box.svg" alt="Number of commit box" className="max-h-32"/>
+          <img src="/github_logo.svg" alt="Github Logo" className="max-h-32" />
+          <img
+            src="/git_search_bar.svg"
+            alt="Commitment Search Bar"
+            className="shadow-md rounded-[52px]"
+          />
+          <img
+            src="/num_of_commit_box.svg"
+            alt="Number of commit box"
+            className="max-h-32"
+          />
         </div>
 
         <div className="grid grid-cols-3 gap-4 items-start justify-items-center pt1 italic font-light">
-          <div>Find the<br/>repository link<br/>on GitHub</div>
-          <div>Enter your<br/>repository</div>
-          <div>Analyse the<br/>contributor</div>
+          <div>
+            Find the
+            <br />
+            repository link
+            <br />
+            on GitHub
+          </div>
+          <div>
+            Enter your
+            <br />
+            repository
+          </div>
+          <div>
+            Analyse the
+            <br />
+            contributor
+          </div>
         </div>
       </CardContent>
     </Card>
