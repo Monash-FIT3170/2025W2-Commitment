@@ -1,6 +1,6 @@
 import React from 'react';
-import Purpose from '/imports/ui/components/landing-page/purpose';
-import MainPage from './MainPage';
+import Purpose from '/imports/ui/components/landing-page/PurposePage';
+import MainPage from '@ui/components/landing-page/MainPage';
 
 export const LandingPage = () => (
   <div className="m-9">
