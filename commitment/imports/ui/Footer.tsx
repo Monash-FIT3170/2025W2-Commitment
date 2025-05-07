@@ -30,7 +30,7 @@ const Footer = () => {
 
     const Logo = () => (
         <div className="flex items-start justify-start">
-          <img src="/logo.png" alt="Logo" className="w-[120px] h-auto" />
+          <img src="/logo.png" alt="Logo" className="w-[70px] h-auto" />
         </div>
       );
 
