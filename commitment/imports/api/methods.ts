@@ -18,5 +18,20 @@ Meteor.methods({
     };
 
     return LinksCollection.insert(newLink);
-    }
+    },
+    
+    'links.remove'(linkId: string) {
+        check(linkId, String);
+        const link = LinksCollection.findOne(linkId);
+        if (!link) {
+            throw new Meteor.Error('link-not-found', 'Link not found');
+        }
+        LinksCollection.remove(linkId);
+    },
+
+    'links.isBookmarked'(url: string) {
+        check(url, String);
+        const link = LinksCollection.findOne({ url });
+        return !!link;  
+    },
 });
