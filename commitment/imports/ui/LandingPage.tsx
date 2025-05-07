@@ -7,8 +7,8 @@ export const LandingPage = () => (
    
     <div className="flex flex-col gap-6">
         {/* Put components here */}
+        <MainPage />
         <Purpose />
-        < MainPage />
     </div>    
   </div>
 );
