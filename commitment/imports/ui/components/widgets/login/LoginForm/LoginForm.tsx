@@ -1,15 +1,16 @@
 import React, {FC} from "react";
 import {Button} from "@ui/components/ui/button";
-import {Input} from "@ui/components/ui/input";
 import { z } from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@ui/components/ui/form";
 import {Checkbox} from "@ui/components/ui/checkbox";
-import useFocusOnEnter from "@ui/hooks/useFocusOnEnter";
+import FormInputWithErrors from "../../../shared/FormInputWithErrors";
+
+
 
 export interface LoginFormProps {
-
+  className?: string
 }
 
 
@@ -38,17 +39,16 @@ const LoginForm: FC<LoginFormProps> = (props) => {
 
   return (
     <Form {...form}>
-
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-2">
+      <form onSubmit={form.handleSubmit(onSubmit)} className={`flex flex-col gap-2 ${props.className ?? ""}`}>
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input placeholder="Email" {...field} type="email"/>
+                <FormInputWithErrors placeholder="Email" {...field} type="email"/>
               </FormControl>
-              <FormMessage />
+              <FormMessage displayWithoutError={true} className="transition-all" noErrorClassName="h-0 opacity-0" errorClassName="h-5"/>
             </FormItem>
           )}
         />
@@ -59,9 +59,9 @@ const LoginForm: FC<LoginFormProps> = (props) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input placeholder="Password" {...field} type="password"/>
+                <FormInputWithErrors placeholder="Password" type="password" {...field}/>
               </FormControl>
-              <FormMessage />
+              <FormMessage displayWithoutError={true} className="transition-all ease-out" noErrorClassName="h-0 opacity-0" errorClassName="h-5"/>
             </FormItem>
           )}
         />

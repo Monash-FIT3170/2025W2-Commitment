@@ -140,22 +140,36 @@ const FormDescription = React.forwardRef<
 })
 FormDescription.displayName = "FormDescription"
 
+
+interface FormMessageProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  /// When true, the component won't return null when there is no error, but an empty <p/>
+  displayWithoutError?: boolean
+  reduceHeightWithoutError?: boolean
+
+  // Extra class name to use if there is an error
+  errorClassName?: string
+  // Extra class name to use if there is not a class name
+  noErrorClassName?: string
+}
+
 const FormMessage = React.forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
+  FormMessageProps
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message ?? "") : children
 
-  if (!body) {
+  if (!props.displayWithoutError && !body) {
     return null
   }
+
+  const extraClassName = (body ? props.errorClassName : props.noErrorClassName) ?? "";
 
   return (
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-[0.8rem] font-medium text-destructive", className)}
+      className={cn(`text-[0.8rem] font-medium text-destructive ${extraClassName}`, className)}
       {...props}
     >
       {body}

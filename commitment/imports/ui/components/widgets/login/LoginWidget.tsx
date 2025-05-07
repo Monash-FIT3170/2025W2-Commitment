@@ -1,6 +1,7 @@
 import React, {FC} from "react";
 import {Card, CardContent, CardHeader, CardTitle} from "@ui/components/ui/card";
 import LoginForm from "@ui/components/widgets/login/LoginForm/LoginForm";
+import {cx} from "class-variance-authority";
 
 export interface LoginWidgetProps {
   className?: string
@@ -10,7 +11,7 @@ export interface LoginWidgetProps {
 const LoginWidget: FC<LoginWidgetProps> = (props) => {
 
   const cardElement = (
-    <Card className="max-w-md">
+    <Card className="max-w-md w-96 grow">
       <CardHeader>
         <CardTitle>
           Log in
@@ -22,11 +23,12 @@ const LoginWidget: FC<LoginWidgetProps> = (props) => {
     </Card>
   );
 
-  return cardElement;
 
   return (
-    <div className="flex flex-row content-center justify-center">
-      {cardElement}
+    <div className={cx("inline-flex flex-row content-center justify-center", props.className)}>
+      <div>
+        {cardElement}
+      </div>
     </div>
   );
 }
