@@ -5,7 +5,7 @@ import MainPage from '@ui/components/landing-page/MainPage';
 export const LandingPage = () => (
   <div className="m-9">
    
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-16">
         {/* Put components here */}
         <MainPage />
         <Purpose />
