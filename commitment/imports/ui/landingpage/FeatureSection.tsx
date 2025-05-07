@@ -1,10 +1,11 @@
 import React from 'react';
+import { FeatureCard } from '@ui/landingpage/FeatureCard';
 
 export function FeatureSection() {
 
     return (
         <div>
-            
+
             <div className="w-full text-center mt-10">
                 {/* Section for mini title */}
                 <p className="text-sm text-[#F1502F] font-medium font-robotoFlex tracking-wide">
@@ -17,6 +18,18 @@ export function FeatureSection() {
             </div>
 
             {/* Carousel */}
+
+            <div>
+
+                <FeatureCard
+                    title="Testing"
+                    description="This is a test description for me!"
+                    image="/img/test.png"
+                    alt="This is alt"
+                />
+
+            </div>
+
         </div>
     )
 
