@@ -17,21 +17,21 @@ Meteor.methods({
         createdAt: new Date(),
     };
 
-    return LinksCollection.insert(newLink);
+    return LinksCollection.insertAsync(newLink);
     },
     
     'links.remove'(linkId: string) {
         check(linkId, String);
-        const link = LinksCollection.findOne(linkId);
+        const link = LinksCollection.findOneAsync(linkId);
         if (!link) {
             throw new Meteor.Error('link-not-found', 'Link not found');
         }
-        LinksCollection.remove(linkId);
+        LinksCollection.removeAsync(linkId);
     },
 
     'links.isBookmarked'(url: string) {
         check(url, String);
-        const link = LinksCollection.findOne({ url });
+        const link = LinksCollection.findOneAsync({ url });
         return !!link;  
     },
 });
