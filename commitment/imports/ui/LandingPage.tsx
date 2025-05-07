@@ -5,7 +5,7 @@ export const LandingPage = () => (
   <div className="m-9">
    
     <div className="flex flex-col gap-6">
-        {/* Put components here */}s
+        {/* Put components here */}
         < MainPage />
     </div>    
   </div>
