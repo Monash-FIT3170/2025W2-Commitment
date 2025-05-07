@@ -47,7 +47,7 @@ const CircleNumber = () => {
 
 const PurposeCard = () => {
   return (
-    <Card className="max-w-4xl shadow-md">
+    <Card className="max-w-4xl shadow-md pt-2">
       <CardContent className="grid grid-row-2 gap-4 text-center pt-4">
         <div className="grid grid-cols-3 gap-4 items-center justify-items-center">
           <img src="/github_logo.svg" alt="Github Logo" className="max-h-32" />
