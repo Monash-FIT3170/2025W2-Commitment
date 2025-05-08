@@ -69,23 +69,21 @@ export function FeatureCarousel() {
   }, [emblaApi])
 
   return (
-    <div className="relative w-full overflow-hidden" ref={emblaRef}>
-      <div className="flex touch-pan-x will-change-transform snap-x">
+    <div className="relative w-full overflow-hidden mt-10" ref={emblaRef}>
+      <div className="flex">
         {features.map((feature, index) => {
           const isSelected = index === selectedIndex
           return (
             <div
               key={index}
-              className="flex-[0_0_100%] md:flex-[0_0_33.3333%] px-4 snap-center"
+              className={`ease-in-out px-2 ${isSelected ? 'flex-[0_0_50%] blur-0' : 'flex-[0_0_50%] blur-sm'}`}
             >
-              <div className={`${isSelected ? "blur-0 scale-100" : "blur-sm scale-95"}`}>
-                <FeatureCard
-                  title={feature.title}
-                  description={feature.description}
-                  image={feature.image}
-                  alt={feature.alt}
-                />
-              </div>
+              <FeatureCard
+                title={feature.title}
+                description={feature.description}
+                image={feature.image}
+                alt={feature.alt}
+              />
             </div>
           )
         })}

@@ -11,7 +11,7 @@ interface FeatureCardProps {
 export const FeatureCard = ({ title, description, image, alt, className = '' }: FeatureCardProps) => {
   return (
     <div
-      className={`flex flex-col justify-between border-2 border-[#F1502F] bg-white rounded-xl shadow p-4 text-center h-[400px] ${className}`}
+      className={`flex flex-col justify-between border-2 border-[#F1502F] bg-white rounded-xl shadow p-4 text-center h-[350px] ${className}`}
     >
       <div>
         <h2 className="text-xl font-semibold text-gray-800 mb-4">{title}</h2>
