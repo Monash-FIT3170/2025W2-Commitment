@@ -80,7 +80,7 @@ export function FeatureCarousel() {
             <div
               key={index}
               className={`ease-in-out px-2 ${
-                isSelected ? "flex-[0_0_50%] blur-0" : "flex-[0_0_70%] blur-sm"
+                isSelected ? "flex-[0_0_50%] blur-0" : "flex-[0_0_50%] blur-sm"
               }`}
             >
               <FeatureCard
@@ -96,14 +96,14 @@ export function FeatureCarousel() {
 
       <button
         onClick={scrollPrev}
-        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 shadow-md"
+        className="absolute left-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 shadow-md z-10"
         aria-label="Previous slide"
       >
         <ChevronLeft size={30} />
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 shadow-md"
+        className="absolute right-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 shadow-md z-10"
         aria-label="Next slide"
       >
         <ChevronRight size={30} />
