@@ -1,5 +1,6 @@
 import React from 'react';
-import { FeatureCard } from '@ui/landingpage/FeatureCard';
+import { FeatureCarousel } from "./FeatureCarousel";
+
 
 export function FeatureSection() {
 
@@ -19,16 +20,7 @@ export function FeatureSection() {
 
             {/* Carousel */}
 
-            <div>
-
-                <FeatureCard
-                    title="Testing"
-                    description="This is a test description for me!"
-                    image="/img/test.png"
-                    alt="This is alt"
-                />
-
-            </div>
+            <FeatureCarousel/>
 
         </div>
     )
