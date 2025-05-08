@@ -49,7 +49,7 @@ const features: Feature[] = [
 ];
 
 export function FeatureCarousel() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true,  });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const scrollPrev = useCallback(() => {
@@ -69,6 +69,16 @@ export function FeatureCarousel() {
 
     emblaApi.on("select", onSelect);
     onSelect();
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const interval = setInterval(() => {
+      emblaApi.scrollNext();
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [emblaApi]);
 
   return (
