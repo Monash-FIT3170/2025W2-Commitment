@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useEffect, useCallback, useState } from 'react'
 import { FeatureCard } from "./FeatureCard"
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -47,6 +47,7 @@ const features: Feature[] = [
 
 export function FeatureCarousel() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
+  const [selectedIndex, setSelectedIndex] = useState(0)
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev()
@@ -56,22 +57,38 @@ export function FeatureCarousel() {
     if (emblaApi) emblaApi.scrollNext()
   }, [emblaApi])
 
+  useEffect(() => {
+    if (!emblaApi) return
+
+    const onSelect = () => {
+      setSelectedIndex(emblaApi.selectedScrollSnap())
+    }
+
+    emblaApi.on('select', onSelect)
+    onSelect()
+  }, [emblaApi])
+
   return (
     <div className="relative w-full overflow-hidden" ref={emblaRef}>
-      <div className="flex touch-pan-x will-change-transform">
-        {features.map((feature, index) => (
-          <div
-            className="flex-[0_0_80%] md:flex-[0_0_33.3333%] px-4"
-            key={index}
-          >
-            <FeatureCard
-              title={feature.title}
-              description={feature.description}
-              image={feature.image}
-              alt={feature.alt}
-            />
-          </div>
-        ))}
+      <div className="flex touch-pan-x will-change-transform snap-x">
+        {features.map((feature, index) => {
+          const isSelected = index === selectedIndex
+          return (
+            <div
+              key={index}
+              className="flex-[0_0_100%] md:flex-[0_0_33.3333%] px-4 snap-center"
+            >
+              <div className={`${isSelected ? "blur-0 scale-100" : "blur-sm scale-95"}`}>
+                <FeatureCard
+                  title={feature.title}
+                  description={feature.description}
+                  image={feature.image}
+                  alt={feature.alt}
+                />
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       <button
