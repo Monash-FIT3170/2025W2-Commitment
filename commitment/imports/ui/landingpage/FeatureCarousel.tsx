@@ -72,7 +72,7 @@ export function FeatureCarousel() {
   }, [emblaApi]);
 
   return (
-    <div className="relative w-full overflow-hidden mt-10" ref={emblaRef}>
+    <div className="relative w-full mt-10 overflow-x-hidden" ref={emblaRef}>
       <div className="flex">
         {features.map((feature, index) => {
           const isSelected = index === selectedIndex;
@@ -80,7 +80,7 @@ export function FeatureCarousel() {
             <div
               key={index}
               className={`ease-in-out px-2 ${
-                isSelected ? "flex-[0_0_50%] blur-0" : "flex-[0_0_50%] blur-sm"
+                isSelected ? "flex-[0_0_50%] blur-0" : "flex-[0_0_70%] blur-sm"
               }`}
             >
               <FeatureCard
