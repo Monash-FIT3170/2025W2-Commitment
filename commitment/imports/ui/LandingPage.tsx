@@ -4,6 +4,7 @@ import MainPage from "@ui/components/landing-page/MainPage";
 import AboutUs from "@ui/components/landing-page/AboutUs";
 import Footer from "@ui/components/landing-page/Footer";
 import NavBar from "@ui/components/landing-page/NavBar";
+import Features from "@ui/components/landing-page/Features";
 
 export const LandingPage = () => (
   <div className="m-0">
@@ -12,6 +13,7 @@ export const LandingPage = () => (
       <NavBar />
       <MainPage />
       <AboutUs/>
+      <Features/>
       <Purpose />
       <Footer />
     </div>
