@@ -1,7 +1,7 @@
 import React from "react";
 import { FeatureCarousel } from "./FeatureCarousel";
 
-export function Features() {
+export const Features = () => {
   return (
     <div>
       <div className="w-full text-center mt-10">
@@ -16,3 +16,5 @@ export function Features() {
     </div>
   );
 }
+
+export default Features;
