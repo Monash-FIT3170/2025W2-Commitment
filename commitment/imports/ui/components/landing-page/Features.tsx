@@ -1,7 +1,7 @@
 import React from "react";
 import { FeatureCarousel } from "./FeatureCarousel";
 
-export function FeatureSection() {
+export function Features() {
   return (
     <div>
       <div className="w-full text-center mt-10">
