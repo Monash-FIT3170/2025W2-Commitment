@@ -1,6 +1,7 @@
 import React from "react";
 import Purpose from "@ui/components/landing-page/PurposePage";
 import MainPage from "@ui/components/landing-page/MainPage";
+import AboutUs from "@ui/components/landing-page/AboutUs";
 import Footer from "@ui/components/landing-page/Footer";
 import NavBar from "@ui/components/landing-page/NavBar";
 
@@ -10,6 +11,7 @@ export const LandingPage = () => (
       {/* Put components here */}
       <NavBar />
       <MainPage />
+      <AboutUs/>
       <Purpose />
       <Footer />
     </div>
