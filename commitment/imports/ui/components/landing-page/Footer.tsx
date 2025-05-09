@@ -2,7 +2,7 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="bg-[#E8E8DD] text-black p-10">
+    <footer className="bg-[#E8E8DD] text-black p-10 rounded-lg shadow-lg">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         <div>
           <Logo />
@@ -32,7 +32,7 @@ export default Footer;
 
 const Logo = () => (
   <div className="flex items-start justify-start">
-    <img src="/logo.png" alt="Logo" className="w-[70px] h-auto" />
+    <img src="/logo.svg" alt="Logo" className="w-[50px] h-auto" />
   </div>
 );
 
