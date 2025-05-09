@@ -30,15 +30,15 @@ const Header = () => {
 const CircleNumber = () => {
   return (
     <div className="flex flex-row pt-7 pb-3 items-center gap-2 justify-center">
-      <div className="w-12 h-12 bg-gray-200 rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
         1
       </div>
-      <Separator decorative />
-      <div className="w-12 h-12 bg-gray-200 rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <Separator decorative className="bg-black"/>
+      <div className="w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
         2
       </div>
-      <Separator decorative />
-      <div className="w-12 h-12 bg-gray-200 rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <Separator decorative className="bg-black"/>
+      <div className="w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
         3
       </div>
     </div>
