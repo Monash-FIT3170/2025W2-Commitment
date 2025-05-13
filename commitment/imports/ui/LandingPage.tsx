@@ -8,7 +8,7 @@ import Features from "@ui/components/landing-page/Features";
 
 export const LandingPage = () => (
   <div className="m-0">
-    <div className="flex flex-col gap-16">
+    <div className="flex flex-col gap-32">
       {/* Put components here */}
       <NavBar />
       <MainPage />

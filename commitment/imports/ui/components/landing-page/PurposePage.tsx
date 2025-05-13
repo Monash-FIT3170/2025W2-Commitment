@@ -5,7 +5,7 @@ import GetStartedButton from "../ui/getStartedButton";
 
 const purpose = () => {
   return (
-    <div className="flex flex-col justify-center items-center">
+    <div className="flex flex-col justify-center items-center mt-20">
       <Header />
 
       <CircleNumber />

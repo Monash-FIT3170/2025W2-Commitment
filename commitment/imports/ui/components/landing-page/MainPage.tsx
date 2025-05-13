@@ -2,7 +2,7 @@ import React from "react";
 import GetStartedButton from "../ui/getStartedButton";
 
 const MainPage = () => (
-  <div className="flex flex-col gap-6">
+  <div className="flex flex-col gap-6 mb-32 ">
     <div className="flex justify-center items-center mb-4">
       <Logo />
     </div>
@@ -25,10 +25,13 @@ const Logo = () => (
 );
 
 const Description = () => (
-  <p className="text-center flex text-lg">
-    Need to quickly understand how committed your students are to their group
-    projects? <br /> We got you.
-  </p>
+  <div className="text-center">
+    <p className="text-center flex text-lg">
+      Need to quickly understand how committed your students are to their group
+      projects?
+    </p>
+    
+  </div>
 );
 
 export default MainPage;

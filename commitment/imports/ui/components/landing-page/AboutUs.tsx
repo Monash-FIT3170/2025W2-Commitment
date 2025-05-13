@@ -2,7 +2,7 @@ import React from 'react';
 
 const AboutUs = () => {
     return (
-        <div className="flex flex-col justify-center items-center mt-6">
+        <div className="flex flex-col justify-center items-center mt-6 ">
             <Header />
             <Description /> 
             <KeyFeatureImage />
