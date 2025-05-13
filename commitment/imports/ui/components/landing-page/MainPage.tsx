@@ -20,7 +20,7 @@ const MainPage = () => (
 const Logo = () => (
   <div className="flex flex-row items-center">
     <img src="/logo.png" alt="Logo" className="-mr-7 w-[120px] h-auto" />
-    <p className="text-8xl text-gray-700 ">ommitment</p>
+    <p className="text-8xl text-gray-700 ">Commitment</p>
   </div>
 );
 
