@@ -152,6 +152,7 @@ const formulateRepoData = async (url: string, path: string): Promise<RepositoryD
 	const branchData: BranchData[] = await Promise.all(branchNames.map(async branch => ({
 			branchName: branch,
 			commitHashes: (branchToCommitsMap.get(branch) as string[])
+				.sort((h1, h2) => commitMap.get(h1)!.timestamp.getTime() - commitMap.get(h2)!.timestamp.getTime())
 		}))
 	)
 
