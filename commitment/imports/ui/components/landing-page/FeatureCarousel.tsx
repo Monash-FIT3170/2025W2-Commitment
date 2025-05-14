@@ -19,14 +19,17 @@ export const FeatureCard = ({
 }: FeatureCardProps) => {
   return (
     <div
-      className={`flex flex-col justify-between border-2 border-[#F1502F] bg-white rounded-xl p-5 text-center ${className}`}
+      className={`flex flex-col justify-between 
+        border-2 border-[#F1502F] bg-white rounded-xl p-5 text-center 
+        w-[300px] h-[320px]
+        ${className}`}
     >
       <div>
         <h2 className="text-xl font-semibold text-gray-800 mb-4">{title}</h2>
         <img
           src={image}
           alt={alt}
-          className="scale-50 object-cover rounded-md mb-4"
+          className="scale-75 object-cover rounded-md mb-4"
         />
       </div>
       <p className="text-gray-600 text-sm font-robotoFlex">{description}</p>
@@ -52,7 +55,7 @@ const features: Feature[] = [
   {
     title: "Team Comparison View",
     description:
-      "Compare multiple users or groups across contribution metrics for peer review or group assessment.",
+      "Compare multiple users across contribution metrics for peer review or group assessment.",
     image: "/feature-placeholder.svg",
     alt: "Alt image.",
   },
@@ -117,7 +120,6 @@ export function FeatureCarousel() {
       className="relative ml-32 mr-32 mt-10 overflow-x-hidden"
       ref={emblaRef}
     >
-
       {/* bg-gradient-to-r from-white to-transparent */}
 
       <div className="flex">
@@ -128,8 +130,8 @@ export function FeatureCarousel() {
               key={index}
               className={`ease-in-out px-2 ${
                 isSelected
-                  ? "flex-[0_0_50%] opacity-100"
-                  : "flex-[0_0_50%] bg-gradient-to-r from-inherit to-transparent"
+                  ? "flex-[0_0_40%] opacity-100"
+                  : "flex-[0_0_30%] opacity-20"
               }`}
             >
               <FeatureCard
