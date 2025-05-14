@@ -113,7 +113,7 @@ export function FeatureCarousel() {
   }, [emblaApi]);
 
   return (
-    <div className="relative w-full mt-10 overflow-x-hidden" ref={emblaRef}>
+    <div className="relative ml-32 mr-32 mt-10 overflow-x-hidden" ref={emblaRef}>
       <div className="flex">
         {features.map((feature, index) => {
           const isSelected = index === selectedIndex;
