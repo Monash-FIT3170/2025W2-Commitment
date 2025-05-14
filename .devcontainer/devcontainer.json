@@ -1,0 +1,26 @@
+{
+    "name": "Meteor Dev Container",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "dev-env",
+    "workspaceFolder": "/projects/commitment",
+    "mounts": [
+      "source=${localWorkspaceFolder},target=/projects/commitment,type=bind"
+    ],
+    "settings": {
+      "terminal.integrated.defaultProfile.linux": "bash",
+      "javascript.format.enable": true,
+      "editor.formatOnSave": true,
+      "files.exclude": {
+        "**/.meteor/local": true
+      }
+    },
+    "extensions": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "meteor-tracker.meteor-vscode",
+      "mongodb.mongodb-vscode",
+      "ms-vscode.vscode-typescript-next",
+      "ms-azuretools.vscode-docker"
+    ],
+    "postCreateCommand": "meteor npm install"
+  }
