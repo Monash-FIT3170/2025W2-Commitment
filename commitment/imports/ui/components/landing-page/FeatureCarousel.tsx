@@ -157,6 +157,16 @@ export function FeatureCarousel() {
       >
         <ChevronRight size={30} />
       </button>
+      <div className="flex justify-center mt-6 gap-2">
+        {features.map((_, index) => (
+          <div
+            key={index}
+            className={`h-3 w-3 rounded-full ${
+              index === selectedIndex ? "bg-[#F1502F]" : "bg-[#F1502F]/30"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
