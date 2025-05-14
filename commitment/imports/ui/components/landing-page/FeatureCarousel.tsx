@@ -128,7 +128,7 @@ export function FeatureCarousel() {
               key={index}
               className={`ease-in-out px-2 ${
                 isSelected
-                  ? "w-1/3 opacity-100 blur-none "
+                  ? "w-1/3 opacity-100 blur-none"
                   : "w-1/3 opacity-45 blur-sm"
               }`}
             >
@@ -137,6 +137,7 @@ export function FeatureCarousel() {
                 description={feature.description}
                 image={feature.image}
                 alt={feature.alt}
+                className={isSelected ? "shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "shadow-none"}
               />
             </div>
           );
