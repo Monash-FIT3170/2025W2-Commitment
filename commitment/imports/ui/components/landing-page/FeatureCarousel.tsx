@@ -21,7 +21,7 @@ export const FeatureCard = ({
     <div
       className={`flex flex-col justify-between 
         border-2 border-[#F1502F] bg-white rounded-xl p-5 text-center 
-        w-[300px] h-[320px]
+        w-[350px]
         ${className}`}
     >
       <div>
@@ -117,11 +117,9 @@ export function FeatureCarousel() {
 
   return (
     <div
-      className="relative ml-32 mr-32 mt-10 overflow-x-hidden"
+      className="relative ml-32 mr-32 mt-10 align-middle overflow-hidden"
       ref={emblaRef}
     >
-      {/* bg-gradient-to-r from-white to-transparent */}
-
       <div className="flex">
         {features.map((feature, index) => {
           const isSelected = index === selectedIndex;
@@ -130,8 +128,8 @@ export function FeatureCarousel() {
               key={index}
               className={`ease-in-out px-2 ${
                 isSelected
-                  ? "flex-[0_0_40%] opacity-100"
-                  : "flex-[0_0_30%] opacity-20"
+                  ? "w-1/3 opacity-100 blur-none "
+                  : "w-1/3 opacity-45 blur-sm"
               }`}
             >
               <FeatureCard
@@ -147,14 +145,14 @@ export function FeatureCarousel() {
 
       <button
         onClick={scrollPrev}
-        className="absolute left-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 shadow-md z-10"
+        className="absolute left-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
         aria-label="Previous slide"
       >
         <ChevronLeft size={30} />
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 shadow-md z-10"
+        className="absolute right-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
         aria-label="Next slide"
       >
         <ChevronRight size={30} />
