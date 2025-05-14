@@ -5,13 +5,15 @@ import { isDate } from "util"
 export type RepositoryData = Readonly<{
     name: string
     branches: BranchData[]
+    allCommits: Map<string, CommitData>
 }>
 
 export type BranchData = Readonly<{
     branchName: string
-    commits: CommitData[]
+    commitHashes: string[]
 }> 
 
+// make a kind of commit where you have a snapshot of all contributors per line
 export type CommitData = Readonly<{
     commitHash: string
     contributor: ContributorData
@@ -42,6 +44,7 @@ export type ChangeData = Readonly<{
 }>
 
 export type ChangeType = "A" | "M" | "D" | "R" | "C"
+// create diff section
 export type ModifyData = Readonly<{ previousFile: FileContents }>
 export type RenameData = Readonly<{ oldFilePath: string }>
 export type CopyData = Readonly<{ oldFilePath: string }>

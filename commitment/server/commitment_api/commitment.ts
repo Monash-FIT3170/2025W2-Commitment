@@ -50,7 +50,6 @@ import {
 } from "./git_commands"
 
 // NOTE: need to implement a cache outside of this function i think (when the database is complete)
-
 export const fetchDataFrom = async (url: string): Promise<Maybe<RepositoryData>> => promiseDataFrom(url).catch((error) => {
 	// log error TODO (implement a logging system)
 	
@@ -144,15 +143,15 @@ const formulateRepoData = async (url: string, path: string): Promise<RepositoryD
 	const commitMap = new Map<string, CommitData>(allCommitData.map(c => [c.commitHash, c]))
 
 	// maps the branch to a list of commit hashes
-	const branchToCommitsMap = new Map<string, string[]>( zip(branchNames, allCommitHashesListOfList).map(([branch, commits]) => [branch, commits]) )
+	const branchToCommitsMap = new Map<string, string[]>( 
+		zip(branchNames, allCommitHashesListOfList).map(([branch, commits]) => [branch, commits]) 
+	)
 
 	// compile all branch data and group commits into their relavent branches 
 	// sort by timestamp of commit relative to all other commits in that branch (multithreaded)
 	const branchData: BranchData[] = await Promise.all(branchNames.map(async branch => ({
 			branchName: branch,
-			commits: (branchToCommitsMap.get(branch) as string[])
-				.map(commitHash => commitMap.get(commitHash) as CommitData) // gets the data from the hashmap
-				.sort(sortCommitByTimeStamp) // sort by timestamp, where the most recent is at the front
+			commitHashes: (branchToCommitsMap.get(branch) as string[])
 		}))
 	)
 
@@ -160,7 +159,8 @@ const formulateRepoData = async (url: string, path: string): Promise<RepositoryD
 
 	return {
 		name: repoName,
-		branches: branchData
+		branches: branchData,
+		allCommits: commitMap
 	}
 }
 

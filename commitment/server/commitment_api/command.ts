@@ -78,12 +78,12 @@ export const executeCommand = (cwd: string) => (f: Command): Promise<CommandResu
     })
 }
 
-export const doesFilepathExist = (filepath: string): boolean =>  {
+export const doesFilepathExist = (filepath: string): boolean => {
     const dir = path.dirname(filepath); // Get the folder from the file path
     return fs.existsSync(dir)
 }
 
-export const createFilePath = (filepath: string): boolean =>  {
+export const createFilePath = (filepath: string): boolean => {
     try {
         const dir = path.dirname(filepath); // Get the folder from the file path
 
