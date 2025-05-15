@@ -3,6 +3,7 @@ import {BrowserRouter, Routes, Route} from "react-router-dom";
 import ExampleView from "@ui/views/ExampleView/ExampleView";
 import LoginView from "@ui/views/LoginView/LoginView";
 
+
 export const App = () => {
   return (
     <BrowserRouter>
@@ -13,3 +14,4 @@ export const App = () => {
     </BrowserRouter>
   )
 }
+
