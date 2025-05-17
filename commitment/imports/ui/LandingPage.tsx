@@ -7,14 +7,20 @@ import NavBar from "@ui/components/landing-page/NavBar";
 import Features from "@ui/components/landing-page/Features";
 
 export const LandingPage = () => (
-  <div className="m-0">
+  <div className="m-0 scroll-smooth">
     <div className="flex flex-col gap-32">
       {/* Put components here */}
       <NavBar />
       <MainPage />
-      <AboutUs/>
-      <Features/>
-      <Purpose />
+      <div id="about" className="scroll-mt-24">
+        <AboutUs />
+      </div>
+      <div id="features" className="scroll-mt-24">
+        <Features />
+      </div>
+      <div id="howto" className="scroll-mt-24">
+        <Purpose />
+      </div>
       <Footer />
     </div>
   </div>
