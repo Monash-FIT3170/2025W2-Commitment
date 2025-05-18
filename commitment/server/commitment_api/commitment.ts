@@ -1,5 +1,5 @@
 
-import { Observable, map } from "rxjs";
+import { Observable, Subject, map } from "rxjs";
 
 // imports a list of helper functions
 import { last, zip } from "./helpers"
@@ -23,7 +23,6 @@ import {
 
 // imports different types of parsers
 import { 
-	Maybe,
 	parseCmdImmediate,
 	exactText,
 	parseSuccess,
@@ -49,62 +48,66 @@ import {
 	getRepoName
 } from "./git_commands"
 
-// NOTE: need to implement a cache outside of this function i think (when the database is complete)
-export const fetchDataFrom = async (url: string): Promise<Maybe<RepositoryData>> => promiseDataFrom(url).catch((error) => {
-	// log error TODO (implement a logging system)
-	
-	// return a null value instead of getting an error
-	return null
-})
+// does not have a notifier which updates any frontend subscribers
+export const getDataFrom = async (url: string): Promise<RepositoryData> => fetchDataFrom(url, new Subject<string>())
 
-
-const promiseDataFrom = async (url: string): Promise<RepositoryData> => {
-	
+// gets the repository data from the url
+export const fetchDataFrom = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
+		
 	// creates path to clone repos in if filepath if it doesnt already exist
 	const workingDir = process.cwd()
 	if (!doesFilepathExist(workingDir)) createFilePath(workingDir + "/cloned-repos/")	
 
 	// validate that the string is a proper url TODO
 	// see if repo exists
+	notifier.next("Validating repo exists...")
+
 	const execCmdInRoot = executeCommand("")
 	// throws an error if it does not exist
 	const repoExistsText = await parseCmdImmediate(execCmdInRoot(checkIfRepoExists(url)))(parseRepoExists)	
 
 	// if it exists, clone to a path by duplicating from link
+	notifier.next("Formulating parsers...")
+
 	const repoNameFromUrl = last(url.split("/"))!
 
 	const repoRelativePath = "/cloned-repos/" + repoNameFromUrl
 	const repoAbsPath = workingDir + repoRelativePath
 
 	// if it already exists delete it as it should not exist
-	if (doesFilepathExist(repoAbsPath)) {
-		await deleteAllFromDirectory(repoAbsPath)
-	} 
+	if (doesFilepathExist(repoAbsPath)) await deleteAllFromDirectory(repoAbsPath)
 
 	// clone shit and check if it cloned successfully
+	notifier.next("Cloning repo...")
+
 	const cloneCommand = execCmdInRoot(cloneRepo(url, repoAbsPath))
 	const _ignoredCloneResult = await parseSuccess(cloneCommand) 
 
 	// get shit
-	const repoData = await formulateRepoData(url, repoAbsPath)
+	notifier.next("Getting repository data...")
+	const repoData = await formulateRepoData(url, repoAbsPath, notifier)
 
 	// clear shit from local storage (BE CAREFUL WITH THIS AS INJECTION ATTACKS COULD HAPPEN)
 	await deleteAllFromDirectory(repoAbsPath)
 
     // send shit out
+	notifier.next("Data processed!")
+
 	return Promise.resolve(repoData)
 }
 
 
-const formulateRepoData = async (url: string, path: string): Promise<RepositoryData> => {
+const formulateRepoData = async (url: string, path: string, notifier: Subject<string>): Promise<RepositoryData> => {
 
 	// get a function to point to the creation of a shell in the repo path
 	const execCmdInRepo = executeCommand(path)
 	
 	// get all branches
+	notifier.next("Searching for branch names...")
 	const branchNames = await parseCmdImmediate(execCmdInRepo(getBranches()))(parseRepoBranches)
 
 	// get all commits (runs co-currently :D)
+	notifier.next("Searching for commit hashes...")
 	const allCommitHashesListOfList = await Promise.all(branchNames
 		.map( async (branch) => await parseCmdImmediate(execCmdInRepo(getAllCommitsFrom(branch)))(parseCommitHashes) )
 	)
@@ -112,12 +115,14 @@ const formulateRepoData = async (url: string, path: string): Promise<RepositoryD
 	const allCommitHashes = [... new Set(allCommitHashesListOfList.flatMap(i => i))]
 
 	// get all contributors and create objects for each contributor
+	notifier.next("Finding all contributors...")
 	const allContributors: ContributorData[] = await parseCmdImmediate(execCmdInRepo(getAllContributors()))(parseContributorData)
 
 	// create a map of all contributor names to their object
 	const contributorMap = new Map<string, ContributorData>(allContributors.map(c => [c.name, c]))
 
 	// get all commit data and file data inside the commit data (multithreaded)
+	notifier.next("Formulating all commit data...")
 	const allCommitData: CommitData[] = await Promise.all(
 		allCommitHashes.map(async hash => { 
 			const commitData = await parseCmdImmediate(execCmdInRepo(getCommitDetails(hash)))(parseCommitData)
@@ -143,12 +148,14 @@ const formulateRepoData = async (url: string, path: string): Promise<RepositoryD
 	const commitMap = new Map<string, CommitData>(allCommitData.map(c => [c.commitHash, c]))
 
 	// maps the branch to a list of commit hashes
+	notifier.next("Linking branches to their commits...")
 	const branchToCommitsMap = new Map<string, string[]>( 
 		zip(branchNames, allCommitHashesListOfList).map(([branch, commits]) => [branch, commits]) 
 	)
 
 	// compile all branch data and group commits into their relavent branches 
 	// sort by timestamp of commit relative to all other commits in that branch (multithreaded)
+	notifier.next("Formulating all branch data...")
 	const branchData: BranchData[] = await Promise.all(branchNames.map(async branch => ({
 			branchName: branch,
 			commitHashes: (branchToCommitsMap.get(branch) as string[])
@@ -158,22 +165,10 @@ const formulateRepoData = async (url: string, path: string): Promise<RepositoryD
 
 	const repoName = await parseCmdImmediate(execCmdInRepo(getRepoName(url)))(parseRepoName)
 
-	return {
+	return Promise.resolve({
 		name: repoName,
 		branches: branchData,
 		allCommits: commitMap
-	}
-}
-
-export const createGitRepoStream = <T>(url$: Observable<T>, f: (t: T) => Promise<RepositoryData | null>): Observable<RepositoryData | null> => {
-	const o$ = new Observable<RepositoryData | null>()
-	url$.pipe(
-		map((t: T) => {
-			o$.pipe(
-				map(async () => { await f(t) })
-			)
-		})
-	);
-	return o$
+	})
 }
 
