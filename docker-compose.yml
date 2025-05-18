@@ -4,26 +4,44 @@ services:
     image: commitment-img
     container_name: 3170-env
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - ./commitment:/projects/commitment
     env_file:
       - .env
-    environment:
-      - MONGO_URL=${MONGO_URL}
-    depends_on:
-      - mongo
+    environment: 
+      - MONGO_URL=${MONGO_URL}  # Optional if in .env
     tty: true
     stdin_open: true
 
-  mongo:
-    image: mongo:6
-    container_name: mongo
+  server:
+    image: server:1.0.0
+    container_name: ${SERVER_HOST}
+    build:
+      context: ./commitment/server
+      dockerfile: Dockerfile
+    env_file:
+      - .env
     ports:
-      - "27017:27017"
+      - ${SERVER_PORT}:${SERVER_PORT}
     volumes:
-      - mongo-data:/data/db
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - server-src:/server
+      - server-v-node-modules:/server/node-modules
+
+  database:
+    image: database:1.0.0
+    container_name: ${DATABASE_HOST}
+    build:
+      context: ./commitment/database
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - ${DATABASE_PORT}:${DATABASE_PORT}
+    volumes:
+      - database-v:/data/db
 
 volumes:
-  mongo-data:
+  server-v-node-modules: {}
+  database-v: {}
+  server-src: {}
