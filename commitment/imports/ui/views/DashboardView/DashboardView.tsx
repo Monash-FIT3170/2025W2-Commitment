@@ -1,5 +1,5 @@
 import React from "react";
-import GalleryCard from "../../dashboard/GalleryCard";
+import GalleryCard from "@/imports/ui/components/widgets/dashboard/GalleryCard";
 
 const fake_bookmarks = [
   {
