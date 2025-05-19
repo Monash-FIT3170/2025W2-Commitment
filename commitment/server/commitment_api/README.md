@@ -25,6 +25,7 @@ contains all high level information for all repository data
 name: string - the name of the repository
 branches: BranchData[] - all branch data
 allCommits: Map<string, CommitData> - all of the commits within the repository up to when it was cloned
+allContributors: Map<string, ContributorData> - all of the contributors to this repository
 
 BranchData:
 contains all data specific to a branch (what commits are apart of this branch)
@@ -34,7 +35,7 @@ commitHashes: string[] - all commit hashes within this branch
 CommitData:
 contains all information related to a single commit 
 commitHash: string - self explanitory
-contributor: ContributorData - the contributor who pushed this commit
+contributor: string - the name of the contributor who pushed this commit
 description: string - the description field inside this commit
 timestamp: Date - the timestamp of when this commit was pushed
 fileData: FileChanges[] - all file changes of this commit
@@ -42,8 +43,7 @@ fileData: FileChanges[] - all file changes of this commit
 ContributorData:
 contains all information related to a contributor (to be refactored so that multiple names/emails can be mapped to the same user)
 name: string - alias of this contributor
-email: string - email of this contributor
-numCommits: number - the total number of commits this contributor has pushed to the repo
+emails: string - all emails linked to this name
 
 FileChanges:
 contains all information related to a file change within a commit

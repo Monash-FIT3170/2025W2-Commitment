@@ -27,6 +27,7 @@ import {
 	exactText,
 	parseSuccess,
 	parseRepoExists, 
+	parseContributorEmails,
 	parseRepoBranches,
 	parseCommitHashes,
 	parseCommitData,
@@ -141,7 +142,7 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 	notifier.next("Formulating all contributors...")
 	const uniqueNames = [...new Set(allCommitData.map(d => d.contributorName))]
 	const nameToEmails = await Promise.all(
-		uniqueNames.map(async (name) => await parseCmdImmediate(execCmdInRepo(getContributorEmails(name)))(t => t.split("\n")))
+		uniqueNames.map(async (name) => await parseCmdImmediate(execCmdInRepo(getContributorEmails(name)))(parseContributorEmails) )
 	)
 	const allContributors: ContributorData[] = zip(uniqueNames, nameToEmails).map(([name, emails]) => ({
 		name: name,

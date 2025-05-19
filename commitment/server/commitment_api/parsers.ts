@@ -64,6 +64,8 @@ export const parseRepoName = (text: string): Maybe<string> => {
     return last(parts) || null
 }
 
+export const parseContributorEmails = (text: string): Maybe<string[]> => failedOutput(text) ? null : [...new Set(text.split("\n"))]
+
 export const parseRepoBranches = (text: string): Maybe<string[]> => failedOutput(text) ? null : text
     .split("\n") // splits on new line
     .filter(l => !l.includes("->")) // doesn't include ref aliases
