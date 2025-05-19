@@ -106,3 +106,16 @@ More details on `type` of commits can be found [here](https://www.conventionalco
 - Share PRs via the `#pull-requests` Discord channel.
 - PRs must be **squashed and merged** to keep history clean.
 - A PR must be **reviewed and approved** before being merged into `main`.
+
+### How to run server
+
+- navigate to the server folder in terminal
+- run 'npm run dev'
+- server should be running at local host
+
+## How to create a .env file
+
+- .env file should be placed in the server folder
+- we need to create variables for the containers and an entry way to atlas
+- use the example_env_file to fill your new one, you should only need to change the ATLAS_MONOGO_URI with your own one. 
+- Please text Janidu to get added to ATLAS, you will also need to add your i.p. address
