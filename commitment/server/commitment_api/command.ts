@@ -21,7 +21,7 @@ export type CommandResult = Readonly<{
 export const successful = (res: CommandResult): boolean => res.error == null && res.stdError == null
 
 const defaultResult = {
-    result: "",
+    result: null,
     error: null,
     stdError: null
 }
@@ -43,40 +43,38 @@ export const doNotLogData: Command = {
     shouldLog: false
 }
 
-export const executeCommand = (cwd: string) => (f: Command): Promise<CommandResult> => {
-    return new Promise((resolve, reject) => {
-        exec(f.cmd, 
-            { cwd: cwd },
-            (error: Error | null, stdout: string, stderr: string) => {
+export const executeCommand = (cwd: string) => (f: Command): Promise<CommandResult> => new Promise((resolve, reject) => {
+    exec(f.cmd, { cwd: cwd }, (error: Error | null, stdout: string, stderr: string) => {
 
-                if (stderr) { 
-                    if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr))
-                    return reject({
-                        ...defaultResult,
-                        result: stdout,
-                        stdError: stderr
-                    })
+        if (stderr) { 
+            if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr))
 
-                } else if (error) {
-                    if (f.shouldLog) console.error(f.onFail(f.cmd, error))
-                    return reject({
-                        ...defaultResult,
-                        result: stdout,
-                        error: error,
-                        stdError: stderr
-                    })
+            return resolve({
+                ...defaultResult,
+                result: stdout,
+                stdError: stderr
+            })
 
-                } else {
-                    if (f.shouldLog) console.log(f.onSuccess(f.cmd))
-                    return resolve({
-                        ...defaultResult,
-                        result: stdout,
-                    })
-                }
-            }
-        )
+        } else if (error) {
+            if (f.shouldLog) console.error(f.onFail(f.cmd, error))
+
+            return resolve({
+                ...defaultResult,
+                result: stdout,
+                error: error,
+                stdError: stderr
+            })
+
+        } else {
+            if (f.shouldLog) console.log(f.onSuccess(f.cmd))
+
+            return resolve({
+                ...defaultResult,
+                result: stdout,
+            })
+        }
     })
-}
+})
 
 export const doesFilepathExist = (filepath: string): boolean => {
     const dir = path.dirname(filepath); // Get the folder from the file path

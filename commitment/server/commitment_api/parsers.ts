@@ -41,7 +41,7 @@ export const parseSuccess = (res: Promise<CommandResult>): Promise<string> =>
 
 export const failedOutput = (text: string): boolean => 
     ["fatal:", "error:", "could not", "not a git repository"]
-        .map(text.startsWith)
+        .map(s => text.startsWith(s))
         .reduce((p, n) => p || n)
 
 
@@ -49,34 +49,31 @@ export const exactText = (text: string): Maybe<string> => failedOutput(text) ? n
 
 export const parseRepoExists = (text: string): Maybe<string> => failedOutput(text) ? null : "repo exists" 
 
-export const parseRepoName = (text: string): Maybe<string> => failedOutput(text) ? null : text.replace("repo-", "")
+export const parseRepoName = (text: string): Maybe<string> => {
+    if (failedOutput(text)) return null
+
+    // Remove possible .git suffix
+    const cleanedUrl = text.trim().replace(/\.git$/, '')
+
+    // Extract part after last /
+    const parts = cleanedUrl.split('/')
+
+    // Ensure we have enough parts (e.g., https://github.com/user/repo)
+    if (parts.length < 1) return null
+
+    return last(parts) || null
+}
 
 export const parseRepoBranches = (text: string): Maybe<string[]> => failedOutput(text) ? null : text
     .split("\n") // splits on new line
+    .filter(l => !l.includes("->")) // doesn't include ref aliases
     .map(line => line.trim().replace(/^\* /, "")) // remove "* " from current branch
     .filter(Boolean); // remove empty lines
 
 export const parseCommitHashes = (text: string): Maybe<string[]> => failedOutput(text) ? null : text
     .split("\n") // splits on new line
-    .map(line => line
-        .trim()
-        .split(" ")[0]
-    ) // gets the SHA-8 value for each commit
+    .filter(line => !line.startsWith("The system cannot find the path specified.")) // for some reason this exists, but the rest of the logic still works???
     .filter(Boolean); // remove empty lines
-
-
-export const parseContributorData = (text: string): Maybe<ContributorData[]> => failedOutput(text) ? null : text
-    .split("\n") // splits on new line
-    .map((line) => line
-        .trim()    
-        .split("|")
-    )   
-    .map((data) => ({
-        name: data[1],
-        email: data[2],
-        numCommits: Number(data[0]) 
-        } as ContributorData)
-    )
 
 
 export const parseCommitData = (text: string): Maybe<Readonly<{
@@ -87,35 +84,39 @@ export const parseCommitData = (text: string): Maybe<Readonly<{
     involvedFiles: string[][]
 }>> => {
     if (failedOutput(text)) return null
+    
+    const lines = text.split("\n").filter(l => l != "")
+    if (lines.length < 4) return null
 
-    const lines = text.split("\n")
-    const hash = lines[0]
-    const authorName = lines[1]
-    const dateString = lines[2]
-    const description = lines[3]
-    const fileLines = [...Array(lines.length - 4)].map(i => lines[i + 4]) // check for bugs
+    const [commitHash, contributorName, dateString, description, ...fileLines] = lines.map(s => s.trim())
 
     const data = fileLines.map(line => {
-        const frags = line.split(" ", 1)
-        const changeClass = frags[0]
-        const rest = frags[1].trim()
-        // returns the first letter of the change
-        return [changeClass[0], rest]
+        const parts = line.split(/\s+/)
+        const status = parts[0]
+
+        if (status.startsWith("R") || status.startsWith("C")) {
+            // Rename or copy: status, from, to
+            return [status[0], parts[1], parts[2]] 
+        } else {
+            // Simple: status, file
+            return [status, parts[1]]
+        }
     })
 
     return {
-        commitHash: hash,
-        contributorName: authorName,
-        description: description,
-        dateString: dateString,
+        commitHash,
+        contributorName,
+        description,
+        dateString,
         involvedFiles: data
     }
 }
-
 export const parseFileDataFromCommit = (getFileContents: (text: string) => Promise<string>, getOldFileContents: (text: string) => Promise<string>) => async (data: string[]): Promise<Maybe<FileChanges>> => {
 
-    const changeType = data[0] as ChangeType
-    const rest = data[1].split("|||")
+    const [changeString, ...rest] = data
+    const [changeChar, ...likenessList] = changeString 
+    const changeType = changeChar as ChangeType
+    const likeness = Number.parseInt(likenessList.join())
     const newFile = last(rest) as string
 
     const getChange = async (): Promise<ChangeData> => {
@@ -128,7 +129,8 @@ export const parseFileDataFromCommit = (getFileContents: (text: string) => Promi
                 return {
                     char: changeType,
                     extra: {
-                        oldFilePath: oldFilePath
+                        oldFilePath: oldFilePath,
+                        likeness: likeness
                     }
                 }
 

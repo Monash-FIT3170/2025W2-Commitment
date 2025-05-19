@@ -6,6 +6,7 @@ export type RepositoryData = Readonly<{
     name: string
     branches: BranchData[]
     allCommits: Map<string, CommitData>
+    contributors: Map<string, ContributorData>
 }>
 
 export type BranchData = Readonly<{
@@ -16,7 +17,7 @@ export type BranchData = Readonly<{
 // make a kind of commit where you have a snapshot of all contributors per line
 export type CommitData = Readonly<{
     commitHash: string
-    contributor: ContributorData
+    contributorName: string
     description: string
     timestamp: Date
     fileData: FileChanges[]
@@ -24,8 +25,7 @@ export type CommitData = Readonly<{
 
 export type ContributorData = Readonly<{
     name: string
-    email: string
-    numCommits: number
+    emails: string[]
 }>
 
 export type FileChanges = Readonly<{
@@ -46,8 +46,8 @@ export type ChangeData = Readonly<{
 export type ChangeType = "A" | "M" | "D" | "R" | "C"
 // create diff section and greatly improve efficiency of storage by hashing FileContents so no repeated information is stashed in the DB
 export type ModifyData = Readonly<{ previousFile: FileContents }>
-export type RenameData = Readonly<{ oldFilePath: string }>
-export type CopyData = Readonly<{ oldFilePath: string }>
+export type RenameData = Readonly<{ oldFilePath: string, likeness: number }>
+export type CopyData = Readonly<{ oldFilePath: string, likeness: number }>
 
 const isMapOf = <K, V>(
     value: unknown,
@@ -84,7 +84,6 @@ export const isContributorData = (o: any): o is ContributorData =>
     && o != null
     && "name"         in o && typeof o.name === "string"
     && "email"        in o && typeof o.email === "string"
-    && "numCommits"   in o && typeof o.numCommits === "number"
 
 export const isFileChanges = (o: any): o is FileChanges => 
     typeof o === "object" 

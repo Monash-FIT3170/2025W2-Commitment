@@ -29,7 +29,6 @@ import {
 	parseRepoExists, 
 	parseRepoBranches,
 	parseCommitHashes,
-	parseContributorData,
 	parseCommitData,
 	parseRepoName,
 	parseFileDataFromCommit
@@ -41,7 +40,7 @@ import {
 	cloneRepo,
 	getBranches,
 	getAllCommitsFrom,
-	getAllContributors,
+	getContributorEmails,
 	getCommitDetails,
 	getFileDataFromCommit,
 	getOldFileDataFromCommit,
@@ -74,7 +73,7 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
 	const repoRelativePath = "/cloned-repos/" + repoNameFromUrl
 	const repoAbsPath = workingDir + repoRelativePath
 
-	// if it already exists delete it as it should not exist
+	// if it already exists delete it as it should not exist (maybe formulateRepoData failed)
 	if (doesFilepathExist(repoAbsPath)) await deleteAllFromDirectory(repoAbsPath)
 
 	// clone shit and check if it cloned successfully
@@ -93,7 +92,7 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
     // send shit out
 	notifier.next("Data processed!")
 
-	return Promise.resolve(repoData)
+	return repoData
 }
 
 
@@ -111,15 +110,9 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 	const allCommitHashesListOfList = await Promise.all(branchNames
 		.map( async (branch) => await parseCmdImmediate(execCmdInRepo(getAllCommitsFrom(branch)))(parseCommitHashes) )
 	)
+
 	// get all unique commit hashes
-	const allCommitHashes = [... new Set(allCommitHashesListOfList.flatMap(i => i))]
-
-	// get all contributors and create objects for each contributor
-	notifier.next("Finding all contributors...")
-	const allContributors: ContributorData[] = await parseCmdImmediate(execCmdInRepo(getAllContributors()))(parseContributorData)
-
-	// create a map of all contributor names to their object
-	const contributorMap = new Map<string, ContributorData>(allContributors.map(c => [c.name, c]))
+	const allCommitHashes = [...new Set(allCommitHashesListOfList.flatMap(i => i))]	
 
 	// get all commit data and file data inside the commit data (multithreaded)
 	notifier.next("Formulating all commit data...")
@@ -136,13 +129,26 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 
 			return ({
 				commitHash: commitData.commitHash,
-				contributor: contributorMap.get(commitData.contributorName),
+				contributorName: commitData.contributorName,
 				description: commitData.description,
 				timestamp: new Date(commitData.dateString),
 				fileData: allFileData
 			} as CommitData)
 		})
 	)
+
+	// get all contributors and create objects for each contributor
+	notifier.next("Formulating all contributors...")
+	const uniqueNames = [...new Set(allCommitData.map(d => d.contributorName))]
+	const nameToEmails = await Promise.all(
+		uniqueNames.map(async (name) => await parseCmdImmediate(execCmdInRepo(getContributorEmails(name)))(t => t.split("\n")))
+	)
+	const allContributors: ContributorData[] = zip(uniqueNames, nameToEmails).map(([name, emails]) => ({
+		name: name,
+		emails: emails
+	})) 
+
+	const contributorMap = new Map<string, ContributorData>(allContributors.map(c => [c.name, c]))
 
 	// create a map of all commit hashes to their object
 	const commitMap = new Map<string, CommitData>(allCommitData.map(c => [c.commitHash, c]))
@@ -159,16 +165,22 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 	const branchData: BranchData[] = await Promise.all(branchNames.map(async branch => ({
 			branchName: branch,
 			commitHashes: (branchToCommitsMap.get(branch) as string[])
-				.sort((h1, h2) => commitMap.get(h1)!.timestamp.getTime() - commitMap.get(h2)!.timestamp.getTime())
+				.sort((h1, h2) => {
+					const [c1, c2] = [commitMap.get(h1) as CommitData, commitMap.get(h2) as CommitData]
+					const t1 = c1!.timestamp.getTime()
+					const t2 = c2!.timestamp.getTime()
+					return t1 - t2 
+			})
 		}))
-	)
+	)	
 
-	const repoName = await parseCmdImmediate(execCmdInRepo(getRepoName(url)))(parseRepoName)
+	const repoName = await parseCmdImmediate(execCmdInRepo(getRepoName()))(parseRepoName)
 
 	return Promise.resolve({
 		name: repoName,
 		branches: branchData,
-		allCommits: commitMap
+		allCommits: commitMap,
+		contributors: contributorMap
 	})
 }
 

@@ -18,31 +18,22 @@ export const cloneRepo = (url: string, targetDirectory: string): Command => ({
 
 export const getBranches = (): Command => ({
     ...doNotLogData,
-    cmd: `git branch -a`, // gets all branches, local and remote
+    cmd: `git branch -a`, // gets only local branches
 })
 
 export const getAllCommitsFrom = (branch: string): Command => ({
     ...doNotLogData,
-    cmd: `git log --oneline ${branch}`, // gets all branches, local and remote
+    cmd: `git log ${branch} --format=%H` // gets all commits from this branch with the full 40 character SHA-1 hash for complete unambiguity
 })
 
-export const getAllContributors = (): Command => ({
+export const getContributorEmails = (name: string): Command => ({
     ...doNotLogData,
-    cmd: `git shortlog -s -n -e | awk '{ count=$1; $1=""; sub(/^ /, ""); print count "|" $0 }'`, // gets all contributor data from the repo and delimits the information with |
+    cmd: `git log --author=${name}`, // gets all contributor emails inside the repo
 })
 
 export const getCommitDetails = (hash: string) => ({
     ...doNotLogData,
-    cmd: 
-`git show --pretty=format:"%H%n%an%n%ad%n%s" --diff-filter=ADMRC --no-patch --name-status ${hash} |
-awk '{
-  if ($1 ~ /^R[0-9]+$/ || $1 ~ /^C[0-9]+$/) {
-    # rename or copy, has 3 columns: status from to
-    print $1 "\t" $2 "|||" $3
-  } else {
-    print $0
-  }
-}'`
+    cmd: `git show --pretty=format:"%H%n%an%n%ad%n%s" --diff-filter=ADMRC --name-status ${hash}`
 })
 
 export const getFileDataFromCommit = (hash: string, path: string): Command => ({
@@ -55,7 +46,7 @@ export const getOldFileDataFromCommit = (hash: string, path: string): Command =>
     cmd: `git show ${hash}^:${path}`
 })
 
-export const getRepoName = (url: string): Command => ({
+export const getRepoName = (): Command => ({
     ...doNotLogData,
-    cmd: `basename -s .git ${url}` 
+    cmd: `git remote get-url origin` 
 })
