@@ -28,7 +28,7 @@ export const getAllCommitsFrom = (branch: string): Command => ({
 
 export const getContributorEmails = (name: string): Command => ({
     ...doNotLogData,
-    cmd: `git log --author=${name}`, // gets all contributor emails inside the repo
+    cmd: `git log --author="${name}"`, // gets all contributor emails inside the repo
 })
 
 export const getCommitDetails = (hash: string) => ({
