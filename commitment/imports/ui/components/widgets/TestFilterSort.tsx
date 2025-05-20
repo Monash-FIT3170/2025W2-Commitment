@@ -1,13 +1,19 @@
 import React, { useState } from "react";
 import { Card, CardHeader } from "@ui/components/ui/card";
 import { CardContent } from "@ui/components/ui/card";
-import Filter, { FilterOption } from "../ui/filter";
+import Filter, { FilterOption, FiltersState, FilterValue } from "../ui/filter";
 
-const test_docs = [
+type doc ={
+  id:number;
+  name:string;
+  team:"Alpha"|"Beta"|"Delta"|"Gamma";
+  subscription:boolean;
+  date:Date;
+}
+const test_docs:doc[] = [
   {
     id: 1,
     name: "Invoice #1001",
-    category: "Finance",
     team: "Alpha",
     subscription: true,
     date: new Date("2024-04-15"),
@@ -15,7 +21,6 @@ const test_docs = [
   {
     id: 2,
     name: "Design Brief",
-    category: "Design",
     team: "Beta",
     subscription: false,
     date: new Date("2024-05-01"),
@@ -23,7 +28,6 @@ const test_docs = [
   {
     id: 3,
     name: "Project Proposal",
-    category: "Planning",
     team: "Alpha",
     subscription: true,
     date: new Date("2024-03-25"),
@@ -31,7 +35,6 @@ const test_docs = [
   {
     id: 4,
     name: "Invoice #1002",
-    category: "Finance",
     team: "Delta",
     subscription: false,
     date: new Date("2024-05-18"),
@@ -39,7 +42,6 @@ const test_docs = [
   {
     id: 5,
     name: "Sprint Retrospective",
-    category: "Agile",
     team: "Gamma",
     subscription: false,
     date: new Date("2024-04-05"),
@@ -47,7 +49,6 @@ const test_docs = [
   {
     id: 6,
     name: "User Research Notes",
-    category: "Research",
     team: "Beta",
     subscription: true,
     date: new Date("2024-02-28"),
@@ -55,7 +56,6 @@ const test_docs = [
   {
     id: 7,
     name: "Marketing Plan",
-    category: "Marketing",
     team: "Delta",
     subscription: true,
     date: new Date("2024-01-10"),
@@ -63,7 +63,6 @@ const test_docs = [
   {
     id: 8,
     name: "Team Feedback",
-    category: "Agile",
     team: "Gamma",
     subscription: true,
     date: new Date("2024-05-20"),
@@ -71,7 +70,6 @@ const test_docs = [
   {
     id: 9,
     name: "Budget Review",
-    category: "Finance",
     team: "Alpha",
     subscription: false,
     date: new Date("2024-03-05"),
@@ -79,7 +77,6 @@ const test_docs = [
   {
     id: 10,
     name: "Wireframe Draft",
-    category: "Design",
     team: "Beta",
     subscription: false,
     date: new Date("2024-05-08"),
@@ -91,42 +88,47 @@ export const TestFilterSort = () => {
     {
       type: "checkbox",
       label: "Has Subscription",
-      filterKey: "subscription",
+      filterkey: "subscription",
     },
     {
       type: "date",
-      label: "Created Date",
-      filterKey: "date",
+      label: "Date Created",
+      filterkey: "created",
     },
-    {
-      type: "options",
-      label: "Category",
-      filterKey: "category",
-      options: [
-        "Finance",
-        "Design",
-        "Planning",
-        "Agile",
-        "Research",
-        "Marketing",
-      ],
-    },
+
     {
       type: "options",
       label: "Team",
-      filterKey: "team",
-      options: ["Alpha", "Beta", "Gamma", "Delta"],
+      filterkey: "team",
+      options: ["Alpha", "Beta", "Gamma", "Delta"], // Adjust based on actual data
     },
   ];
+  
+  const [filters, setFilters] = useState<FiltersState>({
+    subscription: { isUsed: false, value: false },
+    created: { isUsed: false, value: { from: undefined, to: undefined } },
+    team: { isUsed: false, value: [] },
+  });
 
-  // filter will be type filterkey, then the associated value
-  const [filters, setFilters] = useState(null);
+  const updateFilter = (key: string, value: FilterValue) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: {
+        isUsed: Array.isArray(value) ? value.length > 0 : !!value,
+        value,
+      },
+    }))
+    console.log(key,value)
+    console.log(filters)
+    ;
+  };
+
 
   return (
     <Card>
       <CardHeader>
       <h1> Testing filtering and sorting</h1>
-        <Filter />
+      <Filter options={filterOptions} filters={filters} onFilterChange={updateFilter} />
 
       </CardHeader>
       <CardContent className="pt-6 flex flex-row gap-3 content-center">
@@ -140,7 +142,6 @@ export const TestFilterSort = () => {
                 <h3>{document.name}</h3>
               </CardHeader>
               <CardContent>
-              <p>{document.category}</p>
               <p>{document.team}</p>
               <p>{document.subscription}</p>
               </CardContent>

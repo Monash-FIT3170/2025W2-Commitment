@@ -51,7 +51,9 @@ export function DatePickerWithRange({
             )}
           >
             <CalendarIcon />
-            {date?.from ? (
+            
+            {//TODO: Repair display of selected date, does not display the cureent 
+            date?.from ? (
               date.to ? (
                 <>
                   {format(date.from, "LLL dd, y")} -{" "}
