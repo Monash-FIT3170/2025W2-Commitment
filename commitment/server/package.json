@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "./src/server.js",
+  "type": "module",
   "license": "AGPL-version-3.0",
   "private": false,
   "engines": {
@@ -23,8 +24,11 @@
   },
   "contributors": [],
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test:server": "node src/server.js",
+    "test:atlas": "node src/services/atlas.js",
+    "test:all": "node -e \"import('./src/server.js').then(() => import('./src/services/atlas.js'))\""
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

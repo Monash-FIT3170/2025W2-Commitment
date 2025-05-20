@@ -29,3 +29,9 @@ Temporary Items
 
 ## IDEs
 .idea
+
+# Environment variables
+.env
+
+# Dependencies
+node_modules/

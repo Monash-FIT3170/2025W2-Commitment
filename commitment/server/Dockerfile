@@ -1,10 +1,4 @@
-# FROM node:20-alpine
-# WORKDIR /server
-# # COPY package*.json .
-# COPY . /server
-# RUN npm i
-# CMD ["node", "index.js"]
-FROM node:20
+FROM node:20.19.2
 
 # Set the working directory in the container
 WORKDIR /server

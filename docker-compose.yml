@@ -1,16 +1,16 @@
 services:
   dev-env:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: commitment-img
     container_name: 3170-env
     ports:
       - "3001:3000"
     volumes:
-      - ./commitment:/projects/commitment
+      - ./commitment:/projects/commitment/server
     env_file:
-      - .env
-    environment: 
-      - MONGO_URL=${MONGO_URL}  # Optional if in .env
+      - ./commitment/server/.env
     tty: true
     stdin_open: true
 
@@ -19,23 +19,23 @@ services:
     container_name: ${SERVER_HOST}
     build:
       context: ./commitment/server
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
     env_file:
-      - .env
+      - ./commitment/server/.env
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     volumes:
-      - server-src:/server
-      - server-v-node-modules:/server/node-modules
+      - ./commitment/server:/server
+      - server-v-node-modules:/server/node_modules
 
   database:
     image: database:1.0.0
     container_name: ${DATABASE_HOST}
     build:
       context: ./commitment/database
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
     env_file:
-      - .env
+      - ./commitment/server/.env
     ports:
       - ${DATABASE_PORT}:${DATABASE_PORT}
     volumes:
@@ -44,4 +44,3 @@ services:
 volumes:
   server-v-node-modules: {}
   database-v: {}
-  server-src: {}

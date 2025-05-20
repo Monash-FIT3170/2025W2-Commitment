@@ -2,29 +2,36 @@ import mongoose from 'mongoose';
 import { ATLAS_MONGODB_URI } from '../constants.js';
 
 export async function listCollections() {
-    console.log(ATLAS_MONGODB_URI)
+    console.log('Attempting to connect to MongoDB Atlas with URI:', ATLAS_MONGODB_URI);
     try {
+        await mongoose.connect(ATLAS_MONGODB_URI);
+        console.log('Connected to MongoDB Atlas');
 
-        await mongoose.connect(ATLAS_MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-          })
-          .then(() => console.log('Connected to MongoDB Atlas'))
-          .catch(err => console.error('MongoDB connection error:', err));
+        const db = mongoose.connection.db;
+        const collections = await db.listCollections().toArray();
 
-        const db = mongoose.connection.db
-
-        const collections = await db.listCollections().toArray()
-
-        console.log('collections in the database')
-
+        console.log('\nCollections in the database:');
         collections.forEach(collection => {
-            console.log(`- ${collections.name}`)
-            
+            console.log(`- ${collection.name}`);
         });
+
+        // Close the connection
+        await mongoose.connection.close();
+        console.log('\nConnection closed');
+        
+        return collections;
     }
     catch(err) {
-        console.log(err)
+        console.error('Error:', err);
+        // Make sure to close the connection even if there's an error
+        try {
+            await mongoose.connection.close();
+        } catch (closeErr) {
+            console.error('Error closing connection:', closeErr);
+        }
+        throw err; // Re-throw the error to be handled by the caller
     }
+}
 
-};
+// Actually run the function
+listCollections();
