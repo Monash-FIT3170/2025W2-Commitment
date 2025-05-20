@@ -4,12 +4,15 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  // NavigationMenuTrigger,
 } from "@ui/components/ui/navigation-menu";
 import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
 import SignUpButton from "@ui/components/ui/signUpButton";
 
-export const NavBar = () => {
+interface NavBarProps {
+  isLoggedIn: boolean;
+}
+
+export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
   return (
     <div className="sticky top-0 z-50 flex items-center justify-between px-4 py-2 border-b bg-white rounded-md shadow-lg ml-32 mr-32">
       <NavigationMenu>
@@ -43,8 +46,15 @@ export const NavBar = () => {
       </NavigationMenu>
 
       <div className="flex items-center space-x-4">
-        <a className={navigationMenuTriggerStyle()}>Login</a>
-        <SignUpButton />
+        {!isLoggedIn && (
+          <>
+            <a className={navigationMenuTriggerStyle()}>Login</a>
+            <SignUpButton />
+          </>
+        )}
+        {isLoggedIn && (
+          <a className={navigationMenuTriggerStyle()}>Sign Out</a>
+        )}
       </div>
     </div>
   );
