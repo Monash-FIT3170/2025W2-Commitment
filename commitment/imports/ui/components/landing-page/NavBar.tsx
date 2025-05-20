@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -7,12 +7,25 @@ import {
 } from "@ui/components/ui/navigation-menu";
 import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
 import SignUpButton from "@ui/components/ui/signUpButton";
+import ProfileMenu from "@ui/components/ui/profile-menu";
 
 interface NavBarProps {
   isLoggedIn: boolean;
 }
 
 export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const handleSignOut = () => {
+    // not to seld: implement signing out logic here later
+    console.log("Sign out clicked");
+  };
+
+  const handleToggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    // note to self: implement dark mode logic here later
+  };
+
   return (
     <div className="sticky top-0 z-50 flex items-center justify-between px-4 py-2 border-b bg-white rounded-md shadow-lg ml-32 mr-32">
       <NavigationMenu>
@@ -53,7 +66,11 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
           </>
         )}
         {isLoggedIn && (
-          <a className={navigationMenuTriggerStyle()}>Sign Out</a>
+          <ProfileMenu
+            onSignOut={handleSignOut}
+            onToggleDarkMode={handleToggleDarkMode}
+            isDarkMode={isDarkMode}
+          />
         )}
       </div>
     </div>
