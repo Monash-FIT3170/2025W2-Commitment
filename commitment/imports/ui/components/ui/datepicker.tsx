@@ -30,10 +30,7 @@ export function DatePickerWithRange({
   className,setExternalDate
 }: RangedDatePicker) {
 
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(),
-    to: addDays(new Date(), 20),
-  })
+  const [date, setDate] = React.useState<DateRange | undefined>(undefined)
 
   const handleSetDate =(newDates:DateRange | undefined)=>{
     setDate(newDates);
