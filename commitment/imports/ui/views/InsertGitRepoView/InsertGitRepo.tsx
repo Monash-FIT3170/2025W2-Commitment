@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, KeyboardEvent } from 'react';
 import NavBar from '@ui/components/landing-page/NavBar';
 import { Logo } from '@ui/components/landing-page/MainPage';
 import { Button } from '@ui/components/ui/button';
@@ -12,18 +12,21 @@ const InsertGitRepo = () => {
     const [validationError, setValidationError] = useState<string | null>(null);
 
     const validateRepoUrl = (url: string): string | null => {
-        // Regex for standard GitHub HTTPS and SSH formats
-        const githubHttpsRegex = /^https:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/;
+        const trimmedUrl = url.trim();
+        const cleanUrl = trimmedUrl.startsWith('@') ? trimmedUrl.substring(1) : trimmedUrl;
+
+        // Regex for standard GitHub HTTPS and SSH formats, allowing .git optionally for HTTPS
+        const githubHttpsRegex = /^https:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+(\.git)?$/;
         const githubSshRegex = /^git@github\.com:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\.git$/;
 
-        if (!url) {
+        if (!cleanUrl) {
             return "Repository link cannot be empty.";
         }
 
-        if (githubHttpsRegex.test(url) || githubSshRegex.test(url)) {
+        if (githubHttpsRegex.test(cleanUrl) || githubSshRegex.test(cleanUrl)) {
             return null; // URL is valid
         } else {
-            return "Invalid GitHub repository link format. Please use HTTPS (e.g., https://github.com/user/repo) or SSH (e.g., git@github.com:user/repo.git) format.";
+            return "Invalid GitHub repository link format. Please use HTTPS (e.g., https://github.com/user/repo or https://github.com/user/repo.git) or SSH (e.g., git@github.com:user/repo.git) format.";
         }
     };
 
@@ -34,6 +37,12 @@ const InsertGitRepo = () => {
         if (!error) {
             // TODO: Implement repository analysis logic here
             console.log('Valid repo URL:', repoUrl);
+        }
+    };
+
+    const handleInputKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            handleAnalyseClick();
         }
     };
 
@@ -50,6 +59,7 @@ const InsertGitRepo = () => {
                         className="w-full max-w-md px-4 py-2 border border-[#F1502F] rounded-full shadow-sm focus:outline-none focus:ring-[#F1502F] focus:border-[#F1502F] mb-4"
                         value={repoUrl}
                         onChange={(e) => setRepoUrl(e.target.value)}
+                        onKeyPress={handleInputKeyPress}
                     />
                     <Button className={cn(
                         "w-[341px] h-auto text-white rounded-full text-center bg-[#F1502F] hover:bg-[#F1502F] drop-shadow-lg"
@@ -68,12 +78,13 @@ const InsertGitRepo = () => {
                         type="text" 
                         placeholder="Insert git repo link" 
                         className={cn(
-                            "w-full max-w-md px-4 py-2 border rounded-full shadow-sm focus:outline-none",
+                            "w-full max-w-lg px-4 py-2 border rounded-full shadow-sm focus:outline-none",
                             validationError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-[#F1502F] focus:ring-[#F1502F] focus:border-[#F1502F]',
                             'mb-4'
                         )}
                         value={repoUrl}
                         onChange={(e) => setRepoUrl(e.target.value)}
+                        onKeyPress={handleInputKeyPress}
                     />
                     {validationError && (
                         <p className="text-red-500 text-sm mt-1">{validationError}</p>
