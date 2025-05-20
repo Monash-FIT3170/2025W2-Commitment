@@ -2,83 +2,84 @@ import React, { useState } from "react";
 import { Card, CardHeader } from "@ui/components/ui/card";
 import { CardContent } from "@ui/components/ui/card";
 import Filter, { FilterOption, FiltersState, FilterValue } from "../ui/filter";
+import { DateRange } from "react-day-picker";
 
-type doc ={
+type todo ={
   id:number;
   name:string;
   team:"Alpha"|"Beta"|"Delta"|"Gamma";
-  subscription:boolean;
+  completed:boolean;
   date:Date;
 }
-const test_docs:doc[] = [
+const test_docs:todo[] = [
   {
     id: 1,
-    name: "Invoice #1001",
+    name: "Make fish stew",
     team: "Alpha",
-    subscription: true,
+    completed: true,
     date: new Date("2024-04-15"),
   },
   {
     id: 2,
     name: "Design Brief",
     team: "Beta",
-    subscription: false,
+    completed: false,
     date: new Date("2024-05-01"),
   },
   {
     id: 3,
     name: "Project Proposal",
     team: "Alpha",
-    subscription: true,
+    completed: true,
     date: new Date("2024-03-25"),
   },
   {
     id: 4,
-    name: "Invoice #1002",
+    name: "Apple Pie class",
     team: "Delta",
-    subscription: false,
+    completed: false,
     date: new Date("2024-05-18"),
   },
   {
     id: 5,
     name: "Sprint Retrospective",
     team: "Gamma",
-    subscription: false,
+    completed: false,
     date: new Date("2024-04-05"),
   },
   {
     id: 6,
     name: "User Research Notes",
     team: "Beta",
-    subscription: true,
+    completed: true,
     date: new Date("2024-02-28"),
   },
   {
     id: 7,
     name: "Marketing Plan",
     team: "Delta",
-    subscription: true,
+    completed: true,
     date: new Date("2024-01-10"),
   },
   {
     id: 8,
     name: "Team Feedback",
     team: "Gamma",
-    subscription: true,
+    completed: true,
     date: new Date("2024-05-20"),
   },
   {
     id: 9,
     name: "Budget Review",
     team: "Alpha",
-    subscription: false,
+    completed: false,
     date: new Date("2024-03-05"),
   },
   {
     id: 10,
     name: "Wireframe Draft",
     team: "Beta",
-    subscription: false,
+    completed: false,
     date: new Date("2024-05-08"),
   },
 ];
@@ -87,8 +88,8 @@ export const TestFilterSort = () => {
   const filterOptions: FilterOption[] = [
     {
       type: "checkbox",
-      label: "Has Subscription",
-      filterkey: "subscription",
+      label: "Is completed",
+      filterkey: "completed",
     },
     {
       type: "date",
@@ -100,12 +101,12 @@ export const TestFilterSort = () => {
       type: "options",
       label: "Team",
       filterkey: "team",
-      options: ["Alpha", "Beta", "Gamma", "Delta"], // Adjust based on actual data
+      options: ["Alpha", "Beta", "Gamma", "Delta"], 
     },
   ];
   
   const [filters, setFilters] = useState<FiltersState>({
-    subscription: { isUsed: false, value: false },
+    completed: { isUsed: false, value: false },
     created: { isUsed: false, value: { from: undefined, to: undefined } },
     team: { isUsed: false, value: [] },
   });
@@ -114,7 +115,7 @@ export const TestFilterSort = () => {
     setFilters((prev) => ({
       ...prev,
       [key]: {
-        isUsed: Array.isArray(value) ? value.length > 0 : !!value,
+        isUsed: Array.isArray(value) ? value.length > 0 : !!value, // fix so is accurate/is updated in method
         value,
       },
     }))
@@ -124,6 +125,38 @@ export const TestFilterSort = () => {
   };
 
 
+  // Todo
+  const applyFilter = (doc: todo, filters: FiltersState):boolean=>{
+
+    return Object.entries(filters).every(([filterKey, { isUsed, value }]) => {
+      if (!isUsed) return true;
+  
+      switch (filterKey) {
+        case "completed":
+          return typeof value === "boolean" ? doc.completed === value : true;
+  
+          // TODO: repair filtering functionality for date range
+        case "created":
+          if (value && typeof value === "object" && "from" in value && "to" in value) {
+            const range = value as DateRange;
+            if (range.from && range.to) {
+              return doc.date >= range.from && doc.date <= range.to;
+            }
+          }
+          return true;
+  
+        case "team":
+          if (Array.isArray(value)) {
+            return value.includes(doc.team);
+          }
+          return true;
+  
+        default:
+          return true;
+      }
+    });}
+
+
   return (
     <Card>
       <CardHeader>
@@ -131,19 +164,21 @@ export const TestFilterSort = () => {
       <Filter options={filterOptions} filters={filters} onFilterChange={updateFilter} />
 
       </CardHeader>
-      <CardContent className="pt-6 flex flex-row gap-3 content-center">
-        <div className="flex flex-row gap-3 w-3/5">
-        {test_docs.map((document,idx) => {
+      <CardContent className="pt-6  gap-3 content-center">
+        <div className="flex  flex-row flex-wrap justify-center gap-3 w-full">
+        {test_docs.filter(doc => applyFilter(doc, filters)).map((document,idx) => {
           return (
             <Card className="w-[250px]">
               <CardHeader>
+                
                 {document.id}
 
                 <h3>{document.name}</h3>
               </CardHeader>
               <CardContent>
               <p>{document.team}</p>
-              <p>{document.subscription}</p>
+              <p>{document.completed?"Task completed":"Incomplete"}</p>
+              <p>{document.date.toString()}</p>
               </CardContent>
             </Card>
           );
