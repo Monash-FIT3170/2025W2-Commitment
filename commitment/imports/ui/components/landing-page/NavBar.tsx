@@ -8,6 +8,7 @@ import {
 import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
 import SignUpButton from "@ui/components/ui/signUpButton";
 import ProfileMenu from "@ui/components/ui/profile-menu";
+import { Moon, Sun } from "lucide-react";
 
 interface NavBarProps {
   isLoggedIn: boolean;
@@ -24,6 +25,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
   const handleToggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
     // note to self: implement dark mode logic here later
+    console.log("Dark mode toggled:", !isDarkMode);
   };
 
   return (
@@ -59,6 +61,18 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
       </NavigationMenu>
 
       <div className="flex items-center space-x-4">
+        <button 
+          onClick={handleToggleDarkMode}
+          className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+          aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDarkMode ? (
+            <Sun className="h-6 w-6 text-yellow-400" />
+          ) : (
+            <Moon className="h-6 w-6 text-gray-600" />
+          )}
+        </button>
+
         {!isLoggedIn && (
           <>
             <a className={navigationMenuTriggerStyle()}>Login</a>
@@ -68,8 +82,6 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
         {isLoggedIn && (
           <ProfileMenu
             onSignOut={handleSignOut}
-            onToggleDarkMode={handleToggleDarkMode}
-            isDarkMode={isDarkMode}
           />
         )}
       </div>

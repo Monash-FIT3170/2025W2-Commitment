@@ -1,18 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Moon, HelpCircle, LogOut, User, ChevronDown } from "lucide-react";
+import { HelpCircle, LogOut, User, ChevronDown } from "lucide-react";
 import { Button } from "./button";
 import { Separator } from "./separator";
 
 interface ProfileMenuProps {
   onSignOut: () => void;
-  onToggleDarkMode: () => void;
-  isDarkMode: boolean;
 }
 
 export const ProfileMenu: React.FC<ProfileMenuProps> = ({
   onSignOut,
-  onToggleDarkMode,
-  isDarkMode,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -43,25 +39,6 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
           <div className="py-1">
-            <div className="flex items-center justify-between px-4 py-2">
-              <div className="flex items-center gap-2">
-                <Moon className="h-4 w-4" />
-                <span className="text-sm text-gray-700">Dark Mode</span>
-              </div>
-              <button
-                onClick={onToggleDarkMode}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 ${
-                  isDarkMode ? 'bg-gray-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    isDarkMode ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-
             <button
               className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >

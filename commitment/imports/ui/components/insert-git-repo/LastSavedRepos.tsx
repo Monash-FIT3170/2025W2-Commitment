@@ -7,7 +7,7 @@ import { ChevronRight } from "lucide-react";
 const mockRepos = [
   { id: 1, repoName: 'Repository One', repoDescription: 'Short description of repo one.' },
   { id: 2, repoName: 'Repository Two', repoDescription: 'Short description of repo two.' },
-
+  { id: 3, repoName: 'Repository Three', repoDescription: 'Short description of repo three.' },
 ];
 
 const LastSavedRepos = () => {
