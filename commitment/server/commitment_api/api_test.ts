@@ -2,9 +2,7 @@ import { Subject } from "rxjs";
 
 import { fetchDataFrom, getDataFrom } from "../commitment_api/commitment"
 
-export const testFullFetchFunctionality = async (testRepo: string) => {
-    const subject = new Subject<string>()
-    subject.subscribe(console.log)
+export const testFullFetchFunctionality = async (testRepo: string, subject: Subject<string>) => {
 
     const res = fetchDataFrom(testRepo, subject)
 
@@ -35,5 +33,7 @@ export const testGetRepoGiven1 = async () => {
 
 export const testFetchRepoGiven1 = async () => {
     const testRepo = "https://github.com/Densetsu152637/test_repo_for_3170" 
-    return testFullFetchFunctionality(testRepo)
+    const s = new Subject<string>()
+    s.subscribe(console.log)
+    return testFullFetchFunctionality(testRepo, s)
 }
