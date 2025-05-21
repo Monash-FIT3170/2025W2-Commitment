@@ -6,8 +6,19 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+console.log('Loading environment variables...');
+console.log('Current directory:', __dirname);
+console.log('Looking for .env file in:', path.join(__dirname, '../.env'));
+
 // Load .env file from the server root directory
-dotenv.config({ path: path.join(__dirname, '../.env') });
+const result = dotenv.config({ path: path.join(__dirname, '../.env') });
+
+if (result.error) {
+    console.error('Error loading .env file:', result.error);
+    process.exit(1);
+}
+
+console.log('Environment variables loaded successfully');
 
 export const DATABASE_USERNAME = process.env.MONGO_INITDB_ROOT_USERNAME;
 export const DATABASE_PASSWORD = process.env.MONGO_INITDB_ROOT_PASSWORD;
@@ -21,12 +32,11 @@ export const SERVER_PORT = process.env.SERVER_PORT;
 
 export const ATLAS_MONGODB_URI = process.env.ATLAS_MONGODB_URI;
 
-console.log('Loading environment variables...');
 console.log('Environment variables loaded:', {
-    DATABASE_USERNAME,
-    DATABASE_HOST,
-    DATABASE_PORT,
-    SERVER_HOST,
-    SERVER_PORT,
-    ATLAS_MONGODB_URI
+    DATABASE_USERNAME: DATABASE_USERNAME ? 'set' : 'not set',
+    DATABASE_HOST: DATABASE_HOST ? 'set' : 'not set',
+    DATABASE_PORT: DATABASE_PORT ? 'set' : 'not set',
+    SERVER_HOST: SERVER_HOST ? 'set' : 'not set',
+    SERVER_PORT: SERVER_PORT ? 'set' : 'not set',
+    ATLAS_MONGODB_URI: ATLAS_MONGODB_URI ? 'set' : 'not set'
 });

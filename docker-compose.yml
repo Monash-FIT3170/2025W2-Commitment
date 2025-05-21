@@ -10,36 +10,36 @@ services:
     volumes:
       - ./commitment:/projects/commitment
     env_file:
-      - path: ./commitment/server/.env
+      - ./commitment/server/.env
     tty: true
     stdin_open: true
 
   server:
     image: server:1.0.0
-    container_name: ${SERVER_HOST}
+    container_name: server
     build:
       context: ./commitment/server
       dockerfile: ./Dockerfile
     env_file:
-      - path: ./commitment/server/.env
+      - ./commitment/server/.env
     ports:
-      - ${SERVER_PORT}:${SERVER_PORT}
+      - "3000:3000"
     volumes:
       - ./commitment/server:/server
-      - server-v-node-modules:/server/node_modules
+       - server-v-node-modules:/server/node_modules
     tty: true
     stdin_open: true
 
   database:
     image: database:1.0.0
-    container_name: ${DATABASE_HOST}
+    container_name: mongodb
     build:
       context: ./commitment/database
       dockerfile: ./Dockerfile
     env_file:
-      - path: ./commitment/server/.env
+      - ./commitment/server/.env
     ports:
-      - ${DATABASE_PORT}:${DATABASE_PORT}
+      - "27017:27017"
     volumes:
       - database-v:/data/db
     tty: true
