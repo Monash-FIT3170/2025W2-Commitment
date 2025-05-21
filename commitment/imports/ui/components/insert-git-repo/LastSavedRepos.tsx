@@ -7,7 +7,8 @@ import { ChevronRight } from "lucide-react";
 const mockRepos = [
   { id: 1, repoName: 'Repository One', repoDescription: 'Short description of repo one.' },
   { id: 2, repoName: 'Repository Two', repoDescription: 'Short description of repo two.' },
-  { id: 3, repoName: 'Repository Three', repoDescription: 'Short description of repo three.' },
+  { id: 3, repoName: 'Repository Three', repoDescription: 'Another short description.' },
+  { id: 4, repoName: 'Repository Four', repoDescription: 'Yet another description.' },
 ];
 
 const LastSavedRepos = () => {
@@ -15,7 +16,7 @@ const LastSavedRepos = () => {
     <div className="w-full max-w-4xl mt-8 p-6 bg-gray-100 border border-gray-300 rounded-lg">
       <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Last Saved Repositories</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {mockRepos.map(repo => (
+        {mockRepos.slice(0, 2).map(repo => (
           <RepoCard 
             key={repo.id} 
             repoName={repo.repoName} 

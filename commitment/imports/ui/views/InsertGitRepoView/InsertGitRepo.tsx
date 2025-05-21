@@ -6,8 +6,8 @@ import LastSavedRepos from '@ui/components/insert-git-repo/LastSavedRepos';
 import GitRepoInputSection from '@ui/components/insert-git-repo/GitRepoInputSection';
 
 const InsertGitRepo = () => {
-    //const [isLoggedIn, setIsLoggedIn] = useState(true); // use this to test the logged in state
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // use this to test the logged out state
+    const [isLoggedIn, setIsLoggedIn] = useState(true); // use this to test the logged in state
+    //const [isLoggedIn, setIsLoggedIn] = useState(false); // use this to test the logged out state
 
     return (
         <div>
