@@ -2,8 +2,9 @@ import React from "react";
 import { NavBar } from "./components/landing-page/NavBar";
 import InfoButton from "./components/ui/infoButton";
 import { DateRangePicker } from "./components/ui/datePickerDemo";
+import { DropdownMenuCheckboxes } from "./components/ui/dropdownmenu";
 
-export const OverviewPage = () => (
+export const MetricsPage = () => (
   <div className="m-0 scroll-smooth">
     <div className="flex flex-col gap-32">
         {/* Finn's Navbar goes here */}
@@ -12,7 +13,7 @@ export const OverviewPage = () => (
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
 
             <div className="flex items-center space-x-2 w-2/5">
-                <h1 className="text-5xl text-gray-900 font-robotoFlex">Overview</h1>
+                <h1 className="text-5xl text-gray-900 font-robotoFlex">Metrics</h1>
                 <InfoButton />
             </div>
 
@@ -23,6 +24,11 @@ export const OverviewPage = () => (
                     <p className="text-sm mb-1 text-gray-600">Date Range*</p>
                     <DateRangePicker />
                 </div>
+                <div className="absolute -top-12 left-[55%]">
+                    <p className="text-sm mb-1 text-gray-600">Branch*</p>
+                    <DropdownMenuCheckboxes/>
+                </div>
+                
             </div>
 
             <div className="mt-16">
