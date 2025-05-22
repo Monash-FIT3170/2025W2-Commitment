@@ -1,14 +1,16 @@
-import React from 'react';
-import { Hello } from './Hello';
-import { Info } from './Info';
+import React from "react";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
+import ExampleView from "@ui/views/ExampleView/ExampleView";
+import LoginView from "@ui/views/LoginView/LoginView";
 
-export const App = () => (
-  <div className="m-9">
-    <h1 className="text-cyan-700 font-sans text-5xl m-9 text-center font-thin">Welcome to Meteor!</h1>
-    <div className="flex flex-col gap-6">
-      <Hello />
-      <Info />
-    </div>
-    <Toaster /> {/* <-- This enables toast notifications */}
-  </div>
-);
+
+export const App = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ExampleView/>}></Route>
+        <Route path="/login" element={<LoginView/>}></Route>
+      </Routes>
+    </BrowserRouter>
+  )
+}
