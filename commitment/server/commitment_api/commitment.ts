@@ -130,6 +130,7 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 
 			return ({
 				commitHash: commitData.commitHash,
+				commitTitle: commitData.commitTitle,
 				contributorName: commitData.contributorName,
 				description: commitData.description,
 				timestamp: new Date(commitData.dateString),

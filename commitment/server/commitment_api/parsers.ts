@@ -80,6 +80,7 @@ export const parseCommitHashes = (text: string): Maybe<string[]> => failedOutput
 
 export const parseCommitData = (text: string): Maybe<Readonly<{
     commitHash: string,
+    commitTitle: string
     contributorName: string,
     description: string,
     dateString: string,
@@ -87,12 +88,14 @@ export const parseCommitData = (text: string): Maybe<Readonly<{
 }>> => {
     if (failedOutput(text)) return null
     
-    const lines = text.split("\n").filter(l => l != "")
-    if (lines.length < 4) return null
+    const lines = text.split("\n").map(s => s.trim())
+    if (lines.length < 5) return null
 
-    const [commitHash, contributorName, dateString, description, ...fileLines] = lines.map(s => s.trim())
+    const [commitHash, contributorName, dateString, commitTitle, description, ...fileLines] = lines
 
-    const data = fileLines.map(line => {
+    const data = fileLines
+        .filter(l => l != "")
+        .map(line => {
         const parts = line.split(/\s+/)
         const status = parts[0]
 
@@ -107,11 +110,13 @@ export const parseCommitData = (text: string): Maybe<Readonly<{
 
     return {
         commitHash,
+        commitTitle,
         contributorName,
         description,
         dateString,
         involvedFiles: data
     }
+
 }
 export const parseFileDataFromCommit = (getFileContents: (text: string) => Promise<string>, getOldFileContents: (text: string) => Promise<string>) => async (data: string[]): Promise<Maybe<FileChanges>> => {
 
