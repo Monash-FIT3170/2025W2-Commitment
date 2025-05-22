@@ -35,28 +35,25 @@ const [date, setDate] = React.useState<DateRange | undefined>(undefined)
           variant={"outline"}
           className={cn(
             "w-[280px] justify-start text-left font-normal",
-            !date && "text-muted-foreground"
-          )}
-        >
+            !date && "text-muted-foreground")}>
+
           <CalendarIcon className="mr-2 h-4 w-4" />
           {formattedRange}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
-  initialFocus
-  mode="range"
-  defaultMonth={previousMonth}
-  selected={date}
-  onSelect={setDate}
-  numberOfMonths={2}
-  classNames={{
-    day_selected: "bg-[#F1502F] text-white hover:bg-[#F1502F]",
-    day_range_middle: "bg-[#F1502F]/30 text-black",
-    day_range_start: "rounded-l-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
-    day_range_end: "rounded-r-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
-  }}
-/>
+            initialFocus
+            mode="range"
+            defaultMonth={previousMonth}
+            selected={date}
+            onSelect={setDate}
+            numberOfMonths={2}
+            classNames={{
+            day_selected: "bg-[#F1502F] text-white hover:bg-[#F1502F]",
+            day_range_middle: "bg-[#F1502F]/30 text-black",
+            day_range_start: "rounded-l-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
+            day_range_end: "rounded-r-md bg-[#F1502F] text-white hover:bg-[#F1502F]",}}/>
 
 
       </PopoverContent>
