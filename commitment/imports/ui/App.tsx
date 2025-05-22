@@ -9,5 +9,6 @@ export const App = () => (
       <Hello />
       <Info />
     </div>
+    <Toaster /> {/* <-- This enables toast notifications */}
   </div>
 );
