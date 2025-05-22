@@ -1,8 +1,18 @@
 import React from "react";
 import { NavBar } from "./components/landing-page/NavBar";
 import InfoButton from "./components/ui/infoButton";
-import { DateRangePicker } from "./components/ui/datePickerDemo";
-import { DropdownMenuCheckboxes } from "./components/ui/dropdownmenu";
+import { DateRangePicker } from "./components/ui/datePicker";
+import { BranchDropDownMenu } from "./components/ui/branchDropDownMenu";
+
+const dummyBranches = [
+  "main",
+  "development",
+  "feature/login-page",
+  "bugfix/fix-chart",
+  "release/v1.2"
+]
+
+const metricsPageDescription = "This page gives an overview of key metrics and performance trends."
 
 export const MetricsPage = () => (
   <div className="m-0 scroll-smooth">
@@ -14,7 +24,7 @@ export const MetricsPage = () => (
 
             <div className="flex items-center space-x-2 w-2/5">
                 <h1 className="text-5xl text-gray-900 font-robotoFlex">Metrics</h1>
-                <InfoButton />
+                <InfoButton description={metricsPageDescription} />
             </div>
 
             <div className="mt-2 h-[2px] bg-black w-1/4" />
@@ -26,7 +36,7 @@ export const MetricsPage = () => (
                 </div>
                 <div className="absolute -top-12 left-[55%]">
                     <p className="text-sm mb-1 text-gray-600">Branch*</p>
-                    <DropdownMenuCheckboxes/>
+                    <BranchDropDownMenu branches={dummyBranches}/>
                 </div>
                 
             </div>
