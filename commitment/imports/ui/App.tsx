@@ -1,11 +1,18 @@
-import React from 'react';
-import { Hello } from './Hello';
-import { Info } from './Info';
+import React from "react";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
+import { LandingPage } from "@ui/LandingPage";
+import LoginView from "@ui/views/LoginView/LoginView";
+import InsertGitRepo from "@ui/views/InsertGitRepoView/InsertGitRepo";
 
-export const App = () => (
-  <div>
-    <h1>Welcome to Meteor!</h1>
-    <Hello />
-    <Info />
-  </div>
-);
+export const App = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage/>}></Route>
+        <Route path="/login" element={<LoginView/>}></Route>
+        <Route path="/insert-git-repo" element={<InsertGitRepo/>}></Route>
+      </Routes>
+    </BrowserRouter>
+  )
+}
+

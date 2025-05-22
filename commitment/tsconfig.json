@@ -31,7 +31,8 @@
       "meteor/*": [
         "node_modules/@types/meteor/*",
         ".meteor/local/types/packages.d.ts"
-      ]
+      ],
+      "@ui/*": ["imports/ui/*"]
     },
     "moduleResolution": "node",
     "resolveJsonModule": true,
