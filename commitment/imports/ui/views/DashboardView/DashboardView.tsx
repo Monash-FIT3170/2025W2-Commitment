@@ -1,6 +1,5 @@
 import React from "react";
-import GalleryCard from "../../components/widgets/dashboard/GalleryCard";
-import Filter from "../../components/ui/filter";
+import GalleryCard from "@ui/components/widgets/dashboard/GalleryCard";
 
 const fake_bookmarks = [
   {
@@ -30,7 +29,7 @@ const DashboardView = () => (
     <h1 className="text-cyan-700 font-sans text-5xl m-9 text-center font-thin">
       Dashboard page
     </h1>
-    <Filter/>
+
     <div className="flex flex-row flex-wrap justify-center gap-5 w-70vw p-5 border-black bg-slate-600 rounded-lg ">
       {fake_bookmarks.map((bookmark) => (
         <GalleryCard bookmark={bookmark} onclick={handleCardClick} />
