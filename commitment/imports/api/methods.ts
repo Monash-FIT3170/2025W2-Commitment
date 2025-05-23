@@ -7,15 +7,23 @@ import { LinksCollection, Link } from './links';
 import { repoInDatabase } from "./call_repo"
 
 Meteor.methods({
-    'links.insert'(title: string, url: string) {
-    check(title, String);
-    check(url, String);
+    /**
+     * Inserts a new link into the LinksCollection.
+     *
+     * @method links.insert
+     * @param {string} title - The title of the link.
+     * @param {string} url - The URL of the link. Must start with 'http' or 'https'.
+     * @returns {Promise<string>} The ID of the newly inserted link document.
+     * @throws {Meteor.Error} If the URL is invalid or does not start with 'http'.
+     */
+    async 'links.insert'(title: string, url: string) {
+        check(title, String);
+        check(url, String);
 
-    if (!url.startsWith('http')) {
-        throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
-    }
+        if (!url.startsWith('http')) {
+            throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
+        }
 
-<<<<<<< HEAD
         const inDatabase = repoInDatabase(url)
         if (!inDatabase) Promise.reject(new Error(`URL does not exist inside database: ${url}`))
 
@@ -26,29 +34,39 @@ Meteor.methods({
         };
 
         return LinksCollection.insertAsync(newLink);
-=======
-    const newLink: Link = {
-        title,
-        url,
-        createdAt: new Date(),
-    };
-
-    return LinksCollection.insertAsync(newLink);
->>>>>>> parent of 475240b (feat(bookmark): integrate shadcn UI components and add BookmarkButton test)
     },
-    
-    'links.remove'(linkId: string) {
-        check(linkId, String);
-        const link = LinksCollection.findOneAsync(linkId);
+
+    /**
+     * Removes a link from the LinksCollection by its URL.
+     *
+     * @method links.remove
+     * @param {string} url - The URL of the link to be removed.
+     * @returns {Promise<number>} The number of documents removed (should be 1 if successful).
+     * @throws {Meteor.Error} If no link with the given URL is found.
+     */
+    async 'links.remove'(url: string) {
+        check(url, String);
+        
+        const link = await LinksCollection.findOneAsync({ url: url });
+        
         if (!link) {
             throw new Meteor.Error('link-not-found', 'Link not found');
         }
-        LinksCollection.removeAsync(linkId);
+
+        const result = LinksCollection.removeAsync(link._id);
+        return result;
     },
 
-    'links.isBookmarked'(url: string) {
+    /**
+     * Checks whether a link with the given URL exists in the LinksCollection.
+     *
+     * @method links.isBookmarked
+     * @param {string} url - The URL to check.
+     * @returns {Promise<boolean>} True if the URL is bookmarked, false otherwise.
+     */
+    async 'links.isBookmarked'(url: string) {
         check(url, String);
-        const link = LinksCollection.findOneAsync({ url });
-        return !!link;  
+        const link = await LinksCollection.findOneAsync({ url });
+        return !!link;
     },
 });
