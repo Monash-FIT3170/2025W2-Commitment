@@ -1,6 +1,6 @@
 import React from "react";
 import { useFind, useSubscribe } from "meteor/react-meteor-data";
-import { LinksCollection, Link } from "/imports/api/links";
+import { LinksCollection, Link } from "../api/links";
 import {Card, CardContent, CardHeader, CardTitle} from "@ui/components/ui/card";
 import {Button} from "@ui/components/ui/button";
 

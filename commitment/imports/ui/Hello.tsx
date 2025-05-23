@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import {Card} from '@ui/components/ui/card';
+import {Card} from './components/ui/card';
+import {Button} from "/imports/ui/components/ui/button";
 import {CardContent} from "@ui/components/ui/card";
-import { Button } from '@ui/components/ui/button';
 
 export const Hello = () => {
   const [counter, setCounter] = useState(0);
