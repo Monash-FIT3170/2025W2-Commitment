@@ -3,6 +3,8 @@ import { Meteor } from "meteor/meteor";
 import LoadingBar from "@ui/components/Loading-page/LoadingBar";
 import TipBox from "@ui/components/Loading-page/TipBox";
 import NavBar from "@ui/components/landing-page/NavBar";
+import { useLocation } from 'react-router-dom';
+
 
 declare global {
   interface Window {
@@ -14,7 +16,14 @@ interface LoadingPageProps {
   darkMode?: boolean;
 }
 
+interface LocationState {
+  repoUrl?: string;
+}
+
 const LoadingPage: React.FC<LoadingPageProps> = ({ darkMode = false }) => {
+  const location = useLocation();
+  const { repoUrl } = location.state as LocationState;
+
   const [progress, setProgress] = useState(0);
   const [tipIndex, setTipIndex] = useState(0);
   const tips = [
@@ -54,7 +63,7 @@ const LoadingPage: React.FC<LoadingPageProps> = ({ darkMode = false }) => {
   return (
     <div className={containerClasses}>
       <div className="w-full fixed top-0 left-0 z-10">
-        <NavBar />
+        <NavBar isLoggedIn={!!Meteor.userId()} />
       </div>
       <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
         <h2 className="text-3xl font-inconsolata-bold mb-6">
