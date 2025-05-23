@@ -17,7 +17,7 @@ Meteor.publish('fetchRepoMessages', function () {
     const subject = clientMessageStreams[connectionId]
 
     // Send message manually when .next() is called
-    const subscription = subject.subscribe((msg: string) => self.changed(
+    const subscription = subject.subscribe((msg: string) => this.changed(
         'fetchRepoMessagesCollection', 
         connectionId, 
         {
@@ -37,7 +37,7 @@ Meteor.publish('fetchRepoMessages', function () {
 Meteor.methods({
     async "getGitHubRepoData" (repoUrl: string) {
         // gets the current connection id to identify the stream the updates should be sent to
-        const connectionId = this.connection.id
+        const connectionId = this.connection!.id
         const sub = clientMessageStreams[connectionId]
 
         // ensures a not null value is returned and a valid subject is used in some capacity
