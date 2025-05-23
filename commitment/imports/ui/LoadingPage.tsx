@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Meteor } from "meteor/meteor";
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { Subject } from "rxjs";
 
 import LoadingBar from "@ui/components/Loading-page/LoadingBar";
@@ -13,10 +13,11 @@ interface LocationState {
 }
 
 const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => {
+  const navigate = useNavigate();
   const { state } = useLocation();
   const { repoUrl } = (state as LocationState) || {};
 
-  // Notifier message replaces the header
+  // Notifier message replaces header
   const [message, setMessage] = useState<string>("Starting…");
 
   // Rotating tips
@@ -29,7 +30,6 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
 
   // Progress bar state
   const [progress, setProgress] = useState<number>(0);
-  const [done, setDone] = useState<boolean>(false);
 
   // Rotate tips every 4s
   useEffect(() => {
@@ -39,7 +39,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
     return () => Meteor.clearInterval(id);
   }, []);
 
-  
+  // Fetch repository data and stream notifier
   useEffect(() => {
     if (!repoUrl) return;
 
@@ -48,30 +48,32 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
 
     fetchRepo(repoUrl, notifier)
       .then(() => {
-        notifier.next("Repository data loaded!");
+        notifier.next("✅ Repository data loaded!");
         setProgress(100);
       })
       .catch(err => {
-        notifier.next(`Error: ${err}`);
-      })
-      .finally(() => {
-        setDone(true);
-        sub.unsubscribe();
+        notifier.next(` ${err}`);
+        // Wait 10 seconds to let user read the error, then redirect back
+        setTimeout(() => {
+          navigate("/insert-git-repo", { replace: true });
+        }, 10000);
       });
 
     return () => {
       sub.unsubscribe();
       notifier.complete();
     };
-  }, [repoUrl]);
+  }, [repoUrl, navigate]);
 
-  // Redirect if no repoUrl
-  if (!repoUrl) return <Navigate to="/" replace />;
+  // If no repo URL provided, redirect immediately
+  if (!repoUrl) return <Navigate to="/insert-git-repo" replace />;
 
   const containerClasses = [
     darkMode ? "dark" : "",
     "min-h-screen bg-background text-foreground",
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={containerClasses}>
@@ -88,15 +90,6 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
 
         {/* Rotating tips */}
         <TipBox tip={tips[tipIndex]} />
-
-        {done && (
-          <button
-            className="mt-8 px-4 py-2 bg-primary text-primary-foreground rounded"
-            onClick={() => {/* navigate onward */}}
-          >
-            Continue
-          </button>
-        )}
       </div>
     </div>
   );
