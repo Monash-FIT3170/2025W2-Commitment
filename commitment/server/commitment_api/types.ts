@@ -17,6 +17,7 @@ export type BranchData = Readonly<{
 // make a kind of commit where you have a snapshot of all contributors per line
 export type CommitData = Readonly<{
     commitHash: string
+    commitTitle: string
     contributorName: string
     description: string
     timestamp: Date
