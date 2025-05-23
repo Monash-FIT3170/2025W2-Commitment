@@ -1,7 +1,6 @@
 import { CommandResult, successful } from "./command"
 import { last } from "./helpers"
 import { 
-    ContributorData, 
     FileChanges,
     ChangeData,
     ChangeType,
