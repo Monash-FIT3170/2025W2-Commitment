@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { LinksCollection, Link } from './links';
 
-import { repoInDatabase } from "client/call_repo"
+import { repoInDatabase } from "./call_repo"
 
 Meteor.methods({
     /**
