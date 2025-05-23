@@ -35,7 +35,7 @@ Meteor.publish('fetchRepoMessages', function () {
 
 
 Meteor.methods({
-    async getGitHubRepoData(repoUrl: string) {
+    async "getGitHubRepoData" (repoUrl: string) {
         // gets the current connection id to identify the stream the updates should be sent to
         const connectionId = this.connection.id
         const sub = clientMessageStreams[connectionId]
