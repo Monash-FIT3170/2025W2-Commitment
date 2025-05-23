@@ -1,3 +1,5 @@
+import { Subject } from "rxjs"
+
 import React, { useEffect, useState } from 'react';
 import { Button } from '@ui/components/ui/button';
 import {
@@ -14,6 +16,7 @@ import {
 import { useToast } from '@ui/hooks/use-toast';
 import { Meteor } from 'meteor/meteor';
 import { Bookmark } from 'lucide-react';
+import { fetchRepo, repoInDatabase } from '/client/call_repo';
 
 /**
  * BookmarkRepoButton Component
@@ -61,7 +64,7 @@ const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title }) =
     }, [url]);
 
     // Adds the bookmark via Meteor method
-    const handleAddBookmark = () => {
+    const handleAddBookmark = async () => {
         // Input validation
         if (!url || !title) {
             toast({
@@ -70,6 +73,23 @@ const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title }) =
                 variant: 'destructive',
             });
             return;
+        }
+
+        // checks if a repo data struct is already in the database (not links collection)
+        // if not, prompt the server to cache it in using the API server calls.
+        if (!repoInDatabase(url)) {
+
+            const updateNotifier = new Subject<string>()
+            const repoCached = await fetchRepo(url, updateNotifier)
+
+            if (!repoCached) {
+                toast({
+                    title: 'Error',
+                    description: 'Failed to load url into database as it did not already exist',
+                    variant: 'destructive',
+                });
+                return;
+            }
         }
 
         Meteor.call('links.insert', title, url, (err: any) => {
