@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Subject } from "rxjs"
 
-import { getRepoData } from "../server/caching"
+import { isInDatabase, getRepoData } from "../server/caching"
 
 const clientMessageStreams: Record<string, Subject<string>> = {}
 
@@ -52,4 +52,8 @@ Meteor.methods({
             return false
         }
     }
+})
+
+Meteor.methods({
+    async "repoInDatabase" (repoUrl: string) { return isInDatabase(repoUrl) } 
 })

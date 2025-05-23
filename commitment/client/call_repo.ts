@@ -17,9 +17,18 @@ export const fetchRepo = (url: string, subject: Subject<string>) => {
     })
 
     // Call the server method to start data retrieval
-    return new Promise((resolve, reject) => {
-        Meteor.call('getGitHubRepoData', url, (err, result) => {
-            if (err) reject(err)
+    return new Promise<boolean>((resolve, reject) => {
+        Meteor.call('getGitHubRepoData', url, (err: Error, result: boolean) => {
+            if (err) reject(err)    
+            resolve(result)
+        });
+    })
+}
+
+export const repoInDatabase = async (url: string) => {
+    return new Promise<boolean>((resolve, reject) => {
+        Meteor.call('repoInDatabase', url, (err: Error, result: boolean) => {
+            if (err) reject(err)    
             resolve(result)
         });
     })

@@ -1,6 +1,10 @@
+import { Subject } from "rxjs"
+
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { LinksCollection, Link } from './links';
+
+import { repoInDatabase } from "client/call_repo"
 
 Meteor.methods({
     /**
@@ -20,13 +24,16 @@ Meteor.methods({
             throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
         }
 
+        const inDatabase = repoInDatabase(url)
+        if (!inDatabase) Promise.reject(new Error(`URL does not exist inside database: ${url}`))
+
         const newLink: Link = {
             title,
             url,
             createdAt: new Date(),
         };
 
-        return await LinksCollection.insertAsync(newLink);
+        return LinksCollection.insertAsync(newLink);
     },
 
     /**
