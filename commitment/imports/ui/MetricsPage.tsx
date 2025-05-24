@@ -14,6 +14,8 @@ const metricsPageDescription =
 // DUMMY DATA
 const dummyUsers = ["Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Helen"];
 
+import {GitHubContribPie, generateDummyGitHubData} from "./components/ui/pieChart";
+
 const dummyBranches = [
   "main",
   "development",
@@ -50,6 +52,8 @@ export const generateRandomContributions = (
 
   return data;
 };
+
+const dummyData = generateDummyGitHubData(8);
 
 // DUMMY DATA ENDS
 
@@ -108,7 +112,9 @@ export const MetricsPage = () => {
               maxUsersToShow={24} //We need to stop at some point
               title="Heat Map" //If we're representing more than a single metric of heatmap - may need description as input
             />
+            <GitHubContribPie data={dummyData} />
           </div>
+            
         </div>
       </div>
     </div>
