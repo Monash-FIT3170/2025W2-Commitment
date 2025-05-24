@@ -24,7 +24,7 @@ const dummyBranches = [
   "release/v1.2",
 ];
 
-
+const graphBackgroundColour = "#E8E8DD"
 
 export const generateRandomContributions = (
   startDate: Date,
@@ -101,19 +101,24 @@ export const MetricsPage = () => {
             </div>
           </div>
 
-          <div className="mt-16">
-            <p className="text-gray-700">This div is for Arosh</p>
+          <div className="mt-16 flex flex-row flex-nowrap items-start gap-6">
+  <div className="w-max outline outline-3 outline-black rounded-2xl p-2 "style={{backgroundColor: graphBackgroundColour}}>
+    <UserContributionHeatMap
+      data={data}
+      startDate={startDate}
+      endDate={endDate}
+      maxUsersToShow={24}
+      title="Heat Map"
+    />
+  </div>
 
-            {/* Implementation of HeatMap */}
-            <UserContributionHeatMap
-              data={data}   //from dummy data
-              startDate={startDate} //from date picker
-              endDate={endDate}     //from date picker
-              maxUsersToShow={24} //We need to stop at some point
-              title="Heat Map" //If we're representing more than a single metric of heatmap - may need description as input
-            />
-            <GitHubContribPie data={dummyData} />
-          </div>
+  <div className="flex-shrink-0 outline outline-3 outline-black rounded-2xl p-2" style={{backgroundColor: graphBackgroundColour}}>
+    <GitHubContribPie data={dummyData} />
+  </div>
+</div>
+
+
+
             
         </div>
       </div>

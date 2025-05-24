@@ -65,7 +65,7 @@ const CustomTooltip = ({
 /* ---------- pie chart component ---------- */
 export function GitHubContribPie({ data }: Props) {
   return (
-    <Card className="flex flex-col max-w-md mx-auto" style={{ backgroundColor: "graphBackgroundColour" }}>
+    <Card className="flex flex-col max-w-md mx-auto" style={{ backgroundColor: graphBackgroundColour }}>
 
 
       <CardHeader className="items-center pb-0">

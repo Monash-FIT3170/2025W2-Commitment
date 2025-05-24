@@ -28,12 +28,14 @@ const heatMapDescription = "Gain a visual insight on how contributors are perfor
 
 // FIX: When the Product Managers define the colours in the system, use those instead of cardcoding
 const levels = [
-  "bg-gray-200",
-  "bg-orange-200",
-  "bg-orange-400",
+  "bg-orange-200", 
+  "bg-orange-300",
+  "bg-orange-500",
   "bg-orange-600",
   "bg-orange-800",
 ];
+
+const graphBackgroundColour = "#E8E8DD"
 
 // Applying normalisation to the data -> the gradient is represented by the value
 const getLevelClassNormalized = (ratio: number) => {
@@ -178,18 +180,20 @@ export default function UserContributionHeatMap({
   return (
 //   The things actually in this component
   <div
-      className="bg-[#E8E8DD] rounded border p-6 overflow-x-auto"
+  
+      className="rounded border p-6 overflow-x-auto  "  //could be issue here with padding
       style={{
         maxWidth: "fit-content",  // limit width to content width
+        backgroundColor: graphBackgroundColour
       }}
     >
       {title && (
     
-    <div className="flex items-center space-x-2 w-4/5">
+    <div className="flex items-center space-x-2 w-4/5 " >
         <h2 className="text-lg font-bold text-gray-800">{title}</h2>
 
         {/* Special margin for the infoButton to get it centred */}
-        <div className="relative -mt-2">
+        <div className="relative -mt-2 ">
             <InfoButton description={heatMapDescription} />
         </div>
     </div>
@@ -206,12 +210,12 @@ export default function UserContributionHeatMap({
           gridTemplateRows,
           gap: `${spacing}px ${spacing}px`,
           boxSizing: "border-box",
-          padding: "1.5rem",
+          padding: "0",
           border: "1px solid #e5e7eb",
           borderRadius: "0.375rem",
           width: "fit-content",
           maxWidth: "100%",
-          backgroundColor: "white",  // keep heatmap itself white
+          backgroundColor: graphBackgroundColour,  // keep heatmap itself white
         }}
       >
 
@@ -226,7 +230,7 @@ export default function UserContributionHeatMap({
             lineHeight: `${cellSize}px`,
             overflow: "hidden",
           }}
-          className="text-sm text-gray-700 truncate font-semibold"
+          className="text-sm text-gray-700 truncate font-semibold "
           title={user}
         >
           {user}
@@ -241,7 +245,7 @@ export default function UserContributionHeatMap({
           return (
             <div
               key={`${user}-${colIdx}`}
-              className={`rounded-sm cursor-default ${getLevelClassNormalized(
+              className={`rounded-sm cursor-default  ${getLevelClassNormalized(
                 ratio
               )}`}
               style={{
