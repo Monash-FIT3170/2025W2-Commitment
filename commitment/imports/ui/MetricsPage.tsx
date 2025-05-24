@@ -111,8 +111,9 @@ export const MetricsPage = () => {
 
           <div className="mt-16 flex flex-row flex-nowrap items-start gap-6">
             <div
-              className="w-max outline outline-4 outline-black rounded-2xl p-2"
-              style={{ backgroundColor: graphBackgroundColour }}
+              className="w-max outline outline-2 rounded-2xl p-2" 
+              style={{ backgroundColor: graphBackgroundColour, borderColor: "#353531"}}
+              
             >
               <UserContributionHeatMap
                 data={data}
@@ -124,8 +125,8 @@ export const MetricsPage = () => {
             </div>
 
             <div
-              className="flex-shrink-0 outline outline-4 outline-black rounded-2xl p-2"
-              style={{ backgroundColor: graphBackgroundColour }}
+              className="flex-shrink-0 outline outline-2 rounded-2xl p-2"
+              style={{ backgroundColor: graphBackgroundColour, borderColor: "#353531"}}
             >
               <ContributionPieChart data={pieChartData} />
             </div>

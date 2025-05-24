@@ -44,16 +44,17 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
         <Button
         variant="outline"
         className={cn(
-            "w-[280px] justify-start text-left font-normal border-2 border-black rounded-xl",
+            "w-[280px] justify-start text-left font-normal border-2 rounded-xl",
             !date && "text-muted-foreground"
         )}
+        style={{ borderColor: "#353531" }}
         >
         <CalendarIcon className="mr-2 h-4 w-4" />
         {formattedRange}
         </Button>
 
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-2 border-black" align="start">
+      <PopoverContent className="w-auto p-0 border-2" style={{ borderColor: "#252522" }} align="start">
         <Calendar
           initialFocus
           mode="range"

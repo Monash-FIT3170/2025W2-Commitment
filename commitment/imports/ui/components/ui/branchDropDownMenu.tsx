@@ -25,14 +25,14 @@ export function BranchDropDownMenu({ branches }: DropdownMenuCheckboxesProps) {
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline"
-          className="w-[280px] justify-start focus:outline-none focus:ring-0 border-2 border-black"
+          className="w-[280px] justify-start focus:outline-none focus:ring-0 border-2 " style={{ borderColor: "#353531" }}
         >
           {selectedBranch ?? "Select a branch"}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[280px] focus:outline-none focus:ring-0 border-2 border-black">
+      <DropdownMenuContent className="w-[280px]  focus:ring-0 border-2" style={{ borderColor: "#252522" }}>
         {/* <DropdownMenuLabel>Select Branch</DropdownMenuLabel> */}
-        <DropdownMenuSeparator />
+        {/* <DropdownMenuSeparator /> */}
         {branches.map(branch => (
           <DropdownMenuCheckboxItem
             key={branch}

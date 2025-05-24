@@ -40,6 +40,8 @@ const dark2 = [
   "#e7298a", 
 ]
 
+const pieChartDescription = "Who's got the largest slice? Definitely committed!"
+
 // For pop up
 const CustomTooltip = ({
   active,
@@ -70,17 +72,16 @@ const CustomTooltip = ({
 // Main Pie Chart
 export function ContributionPieChart({ data }: Props) {
   return (
-    <Card className="flex flex-col max-w-md mx-auto" style={{ backgroundColor: graphBackgroundColour }}>
-
+<Card className="flex flex-col max-w-md mx-auto shadow-none ring-0 border-0 outline-none" style={{ backgroundColor: graphBackgroundColour }} >
 
       <CardHeader className="items-center pb-0">
 
         <div className="flex items-center space-x-2 w-4/5">
-                <h2 className="text-lg font-bold text-gray-800">{"GitHub Contributions"}</h2>
+                <h2 className="text-lg font-bold text-gray-800">{"Pie Chart"}</h2>
 
                 {/* Special margin for the infoButton to get it centred */}
                 <div className="relative -mt-2">
-                    <InfoButton description={"Contributions"} />
+                    <InfoButton description={pieChartDescription} />
                 </div>
         </div>
 
@@ -89,16 +90,16 @@ export function ContributionPieChart({ data }: Props) {
 
       <CardContent className="flex flex-col items-center gap-4">
         {/* Pie */}
-        <PieChart width={260} height={260}>
+        <PieChart width={300} height={300} >
             <Pie
                 data={data}
                 dataKey="contributions"
                 nameKey="user"
                 cx="50%"
                 cy="50%"
-                outerRadius={90}
+                outerRadius={110}
                 stroke="none"
-                isAnimationActive
+                isAnimationActive={true}
                 animationDuration={800}
                 labelLine={false}
             >
@@ -106,10 +107,10 @@ export function ContributionPieChart({ data }: Props) {
                 <Cell
                     key={`cell-${i}`}
                     fill={entry.fill}
-                    stroke={entry.fill}
-                    strokeWidth={1}
+                    stroke="none"
                 />
                 ))}
+
             </Pie>
         <Tooltip content={<CustomTooltip />} wrapperStyle={{ outline: "none" }} />
 
