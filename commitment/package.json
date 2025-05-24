@@ -10,9 +10,11 @@
   "dependencies": {
     "@babel/runtime": "^7.20.7",
     "@radix-ui/react-accordion": "^1.2.8",
+    "@radix-ui/react-alert-dialog": "^1.1.13",
     "@radix-ui/react-navigation-menu": "^1.2.12",
     "@radix-ui/react-separator": "^1.1.6",
     "@radix-ui/react-slot": "^1.2.2",
+    "@radix-ui/react-toast": "^1.2.13",
     "@tailwindcss/postcss": "^4.1.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -28,6 +30,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@types/meteor": "^2.9.8",
     "@types/mocha": "^8.2.3",
     "@types/node": "^18.13.0",
     "@types/react": "^18.0.26",
