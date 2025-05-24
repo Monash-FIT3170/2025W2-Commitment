@@ -42,17 +42,18 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          className={cn(
-            "w-[280px] justify-start text-left font-normal",
+        variant="outline"
+        className={cn(
+            "w-[280px] justify-start text-left font-normal border-2 border-black rounded-xl",
             !date && "text-muted-foreground"
-          )}
+        )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {formattedRange}
+        <CalendarIcon className="mr-2 h-4 w-4" />
+        {formattedRange}
         </Button>
+
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0 border-2 border-black" align="start">
         <Calendar
           initialFocus
           mode="range"
@@ -67,6 +68,7 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
               "rounded-l-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
             day_range_end:
               "rounded-r-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
+            
           }}
         />
       </PopoverContent>

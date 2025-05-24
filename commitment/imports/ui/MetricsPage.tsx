@@ -95,14 +95,14 @@ export const MetricsPage = () => {
 
 
             </div>
-            <div className="absolute -top-12 left-[55%]">
+            <div className="absolute -top-12 left-[55%] ">
               <p className="text-sm mb-1 text-gray-600">Branch*</p>
               <BranchDropDownMenu branches={dummyBranches} />
             </div>
           </div>
 
           <div className="mt-16 flex flex-row flex-nowrap items-start gap-6">
-  <div className="w-max outline outline-3 outline-black rounded-2xl p-2 "style={{backgroundColor: graphBackgroundColour}}>
+  <div className="w-max outline outline-4 outline-black rounded-2xl p-2 "style={{backgroundColor: graphBackgroundColour}}>
     <UserContributionHeatMap
       data={data}
       startDate={startDate}
@@ -112,7 +112,7 @@ export const MetricsPage = () => {
     />
   </div>
 
-  <div className="flex-shrink-0 outline outline-3 outline-black rounded-2xl p-2" style={{backgroundColor: graphBackgroundColour}}>
+  <div className="flex-shrink-0 outline outline-4 outline-black rounded-2xl p-2" style={{backgroundColor: graphBackgroundColour}}>
     <GitHubContribPie data={dummyData} />
   </div>
 </div>
