@@ -50,15 +50,22 @@ const CustomTooltip = ({
 }) => {
   if (!active || !payload || !payload.length) return null
 
-  const { user, contributions } = payload[0].payload
+  const { user, contributions, fill } = payload[0].payload
 
   return (
-    <div className="rounded-md border bg-white px-3 py-2 text-sm shadow-md text-muted-foreground">
-      <div className="font-semibold">{user}</div>
+    <div className="rounded-md border-2 border-black bg-white px-3 py-2 text-sm shadow-md text-muted-foreground ">
+      <div className="flex items-center gap-2 font-semibold">
+        <span
+          className="inline-block h-3 w-3 rounded-sm"
+          style={{ backgroundColor: fill }}
+        />
+        {user}
+      </div>
       <div>{contributions} contributions</div>
     </div>
   )
 }
+
 
 // Main Pie Chart
 export function ContributionPieChart({ data }: Props) {
