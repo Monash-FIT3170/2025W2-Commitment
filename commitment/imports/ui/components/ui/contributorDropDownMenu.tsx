@@ -23,8 +23,6 @@ export function ContributorDropDownMenu({
   const [selectedContributors, setContributors] =
     React.useState<string[]>(contributors);
 
-  const [isOpen, setIsOpen] = React.useState(false);
-
   const allSelected =
     selectedContributors.length === contributors.length &&
     contributors.length > 0;
@@ -48,7 +46,7 @@ export function ContributorDropDownMenu({
   };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -63,6 +61,7 @@ export function ContributorDropDownMenu({
         <ScrollArea className="h-48">
           {contributors.map((contributors) => (
             <DropdownMenuCheckboxItem
+              onSelect={(event) => event.preventDefault()}
               key={contributors}
               checked={selectedContributors.includes(contributors)}
               onCheckedChange={(checked) => {
