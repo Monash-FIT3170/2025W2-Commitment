@@ -30,15 +30,17 @@ interface Props {
 const graphBackgroundColour = "#E8E8DD"
 
 const dark2 = [
-  "#1b9e77", // teal‑green
-  "#d95f02", // orange
-  "#66a61e", // lime‑green
-  "#e6ab02", // yellow‑orange
-  "#a6761d", // brown‑orange
-  "#666666", // grey
-  "#7570b3", // purple
-  "#e7298a", // pink
+  "#1b9e77", 
+  "#d95f02", 
+  "#66a61e", 
+  "#e6ab02", 
+  "#a6761d", 
+  "#666666", 
+  "#7570b3", 
+  "#e7298a", 
 ]
+
+// For pop up
 const CustomTooltip = ({
   active,
   payload,
@@ -58,18 +60,13 @@ const CustomTooltip = ({
   )
 }
 
-
-
-
-
-/* ---------- pie chart component ---------- */
-export function GitHubContribPie({ data }: Props) {
+// Main Pie Chart
+export function ContributionPieChart({ data }: Props) {
   return (
     <Card className="flex flex-col max-w-md mx-auto" style={{ backgroundColor: graphBackgroundColour }}>
 
 
       <CardHeader className="items-center pb-0">
-
 
         <div className="flex items-center space-x-2 w-4/5">
                 <h2 className="text-lg font-bold text-gray-800">{"GitHub Contributions"}</h2>
@@ -80,42 +77,40 @@ export function GitHubContribPie({ data }: Props) {
                 </div>
         </div>
 
-
-
-        <CardDescription>Last 6 months</CardDescription>
+        {/* <CardDescription>Last 6 months</CardDescription> */}
       </CardHeader>
 
       <CardContent className="flex flex-col items-center gap-4">
         {/* Pie */}
         <PieChart width={260} height={260}>
-  <Pie
-    data={data}
-    dataKey="contributions"
-    nameKey="user"
-    cx="50%"
-    cy="50%"
-    outerRadius={90}
-    stroke="none"
-    isAnimationActive
-    animationDuration={800}
-    labelLine={false}
-  >
-    {data.map((entry, i) => (
-      <Cell
-        key={`cell-${i}`}
-        fill={entry.fill}
-        stroke={entry.fill}
-        strokeWidth={1}
-      />
-    ))}
-  </Pie>
-  <Tooltip content={<CustomTooltip />} wrapperStyle={{ outline: "none" }} />
+            <Pie
+                data={data}
+                dataKey="contributions"
+                nameKey="user"
+                cx="50%"
+                cy="50%"
+                outerRadius={90}
+                stroke="none"
+                isAnimationActive
+                animationDuration={800}
+                labelLine={false}
+            >
+                {data.map((entry, i) => (
+                <Cell
+                    key={`cell-${i}`}
+                    fill={entry.fill}
+                    stroke={entry.fill}
+                    strokeWidth={1}
+                />
+                ))}
+            </Pie>
+        <Tooltip content={<CustomTooltip />} wrapperStyle={{ outline: "none" }} />
 
-</PieChart>
+        </PieChart>
 
 
         {/* Legend */}
-        {/* <div className="w-full flex justify-center">
+        <div className="w-full flex justify-center">
         <ul className="inline-flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
         {data.map((entry, i) => (
         <li
@@ -130,7 +125,7 @@ export function GitHubContribPie({ data }: Props) {
         </li>
         ))}
         </ul>
-        </div> */}
+        </div>
 
       </CardContent>
 
@@ -147,7 +142,7 @@ export function GitHubContribPie({ data }: Props) {
   )
 }
 
-/* ---------- dummy‑data generator ---------- */
+//Dummy Data Generator
 export function generateDummyGitHubData(count: number): ChartEntry[] {
   return Array.from({ length: count }, (_, i) => ({
     user: `user${i + 1}`,

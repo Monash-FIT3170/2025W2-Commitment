@@ -7,14 +7,13 @@ import InfoButton from "./components/ui/infoButton";
 import { DateRangePicker } from "./components/ui/datePicker";
 import { BranchDropDownMenu } from "./components/ui/branchDropDownMenu";
 import UserContributionHeatMap from "./components/ui/heatmap";
+import { ContributionPieChart } from "./components/ui/pieChart";
+import {dark2} from "./components/ui/colors";
 
 const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
 
-// DUMMY DATA
 const dummyUsers = ["Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Helen"];
-
-import {GitHubContribPie, generateDummyGitHubData} from "./components/ui/pieChart";
 
 const dummyBranches = [
   "main",
@@ -24,7 +23,7 @@ const dummyBranches = [
   "release/v1.2",
 ];
 
-const graphBackgroundColour = "#E8E8DD"
+const graphBackgroundColour = "#E8E8DD";
 
 export const generateRandomContributions = (
   startDate: Date,
@@ -53,9 +52,19 @@ export const generateRandomContributions = (
   return data;
 };
 
-const dummyData = generateDummyGitHubData(8);
+const transformToPieChartData = (data: any[]) => {
+  const userTotals: Record<string, number> = {};
 
-// DUMMY DATA ENDS
+  for (const entry of data) {
+    userTotals[entry.name] = (userTotals[entry.name] || 0) + entry.count;
+  }
+
+  return Object.entries(userTotals).map(([user, contributions], i) => ({
+    user,
+    contributions,
+    fill: dark2[i % dark2.length],
+  }));
+};
 
 export const MetricsPage = () => {
   const today = new Date();
@@ -68,6 +77,7 @@ export const MetricsPage = () => {
   const endDate = dateRange.to!;
 
   const data = useMemo(() => generateRandomContributions(startDate, endDate), [startDate, endDate]);
+  const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
 
   return (
     <div className="m-0 scroll-smooth">
@@ -86,15 +96,13 @@ export const MetricsPage = () => {
             <div className="absolute -top-12 left-[28%]">
               <p className="text-sm mb-1 text-gray-600">Date Range*</p>
               <DateRangePicker
-            defaultValue={dateRange}
-            onChange={(range) => {
-                if (range) setDateRange(range);
-            }}
-            />
-
-
-
+                defaultValue={dateRange}
+                onChange={(range) => {
+                  if (range) setDateRange(range);
+                }}
+              />
             </div>
+
             <div className="absolute -top-12 left-[55%] ">
               <p className="text-sm mb-1 text-gray-600">Branch*</p>
               <BranchDropDownMenu branches={dummyBranches} />
@@ -102,24 +110,26 @@ export const MetricsPage = () => {
           </div>
 
           <div className="mt-16 flex flex-row flex-nowrap items-start gap-6">
-  <div className="w-max outline outline-4 outline-black rounded-2xl p-2 "style={{backgroundColor: graphBackgroundColour}}>
-    <UserContributionHeatMap
-      data={data}
-      startDate={startDate}
-      endDate={endDate}
-      maxUsersToShow={24}
-      title="Heat Map"
-    />
-  </div>
+            <div
+              className="w-max outline outline-4 outline-black rounded-2xl p-2"
+              style={{ backgroundColor: graphBackgroundColour }}
+            >
+              <UserContributionHeatMap
+                data={data}
+                startDate={startDate}
+                endDate={endDate}
+                maxUsersToShow={24}
+                title="Heat Map"
+              />
+            </div>
 
-  <div className="flex-shrink-0 outline outline-4 outline-black rounded-2xl p-2" style={{backgroundColor: graphBackgroundColour}}>
-    <GitHubContribPie data={dummyData} />
-  </div>
-</div>
-
-
-
-            
+            <div
+              className="flex-shrink-0 outline outline-4 outline-black rounded-2xl p-2"
+              style={{ backgroundColor: graphBackgroundColour }}
+            >
+              <ContributionPieChart data={pieChartData} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
