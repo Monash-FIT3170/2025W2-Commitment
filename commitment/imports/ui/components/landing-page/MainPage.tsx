@@ -1,5 +1,5 @@
 import React from "react";
-import GetStartedButton from "../ui/getStartedButton";
+import GetStartedButton from "../common/getStartedButton";
 
 const MainPage = () => (
   <div className="flex flex-col gap-6 mb-32 ">
@@ -17,7 +17,7 @@ const MainPage = () => (
   </div>
 );
 
-const Logo = () => (
+export const Logo = () => (
   <div className="flex flex-row items-center">
     <img src="/logo.png" alt="Logo" className="-mr-7 w-[120px] h-auto" />
     <p className="text-8xl text-gray-700 ">Commitment</p>
