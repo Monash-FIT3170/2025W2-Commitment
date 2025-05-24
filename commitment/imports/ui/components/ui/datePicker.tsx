@@ -47,7 +47,7 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
             "w-[280px] justify-start text-left font-normal border-2 rounded-xl",
             !date && "text-muted-foreground"
         )}
-        style={{ borderColor: "#353531" }}
+        style={{ borderColor: "#35353140" }}
         >
         <CalendarIcon className="mr-2 h-4 w-4" />
         {formattedRange}
