@@ -5,7 +5,7 @@ import { cn } from "@ui/lib/utils";
 import LastSavedRepos from '@ui/components/insert-git-repo/LastSavedRepos';
 import GitRepoInputSection from '@ui/components/insert-git-repo/GitRepoInputSection';
 
-const InsertGitRepo = () => {
+const InsertGitRepoView: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(true); // use this to test the logged in state
     //const [isLoggedIn, setIsLoggedIn] = useState(false); // use this to test the logged out state
 
@@ -33,4 +33,4 @@ const InsertGitRepo = () => {
     )
 }
 
-export default InsertGitRepo;
+export default InsertGitRepoView;

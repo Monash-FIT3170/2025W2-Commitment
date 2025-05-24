@@ -21,7 +21,9 @@ const GitRepoInputSection = () => {
         if (githubHttpsRegex.test(cleanUrl) || githubSshRegex.test(cleanUrl)) {
             return null; // URL is valid
         } else {
-            return "Invalid GitHub repository link format. Please use HTTPS (e.g., https://github.com/user/repo or https://github.com/user/repo.git) or SSH (e.g., git@github.com:user/repo.git) format.";
+            return "Invalid GitHub repository link format. Please use one of these formats:\n" +
+                   "- HTTPS: https://github.com/username/repo or https://github.com/username/repo.git\n" +
+                   "- SSH: git@github.com:username/repo.git";
         }
     };
 

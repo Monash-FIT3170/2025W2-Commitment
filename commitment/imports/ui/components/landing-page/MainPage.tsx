@@ -1,5 +1,5 @@
 import React from "react";
-import GetStartedButton from "../ui/getStartedButton";
+import GetStartedButton from "../common/getStartedButton";
 
 const MainPage = () => (
   <div className="flex flex-col gap-6 mb-32 ">
