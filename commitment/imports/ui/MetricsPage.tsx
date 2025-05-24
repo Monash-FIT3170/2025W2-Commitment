@@ -4,6 +4,8 @@ import InfoButton from "./components/ui/infoButton";
 import { DateRangePicker } from "./components/ui/datePicker";
 import { BranchDropDownMenu } from "./components/ui/branchDropDownMenu";
 
+import {GitHubContribPie, generateDummyGitHubData} from "./components/ui/pieChart";
+
 const dummyBranches = [
   "main",
   "development",
@@ -13,6 +15,8 @@ const dummyBranches = [
 ]
 
 const metricsPageDescription = "This page gives an overview of key metrics and performance trends."
+
+const dummyData = generateDummyGitHubData(8);
 
 export const MetricsPage = () => (
   <div className="m-0 scroll-smooth">
@@ -43,6 +47,7 @@ export const MetricsPage = () => (
 
             <div className="mt-16">
                 <p className="text-gray-700">This div is for Arosh</p>
+                <GitHubContribPie data={dummyData} />
             </div>
         </div>
     </div>
