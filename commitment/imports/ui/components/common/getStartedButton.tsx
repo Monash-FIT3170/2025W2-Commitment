@@ -14,7 +14,7 @@ const GetStartedButton: React.FC<GetStartedButtonProps> = ({
 
   return (
     <Button 
-      onClick={() => navigate('/insert-git-repo')}
+      onClick={() => navigate('/home')}
       className={cn("w-[341px] h-auto text-[36px] rounded-full text-center bg-[#F1502F] hover:bg-[#F1502F] drop-shadow-lg", className)}
     >
       Get Started
