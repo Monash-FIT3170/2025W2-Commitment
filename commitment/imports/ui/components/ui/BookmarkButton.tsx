@@ -36,13 +36,13 @@ import { fetchRepo, repoInDatabase } from '../../../api/call_repo';
  * - Uses Meteor methods `links.isBookmarked`, `links.insert`, and `links.remove`.
  * - Displays toast notifications for success and error feedback.
  */
-type BookmarkRepoButtonProps = {
+type BookmarkButtonProps = {
     url: string;
     title: string;
     currentUserID: Meteor.User | null; // Current user, can be null if not logged in
 };
 
-const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title, currentUserID }) => {
+const BookmarkButton: React.FC<BookmarkButtonProps> = ({ url, title, currentUserID }) => {
     // Track whether the repo is already bookmarked
     const [isBookmarked, setIsBookmarked] = useState(false);
 
@@ -57,7 +57,7 @@ const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title, cur
 
     // On mount or when URL changes, check if it's already bookmarked
     useEffect(() => {
-        Meteor.call('links.isBookmarked', url, currentUserID, (err: any, result: boolean) => {
+        Meteor.call('bookmarks.isBookmarked', url, currentUserID, (err: any, result: boolean) => {
             if (!err) {
                 setIsBookmarked(result);
             }
@@ -94,7 +94,7 @@ const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title, cur
             }
         }
 
-        Meteor.call('links.insert', title, url, currentUserID, (err: any) => {
+        Meteor.call('bookmarks.insertBookmark', title, url, currentUserID, (err: any) => {
             if (err) {
                 toast({
                     title: 'Error saving repository',
@@ -113,7 +113,7 @@ const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title, cur
 
     // Removes the bookmark via Meteor method
     const handleRemoveBookmark = () => {
-        Meteor.call('links.remove', url, currentUserID, (err: any) => {
+        Meteor.call('bookmarks.removeBookmark', url, currentUserID, (err: any) => {
             if (err) {
                 toast({
                     title: 'Error removing bookmark',
@@ -177,4 +177,4 @@ const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title, cur
     );
 };
 
-export default BookmarkRepoButton;
+export default BookmarkButton;

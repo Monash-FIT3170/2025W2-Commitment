@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { LinksCollection, Link } from './links';
+import { BookmarksCollection, Bookmark } from './bookmarks';
 
 import { repoInDatabase } from "./call_repo"
 
@@ -15,7 +15,7 @@ Meteor.methods({
      * @returns {Promise<string>} The ID of the newly inserted link document.
      * @throws {Meteor.Error} If the URL is invalid or does not start with 'http'.
      */
-    async 'links.insert'(title: string, url: string, userID: string) {
+    async 'bookmarks.insertBookmark'(title: string, url: string, userID: string) {
         check(title, String);
         check(url, String);
         check(userID, String);
@@ -29,14 +29,14 @@ Meteor.methods({
             throw new Meteor.Error('not-in-database', `URL does not exist inside database: ${url}`);
         }
 
-        const newLink: Link = {
+        const newBookmark: Bookmark = {
             title,
             url,
             createdAt: new Date(),
             userID
         };
 
-        return await LinksCollection.insertAsync(newLink);
+        return await BookmarksCollection.insertAsync(newBookmark);
     },
 
     /**
@@ -47,16 +47,16 @@ Meteor.methods({
      * @returns {Promise<number>} The number of documents removed (should be 1 if successful).
      * @throws {Meteor.Error} If no link with the given URL is found.
      */
-    async 'links.remove'(url: string, userID: string) {
+    async 'bookmarks.removeBookmark'(url: string, userID: string) {
         check(url, String);
         
-        const link = await LinksCollection.findOneAsync({ url: url, userID: userID });
+        const bm = await BookmarksCollection.findOneAsync({ url: url, userID: userID });
         
-        if (!link) {
+        if (!bm) {
             throw new Meteor.Error('link-not-found', 'Link not found');
         }
 
-        const result = LinksCollection.removeAsync(link._id);
+        const result = BookmarksCollection.removeAsync(bm._id);
         return result;
     },
 
@@ -67,13 +67,13 @@ Meteor.methods({
      * @param {string} url - The URL to check.
      * @returns {Promise<boolean>} True if the URL is bookmarked, false otherwise.
      */
-    async 'links.isBookmarked'(url: string, userID: string) {
+    async 'bookmarks.isBookmarked'(url: string, userID: string) {
         check(url, String);
         check(userID, String);
         
-        const link = await LinksCollection.findOneAsync({ url: url, userID: userID });
+        const bm = await BookmarksCollection.findOneAsync({ url: url, userID: userID });
 
         // If the link exists and belongs to the user, return true
-        return !!link;
+        return !!bm;
     },
 });

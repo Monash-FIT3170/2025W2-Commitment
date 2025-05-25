@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo';
 
-export interface Link {
+export interface Bookmark {
   _id?: string;
   title: string;
   url: string;
@@ -8,4 +8,4 @@ export interface Link {
   userID: string;
 }
 
-export const LinksCollection = new Mongo.Collection<Link>('links');
+export const BookmarksCollection = new Mongo.Collection<Bookmark>('bookmarks');

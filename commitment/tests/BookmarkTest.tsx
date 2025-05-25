@@ -1,6 +1,6 @@
 // /imports/ui/widgets/BookmarkButtonTest.tsx
 import React from 'react';
-import BookmarkRepoButton from '../imports/ui/components/ui/widgets/BookmarkButton';
+import BookmarkButton from '../imports/ui/components/ui/BookmarkButton';
 
 /**
  * BookmarkButtonTest is a manual visual test component that demonstrates how
@@ -20,16 +20,17 @@ const BookmarkButtonTest = () => {
     const mockUrl1 = 'https://example.com/repo';
     const mockTitle1 = 'Example Repo: Valid';
     const mockUrl2 = 'htts://example.com/repo';
+    const mockUserID = 'testUser123';
 
     return (
     <div className="p-4">
         <h2 className="text-xl font-semibold mb-4">Bookmark Button Test</h2>
         Valid URL and Title
-        <BookmarkRepoButton url={mockUrl1} title={mockTitle1} />
+        <BookmarkButton url={mockUrl1} title={mockTitle1} currentUserID={mockUserID} />
         Invalid URL
-        <BookmarkRepoButton url={mockUrl2} title={mockTitle1} />
+        <BookmarkButton url={mockUrl2} title={mockTitle1} currentUserID={mockUserID} />
         Missing URL and Title
-        <BookmarkRepoButton url="" title="" />
+        <BookmarkButton url="" title="" currentUserID={mockUserID}/>
     </div>
     );
 };
