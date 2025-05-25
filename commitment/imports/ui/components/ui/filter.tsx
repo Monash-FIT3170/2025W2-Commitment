@@ -7,13 +7,11 @@ import {
 } from "@ui/components/ui/dropdown";
 import { Label } from "@ui/components/ui/label";
 import { Button } from "./button";
-import { DatePickerWithRange } from "./datepicker";
+import { DateRangePicker } from "./datepicker";
 import { Filter as FilterIcon } from "lucide-react";
-import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import { DateRange } from "react-day-picker";
 import React from "react";
 
-type Checked = DropdownMenuCheckboxItemProps["checked"];
 
 export type FilterOption =
   | {
@@ -62,9 +60,10 @@ export default function Filter({ options, filters, onFilterChange }: FilterProps
           const currentValue = filterState?.value;
 
           return (
-            <div key={opt.filterkey} className="p-2 space-y-2">
+            <div  className="p-2 space-y-2">
               {opt.type === "checkbox" && (
                 <DropdownMenuCheckboxItem
+                // key={opt.filterkey}
                   checked={Boolean(currentValue)}
                   onCheckedChange={() => {
                     const newVal = !currentValue;
@@ -78,8 +77,8 @@ export default function Filter({ options, filters, onFilterChange }: FilterProps
               {opt.type === "date" && (
                 <>
                   <Label>{opt.label}</Label>
-                  <DatePickerWithRange
-                    // value={currentValue as DateRange}
+                  <DateRangePicker
+                    value={currentValue as DateRange}
                     setExternalDate={(value) =>
                       onFilterChange(opt.filterkey, 
                        value || { from: undefined, to: undefined },
@@ -100,7 +99,7 @@ export default function Filter({ options, filters, onFilterChange }: FilterProps
                     const isChecked = selectedOptions.includes(option);
                     return (
                       <DropdownMenuCheckboxItem
-                        key={option}
+                        // key={option}
                         checked={isChecked}
                         onCheckedChange={() => {
                           const updatedOptions = isChecked

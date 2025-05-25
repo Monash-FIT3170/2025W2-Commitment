@@ -17,70 +17,70 @@ const test_docs:todo[] = [
     name: "Make fish stew",
     team: "Alpha",
     completed: true,
-    date: new Date("2024-04-15"),
+    date: new Date("2025-04-15"),
   },
   {
     id: 2,
     name: "Design Brief",
     team: "Beta",
     completed: false,
-    date: new Date("2024-05-01"),
+    date: new Date("2025-05-01"),
   },
   {
     id: 3,
     name: "Project Proposal",
     team: "Alpha",
     completed: true,
-    date: new Date("2024-03-25"),
+    date: new Date("2025-03-25"),
   },
   {
     id: 4,
     name: "Apple Pie class",
     team: "Delta",
     completed: false,
-    date: new Date("2024-05-18"),
+    date: new Date("2025-05-18"),
   },
   {
     id: 5,
     name: "Sprint Retrospective",
     team: "Gamma",
     completed: false,
-    date: new Date("2024-04-05"),
+    date: new Date("2025-04-05"),
   },
   {
     id: 6,
     name: "User Research Notes",
     team: "Beta",
     completed: true,
-    date: new Date("2024-02-28"),
+    date: new Date("2025-02-28"),
   },
   {
     id: 7,
     name: "Marketing Plan",
     team: "Delta",
     completed: true,
-    date: new Date("2024-01-10"),
+    date: new Date("2025-01-10"),
   },
   {
     id: 8,
     name: "Team Feedback",
     team: "Gamma",
     completed: true,
-    date: new Date("2024-05-20"),
+    date: new Date("2025-05-20"),
   },
   {
     id: 9,
     name: "Budget Review",
     team: "Alpha",
     completed: false,
-    date: new Date("2024-03-05"),
+    date: new Date("2025-03-05"),
   },
   {
     id: 10,
     name: "Wireframe Draft",
     team: "Beta",
     completed: false,
-    date: new Date("2024-05-08"),
+    date: new Date("2025-05-08"),
   },
 ];
 
@@ -161,8 +161,9 @@ export const TestFilterSort = () => {
     <Card>
       <CardHeader>
       <h1> Testing filtering and sorting</h1>
+      <div className="flex w-full flex-row justify-end">
       <Filter options={filterOptions} filters={filters} onFilterChange={updateFilter} />
-
+      </div>
       </CardHeader>
       <CardContent className="pt-6  gap-3 content-center">
         <div className="flex  flex-row flex-wrap justify-center gap-3 w-full">
