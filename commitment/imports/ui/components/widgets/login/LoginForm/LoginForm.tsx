@@ -6,6 +6,8 @@ import {useForm} from "react-hook-form";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@ui/components/ui/form";
 import {Checkbox} from "@ui/components/ui/checkbox";
 import FormInputWithErrors from "../../../shared/FormInputWithErrors";
+import { useNavigate } from 'react-router-dom';
+import { Meteor } from 'meteor/meteor';
 
 
 
@@ -32,9 +34,47 @@ const LoginForm: FC<LoginFormProps> = (props) => {
     },
   });
 
+  const navigate = useNavigate();
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // TODO: Replace with actual functionality
-    console.log(values);
+    form.clearErrors();
+
+    Meteor.loginWithPassword(values.email, values.password, (err: any) => {
+      if (err) {
+        // Handle different types of login errors
+        let errorMessage = "Login failed. Please check your credentials.";
+        
+        if (err.reason === 'User not found') {
+          errorMessage = "No account found with this email address.";
+        } else if (err.reason === 'Incorrect password') {
+          errorMessage = "Incorrect password. Please try again.";
+        } else if (err.reason === 'User has no password set') {
+          errorMessage = "Please reset your password to continue.";
+        }
+
+        form.setError("email", { 
+          type: "manual", 
+          message: errorMessage 
+        });
+        
+        // Also set error on password field for better UX
+        form.setError("password", { 
+          type: "manual", 
+          message: " " // Empty space to maintain form layout
+        });
+
+      } else {
+        if (values.rememberMe) {
+          // Set a cookie or localStorage item to remember the user
+          localStorage.setItem("rememberedUser", values.email);
+        } else {
+          // Clear the remembered user if not checked
+          localStorage.removeItem("rememberedUser");
+        }
+
+        navigate("/insert-git-repo");
+      }
+    });
   }
 
   return (

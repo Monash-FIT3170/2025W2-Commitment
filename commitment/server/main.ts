@@ -1,31 +1,43 @@
 import { Meteor } from 'meteor/meteor';
 import { Link, LinksCollection } from '/imports/api/links';
+import { Accounts } from 'meteor/accounts-base';
 
 async function insertLink({ title, url }: Pick<Link, 'title' | 'url'>) {
   await LinksCollection.insertAsync({ title, url, createdAt: new Date() });
 }
 
 Meteor.startup(async () => {
-  // If the Links collection is empty, add some data.
-  if (await LinksCollection.find().countAsync() === 0) {
-    await insertLink({
-      title: 'Do the Tutorial',
-      url: 'https://www.meteor.com/tutorials/react/creating-an-app',
-    });
+  const userCount = await Meteor.users.find().countAsync();
 
-    await insertLink({
-      title: 'Follow the Guide',
-      url: 'https://guide.meteor.com',
-    });
+  if (userCount === 0) {
+    
+    // Create a few test users
+    const users = [
+      {
+        email: 'admin@test.com',
+        password: 'password123',
+        profile: { name: 'Admin User' }
+      },
+      {
+        email: 'user@test.com', 
+        password: 'password123',
+        profile: { name: 'Test User' }
+      },
+      {
+        email: 'demo@test.com',
+        password: 'password123', 
+        profile: { name: 'Demo User' }
+      }
+    ];
 
-    await insertLink({
-      title: 'Read the Docs',
-      url: 'https://docs.meteor.com',
-    });
-
-    await insertLink({
-      title: 'Discussions',
-      url: 'https://forums.meteor.com',
+    users.forEach(userData => {
+      const userId = Accounts.createUser({
+        email: userData.email,
+        password: userData.password,
+        profile: userData.profile
+      });
+      
+      console.log(`Created user: ${userData.email} with ID: ${userId}`);
     });
   }
 
