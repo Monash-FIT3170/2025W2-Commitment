@@ -1,23 +1,23 @@
-import { Subject } from "rxjs"
+import { Subject } from "rxjs";
 
-import React, { useEffect, useState } from 'react';
-import { Button } from '@ui/components/ui/button';
+import React, { useEffect, useState } from "react";
+import { Button } from "@ui/components/ui/button";
 import {
-    AlertDialog,
-    AlertDialogTrigger,
-    AlertDialogContent,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogCancel,
-    AlertDialogAction,
-} from '@ui/components/ui/alert-dialog';
-import { useToast } from '@ui/hooks/use-toast';
-import { Meteor } from 'meteor/meteor';
-import { Bookmark } from 'lucide-react';
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@ui/components/ui/alert-dialog";
+import { useToast } from "@ui/hooks/use-toast";
+import { Meteor } from "meteor/meteor";
+import { Bookmark } from "lucide-react";
 // Update the import path to the correct relative location of call_repo
-import { fetchRepo, repoInDatabase } from '../../../api/call_repo';
+import { fetchRepo, repoInDatabase } from "../../../api/call_repo";
 
 /**
  * BookmarkRepoButton Component
@@ -37,143 +37,160 @@ import { fetchRepo, repoInDatabase } from '../../../api/call_repo';
  * - Displays toast notifications for success and error feedback.
  */
 type BookmarkButtonProps = {
-    url: string;
-    title: string;
+  url: string;
+  title: string;
+  variant?: "primary"|"secondary";
 };
 
-const BookmarkButton: React.FC<BookmarkButtonProps> = ({ url, title }) => {
-    // Track whether the repo is already bookmarked
-    const [isBookmarked, setIsBookmarked] = useState(false);
+const BookmarkButton: React.FC<BookmarkButtonProps> = ({
+  url,
+  title,
+  variant = "primary",
+}) => {
+  // used to switch between orange and white variants
+  const variantOptions = {
+    primary: "text-[#FFFFFF] ",
+    secondary: "text-[#F1502F] ",
+  };
+  // Track whether the repo is already bookmarked
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
-    // Track loading state while checking bookmark status
-    const [loading, setLoading] = useState(true);
+  // Track loading state while checking bookmark status
+  const [loading, setLoading] = useState(true);
 
-    // Controls visibility of the confirmation dialog
-    const [showDialog, setShowDialog] = useState(false);
+  // Controls visibility of the confirmation dialog
+  const [showDialog, setShowDialog] = useState(false);
 
-    // Toast hook for displaying success/error messages
-    const { toast } = useToast();
+  // Toast hook for displaying success/error messages
+  const { toast } = useToast();
 
-    // On mount or when URL changes, check if it's already bookmarked
-    useEffect(() => {
-        Meteor.call('bookmarks.isBookmarked', url, (err: any, result: boolean) => {
-            if (!err) {
-                setIsBookmarked(result);
-            }
-            setLoading(false);
+  // On mount or when URL changes, check if it's already bookmarked
+  useEffect(() => {
+    Meteor.call("bookmarks.isBookmarked", url, (err: any, result: boolean) => {
+      if (!err) {
+        setIsBookmarked(result);
+      }
+      setLoading(false);
+    });
+  }, [url]);
+
+  // Adds the bookmark via Meteor method
+  const handleAddBookmark = async () => {
+    // Input validation
+    if (!url || !title) {
+      toast({
+        title: "Error",
+        description: "Missing URL or title",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // checks if a repo data struct is already in the database (not links collection)
+    // if not, prompt the server to cache it in using the API server calls.
+    if (!repoInDatabase(url)) {
+      const updateNotifier = new Subject<string>();
+      const repoCached = await fetchRepo(url, updateNotifier);
+
+      if (!repoCached) {
+        toast({
+          title: "Error",
+          description:
+            "Failed to load url into database as it did not already exist",
+          variant: "destructive",
         });
-    }, [url]);
+        return;
+      }
+    }
 
-    // Adds the bookmark via Meteor method
-    const handleAddBookmark = async () => {
-        // Input validation
-        if (!url || !title) {
-            toast({
-                title: 'Error',
-                description: 'Missing URL or title',
-                variant: 'destructive',
-            });
-            return;
-        }
-
-        // checks if a repo data struct is already in the database (not links collection)
-        // if not, prompt the server to cache it in using the API server calls.
-        if (!repoInDatabase(url)) {
-
-            const updateNotifier = new Subject<string>()
-            const repoCached = await fetchRepo(url, updateNotifier)
-
-            if (!repoCached) {
-                toast({
-                    title: 'Error',
-                    description: 'Failed to load url into database as it did not already exist',
-                    variant: 'destructive',
-                });
-                return;
-            }
-        }
-
-        Meteor.call('bookmarks.insertBookmark', title, url, (err: any) => {
-            if (err) {
-                toast({
-                    title: 'Error saving repository',
-                    description: err.reason,
-                    variant: 'destructive',
-                });
-            } else {
-                toast({
-                    title: 'Repository saved!',
-                    description: `${title} has been bookmarked.`,
-                });
-                setIsBookmarked(true);
-            }
+    Meteor.call("bookmarks.insertBookmark", title, url, (err: any) => {
+      if (err) {
+        toast({
+          title: "Error saving repository",
+          description: err.reason,
+          variant: "destructive",
         });
-    };
-
-    // Removes the bookmark via Meteor method
-    const handleRemoveBookmark = () => {
-        Meteor.call('bookmarks.removeBookmark', url, (err: any) => {
-            if (err) {
-                toast({
-                    title: 'Error removing bookmark',
-                    description: err.reason,
-                    variant: 'destructive',
-                });
-            } else {
-                toast({
-                    title: 'Bookmark removed!',
-                    description: `${title} has been unbookmarked.`,
-                });
-                setIsBookmarked(false);
-            }
+      } else {
+        toast({
+          title: "Repository saved!",
+          description: `${title} has been bookmarked.`,
         });
+        setIsBookmarked(true);
+      }
+    });
+  };
 
-        // Close the confirmation dialog
-        setShowDialog(false);
-    };
+  // Removes the bookmark via Meteor method
+  const handleRemoveBookmark = () => {
+    Meteor.call("bookmarks.removeBookmark", url, (err: any) => {
+      if (err) {
+        toast({
+          title: "Error removing bookmark",
+          description: err.reason,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Bookmark removed!",
+          description: `${title} has been unbookmarked.`,
+        });
+        setIsBookmarked(false);
+      }
+    });
 
-    return (
-        <>
-            {isBookmarked ? (
-                // If already bookmarked, show a button that opens a confirmation dialog
-                <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
-                    <AlertDialogTrigger asChild>
-                        <Button
-                            variant="secondary"
-                            size="default"
-                            disabled={loading}
-                            className="w-10 h-10 p-0 flex items-center justify-center"
-                        >
-                            <Bookmark className="w-4 h-4" fill="currentColor" stroke="currentColor" />
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Remove Bookmark?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Are you sure you want to remove this repository from your bookmarks?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleRemoveBookmark}>Remove</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            ) : (
-                // If not bookmarked, show a button to add it
-                <Button
-                    variant="default"
-                    size="default"
-                    onClick={handleAddBookmark}
-                    disabled={loading}
-                    className="w-10 h-10 p-0 flex items-center justify-center"
-                >
-                    <Bookmark className="w-4 h-4" fill="none" stroke="currentColor" />
-                </Button>
-            )}
-        </>
-    );
+    // Close the confirmation dialog
+    setShowDialog(false);
+  };
+
+  return (
+    <>
+      {isBookmarked ? (
+        // If already bookmarked, show a button that opens a confirmation dialog
+        <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={loading}
+              className={`${variantOptions[variant]}`}
+              >
+              <Bookmark
+                className="w-4 h-4"
+                fill="currentColor"
+                stroke="currentColor"
+              />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove Bookmark?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to remove this repository from your
+                bookmarks?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleRemoveBookmark}>
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      ) : (
+        // If not bookmarked, show a button to add it
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleAddBookmark}
+          disabled={loading}
+          className={`${variantOptions[variant]}`}
+        >
+          <Bookmark className="w-4 h-4" fill="none" stroke="currentColor" />
+        </Button>
+      )}
+    </>
+  );
 };
 
 export default BookmarkButton;

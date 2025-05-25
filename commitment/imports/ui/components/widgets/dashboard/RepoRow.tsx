@@ -1,25 +1,24 @@
 import React from "react";
-import { Bookmark, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { Button } from "../../ui/button";
 
+import { Bookmark } from "/imports/api/bookmarks";
+import BookmarkButton from "../../ui/BookmarkButton";
+
 export interface RepoRowProps {
-  name: string;
+  bookmark: Bookmark;
   onclick?: () => void;
-  onBookmark?: () => void;
   onInfo?: () => void;
 }
 
-const RepoRow = React.forwardRef<HTMLLIElement, RepoRowProps>(
-  (
-    { name, onclick, onBookmark, onInfo },
-    ref
-  ) => (
+
+export default function RepoRow({ bookmark, onclick, onInfo }: RepoRowProps) {
+  return (
     <li
-      ref={ref}
       className={`bg-[#F1502F] text-white rounded-xl flex items-center px-4 py-2 gap-3 shadow-sm hover:bg-red-500 transition-colors w-full sm:w-auto `}
     >
       {/* repo name */}
-      <span className="flex-1 truncate font-medium">{name}</span>
+      <span className="flex-1 truncate font-medium">{bookmark.title}</span>
 
       {/* info icon */}
       <button
@@ -32,21 +31,13 @@ const RepoRow = React.forwardRef<HTMLLIElement, RepoRowProps>(
       </button>
 
       {/* bookmark */}
-      <button
-        type="button"
-        onClick={onBookmark}
-        aria-label="bookmark repository"
-        className="text-white/80 hover:text-white focus:outline-none"
-      >
-        <Bookmark size={18} />
-      </button>
+      <BookmarkButton url={bookmark.url} title={bookmark.title} />
 
       {/* view */}
-      <Button variant="secondary" onClick={onclick}> View Repository</Button>
-
+      <Button variant="secondary" onClick={onclick}>
+        {" "}
+        View Repository
+      </Button>
     </li>
-  )
-);
-
-RepoRow.displayName = "RepoRow";
-export default RepoRow;
+  );
+}

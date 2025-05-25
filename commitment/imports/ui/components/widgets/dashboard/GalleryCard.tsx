@@ -1,56 +1,42 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Button } from "../../ui/button";
-import { Bookmark, Info } from "lucide-react";
-
-interface Bookmark {
-  id: number;
-  repoName: string;
-  lastViewed: string; // need to consider best way of storing
-  repositoryURL: string;
-}
+import { Info } from "lucide-react";
+import { Bookmark } from "/imports/api/bookmarks";
+import BookmarkButton from "../../ui/BookmarkButton";
 
 interface GalleryCardProps {
   bookmark: Bookmark;
   onclick?: () => void; // method passed by parent to view repository metrics + scaling
-  onBookmark?: () => void;
   onInfo?: () => void;
 }
 
 export default function GalleryCard({
   bookmark,
   onclick,
-  onBookmark,
-  onInfo,
+ onInfo,
 }: GalleryCardProps) {
   return (
-    <Card className="bg-[#F1502F] w-[250px] ">
-      <CardHeader className="flex flex-row justify-between items-start">
-        <CardTitle className="text-white">{bookmark.repoName} </CardTitle>
+    <Card className="bg-[#F1502F] w-[275px] ">
+  <CardHeader className="relative">
+    <div className="flex justify-between items-start">
+      <CardTitle className="text-white">{bookmark.title}</CardTitle>
 
-        <div className="flex flex-row h-full justify-end ">
-          {" "}
-          {/* info icon */}
-          <button
-            type="button"
-            onClick={onInfo}
-            aria-label="repository info"
-            className="text-white/80 hover:text-white focus:outline-none"
-          >
-            <Info size={18} />
-          </button>
-          {/* bookmark */}
-          <button
-            type="button"
-            onClick={onBookmark}
-            aria-label="bookmark repository"
-            className="text-white/80 hover:text-white focus:outline-none"
-          >
-            <Bookmark size={18} />
-          </button>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-row-reverse">
+      <div className="flex space-x-2 absolute right-4 top-4">
+        {/* info icon */}
+        <button
+          type="button"
+          onClick={onInfo}
+          aria-label="repository info"
+          className="text-white/80 hover:text-white focus:outline-none"
+        >
+          <Info size={18} />
+        </button>
+        {/* bookmark */}
+        <BookmarkButton url={bookmark.url} title={bookmark.title} />
+      </div>
+    </div>
+  </CardHeader>      <CardContent className="flex flex-row-reverse">
         <Button variant="secondary" onClick={onclick}>
           {" "}
           View Repository

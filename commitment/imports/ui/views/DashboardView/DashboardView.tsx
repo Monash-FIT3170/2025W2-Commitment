@@ -4,17 +4,21 @@ import RepoRow     from "../../components/widgets/dashboard/RepoRow";
 import ViewToggle  from "../../components/widgets/dashboard/ViewToggle";
 import { Search }  from "lucide-react";
 import { Funnel, ArrowDownUp } from "lucide-react";
+import { Bookmark } from "/imports/api/bookmarks";
 
-const fake_bookmarks = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  repoName: `Repository ${i + 1}`,
-  lastViewed: "2024-06-20T10:30:00.000Z",
-  repositoryURL: "git@github.com:Monash-FIT3170/2025W2-Commitment.git",
+const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
+  _id: `${i + 1}`,
+  title: `Repository ${i + 1}`,
+  createdAt: new Date("2024-06-20T10:30:00.000Z"),
+  url: "git@github.com:Monash-FIT3170/2025W2-Commitment.git",
+  userID:"1"
 }));
 
 const handleView = () => console.log("view metrics");
 const handleInfo = () => console.log("info");
-const handleBookmark = () => console.log("bookmark");
+
+
+// TODO: Filter using regex
 const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) =>
   console.log("search:", e.target.value);
 
@@ -67,9 +71,9 @@ const DashboardView: React.FC = () => {
       >
         {view === "gallery" ? (
           // Gallery
-          <div className="flex flex-wrap justify-center gap-14">
+          <div className="flex flex-wrap justify-evenly gap-10">
             {fake_bookmarks.map((b) => (
-              <GalleryCard key={b.id} bookmark={b} onclick={handleView} />
+              <GalleryCard  bookmark={b} onclick={handleView} />
             ))}
           </div>
         ) : (
@@ -77,11 +81,9 @@ const DashboardView: React.FC = () => {
           <ul className="space-y-5">
             {fake_bookmarks.map((b) => (
               <RepoRow
-                key={b.id}
-                name={b.repoName}
-                onClick={handleView}
+                bookmark={b}
+                onclick={handleView}
                 onInfo={handleInfo}
-                onBookmark={handleBookmark}
               />
             ))}
           </ul>

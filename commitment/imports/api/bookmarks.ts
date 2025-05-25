@@ -6,6 +6,7 @@ export interface Bookmark {
   url: string;
   createdAt: Date;
   userID: string;
+  lastViewed?:Date;
 }
 
 export const BookmarksCollection = new Mongo.Collection<Bookmark>('bookmarks');
