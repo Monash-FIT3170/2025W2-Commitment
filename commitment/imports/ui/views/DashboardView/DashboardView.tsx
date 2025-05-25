@@ -19,7 +19,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) =>
   console.log("search:", e.target.value);
 
 const DashboardView: React.FC = () => {
-  const [view, setView] = useState<"list" | "gallery">("list");
+  const [view, setView] = useState<"list" | "gallery">("gallery");
 
   return (
     <div className="min-h-screen bg-[#F0F0E8]">
