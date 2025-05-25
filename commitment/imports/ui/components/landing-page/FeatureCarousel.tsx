@@ -124,8 +124,8 @@ export function FeatureCarousel() {
               <div
                 key={index}
                 className={`
-                  flex-shrink-0 px-2 transition-all duration-300 ease-in-out 
-                  ${isSelected ? "opacity-100 blur-none scale-100" : "opacity-50 blur-sm scale-90"}
+                  flex-shrink-0 px-2 ease-in-out 
+                  ${isSelected ? "opacity-100 blur-none" : "opacity-50 blur-sm"}
                 `}
                 style={{
                   width: "33.3333%", // Always 3 cards
