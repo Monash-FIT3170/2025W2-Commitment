@@ -5,6 +5,7 @@ export interface Link {
   title: string;
   url: string;
   createdAt: Date;
+  userID: string;
 }
 
 export const LinksCollection = new Mongo.Collection<Link>('links');

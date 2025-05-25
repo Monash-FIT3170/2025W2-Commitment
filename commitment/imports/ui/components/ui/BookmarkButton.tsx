@@ -16,7 +16,8 @@ import {
 import { useToast } from '@ui/hooks/use-toast';
 import { Meteor } from 'meteor/meteor';
 import { Bookmark } from 'lucide-react';
-import { fetchRepo, repoInDatabase } from '/client/call_repo';
+// Update the import path to the correct relative location of call_repo
+import { fetchRepo, repoInDatabase } from '../../../api/call_repo';
 
 /**
  * BookmarkRepoButton Component
@@ -142,7 +143,7 @@ const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title, cur
                             variant="secondary"
                             size="default"
                             disabled={loading}
-                            className="flex items-center gap-2"
+                            className="w-10 h-10 p-0 flex items-center justify-center"
                         >
                             <Bookmark className="w-4 h-4" fill="currentColor" stroke="currentColor" />
                         </Button>
@@ -167,7 +168,7 @@ const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title, cur
                     size="default"
                     onClick={handleAddBookmark}
                     disabled={loading}
-                    className="flex items-center gap-2"
+                    className="w-10 h-10 p-0 flex items-center justify-center"
                 >
                     <Bookmark className="w-4 h-4" fill="none" stroke="currentColor" />
                 </Button>
@@ -177,4 +178,3 @@ const BookmarkRepoButton: React.FC<BookmarkRepoButtonProps> = ({ url, title, cur
 };
 
 export default BookmarkRepoButton;
-

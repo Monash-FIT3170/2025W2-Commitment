@@ -1,5 +1,3 @@
-import { Subject } from "rxjs"
-
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { LinksCollection, Link } from './links';
