@@ -4,6 +4,7 @@ import ExampleView from "@ui/views/ExampleView/ExampleView";
 import LoginView from "@ui/views/LoginView/LoginView";
 import DashboardView from "./views/DashboardView/DashboardView";
 
+
 export const App = () => {
   return (
     <BrowserRouter>
