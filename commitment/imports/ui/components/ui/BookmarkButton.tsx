@@ -39,10 +39,9 @@ import { fetchRepo, repoInDatabase } from '../../../api/call_repo';
 type BookmarkButtonProps = {
     url: string;
     title: string;
-    currentUserID: Meteor.User | null; // Current user, can be null if not logged in
 };
 
-const BookmarkButton: React.FC<BookmarkButtonProps> = ({ url, title, currentUserID }) => {
+const BookmarkButton: React.FC<BookmarkButtonProps> = ({ url, title }) => {
     // Track whether the repo is already bookmarked
     const [isBookmarked, setIsBookmarked] = useState(false);
 
@@ -57,7 +56,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ url, title, currentUser
 
     // On mount or when URL changes, check if it's already bookmarked
     useEffect(() => {
-        Meteor.call('bookmarks.isBookmarked', url, currentUserID, (err: any, result: boolean) => {
+        Meteor.call('bookmarks.isBookmarked', url, (err: any, result: boolean) => {
             if (!err) {
                 setIsBookmarked(result);
             }
@@ -94,7 +93,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ url, title, currentUser
             }
         }
 
-        Meteor.call('bookmarks.insertBookmark', title, url, currentUserID, (err: any) => {
+        Meteor.call('bookmarks.insertBookmark', title, url, (err: any) => {
             if (err) {
                 toast({
                     title: 'Error saving repository',
@@ -113,7 +112,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ url, title, currentUser
 
     // Removes the bookmark via Meteor method
     const handleRemoveBookmark = () => {
-        Meteor.call('bookmarks.removeBookmark', url, currentUserID, (err: any) => {
+        Meteor.call('bookmarks.removeBookmark', url, (err: any) => {
             if (err) {
                 toast({
                     title: 'Error removing bookmark',

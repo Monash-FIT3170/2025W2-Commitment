@@ -11,14 +11,16 @@ Meteor.methods({
      * @method links.insert
      * @param {string} title - The title of the link.
      * @param {string} url - The URL of the link. Must start with 'http' or 'https'.
-     * @param {string} userID - The ID of the user inserting the link.
      * @returns {Promise<string>} The ID of the newly inserted link document.
-     * @throws {Meteor.Error} If the URL is invalid or does not start with 'http'.
+     * @throws {Meteor.Error} If the URL is invalid or does not start with 'http', not in db or not authorised.
      */
-    async 'bookmarks.insertBookmark'(title: string, url: string, userID: string) {
+    async 'bookmarks.insertBookmark'(title: string, url: string) {
         check(title, String);
         check(url, String);
-        check(userID, String);
+
+        if (!this.userId) {
+            throw new Meteor.Error('not-authorized', 'You must be logged in to add a bookmark');
+        }
 
         if (!url.startsWith('http')) {
             throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
@@ -33,7 +35,7 @@ Meteor.methods({
             title,
             url,
             createdAt: new Date(),
-            userID
+            userID: this.userId
         };
 
         return await BookmarksCollection.insertAsync(newBookmark);
@@ -45,19 +47,22 @@ Meteor.methods({
      * @method links.remove
      * @param {string} url - The URL of the link to be removed.
      * @returns {Promise<number>} The number of documents removed (should be 1 if successful).
-     * @throws {Meteor.Error} If no link with the given URL is found.
+     * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
      */
-    async 'bookmarks.removeBookmark'(url: string, userID: string) {
+    async 'bookmarks.removeBookmark'(url: string) {
         check(url, String);
-        
-        const bm = await BookmarksCollection.findOneAsync({ url: url, userID: userID });
-        
+
+        if (!this.userId) {
+            throw new Meteor.Error('not-authorized', 'You must be logged in to remove a bookmark.');
+        }
+
+        const bm = await BookmarksCollection.findOneAsync({ url, userID: this.userId });
+
         if (!bm) {
             throw new Meteor.Error('link-not-found', 'Link not found');
         }
 
-        const result = BookmarksCollection.removeAsync(bm._id);
-        return result;
+        return BookmarksCollection.removeAsync(bm._id);
     },
 
     /**
@@ -66,14 +71,31 @@ Meteor.methods({
      * @method links.isBookmarked
      * @param {string} url - The URL to check.
      * @returns {Promise<boolean>} True if the URL is bookmarked, false otherwise.
+     * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
      */
-    async 'bookmarks.isBookmarked'(url: string, userID: string) {
+    async 'bookmarks.isBookmarked'(url: string) {
         check(url, String);
-        check(userID, String);
-        
-        const bm = await BookmarksCollection.findOneAsync({ url: url, userID: userID });
 
-        // If the link exists and belongs to the user, return true
+        if (!this.userId) {
+            throw new Meteor.Error('not-authorized', 'You must be logged in to check bookmarks.');
+        }
+
+        const bm = await BookmarksCollection.findOneAsync({ url, userID: this.userId });
         return !!bm;
     },
+
+    /**
+     * Retrieves all bookmarks for the current user.
+     *
+     * @method bookmarks.getAllBookmarks
+     * @returns {Promise<Bookmark[]>} An array of bookmarks for the current user.
+     * @throws {Meteor.Error} If not authorised.
+     */
+    async 'bookmarks.getAllBookmarks'() {
+        if (!this.userId) {
+            throw new Meteor.Error('not-authorized', 'You must be logged in to view bookmarks.');
+        }
+
+        return await BookmarksCollection.findAsync({ userID: this.userId }, { sort: { createdAt: -1 } });
+    }
 });
