@@ -3,6 +3,7 @@ import { check } from 'meteor/check';
 import { BookmarksCollection, Bookmark } from './bookmarks';
 
 import { repoInDatabase } from "./call_repo"
+import { last } from 'rxjs';
 
 Meteor.methods({
     /**
@@ -35,7 +36,8 @@ Meteor.methods({
             title,
             url,
             createdAt: new Date(),
-            userID: this.userId
+            userID: this.userId,
+            lastViewed:new Date()
         };
 
         return await BookmarksCollection.insertAsync(newBookmark);
@@ -83,6 +85,30 @@ Meteor.methods({
         const bm = await BookmarksCollection.findOneAsync({ url, userID: this.userId });
         return !!bm;
     },
+
+        /**
+     * Updates the lastViewed parameter of the bookmark.
+     *
+     * @method bookmarks.updateLastViewed
+     * @param {string} url - The URL of the bookmark to update.
+     * @returns {Promise<number>} The number of documents updated (should be 1 if successful).
+     * @throws {Meteor.Error} If the URL is invalid, bookmark not found, or not authorised.
+     */
+         async 'bookmarks.updateLastViewed'(url: string) {
+            check(url, String);
+    
+            if (!this.userId) {
+                throw new Meteor.Error('not-authorized', 'You must be logged in to update last viewed time.');
+            }
+    
+            const bm = await BookmarksCollection.findOneAsync({ url, userID: this.userId });
+    
+            if (!bm) {
+                throw new Meteor.Error('bookmark-not-found', 'Bookmark not found');
+            }
+    
+            return BookmarksCollection.updateAsync(bm._id, { $set: { lastViewed: new Date() } });
+        },
 
     /**
      * Retrieves all bookmarks for the current user.
