@@ -8,9 +8,9 @@ export const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/landing" element={<LandingPage/>}></Route>
+        <Route path="/" element={<LandingPage/>}></Route>
         <Route path="/login" element={<LoginView/>}></Route>
-        <Route path="/" element={<InsertGitRepoView/>}></Route>
+        <Route path="/home" element={<InsertGitRepoView/>}></Route>
       </Routes>
     </BrowserRouter>
   )
