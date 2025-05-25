@@ -148,14 +148,14 @@ export function FeatureCarousel() {
       {/* Nav buttons */}
       <button
         onClick={scrollPrev}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
+        className="absolute left-[25%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
         aria-label="Previous slide"
       >
         <ChevronLeft size={30} />
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
+        className="absolute right-[25%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
         aria-label="Next slide"
       >
         <ChevronRight size={30} />
