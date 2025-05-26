@@ -1,4 +1,5 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/components/ui/tabs";
+import React from "react";
 
 export function MetricsTabs() {
   return (
