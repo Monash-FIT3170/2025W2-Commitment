@@ -48,7 +48,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
 
     fetchRepo(repoUrl, notifier)
       .then(() => {
-        notifier.next("✅ Repository data loaded!");
+        notifier.next(" Repository data loaded!");
         setProgress(100);
       })
       .catch(err => {
