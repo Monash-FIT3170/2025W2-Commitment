@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/components/ui/card"
-import InfoButton from "./infoButton"
+import InfoButton from "../ui/infoButton"
 import { stat } from "fs"
 
 export interface ChartEntry {

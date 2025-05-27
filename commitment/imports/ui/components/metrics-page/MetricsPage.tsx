@@ -4,13 +4,13 @@ import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "../ui/datePicker";
 import { BranchDropDownMenu } from "../ui/branchDropDownMenu";
-import UserContributionHeatMap from "../ui/heatmap";
-import { ContributionPieChart } from "../ui/pieChart";
+import UserContributionHeatMap from "./heatmap";
 import { dark2 } from "../ui/colors";
 import { ContributorDropDownMenu } from "../ui/contributorDropDownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
+import { ContributionPieChart } from "./PieChartGraph";
 import { topContributors } from "../../lib/utils";
 
 // !!!: Remove this dummy data upon integration with AT3's real data

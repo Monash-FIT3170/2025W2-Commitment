@@ -8,7 +8,7 @@ import {
   getMonth,
   getYear,
 } from "date-fns";
-import InfoButton from "./infoButton";
+import InfoButton from "../ui/infoButton";
 
 type ContributionDataItem = {
   name: string;
