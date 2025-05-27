@@ -104,13 +104,15 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 	
 	// get all branches
 	notifier.next("Searching for branch names...")
-	const branchNames = await parseCmdImmediate(execCmdInRepo(getBranches()))(parseRepoBranches)
+	const branchNames = await parseCmdImmediate(execCmdInRepo(getBranches()))(parseRepoBranches).catch(e => 
+		Promise.reject(new Error("Failed upon searching for branch names"))
+	)
 
 	// get all commits (runs co-currently :D)
 	notifier.next("Searching for commit hashes...")
 	const allCommitHashesListOfList = await Promise.all(branchNames
 		.map( async (branch) => await parseCmdImmediate(execCmdInRepo(getAllCommitsFrom(branch)))(parseCommitHashes) )
-	)
+	).catch(e => Promise.reject(new Error("Failed upon searching for commit hashes")))
 
 	// get all unique commit hashes
 	const allCommitHashes = [...new Set(allCommitHashesListOfList.flatMap(i => i))]	
@@ -137,14 +139,14 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 				fileData: allFileData
 			} as CommitData)
 		})
-	)
+	).catch(e => Promise.reject(new Error("Failed upon formulating commit data")))
 
 	// get all contributors and create objects for each contributor
 	notifier.next("Formulating all contributors...")
 	const uniqueNames = [...new Set(allCommitData.map(d => d.contributorName))]
 	const nameToEmails = await Promise.all(
 		uniqueNames.map(async (name) => await parseCmdImmediate(execCmdInRepo(getContributorEmails(name)))(parseContributorEmails) )
-	)
+	).catch(e => Promise.reject(new Error("Failed upon searching for contributors")))
 	const allContributors: ContributorData[] = zip(uniqueNames, nameToEmails).map(([name, emails]) => ({
 		name: name,
 		emails: emails
@@ -167,16 +169,17 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 	const branchData: BranchData[] = await Promise.all(branchNames.map(async branch => ({
 			branchName: branch,
 			commitHashes: (branchToCommitsMap.get(branch) as string[])
-				.sort((h1, h2) => {
-					const [c1, c2] = [commitMap.get(h1) as CommitData, commitMap.get(h2) as CommitData]
-					const t1 = c1!.timestamp.getTime()
-					const t2 = c2!.timestamp.getTime()
-					return t1 - t2 
-			})
+				.sort((h1, h2) => sortCommitByTimeStamp(
+					commitMap.get(h1) as CommitData, 
+					commitMap.get(h2) as CommitData
+				)
+			)
 		}))
-	)	
+	).catch(e => Promise.reject(new Error("Failed upon formulating branch data")))
 
+	notifier.next("Fetching repo name...")
 	const repoName = await parseCmdImmediate(execCmdInRepo(getRepoName()))(parseRepoName)
+	.catch(e => Promise.reject(new Error("Failed upon searching for the repo name")))
 
 	return Promise.resolve({
 		name: repoName,

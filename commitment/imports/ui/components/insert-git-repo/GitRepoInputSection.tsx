@@ -1,8 +1,10 @@
 import React, { useState, KeyboardEvent } from 'react';
 import { Button } from '../ui/button';
 import { cn } from "@ui/lib/utils";
+import { useNavigate } from 'react-router-dom';
 
 const GitRepoInputSection = () => {
+    const navigate = useNavigate();
     const [repoUrl, setRepoUrl] = useState('');
     const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -34,6 +36,7 @@ const GitRepoInputSection = () => {
         if (!error) {
             // TODO: Implement repository analysis logic here
             console.log('Valid repo URL:', repoUrl);
+            navigate('/loading', { state: { repoUrl } });
         }
     };
 
