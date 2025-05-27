@@ -50,7 +50,7 @@ export function MetricsTabs() {
               data-[state=active]:after:left-0
               data-[state=active]:after:w-full
               data-[state=active]:after:h-0.5
-              data-[state=active]:after:bg-[#F1502F]
+              data-[state=active]:after:bg-git
               rounded-none border-none shadow-none focus:outline-none
               transition-all
             `}
