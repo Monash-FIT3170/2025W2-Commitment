@@ -17,7 +17,7 @@ export function MetricsTabs() {
             key={value}
             value={value}
             className={`
-              relative px-4 py-2 text-sm font-medium text-gray-600
+              relative px-4 py-2 text-lg font-medium text-gray-600
               data-[state=active]:bg-gray-100
               data-[state=active]:text-gray-900
               data-[state=active]:after:content-['']
