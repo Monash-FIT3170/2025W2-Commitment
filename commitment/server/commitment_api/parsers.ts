@@ -9,40 +9,26 @@ import {
 
 export type Maybe<T> = T | null
 
-export const fromMaybe = <T>(m: Maybe<T>, error: string): Promise<T> => m === null ? Promise.reject(new Error(error)) : Promise.resolve(m) 
+export const fromMaybe = <T>(m: Maybe<T>, error: string): T =>
+  m === null ? (() => { throw new Error(error); })() : m;
 
-export const parse = (s: string) => <T>(parser: (text: string) => Maybe<T>): Promise<T> => 
+export const parse = (s: string) => <T>(parser: (text: string) => Maybe<T>): T => 
     fromMaybe(parser(s), `parser \"${parser.name}\" failed to parse text:\n${s}`)
-
-
-// executes p and then captures it for use in multiple parsers (more efficient as it does not have multiple executions of the same promise)
-export const parsePromise = async (p: Promise<string>): Promise<<T>(parser: (text: string) => Maybe<T>) => Promise<T>> => {
-    const s = await p
-    return <T>(parser: (text: string) =>  Maybe<T>): Promise<T> => parse(s)(parser)
-} 
-
-// parses and executes p at the same time (less efficient if this is called multiple times but has good syntax for inline statements)
-export const parsePromiseImmediate = (p: Promise<string>) => async <T>(parser: (text: string) => Maybe<T>): Promise<T> => 
-    parse(await p)(parser)
 
 // prioritises stderror, then error, then a successful message
 export const getParsableStringFromCmd = (res: CommandResult): string => 
     (res.stdError != null) ? res.stdError : ((res.error != null) ? res.error.message : res.result)
 
-export const parseCmd = (p: Promise<CommandResult>): Promise<(<T>(parser: (text: string) => Maybe<T>) => Promise<T>)> => 
-    parsePromise(p.then(getParsableStringFromCmd))
+export const parseCmd = (p: CommandResult): (<T>(parser: (text: string) => Maybe<T>) => T) => 
+    parse(getParsableStringFromCmd(p))
 
-export const parseCmdImmediate = (p: Promise<CommandResult>): <T>(parser: (text: string) => Maybe<T>) => Promise<T> => 
-    parsePromiseImmediate(p.then(getParsableStringFromCmd))
-
-export const parseSuccess = (res: Promise<CommandResult>): Promise<string> => 
-    res.then(res => successful(res) ? Promise.reject(new Error(getParsableStringFromCmd(res))) : Promise.resolve(res.result))
+export const assertSuccess = (res: CommandResult) => 
+    successful(res) ? (() => { throw new Error(getParsableStringFromCmd(res)); })() : null
 
 export const failedOutput = (text: string): boolean => 
     ["fatal:", "error:", "could not", "not a git repository"]
         .map(s => text.startsWith(s))
         .reduce((p, n) => p || n)
-
 
 export const exactText = (text: string): Maybe<string> => failedOutput(text) ? null : text
 

@@ -1,5 +1,5 @@
-
-import { exec } from 'child_process';
+import { Observable } from "rxjs";
+import { execSync } from 'child_process';
 import fs from "fs"
 import * as fs_promise from "fs/promises";
 import path from "path";
@@ -43,41 +43,40 @@ export const doNotLogData: Command = {
     shouldLog: false
 }
 
-export const executeCommand = (cwd: string) => (f: Command): Promise<CommandResult> => new Promise((resolve, reject) => {
-    exec(f.cmd, { cwd: cwd }, (error: Error | null, stdout: string, stderr: string) => {
+export const executeCommand = (cwd: string) => (f: Command): () => CommandResult => {
+    return (): CommandResult => {
+        try {
+            const stdout = execSync(f.cmd, { cwd, encoding: 'utf-8' })
 
-        if (stderr) { 
-            if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr))
-
-            return resolve({
-                ...defaultResult,
-                result: stdout,
-                stdError: stderr
-            })
-
-        } else if (error) {
-            if (f.shouldLog) console.error(f.onFail(f.cmd, error))
-
-            return resolve({
-                ...defaultResult,
-                result: stdout,
-                error: error,
-                stdError: stderr
-            })
-
-        } else {
             if (f.shouldLog) console.log(f.onSuccess(f.cmd))
 
-            return resolve({
+            return {
                 ...defaultResult,
                 result: stdout,
-            })
+            }
+
+        } catch (error: any) {
+
+            const stderr = error.stderr?.toString?.() || ""
+            const stdout = error.stdout?.toString?.() || ""
+
+            if (stderr && f.shouldLog) {
+                console.error(f.onStdFail(f.cmd, stderr));
+            } else if (f.shouldLog) {
+                console.error(f.onFail(f.cmd, error));
+            }
+
+            return {
+                ...defaultResult,
+                result: stdout,
+                error,
+                stdError: stderr,
+            }
         }
-    })
-})
+    };
+};
 
 export const doesFilePathExist = (filepath: string): boolean => fs.existsSync(filepath)
-
 
 export const createFilePath = (filepath: string): boolean => {
     try {
