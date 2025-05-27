@@ -77,7 +77,7 @@ export default function UserContributionHeatMap({
           </div>
         )}
 
-        <div className="p-4 text-gray-500">Please select and End Date in the Date Range</div>
+        <div className="p-4 text-gray-500">Please select an End Date in the Date Range</div>
       </div>
     );
   }
