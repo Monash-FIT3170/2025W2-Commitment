@@ -84,7 +84,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
         <Card  className="flex flex-col w-[475px] h-[400px] bg-[#f0f0e8] border border-gray-300 rounded-xl">
         {/* Title*/}
         <CardHeader className="h-[100px]">
-          <CardTitle className="flex justify-between items-start text-3xl mt-0 font-normal ">
+          <CardTitle className="flex justify-between items-start text-xl mt-0 font-bold ">
             {title}
           </CardTitle>
         </CardHeader>
@@ -101,6 +101,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
                     axisLine={true} 
                     tickMargin={tickMarginForXAxis(data.length)} 
                     label={{ value: xAxisLabel, position: "insideBottom", offset: -5 }} 
+                    tick={{ fontSize:11}}
                     />
                     <YAxis 
                     tickLine={false} 
