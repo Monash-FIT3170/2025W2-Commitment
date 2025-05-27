@@ -129,8 +129,6 @@ const topUsers = topContributors(mockAllContributorDataset.data);
 const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
 
-const graphBackgroundColour = "#E8E8DD";
-
 export const generateRandomContributions = (
   startDate: Date,
   endDate: Date,
