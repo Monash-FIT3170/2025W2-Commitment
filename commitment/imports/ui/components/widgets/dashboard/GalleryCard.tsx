@@ -37,7 +37,7 @@ export default function GalleryCard({
       </div>
     </div>
   </CardHeader>      <CardContent className="flex flex-row-reverse">
-        <Button variant="secondary" onClick={onclick}>
+        <Button variant="secondary" className="rounded-full" onClick={onclick}>
           {" "}
           View Repository
         </Button>

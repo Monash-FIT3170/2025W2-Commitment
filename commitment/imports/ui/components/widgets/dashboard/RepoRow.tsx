@@ -34,7 +34,7 @@ export default function RepoRow({ bookmark, onclick, onInfo }: RepoRowProps) {
       <BookmarkButton url={bookmark.url} title={bookmark.title} />
 
       {/* view */}
-      <Button variant="secondary" onClick={onclick}>
+      <Button className="rounded-full"  variant="secondary" onClick={onclick}>
         {" "}
         View Repository
       </Button>
