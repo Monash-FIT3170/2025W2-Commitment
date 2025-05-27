@@ -20,7 +20,7 @@ export const FeatureCard = ({
   return (
     <div
       className={`flex flex-col justify-between 
-        border-2 border-[#F1502F] bg-white rounded-xl p-5 text-center 
+        border-2 border-git bg-white rounded-xl p-5 text-center 
         w-[350px]
         ${className}`}
     >
@@ -146,14 +146,14 @@ export function FeatureCarousel() {
 
       <button
         onClick={scrollPrev}
-        className="absolute left-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
+        className="absolute left-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-git border-2 border-git rounded-full p-3 z-10"
         aria-label="Previous slide"
       >
         <ChevronLeft size={30} />
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
+        className="absolute right-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-git border-2 border-git rounded-full p-3 z-10"
         aria-label="Next slide"
       >
         <ChevronRight size={30} />
@@ -163,7 +163,7 @@ export function FeatureCarousel() {
           <div
             key={index}
             className={`h-3 w-3 rounded-full ${
-              index === selectedIndex ? "bg-[#F1502F]" : "bg-[#F1502F]/30"
+              index === selectedIndex ? "bg-git" : "bg-[#F1502F]/30"
             }`}
           />
         ))}
