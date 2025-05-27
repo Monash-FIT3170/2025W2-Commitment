@@ -1,17 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { format, subDays, addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
-import InfoButton from "./components/ui/infoButton";
-import { DateRangePicker } from "./components/ui/datePicker";
-import { BranchDropDownMenu } from "./components/ui/branchDropDownMenu";
-import UserContributionHeatMap from "./components/ui/heatmap";
-import { ContributionPieChart } from "./components/ui/pieChart";
-import { dark2 } from "./components/ui/colors";
-import { ContributorDropDownMenu } from "./components/ui/contributorDropDownMenu";
-import { HighlightCardWithGraph } from "./components/metrics-page/HighlightCard";
-import { ContributorLineGraph } from "./components/metrics-page/LineGraph";
-import { LeaderboardGraph } from "./components/metrics-page/LeaderboardGraph";
-import { topContributors } from "./lib/utils";
+import InfoButton from "../ui/infoButton";
+import { DateRangePicker } from "../ui/datePicker";
+import { BranchDropDownMenu } from "../ui/branchDropDownMenu";
+import UserContributionHeatMap from "../ui/heatmap";
+import { ContributionPieChart } from "../ui/pieChart";
+import { dark2 } from "../ui/colors";
+import { ContributorDropDownMenu } from "../ui/contributorDropDownMenu";
+import { HighlightCardWithGraph } from "./HighlightCard";
+import { ContributorLineGraph } from "./LineGraph";
+import { LeaderboardGraph } from "./LeaderboardGraph";
+import { topContributors } from "../../lib/utils";
 
 // !!!: Remove this dummy data upon integration with AT3's real data
 const dummyBranches = [

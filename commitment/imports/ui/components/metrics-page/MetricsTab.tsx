@@ -6,8 +6,8 @@ import {
 } from "@ui/components/ui/tabs";
 import React from "react";
 import { Settings } from "lucide-react";
-import { OverviewPage } from "../../OverviewPage";
-import { MetricsPage } from "../../MetricsPage";
+import { OverviewPage } from "./OverviewPage";
+import { MetricsPage } from "./MetricsPage";
 
 interface TabData {
   value: string;
