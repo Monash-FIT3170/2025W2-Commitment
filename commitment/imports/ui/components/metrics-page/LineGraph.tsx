@@ -56,6 +56,8 @@ const tickMarginForXAxis = (dataLength: number) => {
   return 2;                               
 };
 
+const graphBackgroundColour = "#E8E8DD"
+
 
 // container with the contributor line graph. 
 export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
@@ -82,7 +84,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
 
     // card with the line graph 
     return (
-        <Card  className="flex flex-col w-[475px] h-[400px] bg-[#f0f0e8] border border-gray-300 rounded-xl">
+        <Card  className="flex flex-col w-[475px] h-[400px] bg-[#f0f0e8] border-0 rounded-xl" style={{ backgroundColor: graphBackgroundColour }}>
         {/* Title*/}
         <CardHeader className="h-[100px] flex items-center px-4">
           <CardTitle className="flex justify-between items-start text-lg mt-0 font-bold ">

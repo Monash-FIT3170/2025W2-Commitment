@@ -10,6 +10,7 @@ interface HighlightCardWithGraphProps {
   isPositive?: boolean; // determine arrows direction 
   data?: { value: number }[]; // line data for the graph
 }
+const graphBackgroundColour = "#E8E8DD"
 
 export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
   title,
@@ -20,7 +21,7 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
 }) => {
   const fillColor = isPositive ? "#59A14F" : "#E15759";
   return (
-    <Card  className={`font-mono flex flex-col w-[220px] h-[220px] bg-[#f0f0e8] border border-gray-300 rounded-xl  ${    percentageChange ? "justify-between" : "justify-center" }`}>
+    <Card  className={`font-mono flex flex-col w-[220px] h-[220px] bg-[#f0f0e8] border-0 rounded-xl  ${    percentageChange ? "justify-between" : "justify-center" }`} style={{ backgroundColor: graphBackgroundColour }}>
       {/* Title & Menu Icon */}
       <CardHeader className="h-[100px]">
         <CardTitle className="flex justify-between items-start text-2xl mt-0 font-normal ">

@@ -44,12 +44,14 @@ const extendColorPalette = (index: number): string => {
   return `hsl(${hue}, 70%, 55%)`;
 };
 
+const graphBackgroundColour = "#E8E8DD"
+
 export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
   data,
   title,
 }) => {
   return (
-    <Card className="w-full max-w-[600px] h-[400px] bg-[#f0f0e8] border border-gray-300 rounded-xl flex flex-col">
+    <Card className="w-full max-w-[600px] h-[400px] bg-[#f0f0e8] shadow-none ring-0 border-0 rounded-xl flex flex-col " style={{ backgroundColor: graphBackgroundColour }}>
       <CardHeader className="pb-2 items-center">
         <CardTitle className="text-lg font-bold">{title}</CardTitle>
           <CardTitle>     
