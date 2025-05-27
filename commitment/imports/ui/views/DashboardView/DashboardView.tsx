@@ -151,7 +151,7 @@ const DashboardView: React.FC = () => {
 
       {/* Toolbar – right-aligned row */}
       <div className="flex justify-end pr-[12%] mt-6 gap-5 items-center flex-wrap">
-        <ViewToggle value={view} onChange={setView} className="shrink-0" />
+        <ViewToggle value={view} onChange={setView}  />
 
         {/* filter icon */}
         <BookmarkFilter filters={filters} onFilterChange={updateFilter}/>
