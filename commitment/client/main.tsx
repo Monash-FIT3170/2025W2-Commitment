@@ -1,13 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Meteor } from 'meteor/meteor';
-import { LandingPage } from '/imports/ui/LandingPage';
-import {OverviewPage} from '../imports/ui/components/metrics-page/OverviewPage';
-import { MetricsPage } from '../imports/ui/components/metrics-page/MetricsPage';
-import { MetricsMain } from '../imports/ui/MetricsMain';
+import { App } from '/imports/ui/App';
 
 Meteor.startup(() => {
   const container = document.getElementById('react-target');
   const root = createRoot(container!);
-  root.render(<MetricsMain/>);
+  root.render(<App/>);
 });

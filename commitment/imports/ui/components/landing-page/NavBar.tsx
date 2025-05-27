@@ -6,7 +6,7 @@ import {
   NavigationMenuList,
 } from "@ui/components/ui/navigation-menu";
 import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
-import SignUpButton from "@ui/components/ui/signUpButton";
+import SignUpButton from "./signUpButton";
 import ProfileMenu from "@ui/components/ui/profile-menu";
 import { Moon, Sun } from "lucide-react";
 import { useLocation } from "react-router-dom";
