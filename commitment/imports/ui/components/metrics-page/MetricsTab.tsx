@@ -14,10 +14,10 @@ interface TabData {
 }
 
 const allTabData: TabData[] = [
-  {
-    value: "overview",
-    label: "Overview",
-  },
+  // {
+  //   value: "overview",
+  //   label: "Overview",
+  // },
   {
     value: "metrics",
     label: "Metrics",
@@ -31,7 +31,7 @@ const allTabData: TabData[] = [
 export function MetricsTabs() {
   return (
     <Tabs
-      defaultValue="overview"
+      defaultValue="metrics"
       className="w-full bg-[#FEFEFA] shadow justify-items-start"
     >
       <TabsList className="flex bg-[#FEFEFA] border-b">
