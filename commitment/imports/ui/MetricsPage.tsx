@@ -8,13 +8,14 @@ import { DateRangePicker } from "./components/ui/datePicker";
 import { BranchDropDownMenu } from "./components/ui/branchDropDownMenu";
 import UserContributionHeatMap from "./components/ui/heatmap";
 import { ContributionPieChart } from "./components/ui/pieChart";
-import {dark2} from "./components/ui/colors";
+import { dark2 } from "./components/ui/colors";
+import { ContributorDropDownMenu } from "./components/ui/contributorDropDownMenu";
+import { HighlightCardWithGraph } from "./components/metrics-page/HighlightCard";
+import { ContributorLineGraph } from "./components/metrics-page/LineGraph";
+import { LeaderboardGraph } from "./components/metrics-page/LeaderboardGraph";
+import { topContributors } from "./lib/utils";
 
-const metricsPageDescription =
-  "This page gives an overview of key metrics and performance trends.";
-
-const dummyUsers = ["Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Helen"];
-
+// !!!: Remove this dummy data upon integration with AT3's real data
 const dummyBranches = [
   "main",
   "development",
@@ -22,6 +23,112 @@ const dummyBranches = [
   "bugfix/fix-chart",
   "release/v1.2",
 ];
+
+const dummyUsers = [
+  "Alice",
+  "Bob",
+  "Charlie",
+  "David",
+  "Eva",
+  "Frank",
+  "Grace",
+  "Helen",
+];
+
+const dummyContributors = [
+  "Michael",
+  "Andrew",
+  "Jessica",
+  "Andy",
+  "Barry",
+  "Georgia",
+  "Mary",
+  "Sophie",
+  "Bill",
+  "Simon",
+  "George",
+  "Tim",
+  "Rachel",
+  "Lora",
+];
+
+const mockLocLineData = [
+  { value: 50 },
+  { value: 58 },
+  { value: 62 },
+  { value: 65 },
+  { value: 60 },
+  { value: 68 },
+  { value: 72 },
+  { value: 70 },
+  { value: 76 },
+  { value: 85 },
+  { value: 82 },
+  { value: 90 },
+  { value: 95 },
+];
+const mockCommitLineData = [
+  { value: 50 },
+  { value: 58 },
+  { value: 62 },
+  { value: 65 },
+  { value: 60 },
+  { value: 68 },
+  { value: 72 },
+  { value: 70 },
+  { value: 76 },
+  { value: 85 },
+  { value: 82 },
+  { value: 90 },
+  { value: 95 },
+];
+
+const mockTotalLocData = [
+  { value: 95 },
+  { value: 90 },
+  { value: 88 },
+  { value: 85 },
+  { value: 80 },
+  { value: 78 },
+  { value: 75 },
+  { value: 72 },
+  { value: 70 },
+  { value: 65 },
+  { value: 60 },
+  { value: 58 },
+  { value: 55 },
+];
+
+export const mockContributorDataset = {
+  title: "Lines of Codes Changed Over Time",
+  data: [
+    { date: "2024-01-01", Alice: 120, Bob: 90, Charlie: 100 },
+    { date: "2024-01-02", Alice: 140, Bob: 95, Charlie: 105 },
+    { date: "2024-01-03", Alice: 135, Bob: 100, Charlie: 98 },
+    { date: "2024-01-04", Alice: 160, Bob: 110, Charlie: 110 },
+    { date: "2024-01-05", Alice: 170, Bob: 120, Charlie: 115 },
+    { date: "2024-01-06", Alice: 180, Bob: 125, Charlie: 120 },
+    { date: "2024-01-07", Alice: 190, Bob: 130, Charlie: 125 },
+  ],
+};
+
+export const mockAllContributorDataset = {
+  title: "All Contributor Commits",
+  data: [
+    { name: "Alice", commits: 100 },
+    { name: "Bob", commits: 80 },
+    { name: "Michael", commits: 40 },
+    { name: "Andrew", commits: 130 },
+    { name: "David", commits: 60 },
+    { name: "Tim", commits: 70 },
+    { name: "George", commits: 95 },
+  ],
+};
+
+const topUsers = topContributors(mockAllContributorDataset.data);
+
+const metricsPageDescription =
+  "This page gives an overview of key metrics and performance trends.";
 
 const graphBackgroundColour = "#E8E8DD";
 
@@ -31,7 +138,9 @@ export const generateRandomContributions = (
   users = dummyUsers
 ) => {
   const data = [];
-  const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const totalDays = Math.floor(
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   for (const user of users) {
     for (let i = 0; i <= totalDays; i++) {
@@ -76,7 +185,10 @@ export const MetricsPage = () => {
   const startDate = dateRange.from!;
   const endDate = dateRange.to!;
 
-  const data = useMemo(() => generateRandomContributions(startDate, endDate), [startDate, endDate]);
+  const data = useMemo(
+    () => generateRandomContributions(startDate, endDate),
+    [startDate, endDate]
+  );
   const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
 
   return (
@@ -86,50 +198,112 @@ export const MetricsPage = () => {
 
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
           <div className="flex items-center space-x-2 w-2/5">
-            <h1 className="text-5xl text-gray-900 font-robotoFlex">Metrics</h1>
-            <InfoButton description={metricsPageDescription} />
-          </div>
-
-          <div className="mt-2 h-[2px] bg-black w-1/4" />
-
-          <div className="relative">
-            <div className="absolute -top-12 left-[28%]">
-              <p className="text-sm mb-1 text-gray-600">Date Range*</p>
-              <DateRangePicker
-                defaultValue={dateRange}
-                onChange={(range) => {
-                  if (range) setDateRange(range);
-                }}
-              />
+            <div className="flex items-center space-x-2">
+              <h1 className="text-5xl text-gray-900 font-robotoFlex">
+                Metrics
+              </h1>
+              <InfoButton description={metricsPageDescription} />
             </div>
 
-            <div className="absolute -top-12 left-[55%] ">
-              <p className="text-sm mb-1 text-gray-600">Branch*</p>
+            <div className="mt-2 h-[2px] bg-black w-1/4" />
+
+            <div className="relative">
+              <div className="absolute -top-12 left-[28%]">
+                <p className="text-sm mb-1 text-gray-600">Date Range*</p>
+                <DateRangePicker
+                  defaultValue={dateRange}
+                  onChange={(range) => {
+                    if (range) setDateRange(range);
+                  }}
+                />
+              </div>
+
+              <div className="absolute -top-12 left-[55%] ">
+                <p className="text-sm mb-1 text-gray-600">Branch*</p>
+                <BranchDropDownMenu branches={dummyBranches} />
+              </div>
+            </div>
+
+            <div className="mt-16 flex flex-row flex-nowrap items-start gap-6">
+              <div
+                className="w-max outline outline-2 rounded-2xl p-2"
+                style={{
+                  backgroundColor: graphBackgroundColour,
+                  outlineColor: "#35353140",
+                }}
+              >
+                <UserContributionHeatMap
+                  data={data}
+                  startDate={startDate}
+                  endDate={endDate}
+                  maxUsersToShow={24}
+                  title="Heat Map"
+                />
+              </div>
+
+              <div
+                className="flex-shrink-0 outline outline-2 rounded-2xl p-2"
+                style={{
+                  backgroundColor: graphBackgroundColour,
+                  outlineColor: "#35353140",
+                }}
+              >
+                <ContributionPieChart data={pieChartData} />
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 items-start">
+            <div className="flex flex-col">
+              <label className="text-sm text-gray-600">Date Range*</label>
+              <DateRangePicker />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-gray-600">Branch*</label>
               <BranchDropDownMenu branches={dummyBranches} />
             </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-gray-600">Contributors*</label>
+              <ContributorDropDownMenu contributors={dummyContributors} />
+            </div>
           </div>
+        </div>
 
-          <div className="mt-16 flex flex-row flex-nowrap items-start gap-6">
-            <div
-              className="w-max outline outline-2 rounded-2xl p-2" 
-              style={{ backgroundColor: graphBackgroundColour, outlineColor: "#35353140"}}
-              
-            >
-              <UserContributionHeatMap
-                data={data}
-                startDate={startDate}
-                endDate={endDate}
-                maxUsersToShow={24}
-                title="Heat Map"
-              />
-            </div>
+        <div className="mt-2 h-[2px] bg-black w-full sm:w-1/4" />
 
-            <div
-              className="flex-shrink-0 outline outline-2 rounded-2xl p-2"
-              style={{ backgroundColor: graphBackgroundColour, outlineColor: "#35353140"}}
-            >
-              <ContributionPieChart data={pieChartData} />
-            </div>
+        <div className="mt-16">
+          <p className="text-gray-700">Why this div for arosh tbh</p>
+          <div className="flex flex-wrap gap-8 mt-8">
+            <HighlightCardWithGraph
+              title="Total Commits"
+              value={123}
+              percentageChange={20}
+              isPositive={true}
+              data={mockCommitLineData}
+            />
+            <HighlightCardWithGraph
+              title="Total Lines of Code"
+              value={4567}
+              percentageChange={20}
+              isPositive={false}
+              data={mockTotalLocData}
+            />
+            <HighlightCardWithGraph title="No. of Contributors" value={5} />
+            <HighlightCardWithGraph title="Number of branches" value={5} />
+          </div>
+          <div className="flex flex-wrap gap-8 mt-8">
+            <ContributorLineGraph
+              data={mockContributorDataset.data}
+              title={mockContributorDataset.title}
+              xAxisLabel="Date"
+              yAxisLabel="Lines of Code Changed"
+            />
+          </div>
+          <div className="flex flex-wrap gap-8 mt-8">
+            <LeaderboardGraph
+              data={topUsers}
+              title="Top Contributors Based on All Commits"
+              xAxisLabel="Commits"
+            />
           </div>
         </div>
       </div>
