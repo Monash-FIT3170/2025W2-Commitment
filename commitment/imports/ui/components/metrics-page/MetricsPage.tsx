@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { format, subDays, addDays } from "date-fns";
+import { format, subDays, addDays, isValid } from "date-fns";
 import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
@@ -130,10 +130,15 @@ const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
 
 export const generateRandomContributions = (
-  startDate: Date,
-  endDate: Date,
+  startDate?: Date,
+  endDate?: Date,
   users = dummyUsers
 ) => {
+  if (!startDate || !endDate || !isValid(startDate) || !isValid(endDate)) {
+    // In the case where no start or end date is given
+    return [];
+  }
+
   const data = [];
   const totalDays = Math.floor(
     (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
