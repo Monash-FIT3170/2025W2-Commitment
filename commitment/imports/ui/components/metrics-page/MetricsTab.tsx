@@ -32,15 +32,16 @@ export function MetricsTabs() {
   return (
     <Tabs
       defaultValue="overview"
-      className="w-full bg-white shadow justify-items-start"
+      className="w-full bg-[#FEFEFA] shadow justify-items-start"
     >
-      <TabsList className="flex bg-white px-2">
+      <TabsList className="flex bg-[#FEFEFA] px-2">
         {allTabData.map(({ value, label }) => (
           <TabsTrigger
             key={value}
             value={value}
             className={`
               relative px-4 py-2 text-lg font-medium text-gray-600
+              bg-[#FEFEFA] hover:bg-[#D0D0B7]
               data-[state=active]:bg-gray-100
               data-[state=active]:text-gray-900
               data-[state=active]:after:content-['']
@@ -50,7 +51,7 @@ export function MetricsTabs() {
               data-[state=active]:after:w-full
               data-[state=active]:after:h-0.5
               data-[state=active]:after:bg-[#F1502F]
-              bg-white rounded-none border-none shadow-none focus:outline-none
+              rounded-none border-none shadow-none focus:outline-none
               transition-all
             `}
           >
