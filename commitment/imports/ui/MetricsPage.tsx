@@ -194,8 +194,6 @@ export const MetricsPage = () => {
   return (
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
-        <NavBar />
-
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
           {/* Header */}
           <div className="mb-6">
