@@ -33,7 +33,7 @@ export function MetricsTabs() {
   return (
     <div className="w-full bg-[#FEFEFA]">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-[#FEFEFA]">
+      <div className="flex items-center justify-between px-10 py-3 border-b border-gray-200 bg-[#FEFEFA]">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-gray-800">Repo Name</h2>
           {/* Bookmark icon placeholder */}
@@ -46,13 +46,13 @@ export function MetricsTabs() {
         defaultValue="overview"
         className="w-full bg-[#FEFEFA] shadow justify-items-start"
       >
-        <TabsList className="flex bg-[#FEFEFA]">
+        <TabsList className="flex bg-[#FEFEFA] border-b">
           {allTabData.map(({ value, label }) => (
             <TabsTrigger
               key={value}
               value={value}
               className={`
-              relative px-4 py-2 text-lg font-medium text-gray-600
+              relative px-4 text-lg font-medium text-gray-600
               bg-[#FEFEFA] hover:bg-[#D0D0B7]
               data-[state=active]:bg-gray-100
               data-[state=active]:text-gray-900
