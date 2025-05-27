@@ -2,45 +2,48 @@ import React, { useEffect, useMemo, useState } from "react";
 import GalleryCard from "@ui/components/widgets/dashboard/GalleryCard";
 import RepoRow from "../../components/widgets/dashboard/RepoRow";
 import ViewToggle from "../../components/widgets/dashboard/ViewToggle";
-import { Search, ArrowDownUp } from "lucide-react";
+import { Search  } from "lucide-react";
+import { Funnel, ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
 import {
   DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
 } from "@ui/components/ui/dropdown";
 import { Button } from "@ui/components/ui/button";
 import { Bookmark } from "/imports/api/bookmarks";
-import { Meteor } from "meteor/meteor";
-import { useTracker } from "meteor/react-meteor-data";
+import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
 import { NavBar } from "../../components/landing-page/NavBar";
 import { DateRange } from "react-day-picker";
-import { FiltersState, FilterValue } from "../../components/ui/filter";
+import {  FiltersState, FilterValue } from "../../components/ui/filter";
 import BookmarkFilter from "../../components/widgets/dashboard/BookmarkFilter";
+
+// const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
+//   _id: `${i + 1}`,
+//   title: `Repository ${i + 1}`,
+//   createdAt: new Date("2024-06-20T10:30:00.000Z"),
+//   url: "git@github.com:Monash-FIT3170/2025W2-Commitment.git",
+//   userID:"1"
+// }));
 
 const handleView = () => console.log("view metrics");
 const handleInfo = () => console.log("info");
 
-type SortKey = "createdAt" | "lastViewed" | null;
-type SortDir = "asc" | "desc";
-
-const sortLabels: Record<string, string> = {
-  createdAt_desc: "Date bookmarked: newest → oldest",
-  createdAt_asc: "Date bookmarked: oldest → newest",
-  lastViewed_desc: "Last accessed: newest → oldest",
-  lastViewed_asc: "Last accessed: oldest → newest",
-};
+type SortKey = "createdAt" | "lastViewed" | null
+type SortDir = "asc" | "desc" | null
 
 const DashboardView: React.FC = () => {
   const [view, setView] = useState<"list" | "gallery">("gallery");
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>(null);
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [sortDir, setSortDir] = useState<SortDir>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const user = useTracker(() => Meteor.user());
   const userName = user?.profile?.name || user?.username || "User";
 
+  
   const [filters, setFilters] = useState<FiltersState>({
     createdAt: { isUsed: false, value: { from: undefined, to: undefined } },
     lastViewed: { isUsed: false, value: { from: undefined, to: undefined } },
@@ -48,14 +51,15 @@ const DashboardView: React.FC = () => {
   });
 
   const updateFilter = (key: string, value: FilterValue) => {
-    setFilters((p) => ({
-      ...p,
+    setFilters((prev) => ({
+      ...prev,
       [key]: {
-        isUsed: Array.isArray(value) ? value.length > 0 : !!value,
+        isUsed: Array.isArray(value) ? value.length > 0 : !!value, // fix so is accurate/is updated in method
         value,
       },
-    }));
+    }))
   };
+
 
   const applyFilter = (bm: Bookmark, filters: FiltersState): boolean => {
     return Object.entries(filters).every(([filterKey, { isUsed, value }]) => {
@@ -103,21 +107,27 @@ const DashboardView: React.FC = () => {
     });
   };
 
-  const applySort = (list: Bookmark[], key: SortKey, dir: SortDir) => {
-    if (!key) return list;
-    return [...list].sort((a, b) => {
-      const t1 = new Date((a as any)[key] ?? 0).getTime();
-      const t2 = new Date((b as any)[key] ?? 0).getTime();
-      return dir === "asc" ? t1 - t2 : t2 - t1;
+  const applySort = (list: Bookmark[]) => {
+    if (!sortKey || !sortDir) return list;
+    return [...list].sort((a,b)=>{
+      const t1 = new Date((a as any)[sortKey]).getTime();
+      const t2 = new Date((b as any)[sortKey]).getTime();
+      return sortDir === "asc" ? t1 - t2 : t2 - t1;
     });
   };
+
+  const cycle = (key:"createdAt"|"lastViewed")=>{
+    if(sortKey!==key){setSortKey(key);setSortDir("desc");return;}
+    if(sortDir==="desc"){setSortDir("asc");return;}
+    setSortKey(null);setSortDir(null);
+  }
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateFilter("titleSearch", e.target.value);
   };
 
   useEffect(() => {
-    Meteor.call("bookmarks.getAllBookmarks", (error, result) => {
+    Meteor.call("bookmarks.getAllBookmarks", (error: any, result: React.SetStateAction<Bookmark[]>) => {
       if (error) {
         console.error("Error fetching bookmarks:", error);
       } else {
@@ -127,10 +137,10 @@ const DashboardView: React.FC = () => {
     });
   }, [bookmarks]);
 
-  const visible = useMemo(() => {
-    const filtered = bookmarks.filter((bm) => applyFilter(bm, filters));
-    return applySort(filtered, sortKey, sortDir);
-  }, [bookmarks, filters, sortKey, sortDir]);
+  const displayed = useMemo(()=>{
+    const filtered = bookmarks.filter(bm=>applyFilter(bm,filters));
+    return applySort(filtered);
+  },[bookmarks,filters,sortKey,sortDir]);
 
   return (
     <div className="min-h-screen bg-[#F0F0E8]">
@@ -139,17 +149,17 @@ const DashboardView: React.FC = () => {
         {userName}'s Dashboard
       </h1>
 
+      {/* Toolbar – right-aligned row */}
       <div className="flex justify-end pr-[12%] mt-6 gap-5 items-center flex-wrap">
         <ViewToggle value={view} onChange={setView} className="shrink-0" />
-        <BookmarkFilter filters={filters} onFilterChange={updateFilter} />
 
-        <DropdownMenu>
+        {/* filter icon */}
+        <BookmarkFilter filters={filters} onFilterChange={updateFilter}/>
+
+        {/* sort icon */}
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              title={sortKey ? sortLabels[`${sortKey}_${sortDir}`] : "Sort"}
-            >
+            <Button variant="outline" size="icon" aria-label="sort">
               <ArrowDownUp
                 size={20}
                 strokeWidth={2}
@@ -161,50 +171,20 @@ const DashboardView: React.FC = () => {
               />
             </Button>
           </DropdownMenuTrigger>
-
-          <DropdownMenuContent sideOffset={6}>
-            <DropdownMenuRadioGroup
-              value={sortKey ? `${sortKey}_${sortDir}` : ""}
-              onValueChange={(v) => {
-                const [k, d] = v.split("_") as [SortKey, SortDir];
-                setSortKey(k);
-                setSortDir(d);
-              }}
-            >
-              <DropdownMenuRadioItem
-                value="createdAt_desc"
-                className="data-[state=checked]:bg-gray-100 data-[state=checked]:font-medium"
-              >
-                {sortLabels.createdAt_desc}
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem
-                value="createdAt_asc"
-                className="data-[state=checked]:bg-gray-100 data-[state=checked]:font-medium"
-              >
-                {sortLabels.createdAt_asc}
-              </DropdownMenuRadioItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioItem
-                value="lastViewed_desc"
-                className="data-[state=checked]:bg-gray-100 data-[state=checked]:font-medium"
-              >
-                {sortLabels.lastViewed_desc}
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem
-                value="lastViewed_asc"
-                className="data-[state=checked]:bg-gray-100 data-[state=checked]:font-medium"
-              >
-                {sortLabels.lastViewed_asc}
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
+          <DropdownMenuContent>
+            <DropdownMenuItem onSelect={(e)=>{e.preventDefault();cycle("lastViewed");}}>
+              Last viewed {sortKey==="lastViewed" && (sortDir==="desc"?<ArrowDown className="ml-2 h-4 w-4"/>:sortDir==="asc"?<ArrowUp className="ml-2 h-4 w-4"/>:null)}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={(e)=>{e.preventDefault();cycle("createdAt");}}>
+              Date bookmarked {sortKey==="createdAt" && (sortDir==="desc"?<ArrowDown className="ml-2 h-4 w-4"/>:sortDir==="asc"?<ArrowUp className="ml-2 h-4 w-4"/>:null)}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* Search bar */}
         <div className="relative">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-          />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="search"
             placeholder="Search repositories"
@@ -214,18 +194,29 @@ const DashboardView: React.FC = () => {
         </div>
       </div>
 
-      <div className="mx-auto mt-6 w-full max-w-[77%] bg-white border border-gray-200 rounded-lg shadow px-6 py-5 h-[480px] overflow-y-auto">
+      {/* Outer scrollable container */}
+      <div
+        className="
+          mx-auto mt-6
+          w-full max-w-[77%]          
+          bg-white border border-gray-200 rounded-lg shadow
+          px-6 py-5
+          h-[480px]                  
+          overflow-y-auto
+        "
+      >
         {view === "gallery" ? (
+          // Gallery
           <div className="flex flex-wrap justify-evenly gap-10">
-            {visible.map((b) => (
-              <GalleryCard key={b._id} bookmark={b} onclick={handleView} />
+            {displayed.map((b) => (
+              <GalleryCard  bookmark={b} onclick={handleView} />
             ))}
           </div>
         ) : (
+          // List
           <ul className="space-y-5">
-            {visible.map((b) => (
+            {displayed.map((b) => (
               <RepoRow
-                key={b._id}
                 bookmark={b}
                 onclick={handleView}
                 onInfo={handleInfo}
