@@ -29,3 +29,8 @@ Temporary Items
 
 ## IDEs
 .idea
+
+# Dependencies
+node_modules/
+/package.json
+/package-lock.json

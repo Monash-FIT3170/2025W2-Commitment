@@ -3,7 +3,7 @@ import { FeatureCarousel } from "./FeatureCarousel";
 
 export const Features = () => {
   return (
-    <div>
+    <div className="ml-32 mr-32">
       <div className="w-full text-center mt-10">
         <p className="text-git text-lg font-semibold font-mono tracking-wide">
           OUR FEATURES?

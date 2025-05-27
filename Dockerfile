@@ -2,7 +2,7 @@
 FROM node:23-slim
 
 # Install curl and other dependencies
-RUN apt-get update && apt-get install -y curl git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl git python3 make g++ && rm -rf /var/lib/apt/lists/* && ln -sf python3 /usr/bin/python
 
 # Install Meteor 3.2 (allowing superuser)
 RUN METEOR_ALLOW_SUPERUSER=true curl https://install.meteor.com/ | sh

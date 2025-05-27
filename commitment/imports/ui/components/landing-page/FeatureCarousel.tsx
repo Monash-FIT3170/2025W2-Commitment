@@ -21,18 +21,24 @@ export const FeatureCard = ({
     <div
       className={`flex flex-col justify-between 
         border-2 border-git bg-white rounded-xl p-5 text-center 
-        w-[350px]
+        w-full h-full 
+        max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl
+        transition-all duration-300 ease-in-out
         ${className}`}
     >
       <div>
-        <h2 className="text-xl font-mono font-semibold text-gray-800 mb-4">{title}</h2>
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-mono font-semibold text-black mb-4">
+          {title}
+        </h2>
         <img
           src={image}
           alt={alt}
-          className="scale-75 object-cover rounded-md mb-4"
+          className="object-cover rounded-md mb-4 scale-75 sm:scale-90 lg:scale-100 mx-auto"
         />
       </div>
-      <p className="text-gray-600 font-mono text-sm font-robotoFlex">{description}</p>
+      <p className="text-gray-600 text-sm sm:text-base font-mono">
+        {description}
+      </p>
     </div>
   );
 };
@@ -83,81 +89,79 @@ const features: Feature[] = [
 ];
 
 export function FeatureCarousel() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "center",
+  });
+
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
-  }, [emblaApi]);
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;
 
-    const onSelect = () => {
-      setSelectedIndex(emblaApi.selectedScrollSnap());
-    };
-
+    const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
     emblaApi.on("select", onSelect);
     onSelect();
   }, [emblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;
-
-    const interval = setInterval(() => {
-      emblaApi.scrollNext();
-    }, 10000);
-
+    const interval = setInterval(() => emblaApi.scrollNext(), 10000);
     return () => clearInterval(interval);
   }, [emblaApi]);
 
   return (
-    <div
-      className="relative ml-32 mr-32 mt-10 align-middle overflow-hidden"
-      ref={emblaRef}
-    >
-      <div className="flex">
-        {features.map((feature, index) => {
-          const isSelected = index === selectedIndex;
-          return (
-            <div
-              key={index}
-              className={`ease-in-out px-2 ${
-                isSelected
-                  ? "w-1/3 opacity-100 blur-none"
-                  : "w-1/3 opacity-45 blur-sm"
-              }`}
-            >
-              <FeatureCard
-                title={feature.title}
-                description={feature.description}
-                image={feature.image}
-                alt={feature.alt}
-                className={isSelected ? "shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "shadow-none"}
-              />
-            </div>
-          );
-        })}
+    <div className="relative w-full overflow-hidden px-4 sm:px-8 lg:px-16 mt-10">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {features.map((feature, index) => {
+            const isSelected = index === selectedIndex;
+
+            return (
+              <div
+                key={index}
+                className={`
+                  flex-shrink-0 px-2 ease-in-out 
+                  ${isSelected ? "opacity-100 blur-none" : "opacity-50 blur-sm"}
+                `}
+                style={{
+                  width: "33.3333%", // Always 3 cards
+                  scrollSnapAlign: "center",
+                }}
+              >
+                <FeatureCard
+                  title={feature.title}
+                  description={feature.description}
+                  image={feature.image}
+                  alt={feature.alt}
+                  className={isSelected ? "shadow-xl" : ""}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
+      {/* Nav buttons */}
       <button
         onClick={scrollPrev}
-        className="absolute left-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-git border-2 border-git rounded-full p-3 z-10"
+        className="absolute left-[25%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
         aria-label="Previous slide"
       >
         <ChevronLeft size={30} />
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-[12.5%] top-1/2 transform -translate-y-1/2 bg-white text-git border-2 border-git rounded-full p-3 z-10"
+        className="absolute right-[25%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
         aria-label="Next slide"
       >
         <ChevronRight size={30} />
       </button>
+
+      {/* Dots */}
       <div className="flex justify-center mt-6 gap-2">
         {features.map((_, index) => (
           <div
@@ -171,3 +175,4 @@ export function FeatureCarousel() {
     </div>
   );
 }
+
