@@ -92,20 +92,6 @@ export const mockContributorDataset = {
     { date: "2024-01-05", Alice: 170, Bob: 120, Charlie: 115 },
     { date: "2024-01-06", Alice: 180, Bob: 125, Charlie: 120 },
     { date: "2024-01-07", Alice: 190, Bob: 130, Charlie: 125 },
-  ]
-}
-const metricsPageDescription = "This page gives an overview of key metrics and performance trends."
-
-export const mockContributorDataset = {
-  title: "Lines of Codes Changed Over Time",
-  data: [
-    { date: "2024-01-01", Alice: 120, Bob: 90, Charlie: 100 },
-    { date: "2024-01-02", Alice: 140, Bob: 95, Charlie: 105 },
-    { date: "2024-01-03", Alice: 135, Bob: 100, Charlie: 98 },
-    { date: "2024-01-04", Alice: 160, Bob: 110, Charlie: 110 },
-    { date: "2024-01-05", Alice: 170, Bob: 120, Charlie: 115 },
-    { date: "2024-01-06", Alice: 180, Bob: 125, Charlie: 120 },
-    { date: "2024-01-07", Alice: 190, Bob: 130, Charlie: 125 },
   ],
 };
 
@@ -178,9 +164,14 @@ export const MetricsPage = () => (
             <HighlightCardWithGraph title="No. of Contributors" value={5} />
             <HighlightCardWithGraph title="Number of branches" value={5} />
           </div>
-                <div className = "flex flex-wrap gap-8 mt-8">
-                    <ContributorLineGraph data={mockContributorDataset.data} title={mockContributorDataset.title} xAxisLabel="Date" yAxisLabel="Lines of Code Changed" />
-                </div>
+          <div className="flex flex-wrap gap-8 mt-8">
+            <ContributorLineGraph
+              data={mockContributorDataset.data}
+              title={mockContributorDataset.title}
+              xAxisLabel="Date"
+              yAxisLabel="Lines of Code Changed"
+            />
+          </div>
           <div className="flex flex-wrap gap-8 mt-8">
             <LeaderboardGraph
               data={topUsers}
