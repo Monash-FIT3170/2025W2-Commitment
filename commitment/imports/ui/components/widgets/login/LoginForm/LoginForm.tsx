@@ -72,7 +72,7 @@ const LoginForm: FC<LoginFormProps> = (props) => {
           localStorage.removeItem("rememberedUser");
         }
 
-        navigate("/insert-git-repo");
+        navigate("/home");
       }
     });
   }
