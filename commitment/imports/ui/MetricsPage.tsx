@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { format, subDays, addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
-
-import { NavBar } from "./components/landing-page/NavBar";
 import InfoButton from "./components/ui/infoButton";
 import { DateRangePicker } from "./components/ui/datePicker";
 import { BranchDropDownMenu } from "./components/ui/branchDropDownMenu";
