@@ -1,18 +1,45 @@
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/components/ui/tabs";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@ui/components/ui/tabs";
 import React from "react";
 import { OverviewPage } from "../../OverviewPage";
 import { MetricsPage } from "../../MetricsPage";
 
+interface TabData {
+  value: string;
+  label: string;
+}
+
+const allTabData: TabData[] = [
+  {
+    value: "overview",
+    label: "Overview",
+  },
+  {
+    value: "metrics",
+    label: "Metrics",
+  },
+  {
+    value: "contributors",
+    label: "Contributors",
+  },
+  {
+    value: "scaling",
+    label: "Scaling",
+  },
+];
+
 export function MetricsTabs() {
   return (
-    <Tabs defaultValue="overview" className="w-full bg-white shadow justify-items-start">
+    <Tabs
+      defaultValue="overview"
+      className="w-full bg-white shadow justify-items-start"
+    >
       <TabsList className="flex bg-white px-2">
-        {[
-          { value: "overview", label: "Overview" },
-          { value: "metrics", label: "Metrics" },
-          { value: "scaling", label: "Scaling" },
-          { value: "contributions", label: "Contributions" },
-        ].map(({ value, label }) => (
+        {allTabData.map(({ value, label }) => (
           <TabsTrigger
             key={value}
             value={value}
@@ -44,12 +71,8 @@ export function MetricsTabs() {
         {/* METRICS */}
         <MetricsPage />
       </TabsContent>
-      <TabsContent value="scaling">
-        {/* SCALING */}
-      </TabsContent>
-      <TabsContent value="contributions">
-        {/* CONTRIBUTIONS */}
-      </TabsContent>
+      <TabsContent value="scaling">{/* SCALING */}</TabsContent>
+      <TabsContent value="contributors">{/* CONTRIBUTORS */}</TabsContent>
     </Tabs>
   );
 }
