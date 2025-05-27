@@ -181,7 +181,7 @@ export default function UserContributionHeatMap({
 //   The things actually in this component
   <div
   
-      className="rounded border p-6 overflow-x-auto  "  //could be issue here with padding
+      className="rounded border p-6 overflow-x-auto font-mono "  //could be issue here with padding
       style={{
         maxWidth: "fit-content",  // limit width to content width
         backgroundColor: graphBackgroundColour

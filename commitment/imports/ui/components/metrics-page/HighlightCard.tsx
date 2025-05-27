@@ -20,10 +20,10 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
 }) => {
   const fillColor = isPositive ? "#59A14F" : "#E15759";
   return (
-    <Card  className={`flex flex-col w-[220px] h-[220px] bg-[#f0f0e8] border border-gray-300 rounded-xl  ${    percentageChange ? "justify-between" : "justify-center" }`}>
+    <Card  className={`font-mono flex flex-col w-[220px] h-[220px] bg-[#f0f0e8] border border-gray-300 rounded-xl  ${    percentageChange ? "justify-between" : "justify-center" }`}>
       {/* Title & Menu Icon */}
       <CardHeader className="h-[100px]">
-        <CardTitle className="flex justify-between items-start text-3xl mt-0 font-normal ">
+        <CardTitle className="flex justify-between items-start text-2xl mt-0 font-normal ">
           {title}
         </CardTitle>
       </CardHeader>
