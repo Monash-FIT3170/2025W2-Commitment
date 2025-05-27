@@ -3,11 +3,14 @@ import GalleryCard from "@ui/components/widgets/dashboard/GalleryCard";
 import RepoRow     from "../../components/widgets/dashboard/RepoRow";
 import ViewToggle  from "../../components/widgets/dashboard/ViewToggle";
 import { Search }  from "lucide-react";
-import { Funnel, ArrowDownUp } from "lucide-react";
+import {  ArrowDownUp } from "lucide-react";
 import { Bookmark } from "/imports/api/bookmarks";
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { NavBar } from "../../components/landing-page/NavBar";
+import { DateRange } from "react-day-picker";
+import {  FiltersState, FilterValue } from "../../components/ui/filter";
+import BookmarkFilter from "../../components/widgets/dashboard/BookmarkFilter";
 
 // const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
 //   _id: `${i + 1}`,
@@ -28,6 +31,53 @@ const DashboardView: React.FC = () => {
   const [view, setView] = useState<"list" | "gallery">("gallery");
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const user = useTracker(() => Meteor.user());
+  const userName = user?.profile?.name || user?.username || "User";
+
+  
+  const [filters, setFilters] = useState<FiltersState>({
+    createdAt: { isUsed: false, value: { from: undefined, to: undefined } },
+    lastViewed: { isUsed: false, value: { from: undefined, to: undefined } },
+  });
+
+  const updateFilter = (key: string, value: FilterValue) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: {
+        isUsed: Array.isArray(value) ? value.length > 0 : !!value, // fix so is accurate/is updated in method
+        value,
+      },
+    }))
+  };
+
+
+  const applyFilter = (bm: Bookmark, filters: FiltersState):boolean=>{
+
+    return Object.entries(filters).every(([filterKey, { isUsed, value }]) => {
+      if (!isUsed) return true;
+  
+      switch (filterKey) {
+        case "createdAt":
+          if (value && typeof value === "object" && "from" in value && "to" in value) {
+            const range = value as DateRange;
+            if (range.from && range.to && bm.createdAt) {
+              return bm.createdAt >= range.from && bm.createdAt <= range.to;
+            }
+          }
+          return true;
+  
+        case "lastViewed":
+          if (value && typeof value === "object" && "from" in value && "to" in value) {
+            const range = value as DateRange;
+            if (range.from && range.to && bm.lastViewed) {
+              return bm.lastViewed >= range.from && bm.lastViewed <= range.to;
+            }
+          }
+          return true;
+    
+        default:
+          return true;
+      }
+    });}
 
   useEffect(() => {
     Meteor.call("bookmarks.getAllBookmarks", (error, result) => {
@@ -37,6 +87,7 @@ const DashboardView: React.FC = () => {
         setBookmarks(result);
       }
     });
+
   }, [bookmarks]);
 
   return (
@@ -44,13 +95,14 @@ const DashboardView: React.FC = () => {
                   <NavBar isLoggedIn={true} />
       
       {/* Heading (aligned with container left edge) */}
-      <h1 className="pt-12 pl-[12%] text-4xl font-bold">{user.profile?.name}'s Dashboard</h1>
+      <h1 className="pt-12 pl-[12%] text-4xl font-bold">{userName}'s Dashboard</h1>
 
       {/* Toolbar – right-aligned row */}
       <div className="flex justify-end pr-[12%] mt-6 gap-5 items-center flex-wrap">
         <ViewToggle value={view} onChange={setView} className="shrink-0" />
 
         {/* filter icon */}
+        <BookmarkFilter filters={filters} onFilterChange={updateFilter}/>
 
         {/* sort icon */}
         <button aria-label="sort"
@@ -84,14 +136,14 @@ const DashboardView: React.FC = () => {
         {view === "gallery" ? (
           // Gallery
           <div className="flex flex-wrap justify-evenly gap-10">
-            {bookmarks.map((b) => (
+            {bookmarks.filter(bm => applyFilter(bm, filters)).map((b) => (
               <GalleryCard  bookmark={b} onclick={handleView} />
             ))}
           </div>
         ) : (
           // List
           <ul className="space-y-5">
-            {bookmarks.map((b) => (
+            {bookmarks.filter(bm => applyFilter(bm, filters)).map((b) => (
               <RepoRow
                 bookmark={b}
                 onclick={handleView}
