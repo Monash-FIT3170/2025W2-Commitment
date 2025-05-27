@@ -125,5 +125,22 @@ Meteor.methods({
         // console.log(this.userId)
         // console.log(bm)
 
-        return bm;    }
+        return bm;    },
+
+        /**
+         * Retrieves all bookmarks for the current user.
+         *
+         * @method bookmarks.getNBookmarks
+         * @returns {Promise<Bookmark[]>} An array of bookmarks for the current user.
+         * @throws {Meteor.Error} If not authorised.
+         */
+        async 'bookmarks.getNBookmarks'(numBookmarks:number) {
+            if (!this.userId) {
+                throw new Meteor.Error('not-authorized', 'You must be logged in to view bookmarks.');
+            }
+            const bm = await BookmarksCollection.find({ userID: this.userId },{ limit: numBookmarks }).fetch();
+            // console.log(this.userId)
+            // console.log(bm)
+    
+            return bm;    }
 });
