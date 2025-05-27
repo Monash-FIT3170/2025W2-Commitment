@@ -6,16 +6,16 @@ import { RepositoryData, CommitData } from "./commitment_api/types";
 // Type definitions for the output structs 
 
 // LOC over time (for line graph)
-type TimeLOCEntry = { timestamp: Date; locChanged: number };
+export type TimeLOCEntry = { timestamp: Date; locChanged: number };
 
 // commit time tracking (for heatmap)
-type CommitFrequencyEntry = { timestamp: Date };
+export type CommitFrequencyEntry = { timestamp: Date };
 
 // summary per user (for pie charts)
-type UserStats = { commits: number; loc: number };
+export type UserStats = { commits: number; loc: number };
 
 // placeholder type for scoring results (for race chart)
-type ScalingData = { score: number };
+export type ScalingData = { score: number };
 
 // utility func
 
