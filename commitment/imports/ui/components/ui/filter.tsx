@@ -27,7 +27,7 @@ export type FilterOption =
     };
 
 
-export type FilterValue = boolean | string[] | DateRange;
+export type FilterValue = boolean | string[] | DateRange| string;
 
 export type FiltersState = Record<
   string,          //  filterkey

@@ -22,16 +22,14 @@ import BookmarkFilter from "../../components/widgets/dashboard/BookmarkFilter";
 
 const handleView = () => console.log("view metrics");
 const handleInfo = () => console.log("info");
-const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) =>
-  console.log("search:", e.target.value);
 
 type SortKey = "createdAt" | "lastViewed" | null;
 type SortDir = "asc" | "desc";
 
 const sortLabels: Record<string, string> = {
   createdAt_desc: "Date bookmarked: newest → oldest",
-  createdAt_asc:  "Date bookmarked: oldest → newest",
-  lastViewed_desc:"Last accessed: newest → oldest",
+  createdAt_asc: "Date bookmarked: oldest → newest",
+  lastViewed_desc: "Last accessed: newest → oldest",
   lastViewed_asc: "Last accessed: oldest → newest",
 };
 
@@ -46,6 +44,7 @@ const DashboardView: React.FC = () => {
   const [filters, setFilters] = useState<FiltersState>({
     createdAt: { isUsed: false, value: { from: undefined, to: undefined } },
     lastViewed: { isUsed: false, value: { from: undefined, to: undefined } },
+    titleSearch: { isUsed: false, value: "" },
   });
 
   const updateFilter = (key: string, value: FilterValue) => {
@@ -58,16 +57,51 @@ const DashboardView: React.FC = () => {
     }));
   };
 
-  const applyFilter = (bm: Bookmark, f: FiltersState) =>
-    Object.entries(f).every(([k, { isUsed, value }]) => {
+  const applyFilter = (bm: Bookmark, filters: FiltersState): boolean => {
+    return Object.entries(filters).every(([filterKey, { isUsed, value }]) => {
       if (!isUsed) return true;
-      const r = value as DateRange;
-      if (k === "createdAt" && r.from && r.to && bm.createdAt)
-        return bm.createdAt >= r.from && bm.createdAt <= r.to;
-      if (k === "lastViewed" && r.from && r.to && bm.lastViewed)
-        return bm.lastViewed >= r.from && bm.lastViewed <= r.to;
-      return true;
+
+      switch (filterKey) {
+        case "createdAt":
+          if (
+            value &&
+            typeof value === "object" &&
+            "from" in value &&
+            "to" in value
+          ) {
+            const range = value as DateRange;
+            if (range.from && range.to && bm.createdAt) {
+              return bm.createdAt >= range.from && bm.createdAt <= range.to;
+            }
+          }
+          return true;
+
+        case "lastViewed":
+          if (
+            value &&
+            typeof value === "object" &&
+            "from" in value &&
+            "to" in value
+          ) {
+            const range = value as DateRange;
+            if (range.from && range.to && bm.lastViewed) {
+              return bm.lastViewed >= range.from && bm.lastViewed <= range.to;
+            }
+          }
+          return true;
+
+        case "titleSearch":
+          console.log("searching w/ string!");
+          if (value && typeof value === "string") {
+            return bm.title.toLowerCase().includes(value.toLowerCase());
+          }
+          return true;
+
+        default:
+          return true;
+      }
     });
+  };
 
   const applySort = (list: Bookmark[], key: SortKey, dir: SortDir) => {
     if (!key) return list;
@@ -78,9 +112,20 @@ const DashboardView: React.FC = () => {
     });
   };
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateFilter("titleSearch", e.target.value);
+  };
+
   useEffect(() => {
-    Meteor.call("bookmarks.getAllBookmarks", (_, res) => res && setBookmarks(res));
-  }, []);
+    Meteor.call("bookmarks.getAllBookmarks", (error, result) => {
+      if (error) {
+        console.error("Error fetching bookmarks:", error);
+      } else {
+        setBookmarks(result);
+        console.log("got ", bookmarks.length, " bookmarks");
+      }
+    });
+  }, [bookmarks]);
 
   const visible = useMemo(() => {
     const filtered = bookmarks.filter((bm) => applyFilter(bm, filters));
@@ -90,7 +135,9 @@ const DashboardView: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F0F0E8]">
       <NavBar isLoggedIn />
-      <h1 className="pt-12 pl-[12%] text-4xl font-bold">{userName}'s Dashboard</h1>
+      <h1 className="pt-12 pl-[12%] text-4xl font-bold">
+        {userName}'s Dashboard
+      </h1>
 
       <div className="flex justify-end pr-[12%] mt-6 gap-5 items-center flex-wrap">
         <ViewToggle value={view} onChange={setView} className="shrink-0" />
@@ -106,7 +153,11 @@ const DashboardView: React.FC = () => {
               <ArrowDownUp
                 size={20}
                 strokeWidth={2}
-                className={sortDir === "asc" ? "rotate-180 transition-transform" : "transition-transform"}
+                className={
+                  sortDir === "asc"
+                    ? "rotate-180 transition-transform"
+                    : "transition-transform"
+                }
               />
             </Button>
           </DropdownMenuTrigger>
@@ -173,7 +224,12 @@ const DashboardView: React.FC = () => {
         ) : (
           <ul className="space-y-5">
             {visible.map((b) => (
-              <RepoRow key={b._id} bookmark={b} onclick={handleView} onInfo={handleInfo} />
+              <RepoRow
+                key={b._id}
+                bookmark={b}
+                onclick={handleView}
+                onInfo={handleInfo}
+              />
             ))}
           </ul>
         )}
