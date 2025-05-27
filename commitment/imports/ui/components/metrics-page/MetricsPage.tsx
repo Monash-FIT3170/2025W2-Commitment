@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { format, subDays, addDays } from "date-fns";
+import { format, subDays, addDays, isValid } from "date-fns";
 import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
@@ -134,6 +134,11 @@ export const generateRandomContributions = (
   endDate: Date,
   users = dummyUsers
 ) => {
+  if (!endDate || !isValid(endDate)) {
+    // In the case where no end date is given
+    return [];
+  } 
+  console.log(startDate, endDate, "both")
   const data = [];
   const totalDays = Math.floor(
     (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
