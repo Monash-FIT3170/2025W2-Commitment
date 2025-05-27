@@ -5,10 +5,10 @@ export const Features = () => {
   return (
     <div>
       <div className="w-full text-center mt-10">
-        <p className="text-sm text-git font-medium font-mono tracking-wide">
+        <p className="text-git text-lg font-semibold font-mono tracking-wide">
           OUR FEATURES?
         </p>
-        <h1 className="text-5xl text-gray-900 mt-2 font-mono">
+        <h1 className="text-5xl text-black mt-2 font-mono">
           Get The Full Picture...
         </h1>
       </div>
