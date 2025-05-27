@@ -18,7 +18,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="text-center pt-8 border-t border-gray-700 mt-8">
+      <div className="text-center pt-8 border-t border-gray-700 mt- font-mono">
         <p>
           &copy; {new Date().getFullYear()} Copyright Commitment. All Rights
           Reserved
@@ -38,13 +38,13 @@ const Logo = () => (
 
 const Commitment = () => (
   <div>
-    <h3 className="font-bold mb-3">Commitment</h3>
+    <h3 className="font-bold font-mono mb-3">Commitment</h3>
     <ul>
       <li>
-        <span className="cursor-pointer hover:underline">How it Works</span>
+        <span className="font-mono cursor-pointer hover:underline">How it Works</span>
       </li>
       <li>
-        <span className="cursor-pointer hover:underline">Docs</span>
+        <span className="font-mono cursor-pointer hover:underline">Docs</span>
       </li>
     </ul>
   </div>
@@ -52,13 +52,13 @@ const Commitment = () => (
 
 const Support = () => (
   <div>
-    <h3 className="font-bold mb-3">Support</h3>
+    <h3 className="font-mono font-bold mb-3">Support</h3>
     <ul>
       <li>
-        <span className="cursor-pointer hover:underline">Resources</span>
+        <span className="font-mono cursor-pointer hover:underline">Resources</span>
       </li>
       <li>
-        <span className="cursor-pointer hover:underline">
+        <span className="font-mono cursor-pointer hover:underline">
           GitHub Repository
         </span>
       </li>
@@ -68,10 +68,10 @@ const Support = () => (
 
 const Legal = () => (
   <div>
-    <h3 className="font-bold mb-3">Legal</h3>
+    <h3 className="font-mono font-bold mb-3">Legal</h3>
     <ul>
       <li>
-        <span className="cursor-pointer hover:underline">License</span>
+        <span className="font-mono cursor-pointer hover:underline">License</span>
       </li>
     </ul>
   </div>

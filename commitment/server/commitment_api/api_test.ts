@@ -1,6 +1,6 @@
 import { Subject } from "rxjs";
 
-import { fetchDataFrom, getDataFrom } from "../commitment_api/commitment"
+import { fetchDataFrom, getDataFrom } from "./commitment"
 
 export const testFullFetchFunctionality = async (testRepo: string, subject: Subject<string>) => {
 

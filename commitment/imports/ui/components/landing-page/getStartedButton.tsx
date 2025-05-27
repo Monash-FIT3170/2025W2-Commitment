@@ -14,8 +14,8 @@ const GetStartedButton: React.FC<GetStartedButtonProps> = ({
 
   return (
     <Button 
-      onClick={() => navigate('/login')}
-      className={cn("w-[341px] h-auto text-[36px] rounded-full text-center bg-[#F1502F] hover:bg-[#F1502F] drop-shadow-lg", className)}
+      onClick={() => navigate('/home')}
+      className={cn("w-[341px] h-auto text-[36px] font-mono rounded-full text-center bg-git hover:bg-git drop-shadow-lg", className)}
     >
       Get Started
     </Button>

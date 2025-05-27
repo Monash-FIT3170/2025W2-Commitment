@@ -13,7 +13,7 @@ export const fetchRepo = (url: string, subject: Subject<string>) => {
     // Reactively log messages
     Tracker.autorun(() => {
         const messages = ServerResponses.find({}, { sort: { createdAt: -1 } }).fetch()
-        messages.forEach((m: string) => subject.next(m));
+        messages.forEach((m) => subject.next(m.text));
     })
 
     // Call the server method to start data retrieval

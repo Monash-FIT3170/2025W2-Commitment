@@ -3,12 +3,12 @@ import { FeatureCarousel } from "./FeatureCarousel";
 
 export const Features = () => {
   return (
-    <div>
+    <div className="ml-32 mr-32">
       <div className="w-full text-center mt-10">
-        <p className="text-sm text-[#F1502F] font-medium font-robotoFlex tracking-wide">
+        <p className="text-git text-lg font-semibold font-mono tracking-wide">
           OUR FEATURES?
         </p>
-        <h1 className="text-5xl text-gray-900 mt-2 font-robotoFlex">
+        <h1 className="text-5xl text-black mt-2 font-mono">
           Get The Full Picture...
         </h1>
       </div>

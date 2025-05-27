@@ -1,7 +1,15 @@
-import { Meteor } from "meteor/meteor";
-import { Accounts } from "meteor/accounts-base";
+import { Meteor } from 'meteor/meteor';
+import { Link, LinksCollection } from '/imports/api/links';
+import { Accounts } from 'meteor/accounts-base';
 import { BookmarksCollection } from "../imports/api/bookmarks";
+
+import '/imports/api/methods';
+
 import "../imports/api/bookmark_methods";
+
+async function insertLink({ title, url }: Pick<Link, 'title' | 'url'>) {
+  await LinksCollection.insertAsync({ title, url, createdAt: new Date() });
+}
 
 Meteor.startup(async () => {
   const userCount = await Meteor.users.find().countAsync();
