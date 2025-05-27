@@ -55,8 +55,8 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
         notifier.next(` ${err}`);
         // Wait 10 seconds to let user read the error, then redirect back
         setTimeout(() => {
-          navigate("/insert-git-repo", { replace: true });
-        }, 10000);
+          navigate("/home", { replace: true });
+        }, 20000);
       });
 
     return () => {
