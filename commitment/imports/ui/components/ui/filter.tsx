@@ -44,8 +44,31 @@ interface FilterProps {
 }
 
 export default function Filter({ options, filters, onFilterChange }: FilterProps) {
+  const getDefaultFilterValue=(opt: FilterOption): FilterValue =>{
+    switch (opt.type) {
+      case "checkbox":
+        return false;
+      case "date":
+        return { from: undefined, to: undefined } as DateRange;
+      case "options":
+        return [] as string[];
+      default:
+        return ""; // fallback if needed
+    }
+  }
+const resetFilters=()=>{
+  options.forEach((option)=>{
+    const filterState = filters[option.filterkey];
+
+    onFilterChange(option.filterkey,getDefaultFilterValue(option))
+
+  }
 
 
+)
+
+
+}
 
   return (
     <DropdownMenu>
@@ -115,9 +138,16 @@ export default function Filter({ options, filters, onFilterChange }: FilterProps
                 </>
               )}
 
+
               {index < options.length - 1 && <DropdownMenuSeparator />}
             </div>
           );
         })}
+
+<div className="p-2">
+          <Button className="w-full" variant="default" size="sm" onClick={resetFilters}>
+            Clear All Filters
+          </Button>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>)}

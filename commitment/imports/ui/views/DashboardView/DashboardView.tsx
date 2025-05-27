@@ -156,8 +156,10 @@ const DashboardView: React.FC = () => {
         {/* filter icon */}
         <BookmarkFilter filters={filters} onFilterChange={updateFilter}/>
 
+
         {/* sort icon */}
-        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+        {/* TODO: Move this into it's own component  */}
+        <DropdownMenu >
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" aria-label="sort">
               <ArrowDownUp
