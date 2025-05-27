@@ -9,6 +9,7 @@ import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
 import SignUpButton from "@ui/components/ui/signUpButton";
 import ProfileMenu from "@ui/components/ui/profile-menu";
 import { Moon, Sun } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 interface NavBarProps {
   isLoggedIn: boolean;
@@ -16,9 +17,11 @@ interface NavBarProps {
 
 export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
 
   const handleSignOut = () => {
-    // not to seld: implement signing out logic here later
+    // note to self: implement signing out logic here later
     console.log("Sign out clicked");
   };
 
@@ -36,27 +39,51 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
             <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
             <span className="text-xl text-gray-900"></span>
           </a>
-          <NavigationMenuItem>
-            <NavigationMenuLink>
-              <a href="#about" className={navigationMenuTriggerStyle()}>
-                About
-              </a>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink>
-              <a href="#features" className={navigationMenuTriggerStyle()}>
-                Features
-              </a>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink>
-              <a href="#howto" className={navigationMenuTriggerStyle()}>
-                How-To
-              </a>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
+          
+          {isLandingPage ? (
+            // Landing page navigation items
+            <>
+              <NavigationMenuItem>
+                <NavigationMenuLink>
+                  <a href="#about" className={navigationMenuTriggerStyle()}>
+                    About
+                  </a>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink>
+                  <a href="#features" className={navigationMenuTriggerStyle()}>
+                    Features
+                  </a>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink>
+                  <a href="#howto" className={navigationMenuTriggerStyle()}>
+                    How-To
+                  </a>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            </>
+          ) : (
+            // App navigation items
+            <>
+              <NavigationMenuItem>
+                <NavigationMenuLink>
+                  <a className={navigationMenuTriggerStyle()}>
+                    Dashboard
+                  </a>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink>
+                  <a className={navigationMenuTriggerStyle()}>
+                    Docs
+                  </a>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            </>
+          )}
         </NavigationMenuList>
       </NavigationMenu>
 
@@ -75,7 +102,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
 
         {!isLoggedIn && (
           <>
-            <a className={navigationMenuTriggerStyle()}>Login</a>
+            <a href="/login" className={navigationMenuTriggerStyle()}>Login</a>
             <SignUpButton />
           </>
         )}
