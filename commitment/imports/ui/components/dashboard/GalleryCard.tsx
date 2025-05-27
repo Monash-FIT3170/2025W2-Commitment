@@ -1,21 +1,28 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
-import { Info } from "lucide-react";
 import { Bookmark } from "/imports/api/bookmarks";
 import BookmarkButton from "../ui/BookmarkButton";
+import { format } from "date-fns";
 
 interface GalleryCardProps {
   bookmark: Bookmark;
   onclick?: () => void; // method passed by parent to view repository metrics + scaling
-  onInfo?: () => void;
 }
 
 export default function GalleryCard({
   bookmark,
   onclick,
- onInfo,
 }: GalleryCardProps) {
+  const descriptionText = `Created on : ${format(
+    bookmark.createdAt,
+    "dd MMM yyyy"
+  )}\nLast viewed: ${
+    bookmark.lastViewed
+      ? format(bookmark.lastViewed, "dd MMM yyyy")
+      : format(bookmark.createdAt, "dd MMM yyyy")
+  }`;
+  
   return (
     <Card className="bg-[#F1502F] w-[275px] ">
   <CardHeader className="relative">
@@ -24,14 +31,9 @@ export default function GalleryCard({
 
       <div className="flex space-x-2 absolute right-4 top-4">
         {/* info icon */}
-        <button
-          type="button"
-          onClick={onInfo}
-          aria-label="repository info"
-          className="text-white/80 hover:text-white focus:outline-none"
-        >
-          <Info size={18} />
-        </button>
+
+          {/* <InfoButton description/> */}
+
         {/* bookmark */}
         <BookmarkButton url={bookmark.url} title={bookmark.title} />
       </div>

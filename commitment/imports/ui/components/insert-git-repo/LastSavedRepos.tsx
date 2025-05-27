@@ -40,7 +40,6 @@ const LastSavedRepos = () => {
           <GalleryCard 
             bookmark={repo} 
             onclick={()=>{console.log("To be implemented")}} 
-            onInfo={()=>{console.log("To be implemented")}} 
           />
         ))}
       </div>

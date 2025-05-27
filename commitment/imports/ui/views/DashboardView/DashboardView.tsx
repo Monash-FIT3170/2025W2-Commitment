@@ -29,7 +29,6 @@ import BookmarkFilter from "../../components/dashboard/BookmarkFilter";
 // }));
 
 const handleView = () => console.log("view metrics");
-const handleInfo = () => console.log("info");
 
 type SortKey = "createdAt" | "lastViewed" | null
 type SortDir = "asc" | "desc" | null
@@ -39,7 +38,6 @@ const DashboardView: React.FC = () => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>(null);
   const [sortDir, setSortDir] = useState<SortDir>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   const user = useTracker(() => Meteor.user());
   const userName = user?.profile?.name || user?.username || "User";
 
@@ -221,7 +219,6 @@ const DashboardView: React.FC = () => {
               <RepoRow
                 bookmark={b}
                 onclick={handleView}
-                onInfo={handleInfo}
               />
             ))}
           </ul>
