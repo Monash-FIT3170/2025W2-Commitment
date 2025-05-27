@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { format, subMonths } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import * as React from "react";
+import { format, subMonths } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 
-import { cn } from "@ui/lib/utils"
-import { Button } from "@ui/components/ui/button"
-import { Calendar } from "@ui/components/ui/calendar"
+import { cn } from "@ui/lib/utils";
+import { Button } from "@ui/components/ui/button";
+import { Calendar } from "@ui/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@ui/components/ui/popover"
+} from "@ui/components/ui/popover";
 
-import { DateRange } from "react-day-picker"
+import { DateRange } from "react-day-picker";
 
 type Props = {
   onChange?: (range: DateRange | undefined) => void;
@@ -42,19 +42,22 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-        variant="outline"
-        className={cn(
+          variant="outline"
+          className={cn(
             "w-[280px] justify-start text-left font-normal border-2 rounded-xl",
             !date && "text-muted-foreground"
-        )}
-        style={{ borderColor: "#35353140" }}
+          )}
+          style={{ borderColor: "#35353140" }}
         >
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        {formattedRange}
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {formattedRange}
         </Button>
-
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-2" style={{ borderColor: "#252522" }} align="start">
+      <PopoverContent
+        className="w-auto p-0 border-2"
+        style={{ borderColor: "#252522" }}
+        align="start"
+      >
         <Calendar
           initialFocus
           mode="range"
@@ -69,7 +72,6 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
               "rounded-l-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
             day_range_end:
               "rounded-r-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
-            
           }}
         />
       </PopoverContent>

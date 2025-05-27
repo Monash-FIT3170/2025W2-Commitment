@@ -197,65 +197,27 @@ export const MetricsPage = () => {
         <NavBar />
 
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-          <div className="flex items-center space-x-2 w-2/5">
-            <div className="flex items-center space-x-2">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-4">
               <h1 className="text-5xl text-gray-900 font-robotoFlex">
                 Metrics
               </h1>
               <InfoButton description={metricsPageDescription} />
             </div>
-
-            <div className="mt-2 h-[2px] bg-black w-1/4" />
-
-            <div className="relative">
-              <div className="absolute -top-12 left-[28%]">
-                <p className="text-sm mb-1 text-gray-600">Date Range*</p>
-                <DateRangePicker
-                  defaultValue={dateRange}
-                  onChange={(range) => {
-                    if (range) setDateRange(range);
-                  }}
-                />
-              </div>
-
-              <div className="absolute -top-12 left-[55%] ">
-                <p className="text-sm mb-1 text-gray-600">Branch*</p>
-                <BranchDropDownMenu branches={dummyBranches} />
-              </div>
-            </div>
-
-            <div className="mt-16 flex flex-row flex-nowrap items-start gap-6">
-              <div
-                className="w-max outline outline-2 rounded-2xl p-2"
-                style={{
-                  backgroundColor: graphBackgroundColour,
-                  outlineColor: "#35353140",
-                }}
-              >
-                <UserContributionHeatMap
-                  data={data}
-                  startDate={startDate}
-                  endDate={endDate}
-                  maxUsersToShow={24}
-                  title="Heat Map"
-                />
-              </div>
-
-              <div
-                className="flex-shrink-0 outline outline-2 rounded-2xl p-2"
-                style={{
-                  backgroundColor: graphBackgroundColour,
-                  outlineColor: "#35353140",
-                }}
-              >
-                <ContributionPieChart data={pieChartData} />
-              </div>
-            </div>
+            <div className="h-[2px] bg-black w-1/4 mt-2" />
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 items-start">
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Date Range*</label>
-              <DateRangePicker />
+              <DateRangePicker
+                defaultValue={dateRange}
+                onChange={(range) => {
+                  if (range) setDateRange(range);
+                }}
+              />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Branch*</label>
@@ -266,44 +228,75 @@ export const MetricsPage = () => {
               <ContributorDropDownMenu contributors={dummyContributors} />
             </div>
           </div>
-        </div>
 
-        <div className="mt-2 h-[2px] bg-black w-full sm:w-1/4" />
+          <div className="flex flex-wrap gap-6">
+            {/* Heatmap */}
+            <div
+              className="outline outline-2 rounded-2xl p-2 basis-1/3 min-w-[320px]"
+              style={{
+                backgroundColor: graphBackgroundColour,
+                outlineColor: "#35353140",
+              }}
+            >
+              <UserContributionHeatMap
+                data={data}
+                startDate={startDate}
+                endDate={endDate}
+                maxUsersToShow={24}
+                title="Heat Map"
+              />
+            </div>
 
-        <div className="mt-16">
-          <p className="text-gray-700">Why this div for arosh tbh</p>
-          <div className="flex flex-wrap gap-8 mt-8">
-            <HighlightCardWithGraph
-              title="Total Commits"
-              value={123}
-              percentageChange={20}
-              isPositive={true}
-              data={mockCommitLineData}
-            />
-            <HighlightCardWithGraph
-              title="Total Lines of Code"
-              value={4567}
-              percentageChange={20}
-              isPositive={false}
-              data={mockTotalLocData}
-            />
-            <HighlightCardWithGraph title="No. of Contributors" value={5} />
-            <HighlightCardWithGraph title="Number of branches" value={5} />
+            {/* Pie Chart */}
+            <div
+              className="outline outline-2 rounded-2xl p-2 flex-1 min-w-[320px]"
+              style={{
+                backgroundColor: graphBackgroundColour,
+                outlineColor: "#35353140",
+              }}
+            >
+              <ContributionPieChart data={pieChartData} />
+            </div>
+
+            <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
+              <HighlightCardWithGraph
+                title="Total Commits"
+                value={123}
+                percentageChange={20}
+                isPositive={true}
+                data={mockCommitLineData}
+              />
+              <HighlightCardWithGraph
+                title="Total Lines of Code"
+                value={4567}
+                percentageChange={-12}
+                isPositive={false}
+                data={mockTotalLocData}
+              />
+              <HighlightCardWithGraph title="No. of Contributors" value={5} />
+              <HighlightCardWithGraph title="Number of branches" value={5} />
+            </div>
           </div>
-          <div className="flex flex-wrap gap-8 mt-8">
-            <ContributorLineGraph
-              data={mockContributorDataset.data}
-              title={mockContributorDataset.title}
-              xAxisLabel="Date"
-              yAxisLabel="Lines of Code Changed"
-            />
-          </div>
-          <div className="flex flex-wrap gap-8 mt-8">
-            <LeaderboardGraph
-              data={topUsers}
-              title="Top Contributors Based on All Commits"
-              xAxisLabel="Commits"
-            />
+
+          {/* Highlights & Graphs */}
+
+          <div className="flex flex-wrap gap-6 mt-12 mb-12">
+            <div className="rounded-2xl p-2 basis-1/3 min-w-[320px]">
+              <ContributorLineGraph
+                data={mockContributorDataset.data}
+                title={mockContributorDataset.title}
+                xAxisLabel="Date"
+                yAxisLabel="Lines of Code Changed"
+              />
+            </div>
+
+            <div className="rounded-2xl p-2 basis-1/3 min-w-[320px]">
+              <LeaderboardGraph
+                data={topUsers}
+                title="Top Contributors Based on All Commits"
+                xAxisLabel="Commits"
+              />
+            </div>
           </div>
         </div>
       </div>
