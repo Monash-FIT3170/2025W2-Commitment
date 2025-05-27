@@ -10,5 +10,4 @@ Meteor.startup(() => {
   const container = document.getElementById('react-target');
   const root = createRoot(container!);
   root.render(<App />);
-  root.render(<App />);
 });

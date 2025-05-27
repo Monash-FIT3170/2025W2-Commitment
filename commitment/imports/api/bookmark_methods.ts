@@ -121,7 +121,9 @@ Meteor.methods({
         if (!this.userId) {
             throw new Meteor.Error('not-authorized', 'You must be logged in to view bookmarks.');
         }
+        const bm = await BookmarksCollection.find({ userID: this.userId }).fetch();
+        // console.log(this.userId)
+        // console.log(bm)
 
-        return await BookmarksCollection.findAsync({ userID: this.userId }, { sort: { createdAt: -1 } });
-    }
+        return bm;    }
 });

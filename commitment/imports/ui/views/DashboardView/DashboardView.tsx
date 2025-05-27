@@ -35,8 +35,7 @@ const DashboardView: React.FC = () => {
         setBookmarks(result);
       }
     });
-  }, []);
-  
+  }, [bookmarks]);
 
   return (
     <div className="min-h-screen bg-[#F0F0E8]">
@@ -48,7 +47,6 @@ const DashboardView: React.FC = () => {
         <ViewToggle value={view} onChange={setView} className="shrink-0" />
 
         {/* filter icon */}
-        <filter />
 
         {/* sort icon */}
         <button aria-label="sort"
