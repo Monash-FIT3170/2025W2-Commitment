@@ -1,7 +1,7 @@
 import React from "react";
 import { Separator } from "@ui/components/ui/separator";
 import { Card, CardContent } from "@ui/components/ui/card";
-import GetStartedButton from "../common/getStartedButton";
+import GetStartedButton from "./getStartedButton";
 
 const purpose = () => {
   return (
@@ -21,8 +21,8 @@ export default purpose;
 const Header = () => {
   return (
     <div className="flex flex-col justify-center items-center">
-      <h4 className="text text-orange-400 font-semibold">HOW TO USE?</h4>
-      <h1 className="text-3xl">Get Started in Three Steps</h1>
+      <h4 className="font-mono text text-git text-lg font-semibold">HOW TO USE?</h4>
+      <h1 className="font-mono text-5xl">Get Started in Three Steps</h1>
     </div>
   );
 };
@@ -30,15 +30,15 @@ const Header = () => {
 const CircleNumber = () => {
   return (
     <div className="flex flex-row pt-7 pb-3 items-center gap-2 justify-center">
-      <div className="w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
         1
       </div>
       <Separator decorative className="bg-black"/>
-      <div className="w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
         2
       </div>
       <Separator decorative className="bg-black"/>
-      <div className="w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
         3
       </div>
     </div>
@@ -63,7 +63,7 @@ const PurposeCard = () => {
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4 items-start justify-items-center pt1 italic font-light">
+        <div className="font-mono grid grid-cols-3 gap-4 items-start justify-items-center pt1 italic font-light">
           <div>
             Find the
             <br />

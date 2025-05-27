@@ -65,7 +65,7 @@ const GitRepoInputSection = () => {
             )}
             <Button 
                 className={cn(
-                    "w-[341px] h-auto text-white text-2xl rounded-full text-center bg-[#F1502F] hover:bg-[#F1502F] mt-4"
+                    "w-[341px] h-auto text-white font-mono text-2xl rounded-full text-center bg-git hover:bg-git mt-4"
                 )}
                 onClick={handleAnalyseClick}
             >
