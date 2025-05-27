@@ -130,15 +130,15 @@ const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
 
 export const generateRandomContributions = (
-  startDate?: Date,
-  endDate?: Date,
+  startDate: Date,
+  endDate: Date,
   users = dummyUsers
 ) => {
-  if (!startDate || !endDate || !isValid(startDate) || !isValid(endDate)) {
-    // In the case where no start or end date is given
+  if (!endDate || !isValid(endDate)) {
+    // In the case where no end date is given
     return [];
-  }
-
+  } 
+  console.log(startDate, endDate, "both")
   const data = [];
   const totalDays = Math.floor(
     (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)

@@ -106,7 +106,7 @@ export function ContributionPieChart({ data }: Props) {
       </CardHeader>
       
        {coloredData.length === 0 ? (
-      <CardContent className="p-4 text-gray-500">No contribution data available.</CardContent>
+      <CardContent className="p-4 text-gray-500">Please select and End Date in the Date Range</CardContent>
     ) :(
       <>
         <CardContent className="flex flex-col items-center gap-4">

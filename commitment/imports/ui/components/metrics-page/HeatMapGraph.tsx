@@ -77,7 +77,7 @@ export default function UserContributionHeatMap({
           </div>
         )}
 
-        <div className="p-4 text-gray-500">No contribution data available.</div>
+        <div className="p-4 text-gray-500">Please select and End Date in the Date Range</div>
       </div>
     );
   }
