@@ -50,7 +50,7 @@ export function ContributorDropDownMenu({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-auto justify-start focus:outline-none focus:ring-0"
+          className="w-auto justify-start focus:outline-none focus:ring-0 border-2"
         >
           {buttonText()}
         </Button>

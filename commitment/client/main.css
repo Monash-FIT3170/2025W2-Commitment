@@ -76,7 +76,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono;
     background-color: #f0f0e8;
   }
 }
