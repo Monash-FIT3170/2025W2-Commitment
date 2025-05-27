@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@ui/components/ui/card"
 import InfoButton from "./infoButton"
+import { stat } from "fs"
 
 export interface ChartEntry {
   user: string
@@ -29,16 +30,25 @@ interface Props {
 
 const graphBackgroundColour = "#E8E8DD"
 
-const dark2 = [
-  "#1b9e77", 
-  "#d95f02", 
-  "#66a61e", 
-  "#e6ab02", 
-  "#a6761d", 
-  "#666666", 
-  "#7570b3", 
-  "#e7298a", 
+
+const staticColorPalette = [
+    "#4E79A7",
+    "#F28E2B",
+    "#59A14F",
+    "#E15759",
+    "#76B7B2",
+    "#EDC948",
+    "#B07AA1",
+    "#FF9DA7",
+    "#9C755F",
+    "#BAB0AC",
+    "#D37295",
 ]
+
+const extendColorPalette = (index: number): string => {
+  const hue = (index * 137.508) % 360
+  return `hsl(${hue}, 70%, 55%)`
+}
 
 const pieChartDescription = "Who's got the largest slice? Definitely committed!"
 
@@ -71,6 +81,13 @@ const CustomTooltip = ({
 
 // Main Pie Chart
 export function ContributionPieChart({ data }: Props) {
+    const coloredData = data.map((entry, index) => ({
+    ...entry,
+    fill:
+      index < staticColorPalette.length
+        ? staticColorPalette[index]
+        : extendColorPalette(index - staticColorPalette.length),
+  }))
   return (
 <Card className="flex flex-col max-w-md mx-auto shadow-none ring-0 border-0 outline-none" style={{ backgroundColor: graphBackgroundColour }} >
 
@@ -92,7 +109,7 @@ export function ContributionPieChart({ data }: Props) {
         {/* Pie */}
         <PieChart width={300} height={300} >
             <Pie
-                data={data}
+                data={coloredData}
                 dataKey="contributions"
                 nameKey="user"
                 cx="50%"
@@ -103,7 +120,7 @@ export function ContributionPieChart({ data }: Props) {
                 animationDuration={800}
                 labelLine={false}
             >
-                {data.map((entry, i) => (
+                {coloredData.map((entry, i) => (
                 <Cell
                     key={`cell-${i}`}
                     fill={entry.fill}
@@ -149,13 +166,3 @@ export function ContributionPieChart({ data }: Props) {
     </Card>
   )
 }
-
-//Dummy Data Generator
-export function generateDummyGitHubData(count: number): ChartEntry[] {
-  return Array.from({ length: count }, (_, i) => ({
-    user: `user${i + 1}`,
-    contributions: Math.floor(Math.random() * 400) + 50,
-    fill: dark2[i % dark2.length],
-  }))
-}
-

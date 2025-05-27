@@ -50,7 +50,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
 }) => {
   return (
     <Card className="w-full max-w-[600px] h-[400px] bg-[#f0f0e8] border border-gray-300 rounded-xl flex flex-col">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 items-center">
         <CardTitle className="text-lg font-bold">{title}</CardTitle>
           <CardTitle>     
             <div className="relative -mt-2">
