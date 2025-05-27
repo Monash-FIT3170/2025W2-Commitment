@@ -7,7 +7,7 @@ import {
   // NavigationMenuTrigger,
 } from "@ui/components/ui/navigation-menu";
 import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
-import SignUpButton from "@ui/components/ui/signUpButton";
+import SignUpButton from "/imports/ui/components/landing-page/signUpButton";
 
 export const NavBar = () => {
   return (

@@ -9,7 +9,7 @@ interface GetStartedButtonProps {
 const GetStartedButton: React.FC<GetStartedButtonProps> = ({
   className
 }) => (
-  <Button className={cn("w-[341px] h-auto text-[36px] rounded-full  text-center bg-[#F1502F] hover:bg-[#F1502F]  drop-shadow-lg",className)}>
+  <Button className={cn("font-mono w-[341px] h-auto text-[36px] rounded-full  text-center bg-[#F1502F] hover:bg-[#F1502F]  drop-shadow-lg",className)}>
     Get Started
   </Button>
   // <button

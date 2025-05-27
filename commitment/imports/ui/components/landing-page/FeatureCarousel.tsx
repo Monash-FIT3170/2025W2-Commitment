@@ -25,14 +25,14 @@ export const FeatureCard = ({
         ${className}`}
     >
       <div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">{title}</h2>
+        <h2 className="text-xl font-mono font-semibold text-gray-800 mb-4">{title}</h2>
         <img
           src={image}
           alt={alt}
           className="scale-75 object-cover rounded-md mb-4"
         />
       </div>
-      <p className="text-gray-600 text-sm font-robotoFlex">{description}</p>
+      <p className="text-gray-600 font-mono text-sm font-robotoFlex">{description}</p>
     </div>
   );
 };
