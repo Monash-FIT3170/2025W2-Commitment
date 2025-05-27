@@ -1,9 +1,9 @@
 import React from "react";
 import { Info } from "lucide-react";
-import { Button } from "../../ui/button";
+import { Button } from "../ui/button";
 
 import { Bookmark } from "/imports/api/bookmarks";
-import BookmarkButton from "../../ui/BookmarkButton";
+import BookmarkButton from "../ui/BookmarkButton";
 
 export interface RepoRowProps {
   bookmark: Bookmark;

@@ -1,9 +1,9 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
-import { Button } from "../../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
 import { Info } from "lucide-react";
 import { Bookmark } from "/imports/api/bookmarks";
-import BookmarkButton from "../../ui/BookmarkButton";
+import BookmarkButton from "../ui/BookmarkButton";
 
 interface GalleryCardProps {
   bookmark: Bookmark;

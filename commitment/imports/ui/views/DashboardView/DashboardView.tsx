@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import GalleryCard from "@ui/components/widgets/dashboard/GalleryCard";
-import RepoRow from "../../components/widgets/dashboard/RepoRow";
-import ViewToggle from "../../components/widgets/dashboard/ViewToggle";
+import GalleryCard from "/imports/ui/components/dashboard/GalleryCard";
+import RepoRow from "../../components/dashboard/RepoRow";
+import ViewToggle from "../../components/dashboard/ViewToggle";
 import { Search  } from "lucide-react";
-import { Funnel, ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -18,7 +18,7 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { NavBar } from "../../components/landing-page/NavBar";
 import { DateRange } from "react-day-picker";
 import {  FiltersState, FilterValue } from "../../components/ui/filter";
-import BookmarkFilter from "../../components/widgets/dashboard/BookmarkFilter";
+import BookmarkFilter from "../../components/dashboard/BookmarkFilter";
 
 // const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
 //   _id: `${i + 1}`,
