@@ -1,7 +1,6 @@
 import React from 'react';
 import NavBar from '@ui/components/landing-page/NavBar';
 import { Logo } from '@ui/components/landing-page/MainPage';
-import { cn } from "@ui/lib/utils";
 import LastSavedRepos from '@ui/components/insert-git-repo/LastSavedRepos';
 import GitRepoInputSection from '@ui/components/insert-git-repo/GitRepoInputSection';
 import { Meteor } from 'meteor/meteor';

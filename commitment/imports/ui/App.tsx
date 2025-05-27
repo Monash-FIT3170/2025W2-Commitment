@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LandingPage } from "@ui/LandingPage";
 import LoginView from "@ui/views/LoginView/LoginView";
 import InsertGitRepoView from "@ui/views/InsertGitRepoView/InsertGitRepo";
-import { MetricsMain } from "./MetricsMain";
+import MetricsMain from "./MetricsMain";
 
 export const App = () => {
   return (
