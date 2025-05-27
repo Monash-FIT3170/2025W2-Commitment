@@ -2,6 +2,7 @@
 import { Subject } from "rxjs";
 import { CommitData, RepositoryData } from "./commitment_api/types";
 import { fetchDataFrom } from "./commitment_api/commitment";
+import { error } from "console";
 
 const cacheIntoDatabase = async (url: string, data: RepositoryData) => {
     // cache the data into the database TODO

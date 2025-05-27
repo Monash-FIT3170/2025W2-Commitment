@@ -30,5 +30,5 @@ Temporary Items
 ## IDEs
 .idea
 
-# making sure that people who run npm install in the wrong directory do not accidentally make irrepreible changes
+# Dependencies
 node_modules/

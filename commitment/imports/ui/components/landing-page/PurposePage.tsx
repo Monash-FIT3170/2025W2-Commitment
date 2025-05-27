@@ -1,7 +1,7 @@
 import React from "react";
 import { Separator } from "@ui/components/ui/separator";
 import { Card, CardContent } from "@ui/components/ui/card";
-import GetStartedButton from "../ui/getStartedButton";
+import GetStartedButton from "../common/getStartedButton";
 
 const purpose = () => {
   return (
