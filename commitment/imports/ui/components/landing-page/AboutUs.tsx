@@ -16,7 +16,7 @@ export default AboutUs;
 const Header = () => {
     return(
         <div className="flex flex-col justify-center items-center">
-                <h4 style={{color:'#F1502F'}}  className= "font-semibold">WHAT IS COMMITMENT?</h4>
+                <h4 className= "font-semibold text-git">WHAT IS COMMITMENT?</h4>
                 <h1 className="text-4xl font-semibold ">Your Contribution Analyser </h1>
         </div>
     );
