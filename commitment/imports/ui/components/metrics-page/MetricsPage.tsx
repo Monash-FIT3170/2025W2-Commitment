@@ -12,6 +12,7 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import { topContributors } from "../../lib/utils";
+import GraphCard from "./GraphCard";
 
 // !!!: Remove this dummy data upon integration with AT3's real data
 const dummyBranches = [
@@ -227,7 +228,7 @@ export const MetricsPage = () => {
 
           <div className="flex flex-wrap gap-6">
             {/* Heatmap */}
-            <div
+            {/* <div
               className="outline outline-2 rounded-2xl p-2 basis-1/3 min-w-[320px]"
               style={{
                 backgroundColor: graphBackgroundColour,
@@ -241,10 +242,19 @@ export const MetricsPage = () => {
                 maxUsersToShow={24}
                 title="Heat Map"
               />
-            </div>
+            </div> */}
+            <GraphCard>
+              <UserContributionHeatMap
+                data={data}
+                startDate={startDate}
+                endDate={endDate}
+                maxUsersToShow={24}
+                title="Heat Map"
+              />
+            </GraphCard>
 
             {/* Pie Chart */}
-            <div
+            {/* <div
               className="outline outline-2 rounded-2xl p-2 flex-1 min-w-[320px]"
               style={{
                 backgroundColor: graphBackgroundColour,
@@ -252,7 +262,10 @@ export const MetricsPage = () => {
               }}
             >
               <ContributionPieChart data={pieChartData} />
-            </div>
+            </div> */}
+            <GraphCard>
+              <ContributionPieChart data={pieChartData} />
+            </GraphCard>
 
             <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
               <HighlightCardWithGraph
@@ -277,14 +290,15 @@ export const MetricsPage = () => {
           {/* Highlights & Graphs */}
 
           <div className="flex flex-wrap gap-6 mt-12 mb-12">
-            <div className="rounded-2xl p-2 basis-1/3 min-w-[320px]">
-              <ContributorLineGraph
-                data={mockContributorDataset.data}
-                title={mockContributorDataset.title}
-                xAxisLabel="Date"
-                yAxisLabel="Lines of Code Changed"
-              />
-            </div>
+            {/* <div className="rounded-2xl p-2 basis-1/3 min-w-[320px]">
+
+            </div> */}
+            <ContributorLineGraph
+              data={mockContributorDataset.data}
+              title={mockContributorDataset.title}
+              xAxisLabel="Date"
+              yAxisLabel="Lines of Code Changed"
+            />
 
             <div className="rounded-2xl p-2 basis-1/3 min-w-[320px]">
               <LeaderboardGraph

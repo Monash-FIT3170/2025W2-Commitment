@@ -10,8 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import GraphCard from "./GraphCard";
 
 // Type for each contributor's data
 interface TopContributor {
@@ -44,25 +43,20 @@ const extendColorPalette = (index: number): string => {
   return `hsl(${hue}, 70%, 55%)`;
 };
 
-const graphBackgroundColour = "#E8E8DD"
-
 export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
   data,
   title,
 }) => {
   return (
-    <Card className="w-full max-w-[600px] h-[400px] bg-[#f0f0e8] shadow-none ring-0 border-0 rounded-xl flex flex-col " style={{ backgroundColor: graphBackgroundColour }}>
-      <CardHeader className="pb-2 items-center">
-        <CardTitle className="text-lg font-bold">{title}</CardTitle>
-          <CardTitle>     
-            <div className="relative -mt-2">
-              <InfoButton description="Shows top 5 contributors based on a given metric" />
-            </div>
-          </CardTitle>
+    <GraphCard className="w-full max-w-[600px] h-[400px] flex flex-col basis-1/3">
+      <div className="pb-2 items-center flex justify-between">
+        <h2 className="text-lg font-bold">{title}</h2>
+        <div className="-mt-2">
+          <InfoButton description="Shows top 5 contributors based on a given metric" />
+        </div>
+      </div>
 
-      </CardHeader>
-
-      <CardContent className="flex-grow pt-0">
+      <div className="flex-grow pt-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             layout="vertical"
@@ -84,8 +78,8 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </GraphCard>
   );
 };
 
