@@ -9,5 +9,5 @@ import { MetricsMain } from '../imports/ui/MetricsMain';
 Meteor.startup(() => {
   const container = document.getElementById('react-target');
   const root = createRoot(container!);
-  root.render(<LandingPage />);
+  root.render(<MetricsMain/>);
 });
