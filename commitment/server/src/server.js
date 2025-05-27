@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import { 
     ATLAS_MONGODB_URI,
-    SERVER_HOST,
     SERVER_PORT 
 } from './constants.js';
 
@@ -11,7 +10,6 @@ import {
 console.log('Starting server initialization...');
 console.log('Current working directory:', process.cwd());
 console.log('Environment variables:', {
-    SERVER_HOST: SERVER_HOST || 'not set',
     SERVER_PORT: SERVER_PORT || 'not set',
     ATLAS_MONGODB_URI: ATLAS_MONGODB_URI ? 'URI is set' : 'URI is not set'
 });
@@ -21,8 +19,8 @@ if (!ATLAS_MONGODB_URI) {
     process.exit(1);
 }
 
-if (!SERVER_HOST || !SERVER_PORT) {
-    console.error('SERVER_HOST or SERVER_PORT is not set in environment variables');
+if (!SERVER_PORT) {
+    console.error('SERVER_PORT is not set in environment variables');
     process.exit(1);
 }
 
@@ -151,7 +149,7 @@ app.get('/api/repos/:userId', async (req, res) => {
 // Initialize server
 async function main() {
     try {
-        console.log('Attempting to connect to MongoDB...');
+        console.log('Attempting to connect to MongoDB Atlas...');
         await client.connect();
         console.log('Connected to MongoDB Atlas');
         
@@ -165,7 +163,7 @@ async function main() {
         console.log('Database indexes created successfully');
         
         app.listen(SERVER_PORT, '0.0.0.0', () => {
-            console.log(`Server listening on 0.0.0.0:${SERVER_PORT}`);
+            console.log(`Server listening on port ${SERVER_PORT}`);
         });
     } catch (err) {
         console.error('Connection error:', err);

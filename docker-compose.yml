@@ -6,45 +6,66 @@ services:
     image: commitment-img
     container_name: 3170-env
     ports:
-      - "3001:3000"
+      - "3000:3000"
     volumes:
-      - ./commitment:/projects/commitment
+      - ./commitment:/projects/commitment:delegated
+      - node_modules:/projects/commitment/node_modules
+      - meteor_local:/projects/commitment/.meteor/local
+    environment:
+      - METEOR_ALLOW_SUPERUSER=true
+      - METEOR_HOME=/home/node/.meteor
+      - NODE_ENV=development
+      - NPM_CONFIG_PREFIX=/home/node/.npm-global
+      - METEOR_LOCAL_DB=0
     env_file:
       - ./commitment/server/.env
     tty: true
     stdin_open: true
+    user: "node"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
   server:
-    image: server:1.0.0
-    container_name: server
+    image: mongo/mongodb-atlas-latest
+    container_name: Server
     build:
       context: ./commitment/server
       dockerfile: ./Dockerfile
     env_file:
       - ./commitment/server/.env
     ports:
-      - "3000:3000"
+      - "3002:3000"
     volumes:
-      - ./commitment/server:/server
-       - server-v-node-modules:/server/node_modules
+      - ./commitment/server:/server:delegated
+      - server-v-node-modules:/server/node_modules
+      - ./commitment/server/.env:/server/.env:ro
+    environment:
+      - NODE_ENV=development
+      - NPM_CONFIG_PREFIX=/home/node/.npm-global
+      - MONGODB_URI=${ATLAS_MONGODB_URI}
+      - MONGODB_USER=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGODB_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGODB_DB=${MONGO_INITDB_ROOT_DATABASE}
     tty: true
     stdin_open: true
-
-  database:
-    image: database:1.0.0
-    container_name: mongodb
-    build:
-      context: ./commitment/database
-      dockerfile: ./Dockerfile
-    env_file:
-      - ./commitment/server/.env
-    ports:
-      - "27017:27017"
-    volumes:
-      - database-v:/data/db
-    tty: true
-    stdin_open: true
+    user: "node"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    depends_on:
+      - dev-env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
-  server-v-node-modules: {}
-  database-v: {}
+  node_modules:
+    driver: local
+  server-v-node-modules:
+    driver: local
+  meteor_local:
+    driver: local

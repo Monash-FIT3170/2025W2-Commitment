@@ -20,22 +20,11 @@ if (result.error) {
 
 console.log('Environment variables loaded successfully');
 
-export const DATABASE_USERNAME = process.env.MONGO_INITDB_ROOT_USERNAME;
-export const DATABASE_PASSWORD = process.env.MONGO_INITDB_ROOT_PASSWORD;
-export const DATABASE_DB = process.env.MONGO_INITDB_ROOT_DATABASE;
-export const DATABASE_HOST = process.env.MONGO_INITDB_ROOT_HOST;
-export const DATABASE_PORT = process.env.MONGO_INITDB_ROOT_PORT;
-export const DATABASE_COLLECTION = process.env.MONGO_INITDB_ROOT_COLLECTION;
-
-export const SERVER_HOST = process.env.SERVER_HOST;
-export const SERVER_PORT = process.env.SERVER_PORT;
-
+export const SERVER_HOST = process.env.SERVER_HOST || '0.0.0.0';
+export const SERVER_PORT = process.env.PORT || 3000;
 export const ATLAS_MONGODB_URI = process.env.ATLAS_MONGODB_URI;
 
 console.log('Environment variables loaded:', {
-    DATABASE_USERNAME: DATABASE_USERNAME ? 'set' : 'not set',
-    DATABASE_HOST: DATABASE_HOST ? 'set' : 'not set',
-    DATABASE_PORT: DATABASE_PORT ? 'set' : 'not set',
     SERVER_HOST: SERVER_HOST ? 'set' : 'not set',
     SERVER_PORT: SERVER_PORT ? 'set' : 'not set',
     ATLAS_MONGODB_URI: ATLAS_MONGODB_URI ? 'set' : 'not set'

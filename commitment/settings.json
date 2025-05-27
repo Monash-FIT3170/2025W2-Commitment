@@ -1,0 +1,12 @@
+{
+  "private": {
+    "mongodb": {
+      "url": "${MONGO_URL}"
+    }
+  },
+  "public": {
+    "mongodb": {
+      "url": "${MONGO_URL}"
+    }
+  }
+}

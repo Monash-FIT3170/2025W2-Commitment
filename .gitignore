@@ -30,8 +30,11 @@ Temporary Items
 ## IDEs
 .idea
 
+<<<<<<< HEAD
 # Environment variables
 .env
 
+=======
+>>>>>>> origin/feat/insert-git-repo-page
 # Dependencies
 node_modules/
