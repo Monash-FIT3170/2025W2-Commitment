@@ -1,18 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import GalleryCard from "@ui/components/widgets/dashboard/GalleryCard";
 import RepoRow     from "../../components/widgets/dashboard/RepoRow";
 import ViewToggle  from "../../components/widgets/dashboard/ViewToggle";
 import { Search }  from "lucide-react";
 import { Funnel, ArrowDownUp } from "lucide-react";
 import { Bookmark } from "/imports/api/bookmarks";
+import { Meteor } from 'meteor/meteor';
 
-const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
-  _id: `${i + 1}`,
-  title: `Repository ${i + 1}`,
-  createdAt: new Date("2024-06-20T10:30:00.000Z"),
-  url: "git@github.com:Monash-FIT3170/2025W2-Commitment.git",
-  userID:"1"
-}));
+// const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
+//   _id: `${i + 1}`,
+//   title: `Repository ${i + 1}`,
+//   createdAt: new Date("2024-06-20T10:30:00.000Z"),
+//   url: "git@github.com:Monash-FIT3170/2025W2-Commitment.git",
+//   userID:"1"
+// }));
 
 const handleView = () => console.log("view metrics");
 const handleInfo = () => console.log("info");
@@ -24,6 +25,18 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) =>
 
 const DashboardView: React.FC = () => {
   const [view, setView] = useState<"list" | "gallery">("gallery");
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+
+  useEffect(() => {
+    Meteor.call("bookmarks.getAllBookmarks", (error, result) => {
+      if (error) {
+        console.error("Error fetching bookmarks:", error);
+      } else {
+        setBookmarks(result);
+      }
+    });
+  }, []);
+  
 
   return (
     <div className="min-h-screen bg-[#F0F0E8]">
@@ -35,10 +48,7 @@ const DashboardView: React.FC = () => {
         <ViewToggle value={view} onChange={setView} className="shrink-0" />
 
         {/* filter icon */}
-        <button aria-label="funnel"
-                className="p-1.5 rounded hover:bg-gray-100">
-          <Funnel size={28} strokeWidth={3} />
-        </button>
+        <filter />
 
         {/* sort icon */}
         <button aria-label="sort"
@@ -72,14 +82,14 @@ const DashboardView: React.FC = () => {
         {view === "gallery" ? (
           // Gallery
           <div className="flex flex-wrap justify-evenly gap-10">
-            {fake_bookmarks.map((b) => (
+            {bookmarks.map((b) => (
               <GalleryCard  bookmark={b} onclick={handleView} />
             ))}
           </div>
         ) : (
           // List
           <ul className="space-y-5">
-            {fake_bookmarks.map((b) => (
+            {bookmarks.map((b) => (
               <RepoRow
                 bookmark={b}
                 onclick={handleView}

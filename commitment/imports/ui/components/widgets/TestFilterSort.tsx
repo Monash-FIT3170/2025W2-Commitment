@@ -167,7 +167,7 @@ export const TestFilterSort = () => {
       </CardHeader>
       <CardContent className="pt-6  gap-3 content-center">
         <div className="flex  flex-row flex-wrap justify-center gap-3 w-full">
-        {test_docs.filter(doc => applyFilter(doc, filters)).map((document,idx) => {
+        {test_docs.filter(doc => applyFilter(doc, filters)).map((document) => {
           return (
             <Card className="w-[250px]">
               <CardHeader>

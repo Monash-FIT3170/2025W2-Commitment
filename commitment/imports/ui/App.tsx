@@ -1,7 +1,8 @@
 import React from "react";
 import {BrowserRouter, Routes, Route} from "react-router-dom";
-import ExampleView from "@ui/views/ExampleView/ExampleView";
+import { LandingPage } from "@ui/LandingPage";
 import LoginView from "@ui/views/LoginView/LoginView";
+import InsertGitRepoView from '@ui/views/InsertGitRepoView/InsertGitRepo';
 import DashboardView from "./views/DashboardView/DashboardView";
 
 
@@ -9,8 +10,9 @@ export const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<ExampleView/>}></Route>
+        <Route path="/" element={<LandingPage/>}></Route>
         <Route path="/login" element={<LoginView/>}></Route>
+        <Route path="/home" element={<InsertGitRepoView/>}></Route>
         <Route path="/dashboard" element={<DashboardView/>}></Route>
       </Routes>
     </BrowserRouter>

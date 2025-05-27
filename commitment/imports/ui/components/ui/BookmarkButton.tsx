@@ -39,7 +39,7 @@ import { fetchRepo, repoInDatabase } from "../../../api/call_repo";
 type BookmarkButtonProps = {
   url: string;
   title: string;
-  variant?: "primary"|"secondary";
+  variant?: "primary" | "secondary";
 };
 
 const BookmarkButton: React.FC<BookmarkButtonProps> = ({
@@ -153,10 +153,10 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
               size="icon"
               disabled={loading}
               className={`${variantOptions[variant]}`}
-              >
+            >
               <Bookmark
-                className="w-4 h-4"
-                fill="currentColor"
+           size={24} 
+           fill="currentColor"
                 stroke="currentColor"
               />
             </Button>
@@ -186,7 +186,10 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
           disabled={loading}
           className={`${variantOptions[variant]}`}
         >
-          <Bookmark className="w-4 h-4" fill="none" stroke="currentColor" />
+          <Bookmark 
+           size={24} 
+          fill="none" 
+          stroke="currentColor" />
         </Button>
       )}
     </>
