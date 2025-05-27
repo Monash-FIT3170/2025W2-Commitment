@@ -23,10 +23,6 @@ const allTabData: TabData[] = [
     label: "Metrics",
   },
   {
-    value: "contributors",
-    label: "Contributors",
-  },
-  {
     value: "scaling",
     label: "Scaling",
   },
@@ -72,7 +68,6 @@ export function MetricsTabs() {
         <MetricsPage />
       </TabsContent>
       <TabsContent value="scaling">{/* SCALING */}</TabsContent>
-      <TabsContent value="contributors">{/* CONTRIBUTORS */}</TabsContent>
     </Tabs>
   );
 }
