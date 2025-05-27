@@ -6,6 +6,8 @@ import { Search }  from "lucide-react";
 import { Funnel, ArrowDownUp } from "lucide-react";
 import { Bookmark } from "/imports/api/bookmarks";
 import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
+import { NavBar } from "../../components/landing-page/NavBar";
 
 // const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
 //   _id: `${i + 1}`,
@@ -18,7 +20,6 @@ import { Meteor } from 'meteor/meteor';
 const handleView = () => console.log("view metrics");
 const handleInfo = () => console.log("info");
 
-
 // TODO: Filter using regex
 const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) =>
   console.log("search:", e.target.value);
@@ -26,6 +27,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) =>
 const DashboardView: React.FC = () => {
   const [view, setView] = useState<"list" | "gallery">("gallery");
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const user = useTracker(() => Meteor.user());
 
   useEffect(() => {
     Meteor.call("bookmarks.getAllBookmarks", (error, result) => {
@@ -39,8 +41,10 @@ const DashboardView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F0F0E8]">
+                  <NavBar isLoggedIn={true} />
+      
       {/* Heading (aligned with container left edge) */}
-      <h1 className="pt-12 pl-[12%] text-4xl font-bold">Brian's Dashboard</h1>
+      <h1 className="pt-12 pl-[12%] text-4xl font-bold">{user.profile?.name}'s Dashboard</h1>
 
       {/* Toolbar – right-aligned row */}
       <div className="flex justify-end pr-[12%] mt-6 gap-5 items-center flex-wrap">
