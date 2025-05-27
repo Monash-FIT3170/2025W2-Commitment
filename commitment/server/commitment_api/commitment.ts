@@ -16,7 +16,7 @@ import {
 // imports all command functions
 import { 
 	executeCommand, 
-	doesFilepathExist,
+	doesFilePathExist,
 	createFilePath,
 	deleteAllFromDirectory
 } from "./command"
@@ -56,7 +56,7 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
 		
 	// creates path to clone repos in if filepath if it doesnt already exist
 	const workingDir = process.cwd()
-	if (!doesFilepathExist(workingDir)) createFilePath(workingDir + "/cloned-repos/")	
+	if (!doesFilePathExist(workingDir)) createFilePath(workingDir + "/cloned-repos/")	
 
 	// validate that the string is a proper url TODO
 	// see if repo exists
@@ -75,7 +75,7 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
 	const repoAbsPath = workingDir + repoRelativePath
 
 	// if it already exists delete it as it should not exist (maybe formulateRepoData failed)
-	if (doesFilepathExist(repoAbsPath)) await deleteAllFromDirectory(repoAbsPath)
+	if (doesFilePathExist(repoAbsPath)) await deleteAllFromDirectory(repoAbsPath)
 
 	// clone shit and check if it cloned successfully
 	notifier.next("Cloning repo...")
