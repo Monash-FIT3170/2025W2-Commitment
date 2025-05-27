@@ -98,7 +98,7 @@ const mockTotalLocData = [
 ];
 
 export const mockContributorDataset = {
-  title: "Lines of Codes Changed Over Time",
+  title: "Total Lines of Code Over Time",
   data: [
     { date: "2024-01-01", Alice: 120, Bob: 90, Charlie: 100 },
     { date: "2024-01-02", Alice: 140, Bob: 95, Charlie: 105 },

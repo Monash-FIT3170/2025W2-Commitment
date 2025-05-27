@@ -1,4 +1,5 @@
 import React from "react";
+import InfoButton from "../ui/infoButton";
 
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import {
@@ -83,9 +84,14 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
     return (
         <Card  className="flex flex-col w-[475px] h-[400px] bg-[#f0f0e8] border border-gray-300 rounded-xl">
         {/* Title*/}
-        <CardHeader className="h-[100px]">
-          <CardTitle className="flex justify-between items-start text-xl mt-0 font-bold ">
+        <CardHeader className="h-[100px] flex items-center px-4">
+          <CardTitle className="flex justify-between items-start text-lg mt-0 font-bold ">
             {title}
+          </CardTitle>
+          <CardTitle>     
+            <div className="relative -mt-2">
+              <InfoButton description="Shows contributor performance over time." />
+            </div>
           </CardTitle>
         </CardHeader>
         {/* Graph */}

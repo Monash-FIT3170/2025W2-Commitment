@@ -1,4 +1,5 @@
 import React from "react";
+import InfoButton from "../ui/infoButton";
 import {
   BarChart,
   Bar,
@@ -50,7 +51,13 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
   return (
     <Card className="w-full max-w-[600px] h-[400px] bg-[#f0f0e8] border border-gray-300 rounded-xl flex flex-col">
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl font-bold">{title}</CardTitle>
+        <CardTitle className="text-lg font-bold">{title}</CardTitle>
+          <CardTitle>     
+            <div className="relative -mt-2">
+              <InfoButton description="Shows top 5 contributors based on a given metric" />
+            </div>
+          </CardTitle>
+
       </CardHeader>
 
       <CardContent className="flex-grow pt-0">
