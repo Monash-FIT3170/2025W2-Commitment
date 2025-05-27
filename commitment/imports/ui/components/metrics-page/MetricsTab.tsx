@@ -5,7 +5,7 @@ import { MetricsPage } from "../../MetricsPage";
 
 export function MetricsTabs() {
   return (
-    <Tabs defaultValue="overview" className="w-full bg-white shadow">
+    <Tabs defaultValue="overview" className="w-full bg-white shadow justify-items-start">
       <TabsList className="flex bg-white px-2">
         {[
           { value: "overview", label: "Overview" },
