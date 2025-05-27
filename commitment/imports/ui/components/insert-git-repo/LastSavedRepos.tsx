@@ -5,6 +5,8 @@ import { cn } from "@ui/lib/utils";
 import { ChevronRight } from "lucide-react";
 import GalleryCard from '../dashboard/GalleryCard';
 import { Bookmark } from '/imports/api/bookmarks';
+import { Link } from "react-router-dom";
+
 // import { console } from 'inspector';
 
 // const mockRepos = [
@@ -46,7 +48,7 @@ const LastSavedRepos = () => {
         <Button className={cn(
           "h-auto text-sm rounded-full text-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 shadow-sm"
         )}>
-          See All <ChevronRight className="ml-1 h-4 w-4" />
+          <Link to="/dashboard">See All</Link> <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
     </div>
