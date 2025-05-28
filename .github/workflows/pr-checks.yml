@@ -15,20 +15,27 @@ jobs:
       - name: Conventional Commit Check
         uses: webiny/action-conventional-commits@v1.1.0
 
+      # Set up Docker and Docker Compose
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Set up Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose-plugin
+          docker compose version
+
       - name: Build and Start Containers
         run: |
-          docker-compose build
-          docker-compose up -d
+          docker compose build
+          docker compose up -d
 
       - name: Check Container Health
         run: |
           # wait for containers to be up
           sleep 30
-          docker-compose ps
-          docker-compose logs
+          docker compose ps
+          docker compose logs
 
       - name: Navigate to Project Directory
         run: |
@@ -57,4 +64,4 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker-compose down 
+        run: docker compose down 
