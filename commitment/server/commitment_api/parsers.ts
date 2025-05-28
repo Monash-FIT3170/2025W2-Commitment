@@ -9,7 +9,8 @@ import {
 
 export type Maybe<T> = T | null
 
-export const fromMaybe = <T>(m: Maybe<T>, error: string): Promise<T> => m === null ? Promise.reject(new Error(error)) : Promise.resolve(m) 
+export const fromMaybe = <T>(m: Maybe<T>, error: string): Promise<T> => 
+    m === null ? Promise.reject(new Error(error)) : Promise.resolve(m) 
 
 export const parse = (s: string) => <T>(parser: (text: string) => Maybe<T>): Promise<T> => 
     fromMaybe(parser(s), `parser \"${parser.name}\" failed to parse text:\n${s}`)
