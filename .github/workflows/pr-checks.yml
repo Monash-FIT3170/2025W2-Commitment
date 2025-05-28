@@ -1,0 +1,60 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  docker-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Conventional Commit Check
+        uses: webiny/action-conventional-commits@v1.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Start Containers
+        run: |
+          docker-compose build
+          docker-compose up -d
+
+      - name: Check Container Health
+        run: |
+          # wait for containers to be up
+          sleep 30
+          docker-compose ps
+          docker-compose logs
+
+      - name: Navigate to Project Directory
+        run: |
+          # Enter the container and move to project directory
+          docker exec 3170-env bash -c "cd /commitment"
+
+      - name: Install Dependencies
+        run: |
+          # Install npm packages inside container
+          docker exec 3170-env bash -c "cd /commitment && npm install"
+
+      - name: Run Security Audit
+        run: |
+          # Check for security vulnerabilities
+          docker exec 3170-env bash -c "cd /commitment && npm audit"
+
+      - name: Check Meteor Version
+        run: |
+          # Verify Meteor installation
+          docker exec 3170-env bash -c "cd /commitment && meteor --version"
+
+      - name: Install Meteor Dependencies
+        run: |
+          # Install Meteor-specific packages
+          docker exec 3170-env bash -c "cd /commitment && meteor npm install"
+
+      - name: Cleanup
+        if: always()
+        run: docker-compose down 
