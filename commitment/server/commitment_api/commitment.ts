@@ -75,7 +75,7 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
 	const repoAbsPath = workingDir + repoRelativePath
 
 	// if it already exists delete it as it should not exist (maybe formulateRepoData failed)
-	if (doesFilepathExist(repoAbsPath)) await deleteAllFromDirectory(repoAbsPath)
+	if (doesFilePathExist(repoAbsPath)) await deleteAllFromDirectory(repoAbsPath)
 
 	// clone shit and check if it cloned successfully
 	notifier.next("Cloning repo...")
