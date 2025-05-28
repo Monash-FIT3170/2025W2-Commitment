@@ -16,16 +16,16 @@ import {
 // imports all command functions
 import { 
 	executeCommand, 
-	doesFilePathExist,
+	doesFilepathExist,
 	createFilePath,
 	deleteAllFromDirectory
 } from "./command"
 
 // imports different types of parsers
 import { 
+	parseCmdImmediate,
 	exactText,
-	parseCmd,
-	assertSuccess,
+	parseSuccess,
 	parseRepoExists, 
 	parseContributorEmails,
 	parseRepoBranches,
@@ -56,7 +56,7 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
 		
 	// creates path to clone repos in if filepath if it doesnt already exist
 	const workingDir = process.cwd()
-	if (!doesFilePathExist(workingDir)) createFilePath(workingDir + "/cloned-repos/")	
+	if (!doesFilepathExist(workingDir)) createFilePath(workingDir + "/cloned-repos/")	
 
 	// validate that the string is a proper url TODO
 	// see if repo exists
