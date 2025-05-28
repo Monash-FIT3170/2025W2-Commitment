@@ -4,6 +4,8 @@ import { LandingPage } from "@ui/LandingPage";
 import LoginView from "@ui/views/LoginView/LoginView";
 import InsertGitRepoView from "@ui/views/InsertGitRepoView/InsertGitRepo";
 import MetricsMain from "./MetricsMain";
+import DashboardView from "./views/DashboardView/DashboardView";
+
 
 export const App = () => {
   return (
@@ -13,6 +15,7 @@ export const App = () => {
         <Route path="/login" element={<LoginView />}></Route>
         <Route path="/home" element={<InsertGitRepoView />}></Route>
         <Route path="/metrics" element={<MetricsMain />}></Route>
+        <Route path="/dashboard" element={<DashboardView/>}></Route>
       </Routes>
     </BrowserRouter>
   );

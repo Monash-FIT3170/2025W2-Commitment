@@ -9,8 +9,7 @@ import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
 import SignUpButton from "./signUpButton";
 import ProfileMenu from "@ui/components/ui/profile-menu";
 import { Moon, Sun } from "lucide-react";
-import { useLocation } from "react-router-dom";
-
+import { useLocation, Link } from "react-router-dom";
 interface NavBarProps {
   isLoggedIn: boolean;
 }
@@ -74,8 +73,9 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
             <>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                  <a className={navigationMenuTriggerStyle()}>Dashboard</a>
-                </NavigationMenuLink>
+                <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
+                    Dashboard
+                  </Link>                </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink>
