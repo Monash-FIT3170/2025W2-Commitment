@@ -33,7 +33,7 @@ export const getContributorEmails = (name: string): Command => ({
 
 export const getCommitDetails = (hash: string) => ({
     ...doNotLogData,
-    cmd: `git show --pretty=format:"%H%n %an%n %ad%n %s%n %b" --diff-filter=ADMRC --name-status ${hash}`
+    cmd: `git show --pretty=format:%H\n|||END|||%an\n|||END|||%ad\n|||END|||%s\n|||END|||%b\n|||END||| --diff-filter=ADMRC --name-status ${hash}`
 })
 
 export const getFileDataFromCommit = (hash: string, path: string): Command => ({
