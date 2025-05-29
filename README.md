@@ -106,3 +106,5 @@ More details on `type` of commits can be found [here](https://www.conventionalco
 - Share PRs via the `#pull-requests` Discord channel.
 - PRs must be **squashed and merged** to keep history clean.
 - A PR must be **reviewed and approved** before being merged into `main`.
+
+TEST
