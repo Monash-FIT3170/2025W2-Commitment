@@ -6,6 +6,8 @@ import '../imports/api/methods';
 
 import "../imports/api/bookmark_methods";
 
+import "./fetch_repo"
+import "./caching"
 
 
 Meteor.startup(async () => {
