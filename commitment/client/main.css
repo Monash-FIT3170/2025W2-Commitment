@@ -33,6 +33,8 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+
+    --color-git: #f1502f;
   }
 
   .dark {
@@ -74,7 +76,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono;
     background-color: #f0f0e8;
   }
 }
