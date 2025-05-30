@@ -1,5 +1,5 @@
 
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import fs from "fs"
 import * as fs_promise from "fs/promises";
 import path from "path";
@@ -43,7 +43,7 @@ export const doNotLogData: Command = {
     shouldLog: false
 }
 
-export const executeCommand = (cwd: string) => (f: Command): Promise<CommandResult> => new Promise((resolve, reject) => {
+export const guaranteeExecution = (cwd: string) => (f: Command): Promise<CommandResult> => new Promise((resolve, reject) => {
     exec(f.cmd, { cwd: cwd }, (error: Error | null, stdout: string, stderr: string) => {
 
         if (stderr) { 
@@ -73,6 +73,69 @@ export const executeCommand = (cwd: string) => (f: Command): Promise<CommandResu
                 result: stdout,
             })
         }
+    })
+})
+
+export const executeCommand = (cwd: string) => (f: Command): Promise<CommandResult> => new Promise((resolve, reject) => {
+    const [command, ...args] = f.cmd.split(' ')
+    const child = spawn(command, args, { cwd })
+
+    // memory mutability is used here as it reduces overhead and increases performance as opposed to RXJS observable acculuation in state
+    // this is one of the only times I will not use pure consts, but because it works with side effect code its fine
+    // and it should also spare on some performance
+    const stdoutChunks: Buffer[] = []
+    const stderrChunks: Buffer[] = []
+
+    child.stdout.on('data', (chunk: Buffer) => {
+        stdoutChunks.push(chunk)
+    })
+
+    child.stderr.on('data', (chunk: Buffer) => {
+        stderrChunks.push(chunk)
+    })
+
+    child.on('error', (error: Error) => {
+        const stdout = Buffer.concat(stdoutChunks).toString()
+        const stderr = Buffer.concat(stderrChunks).toString()
+
+        if (f.shouldLog) console.error(f.onFail(f.cmd, error))
+        resolve({
+            ...defaultResult,
+            result: stdout,
+            error,
+            stdError: stderr || null
+        })
+    })
+
+    child.on('close', (code) => {
+        const stdout = Buffer.concat(stdoutChunks).toString()
+        const stderr = Buffer.concat(stderrChunks).toString()
+
+        if (stderr) {
+            if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr))
+            return resolve({
+                ...defaultResult,
+                result: stdout,
+                stdError: stderr
+            })
+        }
+
+        if (code !== 0) {
+            const err = new Error(`Process exited with code ${code}`)
+            if (f.shouldLog) console.error(f.onFail(f.cmd, err))
+            return resolve({
+                ...defaultResult,
+                result: stdout,
+                error: err,
+                stdError: stderr || null
+            })
+        }
+
+        if (f.shouldLog) console.log(f.onSuccess(f.cmd))
+        resolve({
+            ...defaultResult,
+            result: stdout
+        })
     })
 })
 

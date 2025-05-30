@@ -9,41 +9,39 @@ import {
 
 export type Maybe<T> = T | null
 
-export const fromMaybe = <T>(m: Maybe<T>, error: string): Promise<T> => 
-    m === null ? Promise.reject(new Error(error)) : Promise.resolve(m) 
+export const fromMaybe = <T>(m: Maybe<T>, error: string): T => 
+    m === null ? (() => { throw new Error(error); })() : m
 
-export const parse = (s: string) => <T>(parser: (text: string) => Maybe<T>): Promise<T> => 
+export const parse = (s: string) => <T>(parser: (text: string) => Maybe<T>): T => 
     fromMaybe(parser(s), `parser \"${parser.name}\" failed to parse text:\n${s}`)
 
+// parses and executes p at the same time (less efficient if this is called multiple times but has good syntax for inline statements)
+export const parsePromise = (p: Promise<string>) => async <T>(parser: (text: string) => Maybe<T>): Promise<T> => 
+    parse(await p)(parser)
 
 // executes p and then captures it for use in multiple parsers (more efficient as it does not have multiple executions of the same promise)
-export const parsePromise = async (p: Promise<string>): Promise<<T>(parser: (text: string) => Maybe<T>) => Promise<T>> => {
+export const parsePromiseHold = async (p: Promise<string>): Promise<<T>(parser: (text: string) => Maybe<T>) => T> => {
     const s = await p
-    return <T>(parser: (text: string) =>  Maybe<T>): Promise<T> => parse(s)(parser)
+    return <T>(parser: (text: string) =>  Maybe<T>): T => parse(s)(parser)
 } 
-
-// parses and executes p at the same time (less efficient if this is called multiple times but has good syntax for inline statements)
-export const parsePromiseImmediate = (p: Promise<string>) => async <T>(parser: (text: string) => Maybe<T>): Promise<T> => 
-    parse(await p)(parser)
 
 // prioritises stderror, then error, then a successful message
 export const getParsableStringFromCmd = (res: CommandResult): string => 
     (res.stdError != null) ? res.stdError : ((res.error != null) ? res.error.message : res.result)
 
-export const parseCmd = (p: Promise<CommandResult>): Promise<(<T>(parser: (text: string) => Maybe<T>) => Promise<T>)> => 
+export const parseCmd = (p: Promise<CommandResult>): <T>(parser: (text: string) => Maybe<T>) => Promise<T> => 
     parsePromise(p.then(getParsableStringFromCmd))
 
-export const parseCmdImmediate = (p: Promise<CommandResult>): <T>(parser: (text: string) => Maybe<T>) => Promise<T> => 
-    parsePromiseImmediate(p.then(getParsableStringFromCmd))
+export const parseCmdHold = (p: Promise<CommandResult>): Promise<(<T>(parser: (text: string) => Maybe<T>) => T)> => 
+    parsePromiseHold(p.then(getParsableStringFromCmd))
 
-export const parseSuccess = (res: Promise<CommandResult>): Promise<string> => 
-    res.then(res => successful(res) ? Promise.reject(new Error(getParsableStringFromCmd(res))) : Promise.resolve(res.result))
+export const assertSuccess = (res: CommandResult) => 
+    successful(res) ? (() => { throw new Error(getParsableStringFromCmd(res)); })() : null
 
 export const failedOutput = (text: string): boolean => 
     ["fatal:", "error:", "could not", "not a git repository"]
         .map(s => text.startsWith(s))
         .reduce((p, n) => p || n)
-
 
 export const exactText = (text: string): Maybe<string> => failedOutput(text) ? null : text
 
@@ -64,7 +62,9 @@ export const parseRepoName = (text: string): Maybe<string> => {
     return last(parts) || null
 }
 
+
 export const parseContributorEmails = (text: string): Maybe<string[]> => failedOutput(text) ? null : [...new Set(text.split("\n"))]
+
 
 export const parseRepoBranches = (text: string): Maybe<string[]> => failedOutput(text) ? null : text
     .split("\n") // splits on new line
@@ -72,52 +72,69 @@ export const parseRepoBranches = (text: string): Maybe<string[]> => failedOutput
     .map(line => line.trim().replace(/^\* /, "")) // remove "* " from current branch
     .filter(Boolean); // remove empty lines
 
+
 export const parseCommitHashes = (text: string): Maybe<string[]> => failedOutput(text) ? null : text
     .split("\n") // splits on new line
     .filter(line => !line.startsWith("The system cannot find the path specified.")) // for some reason this exists, but the rest of the logic still works???
     .filter(Boolean); // remove empty lines
 
-
-export const parseCommitData = (text: string): Maybe<Readonly<{
+type InbetweenCommitData = Readonly<{
     commitHash: string,
-    commitTitle: string
+    commitTitle: string,
     contributorName: string,
     description: string,
     dateString: string,
     involvedFiles: string[][]
-}>> => {
+}>
+
+const delim = "\n|||END|||"
+
+const trimTextWithNewLine = (s: string) => s
+    .split("\n")
+    .map(l => l.trim())
+    .join("\n")
+
+export const parseCommitData = (text: string): Maybe<InbetweenCommitData> => {
     if (failedOutput(text)) return null
-    
-    const lines = text.split("\n").map(s => s.trim())
-    if (lines.length < 5) return null
 
-    const [commitHash, contributorName, dateString, commitTitle, description, ...fileLines] = lines
+    const blocks = text.split(delim)
+    if (blocks.length < 5) return null
 
-    const data = fileLines
-        .filter(l => l != "")
-        .map(line => {
+    const [commitHash, contributorName, dateString, commitTitle, descriptionOrEmpty, rest] = blocks
+
+    // Handle case where there's no description (empty string)
+    const description = descriptionOrEmpty || ""
+
+    // Join the rest into a flat list of file lines
+    const fileLines = rest
+        .split("\n")
+        .map(l => l.trim())
+        .filter(l => l !== '')
+
+    const involvedFiles = fileLines.map(line => {
         const parts = line.split(/\s+/)
         const status = parts[0]
 
         if (status.startsWith("R") || status.startsWith("C")) {
             // Rename or copy: status, from, to
-            return [status[0], parts[1], parts[2]] 
+            return [status, parts[1], parts[2]]
         } else {
-            // Simple: status, file
+            // Normal add/modify/delete: status, path
             return [status, parts[1]]
         }
     })
 
     return {
-        commitHash,
-        commitTitle,
-        contributorName,
-        description,
-        dateString,
-        involvedFiles: data
+        commitHash: trimTextWithNewLine(commitHash),
+        commitTitle: trimTextWithNewLine(commitTitle),
+        contributorName: trimTextWithNewLine(contributorName),
+        description: trimTextWithNewLine(description),
+        dateString: trimTextWithNewLine(dateString),
+        involvedFiles
     }
-
 }
+
+
 export const parseFileDataFromCommit = (getFileContents: (text: string) => Promise<string>, getOldFileContents: (text: string) => Promise<string>) => async (data: string[]): Promise<Maybe<FileChanges>> => {
 
     const [changeString, ...rest] = data
@@ -165,8 +182,9 @@ export const parseFileDataFromCommit = (getFileContents: (text: string) => Promi
             extra: null
         }
     }
-    
-    const updatedFileContents = await getFileContents(newFile)
+
+    // if the file is deleted, do not try to get its file contents as it probably does not exist
+    const updatedFileContents = changeType !== "D" ? await getFileContents(newFile) : ""
 
     const fileContents = {
         contents: updatedFileContents,
