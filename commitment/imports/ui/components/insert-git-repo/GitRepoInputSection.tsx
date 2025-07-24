@@ -52,7 +52,7 @@ const GitRepoInputSection = () => {
                 type="text" 
                 placeholder="Insert git repo link" 
                 className={cn(
-                    "w-full max-w-lg px-4 py-2 border rounded-full shadow-sm focus:outline-none",
+                    "w-full max-w-lg px-4 py-2 border rounded-full shadow-xs focus:outline-hidden",
                     validationError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-[#F1502F] focus:ring-[#F1502F] focus:border-[#F1502F]',
                     'mb-4'
                 )}
