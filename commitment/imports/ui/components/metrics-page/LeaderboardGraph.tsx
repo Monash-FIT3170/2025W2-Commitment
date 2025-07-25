@@ -56,7 +56,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
         </div>
       </div>
 
-      <div className="flex-grow pt-0">
+      <div className="grow pt-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             layout="vertical"

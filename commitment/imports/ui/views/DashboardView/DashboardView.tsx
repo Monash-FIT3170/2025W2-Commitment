@@ -189,7 +189,7 @@ const DashboardView: React.FC = () => {
             type="search"
             placeholder="Search repositories"
             onChange={handleSearch}
-            className="w-56 sm:w-64 lg:w-72 rounded-full border border-gray-300 bg-white py-1.5 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="w-56 sm:w-64 lg:w-72 rounded-full border border-gray-300 bg-white py-1.5 pl-9 pr-3 text-sm focus:outline-hidden focus:ring-1 focus:ring-gray-400"
           />
         </div>
       </div>

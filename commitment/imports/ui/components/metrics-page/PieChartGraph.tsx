@@ -89,7 +89,7 @@ export function ContributionPieChart({ data }: Props) {
   }));
   return (
     <Card
-      className="flex flex-col max-w-md mx-auto shadow-none ring-0 border-0 outline-none"
+      className="flex flex-col max-w-md mx-auto shadow-none ring-0 border-0 outline-hidden"
       style={{ backgroundColor: graphBackgroundColour }}
     >
       <CardHeader className="items-center pb-0">

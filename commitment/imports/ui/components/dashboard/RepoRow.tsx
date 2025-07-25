@@ -15,7 +15,7 @@ export interface RepoRowProps {
 export default function RepoRow({ bookmark, onclick, onInfo }: RepoRowProps) {
   return (
     <li
-      className={`bg-[#F1502F] text-white rounded-xl flex items-center px-4 py-2 gap-3 shadow-sm transition-colors w-full sm:w-auto `}
+      className={`bg-[#F1502F] text-white rounded-xl flex items-center px-4 py-2 gap-3 shadow-xs transition-colors w-full sm:w-auto `}
     >
       {/* repo name */}
       <span className="flex-1 truncate font-medium">{bookmark.title}</span>
@@ -25,7 +25,7 @@ export default function RepoRow({ bookmark, onclick, onInfo }: RepoRowProps) {
         type="button"
         onClick={onInfo}
         aria-label="repository info"
-        className="text-white/80 hover:text-white focus:outline-none"
+        className="text-white/80 hover:text-white focus:outline-hidden"
       >
         <Info size={18} />
       </button>

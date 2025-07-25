@@ -32,7 +32,7 @@ export function MetricsTabs() {
   return (
     <Tabs
       defaultValue="metrics"
-      className="w-full bg-[#FEFEFA] shadow justify-items-start"
+      className="w-full bg-[#FEFEFA] shadow-sm justify-items-start"
     >
       <TabsList className="flex bg-[#FEFEFA] border-b">
         {allTabData.map(({ value, label }) => (
@@ -51,7 +51,7 @@ export function MetricsTabs() {
               data-[state=active]:after:w-full
               data-[state=active]:after:h-0.5
               data-[state=active]:after:bg-git
-              rounded-none border-none shadow-none focus:outline-none
+              rounded-none border-none shadow-none focus:outline-hidden
               transition-all
             `}
           >

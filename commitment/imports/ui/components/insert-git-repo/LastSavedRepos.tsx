@@ -45,7 +45,7 @@ const LastSavedRepos = () => {
       </div>
       <div className="flex justify-end mt-6">
         <Button className={cn(
-          "h-auto text-sm rounded-full text-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 shadow-sm"
+          "h-auto text-sm rounded-full text-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 shadow-xs"
         )}>
           <Link to="/dashboard">See All</Link> <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
