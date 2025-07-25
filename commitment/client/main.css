@@ -1,11 +1,88 @@
-@import 'tailwindcss';
-
+@import "tailwindcss";
 @plugin 'tailwindcss-animate';
 
-@custom-variant dark (&:is(.dark *));
+@theme inline {
+  /* Git Background Colours */
+  --color-git-bg-bottom: var(--git-bg-bottom);
+  --color-git-bg-primary: var(--git-bg-primary);
+  --color-git-bg-secondary: var(--git-bg-secondary);
+  --color-git-bg-tertiary: var(--git-bg-tertiary);
+  --color-git-bg-elevated: var(--git-bg-elevated);
 
-@theme {
+  /* Git Text Colours */
+  --color-git-text-primary: var(--git-text-primary);
+  --color-git-text-secondary: var(--git-text-secondary);
+  --color-git-text-disabled: var(--git-text-disabled);
+
+  /* Git Data-Visualisation Colours */
+  --color-git-dv-blue: var(--git-dv-blue);
+  --color-git-dv-orange: var(--git-dv-orange);
+  --color-git-dv-green: var(--git-dv-green);
+  --color-git-dv-coral: var(--git-dv-coral);
+  --color-git-dv-aqua: var(--git-dv-aqua);
+  --color-git-dv-yellow: var(--git-dv-yellow);
+  --color-git-dv-purple: var(--git-dv-purple);
+  --color-git-dv-pink: var(--git-dv-pink);
+  --color-git-dv-brown: var(--git-dv-brown);
+  --color-git-dv-grey: var(--git-dv-grey);
+  --color-git-dv-pink-dark: var(--git-dv-pink-dark);
+
+  /* Git Interactive Colours */
+  --color-git-int-primary: var(--git-int-primary);
+  --color-git-int-text: var(--git-int-text);
+  --color-git-int-destructive: var(--git-int-destructive);
+  --color-git-int-primary-hover: var(--git-int-primary-hover);
+  --color-git-int-destructive-hover: var(--git-int-destructive-hover);
+  --color-git-int-link: var(--git-int-link);
+
+  /* Git Card Colours */
+  --color-git-card-primary: var(--git-card-primary);
+  --color-git-card-secondary: var(--git-card-secondary);
+  --color-git-card-text: var(--git-card-text);
+  --color-git-card-text-secondary: var(--git-card-text-secondary);
+
+  /* Git Stroke Colours */
+  --color-git-stroke-primary: var(--git-stroke-primary);
+  --color-git-stroke-secondary: var(--git-stroke-secondary);
+  --color-git-stroke-tertiary: var(--git-stroke-tertiary);
+
+  /* Git Tabs Colours */
+  --color-git-tabs-hovered: var(--git-tabs-hovered);
+  --color-git-tabs-active: var(--git-tabs-active);
+
+  /* Git Primitive Background Colours */
+  --color-cararra-50: #f0f0e8;
+  --color-cararra-100: #e8e8dd;
+  --color-cararra-200: #d0d0b7;
+  --color-cararra-300: #b7b592;
+  --color-cararra-400: #a6a379;
+  --color-cararra-500: #867a59;
+
+  --color-zeus-600: #5c5c51;
+  --color-zeus-700: #42423a;
+  --color-zeus-750: #393932;
+  --color-zeus-800: #2f2f2a;
+  --color-zeus-850: #282823;
+  --color-zeus-900: #252522;
+  --color-zeus-950: #21211e;
+
+  --color-ivory-100: #e8e8dd;
+
+  --color-git-50: #fef3ee;
+  --color-git-100: #ffeae1;
+  --color-git-200: #ffdac9;
+  --color-git-300: #febfa3;
+  --color-git-400: #fa9a6f;
+  --color-git-500: #f1502f;
+  --color-git-600: #e12a15;
+  --color-git-700: #bb1c13;
+  --color-git-800: #951917;
+  --color-git-900: #781816;
+  --color-git-950: #41090a;
+
   --color-git: var(--color-git);
+
+  /* Shadcn Colours */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -37,12 +114,10 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  --font-sans:
-    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-    'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-    'Courier New', monospace;
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -85,6 +160,57 @@
 
 @layer base {
   :root {
+    --color-git: #f1502f;
+
+    /* Git Background Colours */
+    --git-bg-bottom: #e8e8dd;
+    --git-bg-primary: #f0f0e8;
+    --git-bg-secondary: #b7b592;
+    --git-bg-tertiary: #d0d0b7;
+    --git-bg-elevated: #fefefa;
+
+    /* Git Text Colours */
+    --git-text-primary: #000;
+    --git-text-secondary: #353531;
+    --git-text-disabled: #818181;
+
+    /* Git Data-Visualisation Colours */
+    --git-dv-blue: #4e79a7;
+    --git-dv-orange: #f28e2b;
+    --git-dv-green: #59a14f;
+    --git-dv-coral: #e15759;
+    --git-dv-aqua: #76b7b2;
+    --git-dv-yellow: #edc948;
+    --git-dv-purple: #b07aa1;
+    --git-dv-pink: #ff9da7;
+    --git-dv-brown: #9c755f;
+    --git-dv-grey: #bab0ac;
+    --git-dv-pink-dark: #d37295;
+
+    /* Git Interactive Colours */
+    --git-int-primary: #f1502f;
+    --git-int-text: #fef3ee;
+    --git-int-destructive: #951917;
+    --git-int-primary-hover: #e12a15;
+    --git-int-destructive-hover: #781816;
+    --git-int-link: #3a76a9;
+
+    /* Git Card Colours */
+    --git-card-primary: #f1502f;
+    --git-card-secondary: #fde4d7;
+    --git-card-text: #fff;
+    --git-card-text-secondary: #000;
+
+    /* Git Stroke Colours */
+    --git-stroke-primary: rgba(53, 53, 49, 0.5);
+    --git-stroke-secondary: #252522;
+    --git-stroke-tertiary: #21211e;
+
+    /* Git Tabs Colours */
+    --git-tabs-hovered: #d0d0b7;
+    --git-tabs-active: #f0f0e8;
+
+    /* Shadcn Colours */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -114,11 +240,38 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
-
-    --color-git: #f1502f;
   }
 
   .dark {
+    /* Git Background Colours */
+    --git-bg-bottom: #21211e;
+    --git-bg-primary: #282823;
+    --git-bg-secondary: #2f2f2a;
+    --git-bg-tertiary: #393932;
+    --git-bg-elevated: #5c5c51;
+
+    /* Git Text Colours */
+    --git-text-primary: #fff;
+    --git-text-secondary: #c4c4c4;
+    --git-text-disabled: #818181;
+
+    /* Git Data-Visualisation Colours */
+    --git-dv-grey: #fffffb;
+
+    /* Git Card Colours */
+    --git-card-secondary: #fbc4ad;
+    --git-card-text-secondary: #fff;
+
+    /* Git Stroke Colours */
+    --git-stroke-primary: rgba(255, 255, 255, 0.49);
+    --git-stroke-secondary: rgba(208, 208, 183, 0.45);
+    --git-stroke-tertiary: rgba(183, 181, 146, 0.47);
+
+    /* Git Tabs Colours */
+    --git-tabs-hovered: #fff;
+    --git-tabs-active: #fff;
+
+    /* Shadcn Colours */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
