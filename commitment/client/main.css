@@ -80,9 +80,7 @@
   --color-git-900: #781816;
   --color-git-950: #41090a;
 
-  --color-git: var(--color-git);
-
-  /* Shadcn Colours */
+  /* Shadcn Variables */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -160,8 +158,6 @@
 
 @layer base {
   :root {
-    --color-git: #f1502f;
-
     /* Git Background Colours */
     --git-bg-bottom: #e8e8dd;
     --git-bg-primary: #f0f0e8;
@@ -210,7 +206,7 @@
     --git-tabs-hovered: #d0d0b7;
     --git-tabs-active: #f0f0e8;
 
-    /* Shadcn Colours */
+    /* Shadcn Variables */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -271,7 +267,7 @@
     --git-tabs-hovered: #fff;
     --git-tabs-active: #fff;
 
-    /* Shadcn Colours */
+    /* Shadcn Variables */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
@@ -311,6 +307,6 @@
 
   body {
     @apply bg-background text-foreground font-mono;
-    background-color: #f0f0e8;
+    background-color: var(--git-bg-primary);
   }
 }
