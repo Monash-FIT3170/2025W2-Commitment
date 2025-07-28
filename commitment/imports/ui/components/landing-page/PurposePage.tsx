@@ -21,7 +21,7 @@ export default purpose;
 const Header = () => {
   return (
     <div className="flex flex-col justify-center items-center">
-      <h4 className="font-mono text text-git text-lg font-semibold">HOW TO USE?</h4>
+      <h4 className="font-mono text text-git-500 text-lg font-semibold">HOW TO USE?</h4>
       <h1 className="font-mono text-5xl">Get Started in Three Steps</h1>
     </div>
   );
