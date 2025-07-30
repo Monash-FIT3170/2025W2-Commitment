@@ -43,6 +43,7 @@
   "exclude": [
     "./.meteor/**",
     "./packages/**",
-    "node_modules"
+    "node_modules",
+    "./imports/ui/components/ui/**"
   ]
 }
