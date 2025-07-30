@@ -1,0 +1,18 @@
+{
+  "extends": ["@meteorjs/eslint-config-meteor"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": ".",
+    "sourceType": "module"
+  },
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        // your TS-specific rules here if needed
+      }
+    }
+  ]
+}

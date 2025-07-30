@@ -6,11 +6,12 @@
     "test": "meteor test --once --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "visualize": "meteor --production --extra-packages bundle-visualizer",
-    "lint": "eslint",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "pretest": "npm run lint --silent"
   },
   "eslintConfig": {
-    "extends": "@meteorjs/eslint-config-meteor" 
+    "extends": "@meteorjs/eslint-config-meteor"
   },
   "dependencies": {
     "@babel/runtime": "^7.20.7",
