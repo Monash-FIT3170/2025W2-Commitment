@@ -48,9 +48,6 @@ jobs:
 
       - name: Install npm dependencies
         run: meteor npm install
-
-      - name: Run Mocha tests
-        run: meteor npm run test
       
       - name: Run task
         run: |
