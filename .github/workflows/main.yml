@@ -1,4 +1,4 @@
-name: Meteor Tests
+name: Commitment Checks
 
 on:
   push:
@@ -9,12 +9,16 @@ on:
       - "**"
 
 jobs:
-  test:
+  tasks:
+    name: Run ${{ matrix.task }}
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: ./commitment
+
+    strategy:
+      matrix:
+        task: [lint, typecheck, test]
 
     services:
       mongo:
@@ -47,3 +51,13 @@ jobs:
 
       - name: Run Mocha tests
         run: meteor npm run test
+      
+      - name: Run task
+        run: |
+          if [ "${{ matrix.task }}" = "lint" ]; then
+            meteor npm run lint
+          elif [ "${{ matrix.task }}" = "typecheck" ]; then
+            meteor npm run typecheck
+          elif [ "${{ matrix.task }}" = "test" ]; then
+            meteor npm run test
+          fi
