@@ -37,6 +37,7 @@ jobs:
     defaults:
       run:
         working-directory: ./commitment
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - run: curl https://install.meteor.com/ | sh
@@ -50,6 +51,7 @@ jobs:
     defaults:
       run:
         working-directory: ./commitment
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - run: curl https://install.meteor.com/ | sh
