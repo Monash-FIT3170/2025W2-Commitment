@@ -9,17 +9,60 @@ on:
       - "**"
 
 jobs:
-  tasks:
-    name: Run ${{ matrix.task }}
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      node-modules-cache: ${{ steps.cache-modules.outputs.cache-hit }}
+    defaults:
+      run:
+        working-directory: ./commitment
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Meteor
+        run: curl https://install.meteor.com/ | sh
+
+      - name: Install dependencies
+        run: meteor npm install
+
+  lint:
+    needs: setup
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./commitment
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl https://install.meteor.com/ | sh
+      - run: meteor npm install
+      - name: Run ESLint
+        run: npx eslint client server tests --quiet
 
-    strategy:
-      matrix:
-        task: [lint, typecheck, test]
+  typecheck:
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./commitment
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl https://install.meteor.com/ | sh
+      - run: meteor npm install
+      - name: Run TS Type Check
+        run: meteor npm run typecheck
 
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./commitment
     services:
       mongo:
         image: mongo:5.0
@@ -33,28 +76,9 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Meteor
-        run: curl https://install.meteor.com/ | sh
-
-      - name: Install npm dependencies
-        run: meteor npm install
-      
-      - name: Run task
-        run: |
-          if [ "${{ matrix.task }}" = "test" ]; then
-            meteor npm run test
-          elif [ "${{ matrix.task }}" = "lint" ]; then
-            npx eslint client server tests --quiet
-          elif [ "${{ matrix.task }}" = "typecheck" ]; then
-            meteor npm run typecheck
-          fi
+      - uses: actions/checkout@v4
+      - run: curl https://install.meteor.com/ | sh
+      - run: meteor npm install
+      - name: Run Tests
+        run: meteor npm run test
