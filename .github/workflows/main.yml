@@ -51,10 +51,10 @@ jobs:
       
       - name: Run task
         run: |
-          if [ "${{ matrix.task }}" = "lint" ]; then
+          if [ "${{ matrix.task }}" = "test" ]; then
+            meteor npm run test
+          elif [ "${{ matrix.task }}" = "lint" ]; then
             npx eslint client server tests --quiet
           elif [ "${{ matrix.task }}" = "typecheck" ]; then
             meteor npm run typecheck
-          elif [ "${{ matrix.task }}" = "test" ]; then
-            meteor npm run test
           fi
