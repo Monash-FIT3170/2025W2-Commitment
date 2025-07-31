@@ -5,7 +5,10 @@
     "start": "meteor run",
     "test": "meteor test --once --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
-    "visualize": "meteor --production --extra-packages bundle-visualizer"
+    "visualize": "meteor --production --extra-packages bundle-visualizer",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@babel/runtime": "^7.20.7",
@@ -44,16 +47,29 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
+    "@meteorjs/eslint-config-meteor": "^1.0.5",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/mocha": "^8.2.3",
-    "@types/node": "^18.13.0",
-    "@types/react": "^18.0.26",
-    "@types/react-dom": "^18.0.10",
+    "@types/node": "^18.19.121",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "babel-eslint": "^10.1.0",
     "babel-plugin-module-resolver": "^5.0.2",
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-meteor": "^0.4.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-meteor": "^7.3.0",
+    "eslint-plugin-react": "^7.37.5",
+    "mocha": "^11.7.1",
     "postcss": "^8.5.3",
     "postcss-load-config": "^6.0.1",
     "tailwindcss": "^4.1.11",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.5"
   },
   "meteor": {
     "mainModule": {
