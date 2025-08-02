@@ -13,6 +13,17 @@ services:
       - mongo
     tty: true
     stdin_open: true
+    networks:
+      - app-network
+
+  haskell-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.haskell
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
 
   mongo:
     image: mongo:6
@@ -24,3 +35,7 @@ services:
 
 volumes:
   mongo-data:
+
+networks:
+  app-network:
+    driver: bridge

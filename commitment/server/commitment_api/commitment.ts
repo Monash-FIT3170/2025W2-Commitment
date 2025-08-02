@@ -57,10 +57,14 @@ const withLimit = (lim: number): (<T>(p: Promise<T>) => Promise<T>) => {
 	return <T>(p: Promise<T>) => l(() => p)
 }
 
-// does not have a notifier which updates any frontend subscribers
+/** does not have a notifier which updates any frontend subscribers
+ * @deprecated
+*/
 export const getDataFrom = async (url: string): Promise<RepositoryData> => fetchDataFrom(url, new Subject<string>())
 
-// gets the repository data from the url
+/** gets the repository data from the url
+ * @deprecated
+*/
 export const fetchDataFrom = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
 		
 	// creates path to clone repos in if filepath if it doesnt already exist

@@ -36,9 +36,34 @@ const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<
 }
 
 
-export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => tryFromDatabase(url, notifier)
+export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => 
+    tryFromDatabase(url, notifier)
     .catch(async e => {
-        const data = await fetchDataFrom(url, notifier)
+        const data = await fetchDataFromHaskellApp(url, notifier)
         cacheIntoDatabase(url, data)
         return data
+    })
+
+
+const fetchDataFromHaskellApp = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => new Promise<RepositoryData>((resolve, reject) => {
+        const socket = new WebSocket("ws://localhost:8081")
+
+        socket.onopen = () => {
+            // Step 1: Send repo URL
+            socket.send(JSON.stringify({
+                url: url
+            }))
+        }
+
+        socket.onmessage = (event) => {
+            // Step 2: Await response from haskell app
+            const data = event.data;
+            const parsed = JSON.parse(data);
+
+            if (parsed.type === "text_update") notifier.next(data.replace("text_update: ", ""))
+            else if (parsed.type === "value") resolve(data.value) 
+            else if (parsed.type === "error") reject(parsed.message)
+        }
+
+        socket.onclose = () => {}
     })
