@@ -7,6 +7,7 @@ import {
 import React from "react";
 import { OverviewPage } from "./OverviewPage";
 import { MetricsPage } from "./MetricsPage";
+import { ScalingView } from "../scaling/ScalingView";
 
 interface TabData {
   value: string;
@@ -68,7 +69,10 @@ export function MetricsTabs() {
         {/* METRICS */}
         <MetricsPage />
       </TabsContent>
-      <TabsContent value="scaling">{/* SCALING */}</TabsContent>
+      <TabsContent value="scaling">
+        {/* SCALING */}
+        <ScalingView />
+      </TabsContent>
     </Tabs>
   );
 }
