@@ -40,6 +40,7 @@ export const ScalingView = () => {
 
   const handleConfigSubmit = (configData: ScalingConfig) => {
     setConfig(configData);
+    console.log("Config submitted:", configData);
     setStep("sheet");
   };
 
@@ -66,6 +67,12 @@ export const ScalingView = () => {
 
           {/* MULTI STEP DIALOG */}
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
+
+            {/* here to mute any errors */}
+            <DialogHeader>
+              <DialogTitle />
+              <DialogDescription />
+            </DialogHeader>
             <DialogContent className="max-w-full">
               {step === "config" && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />

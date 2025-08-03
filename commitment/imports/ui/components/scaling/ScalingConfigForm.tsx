@@ -196,12 +196,15 @@ export function ScalingConfigForm({
             )}
           />
 
-          <Button
-            type="submit"
-            className="bg-git-card-primary hover:bg-git-card-secondary"
-          >
-            Next
-          </Button>
+          {/* NEXT BUTTON */}
+          <div className="flex justify-center">
+            <Button
+              type="submit"
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-full px-8"
+            >
+              Next
+            </Button>
+          </div>
         </form>
       </Form>
     </div>
