@@ -66,7 +66,7 @@ export const ScalingView = () => {
 
           {/* MULTI STEP DIALOG */}
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
-            <DialogContent className="max-w-4xl w-full">
+            <DialogContent className="max-w-full">
               {step === "config" && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}

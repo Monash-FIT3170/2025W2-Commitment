@@ -55,8 +55,8 @@ export function ScalingConfigForm({
   const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
 
   return (
-    <Form {...form}>
-      <div className="max-w-2xl w-full mx-auto">
+    <div className="max-w-full">
+      <Form {...form}>
         <div className="text-2xl font-bold mb-4 text-center">
           Generate Scaling
         </div>
@@ -67,8 +67,11 @@ export function ScalingConfigForm({
             name="metrics"
             render={() => (
               <FormItem>
-                <FormLabel>Select scaling metrics*</FormLabel>
-                <div className="flex flex-wrap gap-4">
+                <FormLabel className="font-bold justify-center">
+                  Select scaling metrics
+                  <span className="text-red-500">*</span>
+                </FormLabel>
+                <div className="flex flex-col gap-2">
                   {metricOptions.map((metric) => (
                     <FormField
                       key={metric}
@@ -111,8 +114,10 @@ export function ScalingConfigForm({
             name="method"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select a scaling method*</FormLabel>
-                <FormControl>
+                <FormLabel className="font-bold justify-center">
+                  Select a scaling method
+                  <span className="text-red-500">*</span>
+                </FormLabel>                <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -141,7 +146,7 @@ export function ScalingConfigForm({
             name="customScript"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Different Scale? Upload custom script:</FormLabel>
+                <FormLabel className="font-bold justify-center">Different Scale? Upload a custom script:</FormLabel>
                 <FormControl>
                   <Input
                     type="file"
@@ -159,7 +164,7 @@ export function ScalingConfigForm({
             Next
           </Button>
         </form>
-      </div>
-    </Form>
+      </Form>
+    </div>
   );
 }
