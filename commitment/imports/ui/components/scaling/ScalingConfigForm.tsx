@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 import {
   Form,
@@ -7,25 +7,25 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@ui/components/ui/form";
-import { UploadIcon } from "lucide-react";
-import { Checkbox } from "@ui/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@ui/components/ui/radio-group";
-import { Button } from "@ui/components/ui/button";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
+} from '@ui/components/ui/form';
+import { UploadIcon } from 'lucide-react';
+import { Checkbox } from '@ui/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@ui/components/ui/radio-group';
+import { Button } from '@ui/components/ui/button';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from '../ui/dropzone';
 
 const scalingConfigSchema = z.object({
-  metrics: z.array(z.string()).min(1, "Select at least one metric"),
-  method: z.string().nonempty("Select a method"),
+  metrics: z.array(z.string()).min(1, 'Select at least one metric'),
+  method: z.string().nonempty('Select a method'),
   customScript: z.any().optional(),
 });
 
 type ScalingConfig = z.infer<typeof scalingConfigSchema>;
 
-export function ScalingConfigForm({
+function ScalingConfigForm({
   onSubmit,
 }: {
   onSubmit: (config: ScalingConfig) => void;
@@ -36,7 +36,7 @@ export function ScalingConfigForm({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
       metrics: [],
-      method: "Percentiles",
+      method: 'Percentiles',
     },
   });
 
@@ -51,14 +51,14 @@ export function ScalingConfigForm({
   };
 
   const metricOptions = [
-    "Total No. Commits",
-    "Use AI to filter out commits",
-    "LOC",
-    "LOC per commit",
-    "Commits per day",
+    'Total No. Commits',
+    'Use AI to filter out commits',
+    'LOC',
+    'LOC per commit',
+    'Commits per day',
   ];
 
-  const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
+  const methodOptions = ['Percentiles', 'Mean +/- Std', 'Quartiles'];
 
   return (
     <div className="max-w-full">
@@ -68,7 +68,7 @@ export function ScalingConfigForm({
         </div>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
 
-          {/* METRICS CHECKBOXES*/}
+          {/* METRICS CHECKBOXES */}
           <FormField
             control={form.control}
             name="metrics"
@@ -97,8 +97,8 @@ export function ScalingConfigForm({
                                 return checked
                                   ? field.onChange([...value, metric])
                                   : field.onChange(
-                                      value.filter((v) => v !== metric)
-                                    );
+                                    value.filter((v) => v !== metric),
+                                  );
                               }}
                             />
                           </FormControl>
@@ -124,7 +124,8 @@ export function ScalingConfigForm({
                 <FormLabel className="font-bold justify-center">
                   Select a scaling method
                   <span className="text-red-500">*</span>
-                </FormLabel>{" "}
+                </FormLabel>
+                {' '}
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -165,7 +166,7 @@ export function ScalingConfigForm({
                     }}
                     onError={console.error}
                     src={script}
-                    accept={{ ".py": [] }}
+                    accept={{ '.py': [] }}
                     maxFiles={1}
                     className="border-2 border-dashed border-muted-foreground rounded-md transition-colors hover:border-primary focus:border-primary"
                   >
@@ -183,7 +184,9 @@ export function ScalingConfigForm({
                             Drag and drop or click to select
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            Accepted: <span className="font-mono">.py</span>
+                            Accepted:
+                            {' '}
+                            <span className="font-mono">.py</span>
                           </p>
                         </div>
                       </div>
@@ -210,3 +213,5 @@ export function ScalingConfigForm({
     </div>
   );
 }
+
+export default ScalingConfigForm;

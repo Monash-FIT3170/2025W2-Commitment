@@ -7,7 +7,7 @@ import {
 import React from "react";
 import { OverviewPage } from "./OverviewPage";
 import { MetricsPage } from "./MetricsPage";
-import { ScalingView } from "../scaling/ScalingView";
+import ScalingView from "../scaling/ScalingView";
 
 interface TabData {
   value: string;
