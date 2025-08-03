@@ -7,17 +7,15 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-  FormDescription,
 } from "@ui/components/ui/form";
-
+import { UploadIcon } from "lucide-react";
 import { Checkbox } from "@ui/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@ui/components/ui/radio-group";
 import { Button } from "@ui/components/ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from '../ui/dropzone';
-
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
@@ -157,20 +155,35 @@ export function ScalingConfigForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-bold justify-center">
-                  Different Scale? Upload a custom script:
+                  Custom scaling? Upload a Python script:
                 </FormLabel>
                 <FormControl>
                   <Dropzone
-                    onDrop={handleDrop}
+                    onDrop={(files) => {
+                      handleDrop(files);
+                      field.onChange(files);
+                    }}
                     onError={console.error}
                     src={script}
+                    accept={{ ".py": [] }}
+                    maxFiles={1}
+                    className="border-2 border-dashed border-muted-foreground rounded-md transition-colors hover:border-primary focus:border-primary"
                   >
                     <DropzoneEmptyState>
-                      <div className="flex w-full items-center gap-4 p-8">
-                        <div className="text-left">
-                          <p className="font-medium text-sm">Upload a file</p>
+                      <div className="flex flex-col items-center w-full py-4">
+                        <UploadIcon
+                          size={32}
+                          className="mb-2 text-muted-foreground"
+                        />
+                        <div className="text-center w-full">
+                          <p className="font-medium text-sm mb-1">
+                            Upload a Python file
+                          </p>
+                          <p className="text-muted-foreground text-xs mb-0.5">
+                            Drag and drop or click to select
+                          </p>
                           <p className="text-muted-foreground text-xs">
-                            Drag and drop or click to upload
+                            Accepted: <span className="font-mono">.py</span>
                           </p>
                         </div>
                       </div>
@@ -178,9 +191,6 @@ export function ScalingConfigForm({
                     <DropzoneContent />
                   </Dropzone>
                 </FormControl>
-                <FormDescription className="justify-center">
-                  Only `.py` files accepted.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
