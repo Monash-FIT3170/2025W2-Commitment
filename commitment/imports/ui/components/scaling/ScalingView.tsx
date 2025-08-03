@@ -32,14 +32,21 @@ export const ScalingView = () => {
   // Flow for first visits
   useEffect(() => {
     // Grab from local storage first
-    const visited = localStorage.getItem("hasVisitedScaling") === "true";
-    setVisited(visited);
+    const lsVisited = localStorage.getItem("hasVisitedScaling") === "true";
+    setVisited(lsVisited);
     setShowDialog(!visited); //Opens automatically on first visit
   }, []);
 
   const handleConfigSubmit = (configData: ScalingConfig) => {
     setConfig(configData);
-    setStep(2);
+    setStep("sheet");
+  };
+
+  const handleSheetSubmit = (sheetFile: File) => {
+    setGradingSheet(sheetFile);
+    setStep("done");
+    setVisited(true);
+    setShowDialog(false)
   };
 
   return (
