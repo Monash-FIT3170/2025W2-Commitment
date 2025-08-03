@@ -56,103 +56,110 @@ export function ScalingConfigForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Metrics Checkboxes */}
-        <FormField
-          control={form.control}
-          name="metrics"
-          render={() => (
-            <FormItem>
-              <FormLabel>Select scaling metrics*</FormLabel>
-              <div className="flex flex-wrap gap-4">
-                {metricOptions.map((metric) => (
-                  <FormField
-                    key={metric}
-                    control={form.control}
-                    name="metrics"
-                    render={({ field }) => (
+      <div className="max-w-2xl w-full mx-auto">
+        <div className="text-2xl font-bold mb-4 text-center">
+          Generate Scaling
+        </div>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {/* Metrics Checkboxes */}
+          <FormField
+            control={form.control}
+            name="metrics"
+            render={() => (
+              <FormItem>
+                <FormLabel>Select scaling metrics*</FormLabel>
+                <div className="flex flex-wrap gap-4">
+                  {metricOptions.map((metric) => (
+                    <FormField
+                      key={metric}
+                      control={form.control}
+                      name="metrics"
+                      render={({ field }) => (
+                        <FormItem
+                          key={metric}
+                          className="flex items-center space-x-2"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(metric)}
+                              onCheckedChange={(checked) => {
+                                const value = field.value || [];
+                                return checked
+                                  ? field.onChange([...value, metric])
+                                  : field.onChange(
+                                      value.filter((v) => v !== metric)
+                                    );
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            {metric}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Method Radios */}
+          <FormField
+            control={form.control}
+            name="method"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Select a scaling method*</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    {methodOptions.map((m) => (
                       <FormItem
-                        key={metric}
-                        className="flex items-center space-x-2"
+                        key={m}
+                        className="flex items-center space-x-2 mt-1"
                       >
                         <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(metric)}
-                            onCheckedChange={(checked) => {
-                              const value = field.value || [];
-                              return checked
-                                ? field.onChange([...value, metric])
-                                : field.onChange(
-                                    value.filter((v) => v !== metric)
-                                  );
-                            }}
-                          />
+                          <RadioGroupItem value={m} />
                         </FormControl>
-                        <FormLabel className="font-normal">{metric}</FormLabel>
+                        <FormLabel className="font-normal">{m}</FormLabel>
                       </FormItem>
-                    )}
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* File Upload */}
+          <FormField
+            control={form.control}
+            name="customScript"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Different Scale? Upload custom script:</FormLabel>
+                <FormControl>
+                  <Input
+                    type="file"
+                    accept=".py"
+                    onChange={(e) => field.onChange(e.target.files?.[0])}
                   />
-                ))}
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                </FormControl>
+                <FormDescription>Only `.py` files accepted.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Method Radios */}
-        <FormField
-          control={form.control}
-          name="method"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Select a scaling method*</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  {methodOptions.map((m) => (
-                    <FormItem
-                      key={m}
-                      className="flex items-center space-x-2 mt-1"
-                    >
-                      <FormControl>
-                        <RadioGroupItem value={m} />
-                      </FormControl>
-                      <FormLabel className="font-normal">{m}</FormLabel>
-                    </FormItem>
-                  ))}
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* File Upload */}
-        <FormField
-          control={form.control}
-          name="customScript"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Different Scale? Upload custom script:</FormLabel>
-              <FormControl>
-                <Input
-                  type="file"
-                  accept=".py"
-                  onChange={(e) => field.onChange(e.target.files?.[0])}
-                />
-              </FormControl>
-              <FormDescription>Only `.py` files accepted.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" className="bg-orange-400 hover:bg-orange-500">
-          Next
-        </Button>
-      </form>
+          <Button type="submit" className="bg-orange-400 hover:bg-orange-500">
+            Next
+          </Button>
+        </form>
+      </div>
     </Form>
   );
 }
