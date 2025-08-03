@@ -154,13 +154,13 @@ export function ScalingConfigForm({
                     onChange={(e) => field.onChange(e.target.files?.[0])}
                   />
                 </FormControl>
-                <FormDescription>Only `.py` files accepted.</FormDescription>
+                <FormDescription className="justify-center">Only `.py` files accepted.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="bg-orange-400 hover:bg-orange-500">
+          <Button type="submit" className="bg-git-card-primary hover:bg-git-card-secondary">
             Next
           </Button>
         </form>
