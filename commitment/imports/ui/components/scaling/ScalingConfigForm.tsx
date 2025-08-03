@@ -26,7 +26,11 @@ const scalingConfigSchema = z.object({
 
 type ScalingConfig = z.infer<typeof scalingConfigSchema>;
 
-export function ScalingConfigForm({ onSubmit }: { onSubmit: (config: ScalingConfig) => void }) {
+export function ScalingConfigForm({
+  onSubmit,
+}: {
+  onSubmit: (config: ScalingConfig) => void;
+}) {
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
@@ -67,7 +71,10 @@ export function ScalingConfigForm({ onSubmit }: { onSubmit: (config: ScalingConf
                     control={form.control}
                     name="metrics"
                     render={({ field }) => (
-                      <FormItem key={metric} className="flex items-center space-x-2">
+                      <FormItem
+                        key={metric}
+                        className="flex items-center space-x-2"
+                      >
                         <FormControl>
                           <Checkbox
                             checked={field.value?.includes(metric)}
@@ -75,7 +82,9 @@ export function ScalingConfigForm({ onSubmit }: { onSubmit: (config: ScalingConf
                               const value = field.value || [];
                               return checked
                                 ? field.onChange([...value, metric])
-                                : field.onChange(value.filter((v) => v !== metric));
+                                : field.onChange(
+                                    value.filter((v) => v !== metric)
+                                  );
                             }}
                           />
                         </FormControl>
@@ -98,9 +107,15 @@ export function ScalingConfigForm({ onSubmit }: { onSubmit: (config: ScalingConf
             <FormItem>
               <FormLabel>Select a scaling method*</FormLabel>
               <FormControl>
-                <RadioGroup onValueChange={field.onChange} defaultValue={field.value}>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   {methodOptions.map((m) => (
-                    <FormItem key={m} className="flex items-center space-x-2 mt-1">
+                    <FormItem
+                      key={m}
+                      className="flex items-center space-x-2 mt-1"
+                    >
                       <FormControl>
                         <RadioGroupItem value={m} />
                       </FormControl>
