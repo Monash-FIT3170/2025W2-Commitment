@@ -1,0 +1,86 @@
+name: Commitment Checks
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      node-modules-cache: ${{ steps.cache-modules.outputs.cache-hit }}
+    defaults:
+      run:
+        working-directory: ./commitment
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Meteor
+        run: curl https://install.meteor.com/ | sh
+
+      - name: Install dependencies
+        run: meteor npm install
+
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./commitment
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl https://install.meteor.com/ | sh
+      - run: meteor npm install
+      - name: Run ESLint
+        run: npx eslint client server tests imports --quiet
+
+  typecheck:
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./commitment
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl https://install.meteor.com/ | sh
+      - run: meteor npm install
+      - name: Run TS Type Check
+        run: meteor npm run typecheck
+
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./commitment
+    services:
+      mongo:
+        image: mongo:5.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: admin
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl https://install.meteor.com/ | sh
+      - run: meteor npm install
+      - name: Run Tests
+        run: meteor npm run test
