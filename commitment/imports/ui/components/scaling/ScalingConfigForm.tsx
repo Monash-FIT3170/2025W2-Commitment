@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   Form,
@@ -12,11 +12,12 @@ import {
 
 import { Checkbox } from "@ui/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@ui/components/ui/radio-group";
-import { Input } from "@ui/components/ui/input";
 import { Button } from "@ui/components/ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from '../ui/dropzone';
+
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
@@ -31,14 +32,22 @@ export function ScalingConfigForm({
 }: {
   onSubmit: (config: ScalingConfig) => void;
 }) {
+  const [script, setScript] = useState<File[] | undefined>();
+
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
       metrics: [],
       method: "Percentiles",
-      customScript: null,
+      customScript: script,
     },
   });
+
+  // Handle drop of files in the dropzone
+  const handleDrop = (files: File[]) => {
+    console.log(files);
+    setScript(files);
+  };
 
   const handleSubmit = (data: ScalingConfig) => {
     onSubmit(data);
@@ -117,7 +126,8 @@ export function ScalingConfigForm({
                 <FormLabel className="font-bold justify-center">
                   Select a scaling method
                   <span className="text-red-500">*</span>
-                </FormLabel>                <FormControl>
+                </FormLabel>{" "}
+                <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -146,21 +156,40 @@ export function ScalingConfigForm({
             name="customScript"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-bold justify-center">Different Scale? Upload a custom script:</FormLabel>
+                <FormLabel className="font-bold justify-center">
+                  Different Scale? Upload a custom script:
+                </FormLabel>
                 <FormControl>
-                  <Input
-                    type="file"
-                    accept=".py"
-                    onChange={(e) => field.onChange(e.target.files?.[0])}
-                  />
+                  <Dropzone
+                    onDrop={handleDrop}
+                    onError={console.error}
+                    src={script}
+                  >
+                    <DropzoneEmptyState>
+                      <div className="flex w-full items-center gap-4 p-8">
+                        <div className="text-left">
+                          <p className="font-medium text-sm">Upload a file</p>
+                          <p className="text-muted-foreground text-xs">
+                            Drag and drop or click to upload
+                          </p>
+                        </div>
+                      </div>
+                    </DropzoneEmptyState>
+                    <DropzoneContent />
+                  </Dropzone>
                 </FormControl>
-                <FormDescription className="justify-center">Only `.py` files accepted.</FormDescription>
+                <FormDescription className="justify-center">
+                  Only `.py` files accepted.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="bg-git-card-primary hover:bg-git-card-secondary">
+          <Button
+            type="submit"
+            className="bg-git-card-primary hover:bg-git-card-secondary"
+          >
             Next
           </Button>
         </form>
