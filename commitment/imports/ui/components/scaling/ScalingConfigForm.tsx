@@ -37,7 +37,6 @@ export function ScalingConfigForm({
     defaultValues: {
       metrics: [],
       method: "Percentiles",
-      customScript: script,
     },
   });
 
@@ -68,7 +67,8 @@ export function ScalingConfigForm({
           Generate Scaling
         </div>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          {/* Metrics Checkboxes */}
+
+          {/* METRICS CHECKBOXES*/}
           <FormField
             control={form.control}
             name="metrics"
@@ -115,7 +115,7 @@ export function ScalingConfigForm({
             )}
           />
 
-          {/* Method Radios */}
+          {/* METHOD RADIO BUTTONS */}
           <FormField
             control={form.control}
             name="method"
@@ -148,7 +148,7 @@ export function ScalingConfigForm({
             )}
           />
 
-          {/* File Upload */}
+          {/* FILE UPLOAD */}
           <FormField
             control={form.control}
             name="customScript"

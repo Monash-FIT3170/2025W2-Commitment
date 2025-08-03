@@ -15,7 +15,7 @@ import { GradingSheetForm } from "./GradingSheetForm";
 interface ScalingConfig {
   metrics: string[];
   method: string;
-  customScript?: File;
+  customScript?: File[];
 }
 
 export const ScalingView = () => {
