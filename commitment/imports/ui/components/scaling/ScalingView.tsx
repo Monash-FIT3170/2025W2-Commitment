@@ -46,7 +46,7 @@ export const ScalingView = () => {
   const handleSheetSubmit = (sheetFile: File) => {
     setGradingSheet(sheetFile);
     setStep("done");
-    setVisited(true);
+    setCompleted(true);
     setShowDialog(false);
   };
 
@@ -54,16 +54,15 @@ export const ScalingView = () => {
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-
           {/* DEFAULT BACKGROUND */}
-            <Button
-              onClick={() => {
-                setStep("config");
-                setShowDialog(true);
-              }}
-            >
-              Create New Scaling
-            </Button>
+          <Button
+            onClick={() => {
+              setStep("config");
+              setShowDialog(true);
+            }}
+          >
+            Create New Scaling
+          </Button>
 
           {/* MULTI STEP DIALOG */}
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
