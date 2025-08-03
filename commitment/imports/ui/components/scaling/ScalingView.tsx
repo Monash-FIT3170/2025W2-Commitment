@@ -57,6 +57,7 @@ export const ScalingView = () => {
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
           {/* DEFAULT BACKGROUND */}
           <Button
+            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
             onClick={() => {
               setStep("config");
               setShowDialog(true);
@@ -67,7 +68,6 @@ export const ScalingView = () => {
 
           {/* MULTI STEP DIALOG */}
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
-
             {/* here to mute any errors */}
             <DialogHeader>
               <DialogTitle />
