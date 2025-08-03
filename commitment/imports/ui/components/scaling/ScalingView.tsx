@@ -1,7 +1,5 @@
-import React from "react";
-
+import React, { useState, useEffect } from "react";
 import { ScalingConfigForm } from "./ScalingConfigForm";
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,11 +18,25 @@ interface ScalingConfig {
 }
 
 export const ScalingView = () => {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  // Grab from local storage, defines if visited or not
+  const [visited, setVisited] = useState(false);
 
-  // Shared state
+  // Step of scaling config wizard
+  const [step, setStep] = useState<"config" | "sheet" | "done">("config");
+  const [showDialog, setShowDialog] = useState(false);
+
+  // Shared state for config and grading sheet
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
+
+  // Flow for first visits
+  useEffect(() => {
+    // Grab from local storage first
+    const visited = localStorage.getItem("hasVisitedScaling") === "true";
+    setVisited(visited);
+    setShowDialog(!visited); //Opens automatically on first visit
+  }, []);
+
   const handleConfigSubmit = (configData: ScalingConfig) => {
     setConfig(configData);
     setStep(2);
