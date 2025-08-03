@@ -46,27 +46,20 @@ export const ScalingView = () => {
     setGradingSheet(sheetFile);
     setStep("done");
     setVisited(true);
-    setShowDialog(false)
+    setShowDialog(false);
   };
 
   return (
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-          {/* TRIGGER FOR SCALING WIZARD */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="bg-orange-400"> Generate New Scaling</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Scaling Configuration</DialogTitle>
-              </DialogHeader>
-              <ScalingConfigForm
-                onSubmit={(data) => {
-                  console.log("Submitted Config", data);
-                }}
-              />
+          {/* MULTI STEP DIALOG */}
+          <Dialog open={showDialog} onOpenChange={setShowDialog}>
+            <DialogContent className="max-w-xl">
+              {step === "config" && (
+                <ScalingConfigForm onSubmit={handleConfigSubmit} />
+              )}
+              {/* ADD STEP FOR GRADING SHEET FORM */}
             </DialogContent>
           </Dialog>
         </div>
