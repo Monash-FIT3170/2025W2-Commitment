@@ -10,6 +10,7 @@ import {
 } from "../ui/dialog";
 
 import { Button } from "../ui/button";
+import { GradingSheetForm } from "./GradingSheetForm";
 
 interface ScalingConfig {
   metrics: string[];
@@ -18,8 +19,8 @@ interface ScalingConfig {
 }
 
 export const ScalingView = () => {
-  // Grab from local storage, defines if visited or not
-  const [visited, setVisited] = useState(false);
+  // Grab from local storage, defines if completed or not
+  const [completed, setCompleted] = useState(false);
 
   // Step of scaling config wizard
   const [step, setStep] = useState<"config" | "sheet" | "done">("config");
@@ -32,9 +33,9 @@ export const ScalingView = () => {
   // Flow for first visits
   useEffect(() => {
     // Grab from local storage first
-    const lsVisited = localStorage.getItem("hasVisitedScaling") === "true";
-    setVisited(lsVisited);
-    setShowDialog(!visited); //Opens automatically on first visit
+    const lsCompleted = localStorage.getItem("hasVisitedScaling") === "true";
+    setCompleted(lsCompleted);
+    setShowDialog(!completed); //Opens automatically if we haven't made scaling yet
   }, []);
 
   const handleConfigSubmit = (configData: ScalingConfig) => {
@@ -53,13 +54,24 @@ export const ScalingView = () => {
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
+
+          {/* DEFAULT BACKGROUND */}
+            <Button
+              onClick={() => {
+                setStep("config");
+                setShowDialog(true);
+              }}
+            >
+              Create New Scaling
+            </Button>
+
           {/* MULTI STEP DIALOG */}
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogContent className="max-w-xl">
               {step === "config" && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
-              {/* ADD STEP FOR GRADING SHEET FORM */}
+              {step === "sheet" && <GradingSheetForm />}
             </DialogContent>
           </Dialog>
         </div>

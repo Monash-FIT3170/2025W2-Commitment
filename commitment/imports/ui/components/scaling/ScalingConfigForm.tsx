@@ -34,8 +34,8 @@ export function ScalingConfigForm({
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
-      metrics: ["Total No. Commits", "LOC per commit"],
-      method: "Mean +/- Std",
+      metrics: [],
+      method: "Percentiles",
       customScript: null,
     },
   });
@@ -135,7 +135,7 @@ export function ScalingConfigForm({
           name="customScript"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Upload custom script (optional)</FormLabel>
+              <FormLabel>Different Scale? Upload custom script:</FormLabel>
               <FormControl>
                 <Input
                   type="file"
