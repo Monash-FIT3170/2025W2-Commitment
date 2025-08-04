@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import ScalingConfigForm from './ScalingConfigForm';
+import React, { useState, useEffect } from "react";
+import ScalingConfigForm from "./ScalingConfigForm";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
+} from "../ui/dialog";
 
-import { Button } from '../ui/button';
-import { GradingSheetForm } from './GradingSheetForm';
+import { Button } from "../ui/button";
+import { GradingSheetForm } from "./GradingSheetForm";
 
 interface ScalingConfig {
   metrics: string[];
@@ -22,7 +22,7 @@ function ScalingView() {
   const [completed, setCompleted] = useState(false);
 
   // Step of scaling config wizard
-  const [step, setStep] = useState<'config' | 'sheet' | 'done'>('config');
+  const [step, setStep] = useState<"config" | "sheet" | "done">("config");
   const [showDialog, setShowDialog] = useState(false);
 
   // Shared state for config and grading sheet
@@ -32,20 +32,20 @@ function ScalingView() {
   // Flow for first visits
   useEffect(() => {
     // Grab from local storage first
-    const lsCompleted = localStorage.getItem('hasVisitedScaling') === 'true';
+    const lsCompleted = localStorage.getItem("hasVisitedScaling") === "true";
     setCompleted(lsCompleted);
     setShowDialog(!completed); // Opens automatically if we haven't made scaling yet
   }, []);
 
   const handleConfigSubmit = (configData: ScalingConfig) => {
     setConfig(configData);
-    console.log('Config submitted:', configData);
-    setStep('sheet');
+    console.log("Config submitted:", configData);
+    setStep("sheet");
   };
 
   const handleSheetSubmit = (sheetFile: File) => {
     setGradingSheet(sheetFile);
-    setStep('done');
+    setStep("done");
     setCompleted(true);
     setShowDialog(false);
   };
@@ -58,7 +58,7 @@ function ScalingView() {
           <Button
             className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
             onClick={() => {
-              setStep('config');
+              setStep("config");
               setShowDialog(true);
             }}
           >
@@ -73,10 +73,10 @@ function ScalingView() {
               <DialogDescription />
             </DialogHeader>
             <DialogContent className="max-w-full">
-              {step === 'config' && (
+              {step === "config" && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
-              {step === 'sheet' && <GradingSheetForm />}
+              {step === "sheet" && <GradingSheetForm />}
             </DialogContent>
           </Dialog>
         </div>
@@ -85,4 +85,4 @@ function ScalingView() {
   );
 }
 
-export default ScalingView
+export default ScalingView;
