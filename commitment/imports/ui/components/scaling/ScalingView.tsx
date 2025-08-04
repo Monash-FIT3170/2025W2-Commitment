@@ -9,7 +9,7 @@ import {
 } from "../ui/dialog";
 
 import { Button } from "../ui/button";
-import { GradingSheetForm } from "./GradingSheetForm";
+import GradingSheetForm from "./GradingSheetForm";
 
 interface ScalingConfig {
   metrics: string[];
@@ -76,7 +76,9 @@ function ScalingView() {
               {step === "config" && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
-              {step === "sheet" && <GradingSheetForm />}
+              {step === "sheet" && (
+                <GradingSheetForm onSubmit={handleSheetSubmit} />
+              )}
             </DialogContent>
           </Dialog>
         </div>
