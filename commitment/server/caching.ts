@@ -118,3 +118,14 @@ export const getRepoData = async (url: string, notifier: Subject<string>): Promi
         await cacheIntoDatabase(url, data);
         return data;
     });
+
+
+Meteor.methods({
+    async 'repoCollection.getRepoData'(url: string): Promise<RepositoryData {
+        const record = await RepoCollection.findOneAsync({ url });
+        if (!record) {
+            throw new Meteor.Error('repo-not-found', 'Repository data not found in the database');
+        }
+        return record.data;
+    }
+}); 
