@@ -8,6 +8,7 @@ import MetricsMain from "./MetricsMain";
 import DashboardView from "./views/DashboardView/DashboardView";
 
 
+
 export const App = () => {
   return (
     <BrowserRouter>
@@ -21,6 +22,7 @@ export const App = () => {
         <Route path="/loading" element={<LoadingPage/>}></Route>
         <Route path="/metrics" element={<MetricsMain />}></Route>
         <Route path="/dashboard" element={<DashboardView/>}></Route>
+        
         
       </Routes>
     </BrowserRouter>

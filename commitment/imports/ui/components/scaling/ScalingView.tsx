@@ -18,56 +18,77 @@ interface ScalingConfig {
 }
 
 function ScalingView() {
-  // Grab from local storage, defines if completed or not
   const [completed, setCompleted] = useState(false);
-
-  // Step of scaling config wizard
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [step, setStep] = useState<'config' | 'sheet' | 'done'>('config');
   const [showDialog, setShowDialog] = useState(false);
-
-  // Shared state for config and grading sheet
+  const [dialogClosedManually, setDialogClosedManually] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
 
-  // Flow for first visits
+  // Load from localStorage on first mount
   useEffect(() => {
-    // Grab from local storage first
     const lsCompleted = localStorage.getItem('hasVisitedScaling') === 'true';
     setCompleted(lsCompleted);
-    setShowDialog(!completed); // Opens automatically if we haven't made scaling yet
+    if (!lsCompleted) setShowDialog(true);
+    setHasLoaded(true);
   }, []);
+
+  // Persist to localStorage
+  useEffect(() => {
+    if (hasLoaded) {
+      localStorage.setItem('hasVisitedScaling', completed ? 'true' : 'false');
+    }
+  }, [completed, hasLoaded]);
 
   const handleConfigSubmit = (configData: ScalingConfig) => {
     setConfig(configData);
-    console.log('Config submitted:', configData);
     setStep('sheet');
   };
 
   const handleSheetSubmit = (sheetFile: File) => {
     setGradingSheet(sheetFile);
-    setStep('done');
     setCompleted(true);
     setShowDialog(false);
+    setStep('done');
   };
 
   return (
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-          {/* DEFAULT BACKGROUND */}
+          
+          {/* Show button only if: loaded, not completed, and dialog is not open */}
           <Button
-            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-            onClick={() => {
-              setStep('config');
-              setShowDialog(true);
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+              onClick={() => {
+                setStep('config');
+                setShowDialog(true);
+              }}
+            >
+              Create New Scaling
+            </Button>
+
+          {/* Show summary if completed */}
+          {completed && config && gradingSheet && (
+            <div className="mt-8 p-4 border rounded-md bg-gray-50">
+              <h2 className="text-xl font-semibold mb-2">Scaling Summary</h2>
+              <p><strong>Method:</strong> {config.method}</p>
+              <p><strong>Metrics:</strong> {config.metrics.join(', ')}</p>
+              <p><strong>Grading Sheet:</strong> {gradingSheet.name}</p>
+            </div>
+          )}
+
+          {/* Multi-Step Dialog */}
+          <Dialog
+            open={showDialog}
+            onOpenChange={(open) => {
+              setShowDialog(open);
+              if (!open) {
+                setDialogClosedManually(true); // track if user manually closed
+              }
             }}
           >
-            Create New Scaling
-          </Button>
-
-          {/* MULTI STEP DIALOG */}
-          <Dialog open={showDialog} onOpenChange={setShowDialog}>
-            {/* here to mute any errors */}
             <DialogHeader>
               <DialogTitle />
               <DialogDescription />
@@ -76,7 +97,9 @@ function ScalingView() {
               {step === 'config' && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
-              {step === 'sheet' && <GradingSheetForm />}
+              {step === 'sheet' && (
+                <GradingSheetForm onSubmit={handleSheetSubmit} />
+              )}
             </DialogContent>
           </Dialog>
         </div>
@@ -85,4 +108,4 @@ function ScalingView() {
   );
 }
 
-export default ScalingView
+export default ScalingView;
