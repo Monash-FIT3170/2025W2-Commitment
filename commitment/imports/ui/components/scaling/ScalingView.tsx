@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useEffect } from 'react';
 import ScalingConfigForm from './ScalingConfigForm';
 import {
@@ -10,6 +12,7 @@ import {
 
 import { Button } from '../ui/button';
 import { GradingSheetForm } from './GradingSheetForm';
+import ScalingSummary from './ScalingSummary';
 
 interface ScalingConfig {
   metrics: string[];
@@ -71,12 +74,17 @@ function ScalingView() {
 
           {/* Show summary if completed */}
           {completed && config && gradingSheet && (
-            <div className="mt-8 p-4 border rounded-md bg-gray-50">
-              <h2 className="text-xl font-semibold mb-2">Scaling Summary</h2>
-              <p><strong>Method:</strong> {config.method}</p>
-              <p><strong>Metrics:</strong> {config.metrics.join(', ')}</p>
-              <p><strong>Grading Sheet:</strong> {gradingSheet.name}</p>
-            </div>
+           <ScalingSummary 
+                method={config.method} 
+                metrics={config.metrics.join(', ')} 
+                fileName={gradingSheet.name} 
+            />
+            // <div className="mt-8 p-4 border rounded-md bg-gray-50">
+            //   <h2 className="text-xl font-semibold mb-2">Scaling Summary</h2>
+            //   <p><strong>Method:</strong> {config.method}</p>
+            //   <p><strong>Metrics:</strong> {config.metrics.join(', ')}</p>
+            //   <p><strong>Grading Sheet:</strong> {gradingSheet.name}</p>
+            // </div>
           )}
 
           {/* Multi-Step Dialog */}
