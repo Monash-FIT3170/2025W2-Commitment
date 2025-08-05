@@ -50,6 +50,11 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
       .then(() => {
         notifier.next(" Repository data loaded!");
         setProgress(100);
+
+        // redirect to the metrics page 
+        setTimeout(() => {
+          navigate("/metrics", { replace: true, state: { repoUrl } });
+        }, 1000);
       })
       .catch(err => {
         notifier.next(` ${err}`);

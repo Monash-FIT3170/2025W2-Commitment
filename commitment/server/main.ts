@@ -5,7 +5,9 @@ import { BookmarksCollection } from '../imports/api/bookmarks';
 import '../imports/api/methods';
 
 import '../imports/api/bookmark_methods';
+import '../imports/api/repo_methods';
 
+ 
 Meteor.startup(async () => {
   const userCount = await Meteor.users.find().countAsync();
   const bookmarkCount = await BookmarksCollection.find().countAsync();
