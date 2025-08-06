@@ -23,7 +23,7 @@ export const fetchRepo = (url: string, subject: Subject<string>) => {
         }
 
         Meteor.call('getGitHubRepoData', url, (err: Error, result: boolean) => {
-            if (err) reject(err)    
+            if (err) reject(err)
             resolve(result)
         });
     })

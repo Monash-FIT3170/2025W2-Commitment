@@ -12,7 +12,7 @@ const testUrl = async (url: string) =>
   });
 
 describe('meteor-api-test-suite', () => {
-  it('test 1: valid repo', async () => {
+  it('test 1: valid repo', async () => {Í
     const testRepo = 'https://github.com/Densetsu152637/test_repo_for_3170';
     assert.strictEqual(await testUrl(testRepo), true);
   });

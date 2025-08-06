@@ -13,6 +13,7 @@ import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import { topContributors } from "../../lib/utils";
 import GraphCard from "./GraphCard";
+import { getRepoData, getCommitsMap, getContributorsMap } from "@ui/components/utils/repo_cache";
 
 // !!!: Remove this dummy data upon integration with AT3's real data
 const dummyBranches = [
@@ -128,6 +129,7 @@ const topUsers = topContributors(mockAllContributorDataset.data);
 
 const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
+
 
 export const generateRandomContributions = (
   startDate: Date,
