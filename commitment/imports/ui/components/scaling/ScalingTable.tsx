@@ -46,6 +46,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
+
                   {header.isPlaceholder
                     ? null
                     : flexRender(header.column.columnDef.header, header.getContext())}
@@ -57,12 +58,13 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
         <TableBody>
           {table.getRowModel().rows.map((row) => (
             <React.Fragment key={row.id}>
-              <TableRow
+                <TableRow
                 onClick={() => row.toggleExpanded()}
-                className="cursor-pointer hover:bg-gray-100"
-              >
+                className="bg-git-int-primary hover:bg-git-int-primary text-white"
+                >
+
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell key={cell.id} >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -71,7 +73,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
               {row.getIsExpanded() && row.original.aliases?.length > 0 && (
                 <>
                   
-                  <TableRow className="bg-gray-50">
+                  <TableRow className="bg-gray-50 border-b-2 border-black">
                     <TableCell colSpan={columns.length}>
                       <span className="ml-4 font-medium text-gray-800">
                         Associated Accounts
@@ -81,12 +83,14 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
 
                   
                   {row.original.aliases.map((alias, idx) => (
-                    <TableRow key={`${row.id}-alias-${idx}`} className="bg-gray-50">
-                      <TableCell colSpan={columns.length}>
+                    <TableRow
+                    key={`${row.id}-alias-${idx}`}
+                    className="bg-gray-50 border-style: dashed">
+                    <TableCell colSpan={columns.length}>
                         <div className="ml-8 text-sm text-gray-700">
-                          ↳ <strong>{alias.username}</strong> ({alias.email})
+                        ↳ <strong>{alias.username}</strong> ({alias.email})
                         </div>
-                      </TableCell>
+                    </TableCell>
                     </TableRow>
                   ))}
                 </>

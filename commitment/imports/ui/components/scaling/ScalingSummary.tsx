@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { DataTable } from "./ScalingTable";
 import { ColumnDef } from "@tanstack/react-table";
+import { ScalingRadialChart } from "./ScalingRadialChart";
 
 type AliasEmail = {
   username: string;
@@ -31,7 +32,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
         { username: "john", email: "john@example.com" },
       ],
       finalGrade: 78,
-      scale: 1.2,
+      scale: 1,
     },
     {
       name: "Poppy Willis",
@@ -40,7 +41,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
         { username: "iyan man", email: "iyan@example.com" },
       ],
       finalGrade: 42,
-      scale: 0.8,
+      scale: 0.66,
     },
   ], []);
 
@@ -56,10 +57,13 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
       cell: ({ row }) => row.getValue("finalGrade"),
     },
     {
-      accessorKey: "scale",
-      header: "Scale",
-      cell: ({ row }) => row.getValue("scale"),
-    },
+    accessorKey: "scale",
+    header: "Scale",
+    cell: ({ row }) => (
+        <ScalingRadialChart value={row.getValue("scale")} /> 
+    ),
+    }, 
+
   ], []);
 
   return (
@@ -72,6 +76,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
       <div className="container mx-auto py-10">
         <DataTable columns={columns} data={userScalingSummaries} />
       </div>
+
     </div>
   );
 };
