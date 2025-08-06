@@ -1,13 +1,11 @@
-"use client"
-
 import React from "react";
-
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -16,28 +14,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@ui/components/ui/table"
+} from "@ui/components/ui/table";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+type AliasEmail = {
+  username: string;
+  email: string;
+};
+
+interface DataTableProps<TData extends { aliases?: AliasEmail[] }, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  console.log("Rendering DataTable with data:", data);
-  console.log("Columns:", columns);
-
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand: () => true,
   });
-
-  console.log("DataTable data", data);
-console.log("DataTable columns", columns);
 
   return (
     <div className="overflow-hidden rounded-md border">
@@ -56,23 +55,44 @@ console.log("DataTable columns", columns);
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows.length > 0 ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+          {table.getRowModel().rows.map((row) => (
+            <React.Fragment key={row.id}>
+              <TableRow
+                onClick={() => row.toggleExpanded()}
+                className="cursor-pointer hover:bg-gray-100"
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
+
+              {row.getIsExpanded() && row.original.aliases?.length > 0 && (
+                <>
+                  
+                  <TableRow className="bg-gray-50">
+                    <TableCell colSpan={columns.length}>
+                      <span className="ml-4 font-medium text-gray-800">
+                        Associated Accounts
+                      </span>
+                    </TableCell>
+                  </TableRow>
+
+                  
+                  {row.original.aliases.map((alias, idx) => (
+                    <TableRow key={`${row.id}-alias-${idx}`} className="bg-gray-50">
+                      <TableCell colSpan={columns.length}>
+                        <div className="ml-8 text-sm text-gray-700">
+                          ↳ <strong>{alias.username}</strong> ({alias.email})
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </>
+              )}
+            </React.Fragment>
+          ))}
         </TableBody>
       </Table>
     </div>

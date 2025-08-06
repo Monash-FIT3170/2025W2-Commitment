@@ -1,13 +1,17 @@
-"use client"
-
+"use client";
 
 import React, { useMemo } from "react";
 import { DataTable } from "./ScalingTable";
 import { ColumnDef } from "@tanstack/react-table";
 
+type AliasEmail = {
+  username: string;
+  email: string;
+};
+
 type UserScalingSummary = {
   name: string;
-  aliases: string[];
+  aliases: AliasEmail[];
   finalGrade: number;
   scale: number;
 };
@@ -22,13 +26,19 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
   const userScalingSummaries: UserScalingSummary[] = useMemo(() => [
     {
       name: "Jupyta Notebuk",
-      aliases: ["Bobert", "john"],
+      aliases: [
+        { username: "Bobert", email: "bobert@example.com" },
+        { username: "john", email: "john@example.com" },
+      ],
       finalGrade: 78,
       scale: 1.2,
     },
     {
       name: "Poppy Willis",
-      aliases: ["capn america", "iyan man"],
+      aliases: [
+        { username: "capn america", email: "cap@example.com" },
+        { username: "iyan man", email: "iyan@example.com" },
+      ],
       finalGrade: 42,
       scale: 0.8,
     },
@@ -50,14 +60,6 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
       header: "Scale",
       cell: ({ row }) => row.getValue("scale"),
     },
-    {
-      accessorKey: "aliases",
-      header: "Aliases",
-      cell: ({ row }) => {
-        const aliases = row.getValue("aliases");
-        return Array.isArray(aliases) ? aliases.join(", ") : "—";
-      },
-    },
   ], []);
 
   return (
@@ -75,4 +77,4 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
 };
 
 export default ScalingSummary;
-"use client"
+
