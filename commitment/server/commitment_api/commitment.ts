@@ -4,16 +4,16 @@ import { scan } from 'rxjs/operators';
 import pLimit from 'p-limit'
 
 // imports a list of helper functions
-import { last, zip } from "./helpers"
+import { last, zip } from './helpers';
 
 // imports types
-import { 
-	RepositoryData,
-	BranchData,
-	CommitData,
-	ContributorData,
-	sortCommitByTimeStamp
-} from "./types";
+import {
+  RepositoryData,
+  BranchData,
+  CommitData,
+  ContributorData,
+  sortCommitByTimeStamp,
+} from './types';
 
 // imports all command functions
 import { 
@@ -41,16 +41,16 @@ import {
 
 // imports different commands that will run on the repo
 import {
-	checkIfRepoExists,
-	cloneRepo,
-	getBranches,
-	getAllCommitsFrom,
-	getContributorEmails,
-	getCommitDetails,
-	getFileDataFromCommit,
-	getOldFileDataFromCommit,
-	getRepoName
-} from "./git_commands"
+  checkIfRepoExists,
+  cloneRepo,
+  getBranches,
+  getAllCommitsFrom,
+  getContributorEmails,
+  getCommitDetails,
+  getFileDataFromCommit,
+  getOldFileDataFromCommit,
+  getRepoName,
+} from './git_commands';
 
 const withLimit = (lim: number): (<T>(p: Promise<T>) => Promise<T>) => {
 	const l = pLimit(lim)
@@ -66,52 +66,49 @@ export const getDataFrom = async (url: string): Promise<RepositoryData> => fetch
  * @deprecated
 */
 export const fetchDataFrom = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
-		
-	// creates path to clone repos in if filepath if it doesnt already exist
-	const workingDir = process.cwd()
-	if (!doesFilePathExist(workingDir)) createFilePath(workingDir + "/cloned-repos/")	
+  // creates path to clone repos in if filepath if it doesnt already exist
+  const workingDir = process.cwd();
+  if (!doesFilePathExist(workingDir)) createFilePath(`${workingDir}/cloned-repos/`);
 
-	// validate that the string is a proper url TODO
-	// see if repo exists
-	notifier.next("Validating repo exists...")
+  // validate that the string is a proper url TODO
+  // see if repo exists
+  notifier.next('Validating repo exists...');
 
 	const execCmdInRoot = guaranteeExecution("")
 	// throws an error if it does not exist
 	const repoExistsText = await parseCmd(execCmdInRoot(checkIfRepoExists(url)))(parseRepoExists)	
 
-	// if it exists, clone to a path by duplicating from link
-	notifier.next("Formulating parsers...")
+  // if it exists, clone to a path by duplicating from link
+  notifier.next('Formulating parsers...');
 
-	const repoNameFromUrl = last(url.split("/"))!
+  const repoNameFromUrl = last(url.split('/'))!;
 
-	const repoRelativePath = "/cloned-repos/" + repoNameFromUrl
-	const repoAbsPath = workingDir + repoRelativePath
+  const repoRelativePath = `/cloned-repos/${repoNameFromUrl}`;
+  const repoAbsPath = workingDir + repoRelativePath;
 
-	// if it already exists delete it as it should not exist (maybe formulateRepoData failed)
-	if (doesFilePathExist(repoAbsPath)) await deleteAllFromDirectory(repoAbsPath)
+  // if it already exists delete it as it should not exist (maybe formulateRepoData failed)
+  if (doesFilePathExist(repoAbsPath)) await deleteAllFromDirectory(repoAbsPath);
 
-	// clone shit and check if it cloned successfully
-	notifier.next("Cloning repo...")
+  // clone shit and check if it cloned successfully
+  notifier.next('Cloning repo...');
 
 	const cloneCommand = await execCmdInRoot(cloneRepo(url, repoAbsPath))
 	assertSuccess(cloneCommand) 
 
-	// get shit
-	notifier.next("Getting repository data...")
-	const repoData = await formulateRepoData(url, repoAbsPath, notifier)
+  // get shit
+  notifier.next('Getting repository data...');
+  const repoData = await formulateRepoData(url, repoAbsPath, notifier);
 
-	// clear shit from local storage (BE CAREFUL WITH THIS AS INJECTION ATTACKS COULD HAPPEN)
-	await deleteAllFromDirectory(repoAbsPath)
+  // clear shit from local storage (BE CAREFUL WITH THIS AS INJECTION ATTACKS COULD HAPPEN)
+  await deleteAllFromDirectory(repoAbsPath);
 
-    // send shit out
-	notifier.next("Data processed!")
+  // send shit out
+  notifier.next('Data processed!');
 
-	return repoData
-}
-
+  return repoData;
+};
 
 const formulateRepoData = async (url: string, path: string, notifier: Subject<string>): Promise<RepositoryData> => {
-
 	// get a function to point to the creation of a shell in the repo path
 	const execCmdInRepo = executeCommand(path)
 	const guarantee     = guaranteeExecution(path)
@@ -132,8 +129,8 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 		.map(withMyLimit)
 	).catch(e => Promise.reject(new Error("Failed upon searching for commit hashes")))
 
-	// get all unique commit hashes
-	const allCommitHashes = [...new Set(allCommitHashesListOfList.flatMap(i => i))]	
+  // get all unique commit hashes
+  const allCommitHashes = [...new Set(allCommitHashesListOfList.flatMap((i) => i))];
 
 	// get all commit data and file data inside the commit data 
 	// get all commit meta data
@@ -141,9 +138,9 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 	const commitLoader = new Subject<number>()
 	const $totalCommitsLoaded = commitLoader.pipe( 
 		observeOn(asyncScheduler),
-		scan((acc, next) => acc + next, 0)
+		scan((acc: number, next: number) => acc + next, 0)
 	)
-	$totalCommitsLoaded.subscribe(loaded => { notifier.next(`Formulating all commit data (${loaded}/${commitsFound})...`) })
+	$totalCommitsLoaded.subscribe((loaded: number) => { notifier.next(`Formulating all commit data (${loaded}/${commitsFound})...`) })
 	
 	const commitMetaData = await Promise.all(
 		allCommitHashes.map(async hash => {
@@ -160,9 +157,9 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 	const fileLoader = new Subject<number>()
 	const $totalFilesLoaded = fileLoader.pipe( 
 		observeOn(asyncScheduler),
-		scan((acc, next) => acc + next, 0)
+		scan((acc: number, next: number) => acc + next, 0)
 	)
-	$totalFilesLoaded.subscribe(loaded => { notifier.next(`Formulating all file data (${loaded}/${filesFound})...`) })
+	$totalFilesLoaded.subscribe((loaded: number) => { notifier.next(`Formulating all file data (${loaded}/${filesFound})...`) })
 	notifier.next(`Found ${ filesFound } distinct file versions across all commits`)
 
 	const allFileData = await Promise.all(
@@ -215,10 +212,10 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 		emails: emails
 	})) 
 
-	const contributorMap = new Map<string, ContributorData>(allContributors.map(c => [c.name, c]))
+  const contributorMap = new Map<string, ContributorData>(allContributors.map((c) => [c.name, c]));
 
-	// create a map of all commit hashes to their object
-	const commitMap = new Map<string, CommitData>(allCommitData.map(c => [c.commitHash, c]))
+  // create a map of all commit hashes to their object
+  const commitMap = new Map<string, CommitData>(allCommitData.map((c) => [c.commitHash, c]));
 
 	// maps the branch to a list of commit hashes
 	notifier.next("Linking branches to their commits...")
@@ -255,4 +252,3 @@ const formulateRepoData = async (url: string, path: string, notifier: Subject<st
 		contributors: contributorMap
 	})
 }
-

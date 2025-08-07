@@ -1,11 +1,10 @@
-import { CommandResult, successful } from "./command"
-import { last } from "./helpers"
-import { 
-    FileChanges,
-    ChangeData,
-    ChangeType,
-} from "./types"
-
+import { CommandResult, successful } from './command';
+import { last } from './helpers';
+import {
+  FileChanges,
+  ChangeData,
+  ChangeType,
+} from './types';
 
 export type Maybe<T> = T | null
 
@@ -26,8 +25,7 @@ export const parsePromiseHold = async (p: Promise<string>): Promise<<T>(parser: 
 } 
 
 // prioritises stderror, then error, then a successful message
-export const getParsableStringFromCmd = (res: CommandResult): string => 
-    (res.stdError != null) ? res.stdError : ((res.error != null) ? res.error.message : res.result)
+export const getParsableStringFromCmd = (res: CommandResult): string => ((res.stdError != null) ? res.stdError : ((res.error != null) ? res.error.message : res.result));
 
 export const parseCmd = (p: Promise<CommandResult>): <T>(parser: (text: string) => Maybe<T>) => Promise<T> => 
     parsePromise(p.then(getParsableStringFromCmd))
@@ -38,33 +36,30 @@ export const parseCmdHold = (p: Promise<CommandResult>): Promise<(<T>(parser: (t
 export const assertSuccess = (res: CommandResult) => 
     successful(res) ? (() => { throw new Error(getParsableStringFromCmd(res)); })() : null
 
-export const failedOutput = (text: string): boolean => 
-    ["fatal:", "error:", "could not", "not a git repository"]
-        .map(s => text.startsWith(s))
-        .reduce((p, n) => p || n)
+export const failedOutput = (text: string): boolean => ['fatal:', 'error:', 'could not', 'not a git repository']
+  .map((s) => text.startsWith(s))
+  .reduce((p, n) => p || n);
 
 export const exactText = (text: string): Maybe<string> => failedOutput(text) ? null : text
 
 export const parseRepoExists = (text: string): Maybe<string> => failedOutput(text) ? null : "repo exists" 
 
 export const parseRepoName = (text: string): Maybe<string> => {
-    if (failedOutput(text)) return null
+  if (failedOutput(text)) return null;
 
-    // Remove possible .git suffix
-    const cleanedUrl = text.trim().replace(/\.git$/, '')
+  // Remove possible .git suffix
+  const cleanedUrl = text.trim().replace(/\.git$/, '');
 
-    // Extract part after last /
-    const parts = cleanedUrl.split('/')
+  // Extract part after last /
+  const parts = cleanedUrl.split('/');
 
-    // Ensure we have enough parts (e.g., https://github.com/user/repo)
-    if (parts.length < 1) return null
+  // Ensure we have enough parts (e.g., https://github.com/user/repo)
+  if (parts.length < 1) return null;
 
-    return last(parts) || null
-}
-
+  return last(parts) || null;
+};
 
 export const parseContributorEmails = (text: string): Maybe<string[]> => failedOutput(text) ? null : [...new Set(text.split("\n"))]
-
 
 export const parseRepoBranches = (text: string): Maybe<string[]> => failedOutput(text) ? null : text
     .split("\n") // splits on new line
@@ -136,52 +131,44 @@ export const parseCommitData = (text: string): Maybe<InbetweenCommitData> => {
 
 
 export const parseFileDataFromCommit = (getFileContents: (text: string) => Promise<string>, getOldFileContents: (text: string) => Promise<string>) => async (data: string[]): Promise<Maybe<FileChanges>> => {
+  const [changeString, ...rest] = data;
+  const [changeChar, ...likenessList] = changeString;
+  const changeType = changeChar as ChangeType;
+  const likeness = Number.parseInt(likenessList.join());
+  const newFile = last(rest) as string;
 
-    const [changeString, ...rest] = data
-    const [changeChar, ...likenessList] = changeString 
-    const changeType = changeChar as ChangeType
-    const likeness = Number.parseInt(likenessList.join())
-    const newFile = last(rest) as string
+  const getChange = async (): Promise<ChangeData> => {
+		// if renamed or copied get info for the previous file path
+		if (rest.length > 1) {
+			// get the old filepath
+			const oldFilePath = rest[0];
+			// if not a modify then we dont need to grab old file data for a diff
+			if (changeType in ['R', 'C']) {
+				return {
+					char: changeType,
+					extra: {
+						oldFilePath,
+						likeness,
+					},
+				};
+			} if (changeType === 'M') {
+				// grab old file contents
+				const oldFileContents = {
+					contents: await getOldFileContents(oldFilePath),
+					filepath: oldFilePath,
+				};
 
-    const getChange = async (): Promise<ChangeData> => {
-        // if renamed or copied get info for the previous file path
-        if (rest.length > 1) {
-            // get the old filepath
-            const oldFilePath = rest[0]
-            // if not a modify then we dont need to grab old file data for a diff
-            if (changeType in ["R", "C"]) {
-                return {
-                    char: changeType,
-                    extra: {
-                        oldFilePath: oldFilePath,
-                        likeness: likeness
-                    }
-                }
-
-            } else if (changeType === "M") {
-                // grab old file contents
-                const oldFileContents = {
-                    contents: await getOldFileContents(oldFilePath),
-                    filepath: oldFilePath
-                }
-
-                return {
-                    char: changeType,
-                    extra: {
-                        previousFile: oldFileContents
-                    }
-                }
-
-            } else {
-                // we should not be here, raise error or smth idk lol
-            }
-        } 
-        // if not just return the change type as no additional information is needed
-        return {
-            char: changeType,
-            extra: null
-        }
-    }
+				return {
+					char: changeType,
+					extra: {
+						previousFile: oldFileContents,
+					},
+				};
+			}
+			// we should not be here, raise error or smth idk lol
+		}
+		throw Error("getChange in changedata shat itself")
+	}
 
     // if the file is deleted, do not try to get its file contents as it probably does not exist
     const updatedFileContents = changeType !== "D" ? await getFileContents(newFile) : ""
@@ -196,7 +183,3 @@ export const parseFileDataFromCommit = (getFileContents: (text: string) => Promi
         changes: await getChange()
     } as FileChanges)
 }
-
-
-
-

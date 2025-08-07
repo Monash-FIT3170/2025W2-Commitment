@@ -103,8 +103,8 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
       </CardHeader>
       {/* Graph */}
       {/* <CardContent style={{ height: 300, display: "block" }}>            */}
-      <CardContent className="flex-grow flex flex-col items-center justify-center pt-2">
-        <ChartContainer config={chartConfig} className="flex-grow w-full">
+      <CardContent className="grow flex flex-col items-center justify-center pt-2">
+        <ChartContainer config={chartConfig} className="grow w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}

@@ -20,7 +20,7 @@ export const FeatureCard = ({
   return (
     <div
       className={`flex flex-col justify-between 
-        border-2 border-git bg-white rounded-xl p-5 text-center 
+        border-2 border-git-card-primary bg-white rounded-xl p-5 text-center 
         w-full h-full 
         max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl
         transition-all duration-300 ease-in-out
@@ -124,8 +124,8 @@ export function FeatureCarousel() {
               <div
                 key={index}
                 className={`
-                  flex-shrink-0 px-2 ease-in-out 
-                  ${isSelected ? "opacity-100 blur-none" : "opacity-50 blur-sm"}
+                  shrink-0 px-2 ease-in-out 
+                  ${isSelected ? "opacity-100 blur-none" : "opacity-50 blur-xs"}
                 `}
                 style={{
                   width: "33.3333%", // Always 3 cards

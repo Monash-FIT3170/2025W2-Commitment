@@ -10,7 +10,7 @@ const GraphCard: React.FC<GraphCardProps> = ({
 }) => {
   return (
     <div
-      className={`outline outline-2 rounded-2xl p-4 basis-1/3 ${className}`}
+      className={`outline-solid outline-2 rounded-2xl p-4 basis-1/3 ${className}`}
       style={{
         outlineColor: "#35353140",
         backgroundColor: "#E8E8DD"
