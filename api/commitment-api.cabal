@@ -29,6 +29,8 @@ executable commitment-api
       base >= 4.7 && < 5,
       wai,
       warp,
+      websockets,
+      wai-websockets,
       aeson,
       text,
       bytestring,

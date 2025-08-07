@@ -1,0 +1,39 @@
+FROM haskell:9.12.2-bookworm
+
+# Install system dependencies required by GHC
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    libffi-dev \
+    libgmp-dev \
+    libncurses-dev \
+    libtinfo5 \
+    pkg-config
+
+# Install GHCup, GHC, and Stack (via ghcup only)
+RUN curl -sSL https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 sh
+
+# Set environment path so GHCup-installed tools are available
+ENV PATH="/root/.ghcup/bin:/root/.local/bin:$PATH"
+
+# Install desired GHC version using ghcup
+RUN ghcup install ghc 9.8.4 && ghcup set ghc 9.8.4
+
+# Make sure Stack is available (installed already via ghcup)
+RUN stack --version
+
+# Set workdir and copy code
+WORKDIR /projects/commitment/api
+COPY . .
+
+# Build dependencies separately to leverage Docker layer caching
+RUN stack setup --install-ghc && stack build --only-dependencies
+
+# Build the project
+RUN stack build
+
+# Expose the application's port
+EXPOSE 8081
+
+# Default command to run the built application
+CMD ["stack", "exec", "haskell-api"]

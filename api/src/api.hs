@@ -2,35 +2,51 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Api (
-  app,
-  url1,
-  url2,
-  testApi,
-  processUrl
+  appWS,
+  appHTTP,
+  fallback
 ) where
 
 import Network.Wai
-import Network.HTTP.Types (status200, status400)
+import Network.Wai.Handler.Warp (runSettings, defaultSettings, setPort, setHost)
+import Network.Wai.Handler.WebSockets (websocketsOr)
+import Network.WebSockets
+  ( acceptRequest
+  , receiveData
+  , sendTextData
+  , sendClose
+  , defaultConnectionOptions
+  , ServerApp
+  )
+
+import Network.HTTP.Types
+  ( status200
+  , status400
+  , status405
+  , status500
+  , methodPost
+  )
+
 import Data.Aeson
-import Data.Text (Text, pack, unpack)
-import Data.Text.Encoding (encodeUtf8)
+import Data.Text (Text)
 import GHC.Generics
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString.Lazy.Char8 as BL8
+import Data.Text.Encoding (encodeUtf8)
+
 import Control.Concurrent.Async (async, wait)
-import Control.Concurrent.STM (newTQueueIO, readTQueue, atomically, TBQueue, writeTQueue, newTBQueue, readTBQueue)
+import Control.Concurrent.STM
+  ( newTQueueIO, readTQueue, atomically, TBQueue, writeTQueue
+  , newTBQueue, readTBQueue
+  )
 import Control.Concurrent (forkIO, takeMVar, putMVar, newEmptyMVar)
-import Control.Monad (forever)
+import Control.Monad (forever, void)
 import System.IO (hFlush, stdout)
 import System.IO.Unsafe (unsafePerformIO)
-
-import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.Aeson (encode)
 
 import Threading
 import Commitment (fetchDataFrom)
 import Types (RepositoryData)
-
-instance ToJSON RepositoryData
 
 -- Incoming JSON from JS
 data ClientMessage = ClientMessage { url :: String }
@@ -39,11 +55,11 @@ data ClientMessage = ClientMessage { url :: String }
 instance FromJSON ClientMessage
 
 -- Outgoing structured response
-encodeValue :: ToJSON a => T.Text -> a -> BL.ByteString
+encodeValue :: ToJSON a => Text -> a -> BL.ByteString
 encodeValue label val = encode $ object ["type" .= label, "data" .= val]
 
-encodeError :: T.Text -> BL.ByteString
-encodeError msg = encode $ object ["type" .= ("error" :: T.Text), "message" .= msg]
+encodeError :: Text -> BL.ByteString
+encodeError msg = encode $ object ["type" .= ("error" :: Text), "message" .= msg]
 
 ------------------------------------------------------------
 -- 📡 WebSocket Handler
@@ -59,7 +75,7 @@ appWS pendingConn = do
     Left err -> do
       putStrLn $ "Invalid JSON: " ++ err
       sendTextData conn $ encodeError "Invalid JSON format. Expected: {\"url\": \"...\"}"
-      sendClose conn ("Bad input" :: T.Text)
+      sendClose conn ("Bad input" :: Text)
 
     Right (ClientMessage repoUrl) -> do
       putStrLn $ "Processing URL (WS): " ++ repoUrl
@@ -76,7 +92,7 @@ appWS pendingConn = do
         Just repoData -> sendTextData conn $ BL.toStrict $ encodeValue "value" repoData
         Nothing       -> sendTextData conn $ BL.toStrict $ encodeError "No repository data found."
 
-      sendClose conn ("Done" :: T.Text)
+      sendClose conn ("Done" :: Text)
 
 ------------------------------------------------------------
 -- 🌐 HTTP Fallback Handler (POST only)
@@ -97,7 +113,7 @@ fallback req respond = do
           notifier <- atomically $ newTBQueue 1000
 
           -- We discard updates for HTTP; could log or save
-          _ <- forkIO $ forever $ Control.Monad.void (atomically (readTBQueue notifier))
+          _ <- forkIO $ forever $ void (atomically (readTBQueue notifier))
 
           result <- fetchDataFrom repoUrl notifier
           case result of
