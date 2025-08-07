@@ -1,39 +1,36 @@
-FROM haskell:9.12.2-bookworm
+# -------- Build Stage --------
+FROM haskell:9.8.1 as builder
 
-# Install system dependencies required by GHC
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    libffi-dev \
-    libgmp-dev \
-    libncurses-dev \
-    libtinfo5 \
-    pkg-config
-
-# Install GHCup, GHC, and Stack (via ghcup only)
-RUN curl -sSL https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 sh
-
-# Set environment path so GHCup-installed tools are available
-ENV PATH="/root/.ghcup/bin:/root/.local/bin:$PATH"
-
-# Install desired GHC version using ghcup
-RUN ghcup install ghc 9.8.4 && ghcup set ghc 9.8.4
-
-# Make sure Stack is available (installed already via ghcup)
-RUN stack --version
-
-# Set workdir and copy code
+# Set working directory
 WORKDIR /projects/commitment/api
+
+# Copy project files
 COPY . .
 
-# Build dependencies separately to leverage Docker layer caching
+# Cache dependencies
 RUN stack setup --install-ghc && stack build --only-dependencies
 
 # Build the project
-RUN stack build
+RUN stack build --copy-bins
 
-# Expose the application's port
+# -------- Runtime Stage --------
+FROM debian:bookworm-slim
+
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y libgmp-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user (optional for security)
+RUN useradd -m appuser
+USER appuser
+
+# Copy built binary from build stage
+COPY --from=builder /projects/commitment/api/.stack-work/install/*/bin/haskell-api /usr/local/bin/haskell-api
+
+# Set working directory
+WORKDIR /projects/commitment/api
+
+# Expose port
 EXPOSE 8081
 
-# Default command to run the built application
-CMD ["stack", "exec", "haskell-api"]
+# Run app
+CMD ["haskell-api"]
