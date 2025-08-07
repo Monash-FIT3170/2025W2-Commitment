@@ -5,7 +5,9 @@
 {-# LANGUAGE LambdaCase #-}
 {-# HLINT ignore "Use tuple-section" #-}
 
-module Commitment where
+module Commitment (
+    fetchDataFrom
+) where
 
 import Types
 import Threading
@@ -13,18 +15,15 @@ import Command
 import GitCommands
 import Parsing
 
-import Control.Concurrent.Async
 import Control.Concurrent.STM
-import Control.Monad
 import Control.Exception (catch, SomeException (SomeException), displayException, finally)
 import Data.List (sortBy)
 import Data.Maybe (fromMaybe)
-import Data.Foldable (traverse_)
-import Data.Map.Strict (Map)
+import Data.Map.Strict ()
 import qualified Data.Map.Strict as Map
 import System.FilePath
 import System.IO.Unsafe (unsafePerformIO)
-import System.Directory (getCurrentDirectory, createDirectoryIfMissing, doesDirectoryExist)
+import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import Control.Concurrent (getNumCapabilities)
 
 -- Create global thread pools
@@ -59,11 +58,11 @@ fetchDataFrom url notifier = do
     workingDir <- getCurrentDirectory
     let cloneRoot = workingDir </> "cloned-repos"
 
-    awaitCloneDirectoryCreation <- createDirectoryIfMissing True cloneRoot
+    _awaitCloneDirectoryCreation <- createDirectoryIfMissing True cloneRoot
     emit notifier "Validating repo exists..."
 
     let execCmdInWorkingDir = execAndParse notifier workingDir
-    assertRepoExists <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
+    _assertRepoExists <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
 
     emit notifier "Found the repo!"
     emit notifier "Formulating parsers..."
@@ -72,8 +71,8 @@ fetchDataFrom url notifier = do
         repoRelativePath = "cloned-repos" </> repoNameFromUrl
         repoAbsPath = workingDir </> repoRelativePath
 
-    awaitContentDeletion <- deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
-    awaitRepoDirectoryCreation <- createDirectoryIfMissing True repoAbsPath
+    _awaitContentDeletion <- deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
+    _awaitRepoDirectoryCreation <- createDirectoryIfMissing True repoAbsPath
 
     emit notifier "Cloning repo..."
     assertSuccess <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool (
@@ -101,7 +100,7 @@ fetchDataFrom url notifier = do
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
 formulateRepoData :: String -> FilePath -> TBQueue String -> IO RepositoryData
-formulateRepoData url path notifier = do
+formulateRepoData _url path notifier = do
     let execCmd = execAndParse notifier path
         execAll = execAndParseAll notifier path
 

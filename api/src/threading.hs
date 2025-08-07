@@ -61,7 +61,7 @@ safePrint msg = withMVar stdoutLock $ \_ -> do
 emit :: TBQueue String -> String -> IO ()
 emit q msg = do 
   res <- evaluate (force msg)
-  atomically $ writeTBQueue q msg
+  atomically $ writeTBQueue q res
 
 -- Create a thread pool with N worker threads
 createThreadPool :: Int -> String -> IO WorkerPool
@@ -84,7 +84,7 @@ wrapped = pure
 
 -- Submit a task to the pool, returning an IO that produces the result
 submit :: WorkerPool -> IO a -> IO (IO a)
-submit (WorkerPool _ name queue) action = do
+submit (WorkerPool _ _ queue) action = do
   resultVar <- newEmptyMVar
   atomically $ writeTQueue queue $ do
     result <- action

@@ -30,7 +30,6 @@ import Control.Applicative (Alternative, empty, (<|>))
 
 import Types
 import Command
-import Threading (safePrint)
 
 -- define a type for the parsing result for each of the parsers
 data ParseResult a = Result a | Error String
@@ -45,14 +44,14 @@ instance Eq a => Eq (ParseResult a) where
 instance Functor ParseResult where
   fmap :: (a -> b) -> ParseResult a -> ParseResult b
   fmap f (Result a) = Result (f a)
-  fmap f (Error s)  = Error s
+  fmap _ (Error s)  = Error s
 
 instance Applicative ParseResult where
   pure :: a -> ParseResult a
   pure = Result
   (<*>) :: ParseResult (a -> b) -> ParseResult a -> ParseResult b
   (<*>) (Result f) p = f <$> p
-  (<*>) (Error s) p  = Error s
+  (<*>) (Error s) _  = Error s
 
 instance Monad ParseResult where
   (>>=) (Result x) f = f x
@@ -71,14 +70,14 @@ instance Alternative ParseResult where
   (<|>) (Error s1) _ = Error s1
 
 maybeToResult :: String -> Maybe a -> ParseResult a
-maybeToResult msg (Just a) = Result a
+maybeToResult _ (Just a)  = Result a
 maybeToResult msg Nothing = Error msg
 
 successful :: CommandResult -> ParseResult String
-successful (CommandResult result (Just err) (Just stdErr)) = Error $ err ++ ":\n" ++ stdErr
-successful (CommandResult result (Just err) _)             = Error err
-successful (CommandResult result _ (Just stdErr))          = if null result then Result stdErr else Result result
-successful (CommandResult result _ _)                      = Result result
+successful (CommandResult _   (Just err) (Just stdErr)) = Error $ err ++ ":\n" ++ stdErr
+successful (CommandResult _   (Just err) _)             = Error err
+successful (CommandResult res _ (Just stdErr))          = if null res then Result stdErr else Result res
+successful (CommandResult res _ _)                      = Result res
 
 parsed :: String -> ParseResult a -> a
 parsed _ (Result r)   = r
@@ -177,14 +176,14 @@ extractCommitData :: (String -> IO String) -- getFileContents
 extractCommitData getNew getOld filedata = do
     case filedata of
       (changeStr:rest) -> do
-        let (changeChar:ignored) = changeStr
+        let (changeChar:_ignored) = changeStr
 
         case lastElem rest of
           Nothing -> return $ Error $ "rest not shaped correctly: " ++ show rest
           Just newFile -> do
             newContents <- if changeChar /= 'D' then getNew newFile else pure ""
             oldContents <- case rest of
-              (oldFilePath:_) | changeChar == 'M' -> getOld oldFilePath
+              (oldFilePathTxt:_) | changeChar == 'M' -> getOld oldFilePathTxt
               _ -> pure ""
 
             return $ Result (newContents, oldContents, filedata)
@@ -202,16 +201,16 @@ parseFileDataFromCommit newContents oldContents dataList = do
       changeType <- maybeToResult ("Invalid change type: " ++ [changeChar]) (getChangeType changeChar)
 
       extraChange <- case rest of
-        (oldFilePath:_) | changeChar `elem` ['R', 'C'] -> do
+        (oldFilePathTxt:_) | changeChar `elem` ['R', 'C'] -> do
           let cleanLikeness = filter (/= ',') likenessStr
           case readMaybe cleanLikeness of
-            Just likeness ->
-              pure $ Just $ Rename $ RenameData oldFilePath likeness
+            Just likenessInt ->
+              pure $ Just $ Rename $ RenameData oldFilePathTxt likenessInt
             Nothing ->
               Error $ "Failed to parse likeness int: " ++ cleanLikeness
 
-        (oldFilePath:_) | changeChar == 'M' ->
-          pure $ Just $ Modify $ ModifyData (FileContents oldFilePath oldContents)
+        (oldFilePathTxt:_) | changeChar == 'M' ->
+          pure $ Just $ Modify $ ModifyData (FileContents oldFilePathTxt oldContents)
 
         _ -> pure Nothing
 
@@ -235,7 +234,7 @@ breakList pat xs = case breakOn pat xs of
 
 -- Breaks list at first occurrence of a pattern
 breakOn :: Eq a => [a] -> [a] -> Maybe ([a], [a])
-breakOn pat [] = Nothing
+breakOn _ [] = Nothing
 breakOn pat l@(x:xs)
   | pat `isPrefixOf` l = Just ([], l)
   | otherwise = fmap (first (x:)) (breakOn pat xs)

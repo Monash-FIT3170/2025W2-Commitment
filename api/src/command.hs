@@ -17,19 +17,12 @@ module Command (
 
 import System.Exit (ExitCode(..))
 import System.IO
-import Control.Monad (forM_, when, void)
-import GHC.Generics (Generic)
-import Control.Concurrent.STM ( TBQueue )
-import Control.Exception (catch, try, IOException, SomeException, evaluate)
-import System.IO (hGetContents)
-import System.IO.Error (isPermissionError)
-import System.Directory (doesFileExist, createDirectoryIfMissing, listDirectory, doesDirectoryExist, removeFile, removeDirectoryRecursive)
+import Control.Monad (when)
+import Control.Concurrent.STM (TBQueue)
+import Control.Exception (evaluate)
+import System.Directory (doesDirectoryExist)
 import System.Process
-import System.PosixCompat.Files (getFileStatus, fileMode, setFileMode)
-import Data.Bits ((.|.))
-import System.FilePath ((</>), takeDirectory)
 import Control.DeepSeq (force)
-import System.Environment (getEnvironment)
 
 import Threading
 
@@ -48,7 +41,7 @@ data CommandResult = CommandResult
   } deriving (Show, Eq)
 
 getParsableStringFromCmd :: CommandResult -> String
-getParsableStringFromCmd (CommandResult r (Just err) _) = err
+getParsableStringFromCmd (CommandResult _ (Just err) _) = err
 getParsableStringFromCmd (CommandResult r _ (Just se))  = if null r then se else r
 getParsableStringFromCmd (CommandResult r _ _)          = r
 
@@ -59,25 +52,13 @@ defaultFail :: String -> String -> String
 defaultFail c e = "Command:\n" ++ c ++ "\nError:\n" ++ e
 
 defaultStdFail :: String -> String -> String -> String
-defaultStdFail c out se = "Command:\n" ++ c ++ "\nError:\n" ++ se
+defaultStdFail c _ se = "Command:\n" ++ c ++ "\nError:\n" ++ se
 
 logData :: Command
 logData = Command "" defaultSuccess defaultFail defaultStdFail True
 
 doNotLogData :: Command
 doNotLogData = logData { shouldLog = False }
-
--- Escape command arguments for safe shell execution
-escapeArg :: String -> String
-escapeArg arg
-  | null arg = "\"\""
-  | any (`elem` (specialChars :: String)) arg = "\"" ++ concatMap escapeChar arg ++ "\""
-  | otherwise = arg
-  where
-    specialChars = " &^%$#@!(){}[]=;<>|\"'\\"
-    escapeChar '"'  = "\\\""
-    escapeChar '\\' = "\\\\"
-    escapeChar c    = [c]
 
 executeCommand :: TBQueue String -> FilePath -> Command -> IO CommandResult
 executeCommand notifier filepath f = do
@@ -104,8 +85,8 @@ executeCommand notifier filepath f = do
       -- Read and fully evaluate outputs before waiting for the process
       rawOut <- hGetContents hout
       rawErr <- hGetContents herr
-      stdout <- evaluate (force rawOut)
-      stderr <- evaluate (force rawErr)
+      stdout_txt <- evaluate (force rawOut)
+      stderr_txt <- evaluate (force rawErr)
 
       -- Now wait for the process to finish
       exitCode <- waitForProcess phandle
@@ -113,22 +94,22 @@ executeCommand notifier filepath f = do
       -- Handle results
       case exitCode of
         ExitFailure code -> do
-          let errMsg = "Process exited with code " ++ show code ++ " from path: " ++ filepath ++ ":\n" ++ onFail f rawCmd stderr
+          let errMsg = "Process exited with code " ++ show code ++ " from path: " ++ filepath ++ ":\n" ++ onFail f rawCmd stderr_txt
           when (shouldLog f) $ do
             emit notifier errMsg
-          pure $ CommandResult stdout (Just errMsg) (if null stderr then Nothing else Just stderr)
+          pure $ CommandResult stdout_txt (Just errMsg) (if null stderr_txt then Nothing else Just stderr_txt)
 
         ExitSuccess ->
-          if null stderr
+          if null stderr_txt
             then do
               when (shouldLog f) $
-                emit notifier (onSuccess f rawCmd stdout)
-              pure $ CommandResult stdout Nothing Nothing
+                emit notifier (onSuccess f rawCmd stdout_txt)
+              pure $ CommandResult stdout_txt Nothing Nothing
             else do
               when (shouldLog f) $ do
-                let stdErrMsg = "stderr:\n" ++ onStdFail f rawCmd stdout stderr
+                let stdErrMsg = "stderr:\n" ++ onStdFail f rawCmd stdout_txt stderr_txt
                 emit notifier stdErrMsg
-              pure $ CommandResult stdout Nothing (Just stderr)
+              pure $ CommandResult stdout_txt Nothing (Just stderr_txt)
 
 
 -- | Filesystem helpers
@@ -137,6 +118,6 @@ deleteDirectoryIfExists :: FilePath -> IO () -> IO ()
 deleteDirectoryIfExists dir f = do
   exists <- doesDirectoryExist dir
   when exists $ do
-    r_ig <- f
+    _unused <- f
     let cmd = "rmdir /S /Q \"" ++ dir ++ "\""
     callCommand cmd

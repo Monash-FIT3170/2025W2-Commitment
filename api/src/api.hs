@@ -8,7 +8,6 @@ module Api (
 ) where
 
 import Network.Wai
-import Network.Wai.Handler.Warp (runSettings, defaultSettings, setPort, setHost)
 import Network.Wai.Handler.WebSockets (websocketsOr)
 import Network.WebSockets
   ( acceptRequest
@@ -31,22 +30,14 @@ import Data.Aeson
 import Data.Text (Text)
 import GHC.Generics
 import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString.Lazy.Char8 as BL8
-import Data.Text.Encoding (encodeUtf8)
+import Data.ByteString.Lazy.Char8() 
 
-import Control.Concurrent.Async (async, wait)
-import Control.Concurrent.STM
-  ( newTQueueIO, readTQueue, atomically, TBQueue, writeTQueue
-  , newTBQueue, readTBQueue
-  )
-import Control.Concurrent (forkIO, takeMVar, putMVar, newEmptyMVar)
+import Control.Concurrent.STM (atomically, newTBQueue, readTBQueue)
+import Control.Concurrent (forkIO)
 import Control.Monad (forever, void)
-import System.IO (hFlush, stdout)
-import System.IO.Unsafe (unsafePerformIO)
 
-import Threading
 import Commitment (fetchDataFrom)
-import Types (RepositoryData)
+import Types ()
 
 -- Incoming JSON from JS
 data ClientMessage = ClientMessage { url :: String }

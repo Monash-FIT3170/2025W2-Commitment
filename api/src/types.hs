@@ -20,12 +20,9 @@ module Types (
 ) where
 
 import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
 import Data.Time (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON, FromJSON)
-import Data.Monoid (Monoid(..))
-import Data.Semigroup (Semigroup(..))
 
 -- | Represents the full repository data
 data RepositoryData = RepositoryData
