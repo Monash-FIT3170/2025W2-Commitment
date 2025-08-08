@@ -1,12 +1,13 @@
-import React, {FC, ReactNode, useState, useCallback} from "react";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@ui/components/ui/card";
+import React, {FC, ReactNode, useCallback} from "react";
+import {Card, CardContent, CardHeader, CardTitle} from "@ui/components/ui/card";
 import LoginForm from "@ui/components/widgets/login/LoginForm/LoginForm";
 import {cx} from "class-variance-authority";
 import SignupForm from "@ui/components/widgets/login/LoginForm/SignupForm";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@ui/components/ui/tabs";
 
 export interface LoginWidgetProps {
-  className?: string
+  className?: string,
+  defaultTab: "login" | "signup"
 }
 
 interface Page {
@@ -30,8 +31,6 @@ const pages: Page[] = [
 
 const LoginWidget: FC<LoginWidgetProps> = (props) => {
 
-  const isSignup = useState<boolean>(false);
-
   const CreateCardElement = useCallback((page: Page) => (
     <TabsContent value={page.name}>
       <Card className="max-w-md w-96 grow">
@@ -49,7 +48,7 @@ const LoginWidget: FC<LoginWidgetProps> = (props) => {
 
   return (
     <div className={cx("inline-flex flex-row content-center justify-center", props.className)}>
-      <Tabs defaultValue="login">
+      <Tabs defaultValue={props.defaultTab}>
         <TabsList>
           {pages.map((page: Page) => (
             <TabsTrigger value={page.name}>{page.title}</TabsTrigger>
