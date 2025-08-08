@@ -61,16 +61,17 @@ function ScalingView() {
       <div className="flex flex-col gap-32">
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
           
-          {/* Show button only if: loaded, not completed, and dialog is not open */}
-          <Button
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-              onClick={() => {
-                setStep('config');
-                setShowDialog(true);
-              }}
-            >
-              Create New Scaling
-            </Button>
+        {hasLoaded && !completed && !showDialog && (
+        <Button
+            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+            onClick={() => {
+            setStep('config');
+            setShowDialog(true);
+            }}
+        >
+            Create New Scaling
+        </Button>
+        )}
 
           {/* Show summary if completed */}
           {completed && config && gradingSheet && (

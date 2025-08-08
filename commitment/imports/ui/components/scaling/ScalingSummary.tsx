@@ -67,13 +67,13 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
   ], []);
 
   return (
-    <div className="mt-8 p-4 border rounded-md bg-gray-50">
-      <h2 className="text-xl font-semibold mb-2">Scaling Summary</h2>
+    <div className="-mt-4 p-4 border rounded-md bg-gray-50">
+      {/* <h2 className="text-xl font-semibold mb-2">Scaling Summary</h2>
       <p><strong>Method:</strong> {method}</p>
       <p><strong>Metrics:</strong> {metrics}</p>
-      <p><strong>Grading Sheet:</strong> {fileName}</p>
+      <p><strong>Grading Sheet:</strong> {fileName}</p> */}
 
-      <div className="container mx-auto py-10">
+      <div className="container py-10 -mt-8 -mb-8">
         <DataTable columns={columns} data={userScalingSummaries} />
       </div>
 

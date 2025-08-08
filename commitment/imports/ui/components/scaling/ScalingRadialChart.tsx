@@ -17,7 +17,7 @@ export function ScalingRadialChart({ value }: ScalingRadialChartProps) {
     {
       name: "scale",
       value: percentage * 100,
-      fill: "#3B82F6",
+      fill: "var(--git-dv-blue)",
     },
   ];
 
@@ -61,7 +61,7 @@ export function ScalingRadialChart({ value }: ScalingRadialChartProps) {
             
           }}
         >
-          {(value * 100).toFixed(0)}%
+          {value}
         </text>
       </RadialBarChart>
     </div>

@@ -88,7 +88,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                     className="bg-gray-50 border-style: dashed">
                     <TableCell colSpan={columns.length}>
                         <div className="ml-8 text-sm text-gray-700">
-                        ↳ <strong>{alias.username}</strong> ({alias.email})
+                            <strong>{alias.username}</strong> ({alias.email})
                         </div>
                     </TableCell>
                     </TableRow>
