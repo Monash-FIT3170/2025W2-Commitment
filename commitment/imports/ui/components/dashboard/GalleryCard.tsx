@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Bookmark } from "/imports/api/bookmarks";
-import BookmarkButton from "../ui/BookmarkButton";
+import BookmarkButton from "./BookmarkButton";
 import { format } from "date-fns";
 
 interface GalleryCardProps {

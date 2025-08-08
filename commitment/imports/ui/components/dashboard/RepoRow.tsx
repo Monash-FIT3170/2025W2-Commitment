@@ -3,7 +3,7 @@ import { Info } from "lucide-react";
 import { Button } from "../ui/button";
 
 import { Bookmark } from "/imports/api/bookmarks";
-import BookmarkButton from "../ui/BookmarkButton";
+import BookmarkButton from "./BookmarkButton";
 
 export interface RepoRowProps {
   bookmark: Bookmark;
