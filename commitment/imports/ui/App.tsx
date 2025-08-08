@@ -14,6 +14,7 @@ export const App = () => {
       <Routes>
         <Route path="/" element={<LandingPage/>}></Route>
         <Route path="/login" element={<LoginView/>}></Route>
+        <Route path="/signup" element={<LoginView defaultTab={"signup"}/>}></Route>
         <Route path="/home" element={<InsertGitRepoView/>}></Route>
 
         {/* Add more routes as needed */}
