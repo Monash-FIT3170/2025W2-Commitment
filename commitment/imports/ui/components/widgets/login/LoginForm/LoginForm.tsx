@@ -8,6 +8,7 @@ import {Checkbox} from "@ui/components/ui/checkbox";
 import FormInputWithErrors from "../../../shared/FormInputWithErrors";
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
+import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
 
 
 
@@ -88,7 +89,7 @@ const LoginForm: FC<LoginFormProps> = (props) => {
               <FormControl>
                 <FormInputWithErrors placeholder="Email" {...field} type="email"/>
               </FormControl>
-              <FormMessage displayWithoutError={true} className="transition-all" noErrorClassName="h-0 opacity-0" errorClassName="h-5"/>
+              <LoginFormErrorMessage/>
             </FormItem>
           )}
         />
@@ -101,7 +102,7 @@ const LoginForm: FC<LoginFormProps> = (props) => {
               <FormControl>
                 <FormInputWithErrors placeholder="Password" type="password" {...field}/>
               </FormControl>
-              <FormMessage displayWithoutError={true} className="transition-all ease-out" noErrorClassName="h-0 opacity-0" errorClassName="h-5"/>
+              <LoginFormErrorMessage/>
             </FormItem>
           )}
         />

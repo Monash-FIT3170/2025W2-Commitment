@@ -164,7 +164,6 @@ const FormMessage = React.forwardRef<
   }
 
   const extraClassName = (body ? props.errorClassName : props.noErrorClassName) ?? "";
-
   return (
     <p
       ref={ref}
