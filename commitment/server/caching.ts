@@ -120,20 +120,4 @@ export const getRepoData = async (url: string, notifier: Subject<string>): Promi
     });
 
 
-Meteor.methods({
-    /**
-     * Retrieves repository data from the RepoCollection by its URL.
-     *
-     * @method repoCollection.getRepoData
-     * @param {string} url - The URL of the repository.
-     * @returns {Promise<RepositoryData>} The repository data if found.
-     * @throws {Meteor.Error} If the repository data is not found in the database.
-     */
-    async 'repoCollection.getRepoData'(url: string): Promise<RepositoryData {
-        const repo = await RepoCollection.findOneAsync({ url });
-        if (!repo) {
-            throw new Meteor.Error('repo-not-found', 'Repository data not found in the database');
-        }
-        return repo.data;
-    }
-}); 
+
