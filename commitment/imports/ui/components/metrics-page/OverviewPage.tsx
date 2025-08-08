@@ -9,7 +9,7 @@ export const OverviewPage = () => (
   <div className="m-0 scroll-smooth">
     <div className="flex flex-col gap-32">
       <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-        <div className="flex flex-wrap items-center gap-x-[15rem] gap-y-4">
+        <div className="flex flex-wrap items-center gap-x-60 gap-y-4">
           <div className="flex items-center space-x-2">
             <h1 className="text-5xl text-gray-900 font-robotoFlex">Overview</h1>
             <InfoButton description={overViewPageDescription} />
