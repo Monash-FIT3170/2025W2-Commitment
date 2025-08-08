@@ -1,20 +1,34 @@
 # MongoDB Atlas Integration
 
 This server now includes MongoDB Atlas integration for caching repository data and managing users and repositories.
+You can test the server is running by either running the automated script or doing it manually.
+There are also some steps to add some data to test
+You MUST COMPLETE the steps to create a URI with mongodb atlas otherwise the server will not work
+There are also some troubleshooting steps included
 
 ## 🚀 Quick Start
 
-### 1. Start the Server
+### Option 1: Automated Start 
+
+```bash
+# Run the automated startup script
+./commitment/server/start-server.sh
+```
+
+### Option 2: Manual Start
 
 ```bash
 # Start Docker containers
 docker compose up -d
 
+# Install dependencies (required after container rebuild)
+docker exec -it 3170-env bash -c "cd /projects/commitment/server && npm install tr46 cors mongodb express dotenv rxjs"
+
 # Run the server
 docker exec -it 3170-env bash -c "cd /projects/commitment/server && node server.js"
 ```
 
-### 2. Test the Server
+### 3. Test the Server
 
 ```bash
 # Test server status
@@ -29,6 +43,50 @@ curl -X POST http://localhost:3000/api/users/register \
 curl -X POST http://localhost:3000/api/users/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"password123"}'
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**1. Missing Module Errors (Most Common)**
+If you see errors like:
+```bash
+Error: Cannot find package '/projects/commitment/server/node_modules/mongodb/index.js'
+Error: Cannot find package '/projects/commitment/server/node_modules/cors/lib/index.js'
+Error: Cannot find module './lib/regexes.js'
+```
+
+**Solution**: Reinstall the specific packages:
+```bash
+docker exec -it 3170-env bash -c "cd /projects/commitment/server && npm install tr46 cors mongodb express dotenv rxjs"
+```
+
+**2. Container Not Found**
+If you get "No such container: 3170-env":
+```bash
+docker compose up -d
+```
+
+**3. Port Already in Use (EADDRINUSE)**
+If you get "address already in use 0.0.0.0:3000":
+```bash
+# Check if server is already running
+curl http://localhost:3000/
+
+# If already running, you're good to go!
+# If you need to restart:
+docker compose down
+docker compose up -d
+```
+
+**4. Cannot GET /api/users/register**
+Make sure you're using POST method, not GET:
+```bash
+# Correct way:
+curl -X POST http://localhost:3000/api/users/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","email":"test@example.com","password":"password123"}'
 ```
 
 ## 📋 Setup Instructions
@@ -269,7 +327,7 @@ docker exec -it 3170-env bash -c "cd /projects/commitment/server && cat .env"
 
 - Never commit your `.env` file to version control
 - Use environment variables for sensitive data
-- Consider using MongoDB Atlas IP whitelist for additional security
+- Consider using MongoDB Atlas IP whitelist for additional security (You shouldn't have to do this as all IP addresses are allowed at the moment)
 - In production, hash passwords before storing them
 
 ## 🎉 Success Indicators
@@ -279,14 +337,3 @@ Your integration is working when you see:
 - ✅ "Database indexes created successfully"
 - ✅ "Server listening on port 3000"
 - ✅ Successful API responses with database IDs
-
-## 📈 Next Steps
-
-1. **Add Password Hashing**: Implement bcrypt for secure password storage
-2. **Add JWT Authentication**: Implement token-based authentication
-3. **Add Input Validation**: Validate request data
-4. **Add Error Handling**: Improve error responses
-5. **Add Rate Limiting**: Protect against abuse
-6. **Add Logging**: Implement proper logging
-
-Your MongoDB Atlas integration is now complete and ready for production use! 🚀 
