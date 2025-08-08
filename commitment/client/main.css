@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @plugin 'tailwindcss-animate';
 
+
+/* put vars which refer to others */
 @theme inline {
   /* Git Background Colours */
   --color-git-bg-bottom: var(--git-bg-bottom);
@@ -159,10 +161,10 @@
 @layer base {
   :root {
     /* Git Background Colours */
-    --git-bg-bottom: #e8e8dd;
-    --git-bg-primary: #f0f0e8;
-    --git-bg-secondary: #b7b592;
-    --git-bg-tertiary: #d0d0b7;
+    --git-bg-bottom: var(--color-cararra-100);
+    --git-bg-primary: var(--color-cararra-50);
+    --git-bg-secondary: var(--color-cararra-300);
+    --git-bg-tertiary: var(--color-cararra-200);
     --git-bg-elevated: #fefefa;
 
     /* Git Text Colours */
@@ -207,35 +209,50 @@
     --git-tabs-active: #f0f0e8;
 
     /* Shadcn Variables */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: var(--git-bg-primary);/*0 0% 100%;*/
+    --foreground:var(--git-text-primary); /*222.2 84% 4.9%;*/
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: var(--git-card-primary);/*0 0% 100%;*/
+    --card-foreground:var(--git-card-text);/*222.2 84% 4.9%;*/ 
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: var(--git-bg-elevated);/*0 0% 100%;*/
+    --popover-foreground: var(--git-text-primary); /*222.2 84% 4.9%;*/ 
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: var(--git-int-primary);/*222.2 47.4% 11.2%;*/
+    --primary-foreground: var(--git-int-text);/*210 40% 98%;*/
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: var(--git-bg-elevated);/*210 40% 96.1%;*/
+    --secondary-foreground:var(--git-int-text); /*222.2 47.4% 11.2%;*/
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: var(--git-bg-elevated);/*210 40% 96.1%;*/
+    --muted-foreground:var(--git-text-disabled); /*215.4 16.3% 46.9%;*/
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: var(--git-bg-elevated);
+    --accent-foreground: var(--git-text-disabled); /*;222.2 47.4% 11.2%;*/
 
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive:var(--git-int-destructive) ; /*0 100% 50%;*/
+    --destructive-foreground:var(--git-int-text) ; /*210 40% 98%;*/
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border:var(--git-bg-elevated) ; /*214.3 31.8% 91.4%;*/
+    --input: var(--git-bg-elevated); /*214.3 31.8% 91.4%;*/
+    --ring: var(--git-stroke-primary); /*222.2 84% 4.9%;*/
 
     --radius: 0.5rem;
+
+
+
+    --chart-1:var(--git-dv-blue);
+    --chart-2:var(--git-dv-orange);
+    --chart-3:var(--git-dv-green);
+    --chart-4:var(--git-dv-coral);
+    --chart-5:var(--git-dv-aqua);
+    --chart-6:var(--git-dv-yellow);
+    --chart-7:var(--git-dv-purple);
+    --chart-8:var(--git-dv-pink);
+    --chart-9:var(--git-dv-brown);
+    --chart-10:var(--git-dv-grey);
+    --chart-11:var(--git-dv-pink-dark);
+
   }
 
   .dark {
@@ -295,6 +312,18 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    --chart-1:var(--git-dv-blue);
+    --chart-2:var(--git-dv-orange);
+    --chart-3:var(--git-dv-green);
+    --chart-4:var(--git-dv-coral);
+    --chart-5:var(--git-dv-aqua);
+    --chart-6:var(--git-dv-yellow);
+    --chart-7:var(--git-dv-purple);
+    --chart-8:var(--git-dv-pink);
+    --chart-9:var(--git-dv-brown);
+    --chart-10:var(--git-dv-grey);
+    --chart-11:var(--git-dv-pink-dark);
   }
 
   * {
