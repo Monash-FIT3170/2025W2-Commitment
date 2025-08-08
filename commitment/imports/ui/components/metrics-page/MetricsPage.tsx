@@ -13,7 +13,10 @@ import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import { topContributors } from "../../lib/utils";
 import GraphCard from "./GraphCard";
-import { getRepoData, getCommitsMap, getContributorsMap } from "@ui/components/utils/repo_cache";
+import { useLocation } from "react-router-dom";
+import { getRepoData, getCommitsMap, getContributors } from "/imports/ui/components/utils/metric_functions";
+
+
 
 // !!!: Remove this dummy data upon integration with AT3's real data
 const dummyBranches = [
@@ -180,6 +183,13 @@ const transformToPieChartData = (data: any[]) => {
 };
 
 export const MetricsPage = () => {
+  // // attempt to get the repo data from the location state
+  //   // storing the repo data by calling getRepoData in repo_cache.tsx
+  // const location = useLocation();
+  // const repoUrl = location.state?.repoUrl 
+  // const repoData = getRepoData(repoUrl)
+
+  // establishes date range defaults 
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
@@ -193,6 +203,8 @@ export const MetricsPage = () => {
     () => generateRandomContributions(startDate, endDate),
     [startDate, endDate]
   );
+
+
   const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
 
   return (
