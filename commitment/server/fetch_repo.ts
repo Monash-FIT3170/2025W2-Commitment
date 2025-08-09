@@ -6,31 +6,41 @@ import { isInDatabase, getRepoData } from '../server/caching';
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
 Meteor.publish('fetchRepoMessages', function () {
-  const connectionId = this.connection.id;
+    const connectionId = this.connection.id;
 
-  // Create subject if not exists
-  if (!clientMessageStreams[connectionId]) {
-    clientMessageStreams[connectionId] = new Subject<string>();
-  }
+    // Create subject if not exists
+    if (!clientMessageStreams[connectionId]) {
+      	clientMessageStreams[connectionId] = new Subject<string>();
+    }
 
-  // get subject
-  const subject = clientMessageStreams[connectionId];
+    // get subject
+    const subject = clientMessageStreams[connectionId];
 
-  // Send message manually when .next() is called
-  const subscription = subject.subscribe((msg: string) => this.changed(
-    'fetchRepoMessagesCollection',
-    connectionId,
-    {
-      text: msg,
-      createdAt: new Date(),
-    },
-  ));
+    // Add the initial document so that .changed() can work later
+    this.added('fetchRepoMessagesCollection', connectionId, {
+		text: '',
+		createdAt: new Date(),
+    });
 
-  // Cleanup on stop
-  this.onStop(() => subscription.unsubscribe());
+    // Send message manually when .next() is called
+    const subscription = subject.subscribe((msg: string) => this.changed(
+        'fetchRepoMessagesCollection',
+        connectionId,
+        {
+            text: msg,
+            createdAt: new Date(),
+        },
+    ));
 
-  // Notify client initial data is ready
-  this.ready();
+    // Cleanup on stop
+    this.onStop(() => {
+        subscription.unsubscribe();
+        this.removed('fetchRepoMessagesCollection', connectionId);
+        delete clientMessageStreams[connectionId];
+    });
+
+    // Notify client initial data is ready
+    this.ready();
 });
 
 Meteor.methods({
@@ -44,10 +54,10 @@ Meteor.methods({
 
     // returns whether it was successful in caching to the database or not
     try {
-      await getRepoData(repoUrl, subject);
-      return true;
+		await getRepoData(repoUrl, subject);
+		return true;
     } catch (error) {
-      return false;
+      	return false;
     }
   },
 });
