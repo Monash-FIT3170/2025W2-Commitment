@@ -33,7 +33,11 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
   return (
     <div
       className={`z-50 flex items-center justify-between py-2 border-b bg-white  
-        ${isLandingPage ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32" : "relative px-4"}
+        ${
+          isLandingPage
+            ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32"
+            : "relative px-4"
+        }
       `}
     >
       <NavigationMenu>
@@ -47,24 +51,27 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
             // Landing page navigation items
             <>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#about" className={navigationMenuTriggerStyle()}>
-                    About
-                  </a>
+                <NavigationMenuLink
+                  href="#about"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  About
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#features" className={navigationMenuTriggerStyle()}>
-                    Features
-                  </a>
+                <NavigationMenuLink
+                  href="#features"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  Features
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#howto" className={navigationMenuTriggerStyle()}>
-                    How-To
-                  </a>
+                <NavigationMenuLink
+                  href="#howto"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  How-To
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -73,9 +80,13 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
             <>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
+                  <Link
+                    to="/dashboard"
+                    className={navigationMenuTriggerStyle()}
+                  >
                     Dashboard
-                  </Link>                </NavigationMenuLink>
+                  </Link>{" "}
+                </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink>

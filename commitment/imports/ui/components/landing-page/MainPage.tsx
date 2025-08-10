@@ -18,19 +18,18 @@ const MainPage = () => (
 );
 
 export const Logo = () => (
-  <div className="flex flex-row items-center">
+  <div className="flex flex-row items-center text-center">
     <img src="/logo.png" alt="Logo" className="-mr-7 w-[120px] h-auto" />
-    <p className="font-mono text-8xl text-black ">Commitment</p>
+    <p className="font-mono text-8xl">Commitment</p>
   </div>
 );
 
 const Description = () => (
   <div className="text-center">
-    <p className="font-mono text-center flex text-lg">
+    <p className="font-mono text-center flex">
       Need to quickly understand how committed your students are to their group
       projects?
     </p>
-    
   </div>
 );
 
