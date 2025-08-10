@@ -72,7 +72,7 @@ function ScalingView() {
               <DialogTitle />
               <DialogDescription />
             </DialogHeader>
-            <DialogContent className="max-w-full">
+            <DialogContent className="max-w-2xl">
               {step === 'config' && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
