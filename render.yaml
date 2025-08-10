@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: meteor-app
+    name: Commitment
     env: docker
     dockerfilePath: ./Dockerfile.render
     autoDeploy: true
