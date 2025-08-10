@@ -71,7 +71,7 @@ Meteor.methods({
      * Updates the lastViewed parameter of the bookmark.
      *
      * @method bookmarks.updateLastViewed
-     * @param {string} url - The URL of the bookmark to update.
+     * @param {string} url - The URL of the repository to update.
      * @returns {Promise<number>} The number of documents updated (should be 1 if successful).
      * @throws {Meteor.Error} If the URL is invalid, bookmark not found, or not authorised.
      */
@@ -83,8 +83,28 @@ Meteor.methods({
             }
     
             return RepoCollection.updateAsync(bm._id, { $set: { lastViewed: new Date() } });
-        }
-});
+        }, 
+        /**
+         * Get repository data by URL - added method by Milni in order to actually retrieve saved repo data 
+         * @method repoCollection.getRepoData
+         * @param {string} url - The URL of the repository.
+         * @returns {Promise<RepositoryData>} The repository data.
+         * @throws {Meteor.Error} If the repository data is not found or not authorised.
+         * 
+         */
+        async 'repoCollection.getData'(url: string) {
+            // this has been working correctly 
+            console.log(`Fetching repo data for URL: ${url}`);
+            const repoData = await RepoCollection.findOneAsync({ url });
+            if (!repoData) {
+                // the error is thrown here - Milni 
+                throw new Meteor.Error('not-found', 'Repo data not found');
+            }
+            // works correctly here 
+            console.log("Fetched repo data:", repoData);
+            return repoData.data;  // return only the RepositoryData 
+        },
+    });
 
 const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> => {
     // cache the data into the database TODO
@@ -101,6 +121,7 @@ const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<
 
   // if data not found, reject promise 
   if (!await isInDatabase(url)) {
+    console.log(`No data found in database for URL: ${url}`);
     const s = 'Could not find data in the database';
     notifier.next(s);
     return Promise.reject(s);
@@ -115,6 +136,7 @@ export const getRepoData = async (url: string, notifier: Subject<string>): Promi
     tryFromDatabase(url, notifier)
     .catch(async (e) => {
         const data = await fetchDataFrom(url, notifier);
+        console.log("Fetched data from external source:", data);
         await cacheIntoDatabase(url, data);
         return data;
     });

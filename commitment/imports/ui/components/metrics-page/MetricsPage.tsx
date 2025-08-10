@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import { format, subDays, addDays, isValid } from "date-fns";
+import React, { useState, useMemo, useEffect } from "react";
+import { format, subDays, addDays, isValid, set } from "date-fns";
 import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
@@ -15,6 +15,8 @@ import { topContributors } from "../../lib/utils";
 import GraphCard from "./GraphCard";
 import { useLocation } from "react-router-dom";
 import { getRepoData, getCommitsMap, getContributors } from "/imports/ui/components/utils/metric_functions";
+import { RepositoryData } from "/server/commitment_api/types";
+import { Subject } from "rxjs";
 
 
 
@@ -183,13 +185,63 @@ const transformToPieChartData = (data: any[]) => {
 };
 
 export const MetricsPage = () => {
-  // // attempt to get the repo data from the location state
-  //   // storing the repo data by calling getRepoData in repo_cache.tsx
-  // const location = useLocation();
-  // const repoUrl = location.state?.repoUrl 
-  // const repoData = getRepoData(repoUrl)
 
-  // establishes date range defaults 
+
+  // // attempt to get the repo data from the location state
+  //   // storing the repo data by calling getRepoData in metric_functions.tsx
+  const location = useLocation();
+  const repoUrl = location.state?.repoUrl 
+  const [repoData, setRepoData]= useState<RepositoryData | null> (null) ;
+  const [loading, setLoading] = useState<boolean>(true);  // Add loading state
+  const [error, setError] = React.useState<string | null>(null);
+
+
+  useEffect(() => {
+    if (!repoUrl) {
+      setLoading(false);
+      console.log("No repo URL found");
+      return;
+    }
+    console.log("Starting getRepoData with URL:", repoUrl);
+
+    const notifier = new Subject<string>();
+    getRepoData(repoUrl, notifier).then((data) => {
+      console.log("Repo data fetched:", data);
+      setRepoData(data);
+      setLoading(false); 
+      notifier.complete(); 
+    })
+    .catch((e)=>{
+      setError(e.message);
+      setLoading(false); 
+      notifier.complete(); 
+    });
+  }, [repoUrl]);
+
+  // checking if repo data is still loading
+  if (loading) {
+    return <div>Loading repo data...</div>;
+  }
+  // checking if error has occurred
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  // checking if the repo data exists 
+  if (!repoData) {
+    return <div>No repo data available</div>;
+  }
+
+
+
+
+
+
+
+
+
+
+  // establishes date range defaults
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
@@ -239,7 +291,7 @@ export const MetricsPage = () => {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
-              <ContributorDropDownMenu contributors={dummyContributors} />
+              <ContributorDropDownMenu contributors={getContributors(repoData)} />
             </div>
           </div>
 
