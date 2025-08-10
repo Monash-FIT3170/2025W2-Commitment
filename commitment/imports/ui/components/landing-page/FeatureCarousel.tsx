@@ -20,14 +20,14 @@ export const FeatureCard = ({
   return (
     <div
       className={`flex flex-col justify-between 
-        border-2 border-git-card-primary bg-white rounded-xl p-5 text-center 
+        border-2 border-git-card-primary bg-card text-card-foreground rounded-xl p-5 text-center 
         w-full h-full 
         max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl
         transition-all duration-300 ease-in-out
         ${className}`}
     >
       <div>
-        <h2 className="text-lg sm:text-xl lg:text-2xl font-mono font-semibold text-black mb-4">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-mono font-semibold git-card-text-secondary mb-4">
           {title}
         </h2>
         <img
@@ -36,9 +36,7 @@ export const FeatureCard = ({
           className="object-cover rounded-md mb-4 scale-75 sm:scale-90 lg:scale-100 mx-auto"
         />
       </div>
-      <p className="text-gray-600 text-sm sm:text-base font-mono">
-        {description}
-      </p>
+      <p className="text-sm sm:text-base font-mono">{description}</p>
     </div>
   );
 };
@@ -175,4 +173,3 @@ export function FeatureCarousel() {
     </div>
   );
 }
-

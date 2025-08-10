@@ -32,7 +32,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
 
   return (
     <div
-      className={`z-50 flex items-center justify-between py-2 border-b bg-white  
+      className={`z-50 flex items-center justify-between py-2 border-b git-bg-bottom
         ${
           isLandingPage
             ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32"
@@ -44,7 +44,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
         <NavigationMenuList className="flex space-x-4">
           <a className="flex items-center space-x-3">
             <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-            <span className="text-xl text-gray-900"></span>
+            <span className="text-xl"></span>
           </a>
 
           {isLandingPage ? (
