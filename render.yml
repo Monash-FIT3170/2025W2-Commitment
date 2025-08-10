@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: meteor-app
+    env: docker
+    dockerfilePath: ./Dockerfile.render
+    autoDeploy: true
+    plan: starter
+    envVars:
+      - key: MONGO_URL
+        sync: false
+      - key: ROOT_URL
+        value: https://commitment.onrender.com
+      - key: NODE_ENV
+        value: production
+      - key: METEOR_SETTINGS
+        sync: false
