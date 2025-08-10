@@ -1,16 +1,18 @@
+# Exported from Render on 2025-08-10T23:55:53Z
 services:
-  - type: web
-    name: Commitment
-    env: docker
-    dockerfilePath: ./Dockerfile.render
-    autoDeploy: true
-    plan: free
-    envVars:
-      - key: MONGO_URL
-        sync: false
-      - key: ROOT_URL
-        value: https://commitment.onrender.com
-      - key: NODE_ENV
-        value: production
-      - key: METEOR_SETTINGS
-        sync: false
+- type: web
+  name: Commitment
+  runtime: docker
+  repo: https://github.com/Monash-FIT3170/2025W2-Commitment
+  branch: ci/deploy
+  plan: free
+  envVars:
+  - key: METEOR_SETTINGS
+    sync: false
+  - key: MONGO_URL
+    sync: false
+  region: oregon
+  dockerContext: .
+  dockerfilePath: ./Dockerfile.render
+  autoDeployTrigger: commit
+version: "1"
