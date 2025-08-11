@@ -32,7 +32,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
 
   return (
     <div
-      className={`z-50 flex items-center justify-between py-2 border-b git-bg-bottom
+      className={`z-50 flex items-center justify-between py-2 border-b bg-git-bg-bottom
         ${
           isLandingPage
             ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32"
