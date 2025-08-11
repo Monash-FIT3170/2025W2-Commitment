@@ -7,6 +7,8 @@ import '../imports/api/methods';
 import '../imports/api/bookmark_methods';
 import '../imports/api/repo_methods';
 
+import '../server/fetch_repo'
+
  
 Meteor.startup(async () => {
   const userCount = await Meteor.users.find().countAsync();
