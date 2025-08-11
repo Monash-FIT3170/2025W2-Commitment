@@ -116,7 +116,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
         {!isLoggedIn && (
           <>
             <a href="/login" className={navigationMenuTriggerStyle()}>
-              Login
+              Log in
             </a>
             <SignUpButton />
           </>
