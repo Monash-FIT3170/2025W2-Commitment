@@ -20,7 +20,7 @@ export const FeatureCard = ({
   return (
     <div
       className={`flex flex-col justify-between 
-        border-2 border-git-card-primary bg-card text-card-foreground rounded-xl p-5 text-center 
+        border-2 border-git-card-primary bg-git-bg-elevated text-card-foreground rounded-xl p-5 text-center 
         w-full h-full 
         max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl
         transition-all duration-300 ease-in-out

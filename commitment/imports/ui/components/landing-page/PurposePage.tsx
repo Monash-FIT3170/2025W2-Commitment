@@ -32,15 +32,15 @@ const Header = () => {
 const CircleNumber = () => {
   return (
     <div className="flex flex-row pt-7 pb-3 items-center gap-2 justify-center">
-      <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="font-mono w-12 h-12 bg-git-bg-tertiary rounded-full flex justify-center items-center text-center p-5 text-xl">
         1
       </div>
       <Separator decorative className="bg-black" />
-      <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="font-mono w-12 h-12 bg-git-bg-tertiary rounded-full flex justify-center items-center text-center p-5 text-xl">
         2
       </div>
       <Separator decorative className="bg-black" />
-      <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="font-mono w-12 h-12 bg-git-bg-tertiary rounded-full flex justify-center items-center text-center p-5 text-xl">
         3
       </div>
     </div>
@@ -49,7 +49,7 @@ const CircleNumber = () => {
 
 const PurposeCard = () => {
   return (
-    <Card className="max-w-4xl shadow-md pt-2">
+    <Card className="max-w-4xl shadow-md pt-2 bg-git-bg-elevated">
       <CardContent className="grid grid-row-2 gap-4 text-center pt-4">
         <div className="grid grid-cols-3 gap-4 items-center justify-items-center">
           <img src="/github_logo.svg" alt="Github Logo" className="max-h-32" />
