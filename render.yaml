@@ -1,10 +1,9 @@
-# Exported from Render on 2025-08-10T23:55:53Z
 services:
 - type: web
   name: Commitment
   runtime: docker
   repo: https://github.com/Monash-FIT3170/2025W2-Commitment
-  branch: ci/deploy
+  branch: main
   plan: free
   envVars:
   - key: METEOR_SETTINGS
