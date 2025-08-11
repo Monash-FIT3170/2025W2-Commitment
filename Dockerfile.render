@@ -1,5 +1,5 @@
 # Stage 1: Build the Meteor app using official Meteor image
-FROM meteor/meteor:3.2 AS builder
+FROM meteor/node AS builder
 
 # Set working directory inside container
 WORKDIR /app
