@@ -29,12 +29,21 @@ export const fetchRepo = (url: string, subject: Subject<string>) => {
     })
 }
 
-export const repoInDatabase = async (url: string) => {
-    return new Promise<boolean>((resolve, reject) => {
+export const repoInDatabase = async (url: string) => 
+    new Promise<boolean>((resolve, reject) => {
         Meteor.call('repoInDatabase', url, (err: Error, result: boolean) => {
             if (err) reject(err)    
             resolve(result)
         });
     })
-}
+
+
+export const getMetric = async <T>(url: string, f: string) => 
+    new Promise<T>((resolve, reject) => {
+        Meteor.call('getMetricFromRepo', url, f, (err: Error, result: T) => {
+            if (err) reject(err)    
+            resolve(result)
+        });
+    })
+
 
