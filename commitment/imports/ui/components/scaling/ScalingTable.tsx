@@ -39,41 +39,49 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
   });
 
   return (
-    <div className="overflow-hidden rounded-md border">
+    <div className="overflow-hidden rounded-md  bg-git-bg-elevated">
       <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
+       <TableHeader>
+        {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-
-                  {header.isPlaceholder
+            {headerGroup.headers.map((header) => (
+                <TableHead key={header.id} className="font-bold">
+                {header.isPlaceholder
                     ? null
                     : flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
-              ))}
+            ))}
             </TableRow>
-          ))}
+        ))}
         </TableHeader>
+
         <TableBody>
           {table.getRowModel().rows.map((row) => (
             <React.Fragment key={row.id}>
-                <TableRow
-                onClick={() => row.toggleExpanded()}
-                className="bg-git-int-primary hover:bg-git-int-primary text-white"
-                >
+                <TableRow onClick={() => row.toggleExpanded()} className="cursor-pointer">
+                {row.getVisibleCells().map((cell, idx) => (
+                    <TableCell
+                    key={cell.id}
+                    className={
+                        (idx === 0
+                        ? "rounded-l-md bg-git-int-primary hover:bg-git-int-primary text-white text-1xl"
+                        : idx === row.getVisibleCells().length - 1
+                        ? "rounded-r-md bg-git-int-primary hover:bg-git-int-primary text-white"
+                        : "bg-git-int-primary hover:bg-git-int-primary text-white text-2xl font-bold") +
+                        " py-0"
+                    }
+                    >
 
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+                    {idx === row.getVisibleCells().length - 2 && "%"}
+                    </TableCell>
                 ))}
-              </TableRow>
+                </TableRow>
 
               {row.getIsExpanded() && row.original.aliases?.length > 0 && (
                 <>
                   
-                  <TableRow className="bg-gray-50 border-b-2 border-black">
+                  <TableRow className="bg-git-bg-elevated hover:bg-git-bg-elevated text-white border-black">
                     <TableCell colSpan={columns.length}>
                       <span className="ml-4 font-medium text-gray-800">
                         Associated Accounts
@@ -85,10 +93,10 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                   {row.original.aliases.map((alias, idx) => (
                     <TableRow
                     key={`${row.id}-alias-${idx}`}
-                    className="bg-gray-50 border-style: dashed">
+                    className="bg-git-bg-elevated hover:bg-git-bg-elevated border-style: dashed">
                     <TableCell colSpan={columns.length}>
                         <div className="ml-8 text-sm text-gray-700">
-                            <strong>{alias.username}</strong> ({alias.email})
+                        <strong>{alias.username}</strong> ({alias.email})
                         </div>
                     </TableCell>
                     </TableRow>

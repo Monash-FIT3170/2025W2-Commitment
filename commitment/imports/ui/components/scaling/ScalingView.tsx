@@ -49,7 +49,7 @@ function ScalingView() {
     setStep('sheet');
   };
 
-  const handleSheetSubmit = (sheetFile: File) => {
+  const handleSheetSubmit = (sheetFile: File | null) => {
     setGradingSheet(sheetFile);
     setCompleted(true);
     setShowDialog(false);
@@ -61,31 +61,53 @@ function ScalingView() {
       <div className="flex flex-col gap-32">
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
           
-        {hasLoaded && !completed && !showDialog && (
-        <Button
-            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-            onClick={() => {
-            setStep('config');
-            setShowDialog(true);
-            }}
-        >
-            Create New Scaling
-        </Button>
-        )}
+        {/* {hasLoaded && !completed && !showDialog && (
+       
+        )} */}
+        {!(completed && config && gradingSheet) && (
+  <Button
+    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary -hover"
+    onClick={() => {
+      setStep('config');
+      setShowDialog(true);
+    }}
+  >
+    Create New Scaling
+  </Button>
+)}
+
 
           {/* Show summary if completed */}
           {completed && config && gradingSheet && (
-           <ScalingSummary 
-                method={config.method} 
-                metrics={config.metrics.join(', ')} 
-                fileName={gradingSheet.name} 
-            />
-            // <div className="mt-8 p-4 border rounded-md bg-gray-50">
-            //   <h2 className="text-xl font-semibold mb-2">Scaling Summary</h2>
-            //   <p><strong>Method:</strong> {config.method}</p>
-            //   <p><strong>Metrics:</strong> {config.metrics.join(', ')}</p>
-            //   <p><strong>Grading Sheet:</strong> {gradingSheet.name}</p>
-            // </div>
+          <div>
+            <ScalingSummary 
+                    method={config.method} 
+                    metrics={config.metrics.join(', ')} 
+                    fileName={"TEST"} 
+                />
+
+            <div className="flex justify-center gap-6 p-4">
+                <Button
+                    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                    onClick={() => {
+                    setStep('sheet');
+                    setShowDialog(true);
+                    }}
+                >
+                    Upload Grading Sheet
+                </Button>
+                <Button
+                    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                    onClick={() => {
+                    setStep('config');
+                    setShowDialog(true);
+                    }}
+                >
+                    Generate New Scaling
+                </Button>
+            </div>          
+          </div>
+
           )}
 
           {/* Multi-Step Dialog */}

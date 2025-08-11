@@ -20,11 +20,47 @@ type UserScalingSummary = {
 interface ScalingSummaryProps {
   method: string;
   metrics: string;
-  fileName: string;
+  fileName: string | null;
 }
 
 const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileName }) => {
   const userScalingSummaries: UserScalingSummary[] = useMemo(() => [
+    {
+      name: "Jupyta Notebuk",
+      aliases: [
+        { username: "Bobert", email: "bobert@example.com" },
+        { username: "john", email: "john@example.com" },
+      ],
+      finalGrade: 78,
+      scale: 1,
+    },
+    {
+      name: "Poppy Willis",
+      aliases: [
+        { username: "capn america", email: "cap@example.com" },
+        { username: "iyan man", email: "iyan@example.com" },
+      ],
+      finalGrade: 42,
+      scale: 0.66,
+    },
+    {
+      name: "Jupyta Notebuk",
+      aliases: [
+        { username: "Bobert", email: "bobert@example.com" },
+        { username: "john", email: "john@example.com" },
+      ],
+      finalGrade: 78,
+      scale: 1,
+    },
+    {
+      name: "Poppy Willis",
+      aliases: [
+        { username: "capn america", email: "cap@example.com" },
+        { username: "iyan man", email: "iyan@example.com" },
+      ],
+      finalGrade: 42,
+      scale: 0.66,
+    },
     {
       name: "Jupyta Notebuk",
       aliases: [
@@ -48,7 +84,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
   const columns: ColumnDef<UserScalingSummary>[] = useMemo(() => [
     {
       accessorKey: "name",
-      header: "Name",
+      header: "Contributor Name",
       cell: ({ row }) => row.getValue("name"),
     },
     {
@@ -67,13 +103,13 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({ method, metrics, fileNa
   ], []);
 
   return (
-    <div className="-mt-4 p-4 border rounded-md bg-gray-50">
+    <div className="-mt-4 p-4 rounded-md bg-git-bg-elevated">
       {/* <h2 className="text-xl font-semibold mb-2">Scaling Summary</h2>
       <p><strong>Method:</strong> {method}</p>
       <p><strong>Metrics:</strong> {metrics}</p>
       <p><strong>Grading Sheet:</strong> {fileName}</p> */}
 
-      <div className="container py-10 -mt-8 -mb-8">
+      <div className="max-h-[600px]  rounded-md bg-git-bg-elevated">
         <DataTable columns={columns} data={userScalingSummaries} />
       </div>
 
