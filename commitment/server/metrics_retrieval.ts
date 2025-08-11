@@ -9,7 +9,7 @@ import { getRepoData } from "./caching";
 Meteor.methods({
   /**
    * Get a single metric by name
-   * EXAMPLE: Meteor.call("metrics.getMetricFromRepo", repoUrl, "locLineData", cb)
+   * EXAMPLE: Meteor.call("metrics.getMetricFromRepo", repoUrl, "getBranchNames", cb)
    */
   async "metrics.getMetricFromRepo"(repoUrl: string, metricName: string) {
     return processMetrics(repoUrl, [metricName]).then(r => r[0]) 
