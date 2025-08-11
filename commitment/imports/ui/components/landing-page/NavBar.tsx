@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -10,14 +10,16 @@ import SignUpButton from "./signUpButton";
 import ProfileMenu from "@ui/components/ui/profile-menu";
 import { Moon, Sun } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
+import { useTheme } from "@ui/hooks/useTheme";
 interface NavBarProps {
   isLoggedIn: boolean;
 }
 
 export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDark, toggle } = useTheme();
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
+  
 
   const handleSignOut = () => {
     // note to self: implement signing out logic here later
@@ -25,9 +27,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
   };
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    // note to self: implement dark mode logic here later
-    console.log("Dark mode toggled:", !isDarkMode);
+     toggle();
   };
 
   return (
@@ -91,11 +91,9 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
         <button
           onClick={handleToggleDarkMode}
           className="p-2 rounded-full hover:bg-gray-200 transition-colors"
-          aria-label={
-            isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-          }
+          aria-label={ isDark ? "Switch to light mode" : "Switch to dark mode" }
         >
-          {isDarkMode ? (
+          {isDark ? (
             <Sun className="h-6 w-6 text-yellow-400" />
           ) : (
             <Moon className="h-6 w-6 text-gray-600" />
