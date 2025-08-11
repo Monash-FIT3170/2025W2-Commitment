@@ -18,9 +18,9 @@ WORKDIR /app/commitment
 # Copy only the commitment folder content (your Meteor app)
 COPY ./commitment ./ 
 
-RUN meteor --version
+RUN npm install -g npm@11.5.2
 
-RUN npm install
+RUN meteor npm install
 
 RUN meteor build --directory /build --architecture os.linux.x86_64
 
