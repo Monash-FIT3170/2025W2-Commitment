@@ -1,5 +1,12 @@
 // // server/metrics.ts
 
+/*
+USE THE CONTENTS OF THIS FILE FOR IDEAS ONLY.
+DISREGARD CODE ITSELF */
+
+
+
+
 // // Importing required types to enforce structure of input data
 // import { RepositoryData, CommitData } from "./commitment_api/types";
 
