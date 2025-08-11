@@ -1,18 +1,30 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import ScalingConfigForm from './ScalingConfigForm';
+import React, { useState, useEffect } from "react";
+import ScalingConfigForm from "./ScalingConfigForm";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
+} from "../ui/dialog";
 
-import { Button } from '../ui/button';
-import { GradingSheetForm } from './GradingSheetForm';
-import ScalingSummary from './ScalingSummary';
+import { Button } from "../ui/button";
+import { GradingSheetForm } from "./GradingSheetForm";
+import ScalingSummary from "./ScalingSummary";
+
+export type AliasEmail = {
+  username: string;
+  email: string;
+};
+
+export type UserScalingSummary = {
+  name: string;
+  aliases: AliasEmail[];
+  finalGrade: number;
+  scale: number;
+};
 
 interface ScalingConfig {
   metrics: string[];
@@ -20,10 +32,31 @@ interface ScalingConfig {
   customScript?: File[];
 }
 
+const userScalingSummaries: UserScalingSummary[] = [
+  {
+    name: "Jupyta Notebuk",
+    aliases: [
+      { username: "Bobert", email: "bobert@example.com" },
+      { username: "john", email: "john@example.com" },
+    ],
+    finalGrade: 78,
+    scale: 1,
+  },
+  {
+    name: "Poppy Willis",
+    aliases: [
+      { username: "capn america", email: "cap@example.com" },
+      { username: "iyan man", email: "iyan@example.com" },
+    ],
+    finalGrade: 42,
+    scale: 0.66,
+  },
+];
+
 function ScalingView() {
   const [completed, setCompleted] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const [step, setStep] = useState<'config' | 'sheet' | 'done'>('config');
+  const [step, setStep] = useState<"config" | "sheet" | "done">("config");
   const [showDialog, setShowDialog] = useState(false);
   const [dialogClosedManually, setDialogClosedManually] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
@@ -31,7 +64,7 @@ function ScalingView() {
 
   // Load from localStorage on first mount
   useEffect(() => {
-    const lsCompleted = localStorage.getItem('hasVisitedScaling') === 'true';
+    const lsCompleted = localStorage.getItem("hasVisitedScaling") === "true";
     setCompleted(lsCompleted);
     if (!lsCompleted) setShowDialog(true);
     setHasLoaded(true);
@@ -40,74 +73,67 @@ function ScalingView() {
   // Persist to localStorage
   useEffect(() => {
     if (hasLoaded) {
-      localStorage.setItem('hasVisitedScaling', completed ? 'true' : 'false');
+      localStorage.setItem("hasVisitedScaling", completed ? "true" : "false");
     }
   }, [completed, hasLoaded]);
 
   const handleConfigSubmit = (configData: ScalingConfig) => {
     setConfig(configData);
-    setStep('sheet');
+    setStep("sheet");
   };
 
   const handleSheetSubmit = (sheetFile: File | null) => {
     setGradingSheet(sheetFile);
     setCompleted(true);
     setShowDialog(false);
-    setStep('done');
+    setStep("done");
   };
 
   return (
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-          
-        {/* {hasLoaded && !completed && !showDialog && (
+          {/* {hasLoaded && !completed && !showDialog && (
        
         )} */}
-        {!(completed && config && gradingSheet) && (
-  <Button
-    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary -hover"
-    onClick={() => {
-      setStep('config');
-      setShowDialog(true);
-    }}
-  >
-    Create New Scaling
-  </Button>
-)}
-
+          {!(completed && config && gradingSheet) && (
+            <Button
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary -hover"
+              onClick={() => {
+                setStep("config");
+                setShowDialog(true);
+              }}
+            >
+              Create New Scaling
+            </Button>
+          )}
 
           {/* Show summary if completed */}
           {completed && config && gradingSheet && (
-          <div>
-            <ScalingSummary 
-                    method={config.method} 
-                    metrics={config.metrics.join(', ')} 
-                    fileName={"TEST"} 
-                />
+            <div>
+              <ScalingSummary userScalingSummaries={userScalingSummaries} />
 
-            <div className="flex justify-center gap-6 p-4">
+              <div className="flex justify-center gap-6 p-4">
                 <Button
-                    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                    onClick={() => {
-                    setStep('sheet');
+                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                  onClick={() => {
+                    setStep("sheet");
                     setShowDialog(true);
-                    }}
+                  }}
                 >
-                    Upload Grading Sheet
+                  Upload Grading Sheet
                 </Button>
                 <Button
-                    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                    onClick={() => {
-                    setStep('config');
+                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                  onClick={() => {
+                    setStep("config");
                     setShowDialog(true);
-                    }}
+                  }}
                 >
-                    Generate New Scaling
+                  Generate New Scaling
                 </Button>
-            </div>          
-          </div>
-
+              </div>
+            </div>
           )}
 
           {/* Multi-Step Dialog */}
@@ -125,10 +151,10 @@ function ScalingView() {
               <DialogDescription />
             </DialogHeader>
             <DialogContent className="max-w-full">
-              {step === 'config' && (
+              {step === "config" && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
-              {step === 'sheet' && (
+              {step === "sheet" && (
                 <GradingSheetForm onSubmit={handleSheetSubmit} />
               )}
             </DialogContent>

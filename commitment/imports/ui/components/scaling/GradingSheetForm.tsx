@@ -1,11 +1,13 @@
-import React, { useState, ChangeEvent } from 'react';
-import { Button } from '../ui/button';
+import React, { useState, ChangeEvent } from "react";
+import { Button } from "../ui/button";
 
 interface GradingSheetFormProps {
   onSubmit: (file: File) => void;
 }
 
-export const GradingSheetForm: React.FC<GradingSheetFormProps> = ({ onSubmit }) => {
+export const GradingSheetForm: React.FC<GradingSheetFormProps> = ({
+  onSubmit,
+}) => {
   const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -18,7 +20,7 @@ export const GradingSheetForm: React.FC<GradingSheetFormProps> = ({ onSubmit }) 
     if (file) {
       onSubmit(file);
     } else {
-      alert('Please upload a file before submitting.');
+      alert("Please upload a file before submitting.");
     }
   };
 

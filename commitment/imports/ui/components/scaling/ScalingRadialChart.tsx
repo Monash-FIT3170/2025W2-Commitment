@@ -1,16 +1,17 @@
 "use client";
 
 import React from "react";
-import {
-  RadialBarChart,
-  RadialBar,
-  PolarAngleAxis,
-} from "recharts";
+import { RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
 
 interface ScalingRadialChartProps {
   value: number; // 0 to 1
 }
 
+/**
+ * 
+ * @param value 
+ * @returns Radial Chart Component
+ */
 export function ScalingRadialChart({ value }: ScalingRadialChartProps) {
   const percentage = Math.max(0, Math.min(1, value)); // clamp to [0, 1]
   const chartData = [
@@ -22,7 +23,9 @@ export function ScalingRadialChart({ value }: ScalingRadialChartProps) {
   ];
 
   return (
-    <div className="w-16 h-16"> {/* 64px container */}
+    <div className="w-16 h-16">
+      {" "}
+      {/* 64px container */}
       <RadialBarChart
         width={64}
         height={64}
@@ -58,7 +61,6 @@ export function ScalingRadialChart({ value }: ScalingRadialChartProps) {
             fill: "#ffffff",
             fontSize: "0.7rem",
             fontWeight: "bold",
-            
           }}
         >
           {value}
@@ -67,5 +69,3 @@ export function ScalingRadialChart({ value }: ScalingRadialChartProps) {
     </div>
   );
 }
-
-
