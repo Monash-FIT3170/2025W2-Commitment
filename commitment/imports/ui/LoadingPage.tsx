@@ -11,7 +11,6 @@ import { fetchRepo } from "../api/call_repo";
 interface LocationState {
   repoUrl?: string;
 }
-
 const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => {
   const navigate = useNavigate();
   const { state } = useLocation();

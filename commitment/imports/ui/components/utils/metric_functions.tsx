@@ -13,7 +13,7 @@ export const getRepoData = async (url: string, notifier: Subject<string>): Promi
         notifier.next('Fetching repo data...');
         // this is the NEW ERROR FOR NOW because i couldn't figure out how to transition to the metricspage correctly 
         // Meteor.call(repoCollection.getData) is what should be called. 
-        Meteor.call('getData', url, (err: Error, result: RepositoryData) => {
+        Meteor.call('repoCollection.getData', url, (err: Error, result: RepositoryData) => {
             console.log("in getrepodata")
             if (err) {
                 console.log(`Error fetching repo data for URL ${url}:`, err);
@@ -53,6 +53,5 @@ export const getContributorsMap = (repo: RepositoryData): Map<string, Contributo
  * Return a list of all contributors
  */
 export const getContributors = (repo: RepositoryData): string[] => {
-    return Array.from(getContributorsMap(repo).values())
-        .map(contributor => contributor.name);
-};
+  const contributorsMap = getContributorsMap(repo);
+  return Array.from(contributorsMap.values()).map(contributor => contributor.name);};

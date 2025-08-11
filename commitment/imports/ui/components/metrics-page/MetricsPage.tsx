@@ -14,9 +14,10 @@ import { ContributionPieChart } from "./PieChartGraph";
 import { topContributors } from "../../lib/utils";
 import GraphCard from "./GraphCard";
 import { useLocation } from "react-router-dom";
-import { getRepoData, getCommitsMap, getContributors } from "/imports/ui/components/utils/metric_functions";
+import { getRepoData, getCommitsMap, getContributors, getBranches} from "/imports/ui/components/utils/metric_functions";
 import { RepositoryData } from "/server/commitment_api/types";
 import { Subject } from "rxjs";
+import { get } from "http";
 
 
 
@@ -197,6 +198,8 @@ export const MetricsPage = () => {
 
 
   useEffect(() => {
+    // check if entering this useEffect
+    console.log("Entering useEffect with repoUrl:", repoUrl);
     if (!repoUrl) {
       setLoading(false);
       console.log("No repo URL found");
@@ -217,31 +220,7 @@ export const MetricsPage = () => {
       notifier.complete(); 
     });
   }, [repoUrl]);
-
-  // checking if repo data is still loading
-  if (loading) {
-    return <div>Loading repo data...</div>;
-  }
-  // checking if error has occurred
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  // checking if the repo data exists 
-  if (!repoData) {
-    return <div>No repo data available</div>;
-  }
-
-
-
-
-
-
-
-
-
-
-  // establishes date range defaults
+    // establishes date range defaults
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
@@ -258,6 +237,30 @@ export const MetricsPage = () => {
 
 
   const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
+
+  // checking if repo data is still loading
+  if (loading) {
+    return <div>Loading repo data...</div>;
+  }
+  // checking if error has occurred
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  // checking if the repo data exists 
+  if (!repoData) {
+    return <div>No repo data available</div>;
+  }
+
+  // extracting information from metric functions 
+  const contributorData = getContributors(repoData);
+  const numContributors = contributorData.length;
+  const branchData = getBranches(repoData);
+  const numBranches = branchData.length;
+
+
+
+
 
   return (
     <div className="m-0 scroll-smooth">
@@ -291,7 +294,7 @@ export const MetricsPage = () => {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
-              <ContributorDropDownMenu contributors={getContributors(repoData)} />
+              <ContributorDropDownMenu contributors={contributorData} />
             </div>
           </div>
 
@@ -351,8 +354,8 @@ export const MetricsPage = () => {
                 isPositive={false}
                 data={mockTotalLocData}
               />
-              <HighlightCardWithGraph title="No. of Contributors" value={5} />
-              <HighlightCardWithGraph title="Number of branches" value={5} />
+              <HighlightCardWithGraph title="No. of Contributors" value={numContributors} />
+              <HighlightCardWithGraph title="Number of branches" value={numBranches} />
             </div>
           </div>
 

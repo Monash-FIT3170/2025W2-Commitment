@@ -1,14 +1,25 @@
 import { Subject } from 'rxjs';
 import { error } from 'console';
-import { CommitData, RepositoryData } from './commitment_api/types';
+import { CommitData, ContributorData, RepositoryData, BranchData } from './commitment_api/types';
 import { Mongo } from 'meteor/mongo'
 import { fetchDataFrom } from './commitment_api/commitment';
 
+
+
+// created to store repository data on the serverwith plain objects
+export interface ServerRepositoryData {
+    name: string; 
+    branches: BranchData[]; 
+    allCommits: {[key: string]: CommitData}; 
+    contributors: {[key: string]: ContributorData}; 
+}
+
+// uses plain objects
 export interface ServerRepoData {
   _id?: string
   url: string
   createdAt: Date
-  data: RepositoryData
+  data: ServerRepositoryData
 }
 
 const RepoCollection = new Mongo.Collection<ServerRepoData>('repoCollection');
@@ -24,10 +35,17 @@ Meteor.methods({
      * @throws {Meteor.Error} If the URL is invalid or does not start with 'http', not in db or not authorised.
      */
     async 'repoCollection.insertRepoData'(url: string, data: RepositoryData) {
+        // takes the maps and converts to objects 
+        const serializableRepoData: ServerRepositoryData = {
+            ...data,
+            allCommits: Object.fromEntries(data.allCommits),
+            contributors: Object.fromEntries(data.contributors),
+        }
+
         const s: ServerRepoData = {
             url,
             createdAt: new Date(),
-            data: data,
+            data: serializableRepoData,
         }
         return await RepoCollection.insertAsync(s);
     },
@@ -101,13 +119,26 @@ Meteor.methods({
                 throw new Meteor.Error('not-found', 'Repo data not found');
             }
             // works correctly here 
-            console.log("Fetched repo data:", repoData);
-            return repoData.data;  // return only the RepositoryData 
+            const serverData = repoData.data; 
+
+            //convert plain objects back to Maps: 
+            const repositoryData : RepositoryData = {
+                ...serverData, 
+                allCommits: new Map(Object.entries(serverData.allCommits)),
+                contributors: new Map(Object.entries(serverData.contributors)),
+            }
+            console.log("Fetched repo data:", repositoryData);
+
+             // return only the RepositoryData
+             return repositoryData;
+
         },
     });
 
 const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> => {
     // cache the data into the database TODO
+    console.log("Caching data, allCommits size:", data.allCommits.size);
+    console.log("Caching data, contributors size:", data.contributors.size);
     return Meteor.call("repoCollection.insertRepoData", url, data)
 };
 
