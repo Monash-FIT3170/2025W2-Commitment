@@ -1,43 +1,44 @@
-# Stage 1: Build the Meteor app
-FROM node:23-slim AS builder
+# Stage 1: Build the Meteor app using official Meteor image
+FROM meteor/meteor:3.2 AS builder
 
-RUN apt-get update && apt-get install -y curl python3 make g++ git \
-    && ln -sf python3 /usr/bin/python \
-    && rm -rf /var/lib/apt/lists/*
+# Set working directory inside container
+WORKDIR /app
 
-RUN METEOR_ALLOW_SUPERUSER=true curl https://install.meteor.com/ | sh
+# Copy your Meteor app source code (adjust path if your app is in ./commitment)
+COPY ./commitment/ ./
 
-# Create a non-root user
-RUN useradd -ms /bin/bash devuser
-# Fix permissions so devuser can write to these files
-USER root
-RUN chown -R devuser:devuser /app/commitment
-USER devuser
-
-WORKDIR /app/commitment
-
-# Copy only the commitment folder content (your Meteor app)
-COPY ./commitment ./ 
-
-RUN npm install -g npm@11.5.2
-
+# Install npm dependencies (Meteor wraps npm)
 RUN meteor npm install
 
+# Build Meteor bundle for Linux x86_64
 RUN meteor build --directory /build --architecture os.linux.x86_64
 
-# Stage 2: Minimal runtime
+# Fix permissions so non-root user can access build output
+RUN chown -R 1000:1000 /build
+
+# Stage 2: Minimal Node runtime for running the built app
 FROM node:20-slim
 
 WORKDIR /app
 
+# Copy built Meteor bundle from builder stage
 COPY --from=builder /build/bundle /app/bundle
 
+# Install production dependencies for the server
 WORKDIR /app/bundle/programs/server
 RUN npm install --production
 
+# Switch to a non-root user to run the app (optional but recommended)
+RUN useradd -m appuser
+USER appuser
+
 WORKDIR /app/bundle
+
+# Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
+
 EXPOSE 3000
 
+# Run the Meteor app using Node
 CMD ["node", "main.js"]
