@@ -1,12 +1,12 @@
 // server/repo_metrics.ts
 
-// Latest version of metric retrieval implementation
-// Combined functionality of metrics.ts and metrics_transformer.ts to make it mroe compact 
-// and convenient for front end calling
-
 import { RepositoryData, CommitData } from "./commitment_api/types";
 
-// utility that calculates LOC per commit
+/**
+ * Count “LOC changed” for a commit.
+ * NOTE: This shouldn't be final implementation of this method.
+ * If we later store git diffs, we need to replace this.
+ */
 function getLOCFromCommit(commit: CommitData): number {
   if (!commit.fileData) return 0;
   return commit.fileData.reduce((acc, fileChange) => {
@@ -15,78 +15,115 @@ function getLOCFromCommit(commit: CommitData): number {
   }, 0);
 }
 
-// get branch names
+/** Branch names */
 export function getBranches(data: RepositoryData): string[] {
-  return data.branches.map(branch => branch.branchName);
+  return data.branches.map(b => b.branchName);
 }
 
-// get contributors (from contributors map)
+/** Contributors (from RepositoryData.contributors map) */
 export function getContributors(data: RepositoryData): string[] {
-  return Array.from(data.contributors.values()).map(contributor => contributor.name);
+  return Array.from(data.contributors.values()).map(c => c.name);
 }
 
-// get users (from commits)
+/** Users who actually committed (derived from commits’ contributorName field) */
 export function getUsers(data: RepositoryData): string[] {
-  const userSet = new Set<string>();
-  data.allCommits.forEach(commit => userSet.add(commit.contributorName));
-  return Array.from(userSet);
+  const set = new Set<string>();
+  data.allCommits.forEach(c => set.add(c.contributorName));
+  return Array.from(set);
 }
 
-// 4️⃣ get LOC line data (Lines of codes changed over time)
+/**
+ * LOC line dataset (graph-ready)
+ * {
+ *   title: "Lines of Codes Changed Over Time",
+ *   data: [
+ *     { date: "YYYY-MM-DD", Alice: 120, Bob: 90, ... },
+ *     ...
+ *   ]
+ * }
+ */
 export function getLocLineData(data: RepositoryData): {
   title: string;
   data: { [key: string]: number | string }[];
 } {
-  const dateMap = new Map<string, { [user: string]: number }>();
+  // date -> { userName -> totalLocOnThatDate }
+  const byDate = new Map<string, Record<string, number>>();
 
   data.allCommits.forEach(commit => {
     const user = commit.contributorName;
     const loc = getLOCFromCommit(commit);
-    const dateStr = commit.timestamp.toISOString().split("T")[0];
+    const date = commit.timestamp.toISOString().split("T")[0];
 
-    if (!dateMap.has(dateStr)) dateMap.set(dateStr, {});
-    dateMap.get(dateStr)![user] = (dateMap.get(dateStr)![user] || 0) + loc;
+    if (!byDate.has(date)) byDate.set(date, {});
+    const bucket = byDate.get(date)!;
+    bucket[user] = (bucket[user] ?? 0) + loc;
   });
 
-  const sorted = Array.from(dateMap.entries())
+  const dataArray = Array.from(byDate.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, userData]) => ({ date, ...userData }));
+    .map(([date, userLocs]) => ({ date, ...userLocs }));
 
   return {
     title: "Lines of Codes Changed Over Time",
-    data: sorted
+    data: dataArray
   };
 }
 
-// 5️⃣ get total commits per contributor
+/**
+ * Total commits by contributor (graph-ready)
+ * {
+ *   title: "All Contributor Commits",
+ *   data: [{ name: "Alice", commits: 100 }, ...]
+ * }
+ */
 export function getAllContributorsCommits(data: RepositoryData): {
   title: string;
   data: { name: string; commits: number }[];
 } {
-  const commitMap = new Map<string, number>();
+  const counts = new Map<string, number>();
 
   data.allCommits.forEach(commit => {
     const user = commit.contributorName;
-    commitMap.set(user, (commitMap.get(user) || 0) + 1);
+    counts.set(user, (counts.get(user) ?? 0) + 1);
   });
 
-  const result = Array.from(commitMap.entries()).map(([name, commits]) => ({ name, commits }));
-
-  return {
-    title: "All Contributor Commits",
-    data: result
-  };
+  const list = Array.from(counts.entries()).map(([name, commits]) => ({ name, commits }));
+  return { title: "All Contributor Commits", data: list };
 }
 
-// get total LOC per user
+/** Total LOC by contributor (graph-ready list): [{ name, value }] */
 export function getTotalLocData(data: RepositoryData): { name: string; value: number }[] {
-  const locMap = new Map<string, number>();
+  const locs = new Map<string, number>();
 
   data.allCommits.forEach(commit => {
     const user = commit.contributorName;
     const loc = getLOCFromCommit(commit);
-    locMap.set(user, (locMap.get(user) || 0) + loc);
+    locs.set(user, (locs.get(user) ?? 0) + loc);
   });
 
-  return Array.from(locMap.entries()).map(([name, value]) => ({ name, value }));
+  return Array.from(locs.entries()).map(([name, value]) => ({ name, value }));
+}
+
+/** Type and registry for metric-lookup by name */
+export type MetricFn = (data: RepositoryData) => any;
+
+export const metricsFunctions = new Map<string, MetricFn>([
+  ["branches",               getBranches],
+  ["contributors",           getContributors],
+  ["users",                  getUsers],
+  ["locLineData",            getLocLineData],
+  ["allContributorCommits",  getAllContributorsCommits],
+  ["totalLocData",           getTotalLocData],
+]);
+
+/** Convenience bundle (optional) */
+export function getAllMetricsBundle(data: RepositoryData) {
+  return {
+    branches: getBranches(data),
+    contributors: getContributors(data),
+    users: getUsers(data),
+    locLineData: getLocLineData(data),
+    allContributorCommits: getAllContributorsCommits(data),
+    totalLocData: getTotalLocData(data),
+  };
 }
