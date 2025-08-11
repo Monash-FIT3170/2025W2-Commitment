@@ -20,6 +20,11 @@ WORKDIR /app/commitment
 # Copy only the commitment folder content (your Meteor app)
 COPY ./commitment ./ 
 
+# Fix permissions so devuser can write to these files
+USER root
+RUN chown -R devuser:devuser /app/commitment
+USER devuser
+
 RUN meteor npm install
 
 RUN meteor build --directory /build --architecture os.linux.x86_64
