@@ -111,3 +111,4 @@ export const getTypeBy = (c: string): ChangeType | null => {
   }
 };
 
+export const sortCommitByTimeStamp = (c1: CommitData, c2: CommitData): number => c2.timestamp.getTime() - c1.timestamp.getTime();
