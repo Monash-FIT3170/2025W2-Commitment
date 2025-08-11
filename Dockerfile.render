@@ -11,7 +11,7 @@ COPY ./commitment/ ./
 RUN meteor npm install
 
 # Build Meteor bundle for Linux x86_64
-RUN meteor build --directory /build --architecture os.linux.x86_64
+RUN meteor build --directory /build --architecture os.linux.x86_64 --server-only
 
 # Fix permissions so non-root user can access build output
 RUN chown -R 1000:1000 /build
