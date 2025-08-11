@@ -4,13 +4,13 @@ FROM geoffreybooth/meteor-base:latest AS builder
 # Set working directory inside container
 WORKDIR /app
 
-# Copy your Meteor app source code (adjust path if your app is in ./commitment)
+# Copy source code to WD
 COPY ./commitment/ ./
 
-# Install npm dependencies (Meteor wraps npm)
+# Install npm dependencies
 RUN meteor npm install
 
-# Build Meteor bundle for Linux x86_64
+# Build bundle for Linux x86_64
 RUN meteor build --directory /build --architecture os.linux.x86_64 --server-only
 
 # Fix permissions so non-root user can access build output
@@ -28,7 +28,7 @@ COPY --from=builder /build/bundle /app/bundle
 WORKDIR /app/bundle/programs/server
 RUN npm install --production
 
-# Switch to a non-root user to run the app (optional but recommended)
+# Switch to a non-root user to run the app
 RUN useradd -m appuser
 USER appuser
 
@@ -37,7 +37,6 @@ WORKDIR /app/bundle
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV ROOT_URL="https://commitment.onrender.com"
 
 EXPOSE 3000
 
