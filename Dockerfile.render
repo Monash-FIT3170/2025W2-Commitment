@@ -7,7 +7,11 @@ RUN apt-get update && apt-get install -y curl python3 make g++ git \
 
 RUN METEOR_ALLOW_SUPERUSER=true curl https://install.meteor.com/ | sh
 
-RUN PATH=$HOME/.meteor:$PATH
+# Create a non-root user
+RUN useradd -ms /bin/bash devuser
+
+# Switch to non-root user
+USER devuser
 
 WORKDIR /app/commitment
 
