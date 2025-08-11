@@ -1,5 +1,5 @@
 # Stage 1: Build the Meteor app using official Meteor image
-FROM meteor/galaxy-app:latest AS builder
+FROM meteor/galaxy-app AS builder
 
 # Set working directory inside container
 WORKDIR /app
