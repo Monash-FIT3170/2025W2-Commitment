@@ -12,7 +12,7 @@ services:
   - key: MONGO_URL
     sync: false
   - key: ROOT_URL
-    value: https://commitment.onrender.com
+    sync: false
   region: oregon
   dockerContext: .
   dockerfilePath: ./Dockerfile.render
