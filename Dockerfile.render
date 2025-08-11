@@ -37,8 +37,7 @@ WORKDIR /app/bundle
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV ROOT_URL
-ENV MONGO_URL
+ENV ROOT_URL="https://commitment.onrender.com"
 
 EXPOSE 3000
 
