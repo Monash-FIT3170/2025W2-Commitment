@@ -6,38 +6,13 @@ import { RepositoryData } from "./commitment_api/types";
 import { metricsFunctions, MetricFn } from "./repo_metrics";
 import { getRepoData } from "./caching"; 
 
-function resolveMetricFns(metricNames: string[]): MetricFn[] {
-  const fns: MetricFn[] = [];
-  for (const name of metricNames) {
-    const fn = metricsFunctions.get(name);
-    if (!fn) {
-      throw new Meteor.Error("MetricNotFound", `Unknown metric: "${name}".`);
-    }
-    fns.push(fn);
-  }
-  return fns;
-}
-
 Meteor.methods({
   /**
    * Get a single metric by name
    * EXAMPLE: Meteor.call("metrics.getMetricFromRepo", repoUrl, "locLineData", cb)
    */
   async "metrics.getMetricFromRepo"(repoUrl: string, metricName: string) {
-    if (typeof repoUrl !== "string" || !repoUrl.trim()) {
-      throw new Meteor.Error("BadRequest", "repoUrl must be a non-empty string.");
-    }
-    if (typeof metricName !== "string" || !metricName.trim()) {
-      throw new Meteor.Error("BadRequest", "metricName must be a non-empty string.");
-    }
-
-    const notifier = new Subject<string>();
-    const repoData: RepositoryData = await getRepoData(repoUrl, notifier);
-
-    const fn = metricsFunctions.get(metricName);
-    if (!fn) throw new Meteor.Error("MetricNotFound", `Unknown metric: "${metricName}".`);
-
-    return fn(repoData);
+    return processMetrics(repoUrl, [metricName]).then(r => r[0]) 
   },
 
   /**
@@ -46,29 +21,34 @@ Meteor.methods({
    * Meteor.call("metrics.getMetricsFromRepo", repoUrl, ["branches","users","totalLocData"], cb)
    */
   async "metrics.getMetricsFromRepo"(repoUrl: string, metricNames: string[]) {
-    if (typeof repoUrl !== "string" || !repoUrl.trim()) {
-      throw new Meteor.Error("BadRequest", "repoUrl must be a non-empty string.");
-    }
-    if (!Array.isArray(metricNames) || metricNames.length === 0) {
-      throw new Meteor.Error("BadRequest", "metricNames must be a non-empty array of strings.");
-    }
-
-    const notifier = new Subject<string>();
-    const repoData: RepositoryData = await getRepoData(repoUrl, notifier);
-
-    const fns = resolveMetricFns(metricNames);
-
-    const results: Record<string, any> = {};
-    fns.forEach((fn, idx) => {
-      const name = metricNames[idx];
-      results[name] = fn(repoData);
-    });
-
-    return results;
+    return processMetrics(repoUrl, metricNames)
   },
 });
 
+const resolveMetricFns = (metricNames: string[]): MetricFn[] => {
+  const res = metricNames.map(name => {
+    const r = metricsFunctions.get(name)
+    return r !== null ? r : name
+  })
+  const err = res.filter(r => typeof(r) === "string")
+  if (err.length > 0) throw new Meteor.Error("MetricsNotFound", `Unknown metrics: "${err}".`);
+  return res as MetricFn[]
+}
 
+const processMetrics = async (repoUrl: string, metricNames: string[]) => {
+  if (typeof repoUrl !== "string" || !repoUrl.trim()) {
+      throw new Meteor.Error("BadRequest", "repoUrl must be a non-empty string.");
+  }
+  if (!Array.isArray(metricNames) || metricNames.length === 0) {
+    throw new Meteor.Error("BadRequest", "metricNames must be a non-empty array of strings.");
+  }
+
+  const notifier = new Subject<string>();
+  const repoData: RepositoryData = await getRepoData(repoUrl, notifier);
+
+  const fns = resolveMetricFns(metricNames);
+  return fns.map(fn => fn(repoData))
+}
 
 
 // const testFunction = (data: RepositoryData): void => {}
