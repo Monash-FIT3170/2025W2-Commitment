@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y curl git python3 make g++ && rm -rf /va
 RUN METEOR_ALLOW_SUPERUSER=true curl https://install.meteor.com/ | sh
 
 # Install NPM deps (including Meteor packages)
-RUN meteor npm install
+RUN npm install
 
 # Build the Meteor bundle for Linux
 RUN meteor build --directory /build --architecture os.linux.x86_64
