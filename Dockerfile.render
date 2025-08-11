@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y curl python3 make g++ git \
 
 RUN METEOR_ALLOW_SUPERUSER=true curl https://install.meteor.com/ | sh
 
+RUN npm install -g npm@11.5.2
+
 # Create a non-root user
 RUN useradd -ms /bin/bash devuser
 
@@ -17,8 +19,6 @@ WORKDIR /app/commitment
 
 # Copy only the commitment folder content (your Meteor app)
 COPY ./commitment ./ 
-
-RUN npm install -g npm@11.5.2
 
 RUN meteor npm install
 
