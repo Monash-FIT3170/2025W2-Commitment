@@ -6,7 +6,7 @@ import {
 } from "@ui/components/ui/tabs";
 import React from "react";
 import { OverviewPage } from "./OverviewPage";
-import { MetricsPage } from "./MetricsPage";
+import { AnalyticsView } from "./AnalyticsView";
 import ScalingView from "../scaling/ScalingView";
 
 interface TabData {
@@ -67,7 +67,7 @@ export function MetricsTabs() {
       </TabsContent>
       <TabsContent value="metrics">
         {/* METRICS */}
-        <MetricsPage />
+        <AnalyticsView />
       </TabsContent>
       <TabsContent value="scaling">
         {/* SCALING */}

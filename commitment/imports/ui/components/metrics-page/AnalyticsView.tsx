@@ -137,8 +137,8 @@ export const generateRandomContributions = (
   if (!endDate || !isValid(endDate)) {
     // In the case where no end date is given
     return [];
-  } 
-  console.log(startDate, endDate, "both")
+  }
+  console.log(startDate, endDate, "both");
   const data = [];
   const totalDays = Math.floor(
     (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -177,7 +177,7 @@ const transformToPieChartData = (data: any[]) => {
   }));
 };
 
-export const MetricsPage = () => {
+export const AnalyticsView = () => {
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
