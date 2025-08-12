@@ -2,16 +2,18 @@ import React, { useState, useMemo } from "react";
 import { format, subDays, addDays, isValid } from "date-fns";
 import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
-import { DateRangePicker } from "./DatePickerButton";
-import { BranchDropDownMenu } from "./BranchDropDownMenuButton";
-import UserContributionHeatMap from "./HeatMapGraph";
 import { dark2 } from "../ui/colors";
-import { ContributorDropDownMenu } from "./ContributorDropDownButton";
+// FIXME: Remove this import and implement proper colors
+import { topContributors } from "../../lib/utils";
+
+import { DateRangePicker } from "./DatePickerButton";
+import { BranchDropdownMenu } from "./BranchDropdownMenu";
+import UserContributionHeatMap from "./HeatMapGraph";
+import { ContributorDropdownMenu } from "./ContributorDropdownButton";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
-import { topContributors } from "../../lib/utils";
 import GraphCard from "./GraphCard";
 
 // !!!: Remove this dummy data upon integration with AT3's real data
@@ -221,11 +223,11 @@ export const AnalyticsView = () => {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Branch*</label>
-              <BranchDropDownMenu branches={dummyBranches} />
+              <BranchDropdownMenu branches={dummyBranches} />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
-              <ContributorDropDownMenu contributors={dummyContributors} />
+              <ContributorDropdownMenu contributors={dummyContributors} />
             </div>
           </div>
 
