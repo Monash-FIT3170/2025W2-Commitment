@@ -16,6 +16,12 @@ Meteor.publish('fetchRepoMessages', function () {
   // get subject
   const subject = clientMessageStreams[connectionId];
 
+    // First add an empty initial document
+  this.added('fetchRepoMessagesCollection', connectionId, {
+    text: '',
+    createdAt: new Date(),
+  });
+
   // Send message manually when .next() is called
   const subscription = subject.subscribe((msg: string) => this.changed(
     'fetchRepoMessagesCollection',
