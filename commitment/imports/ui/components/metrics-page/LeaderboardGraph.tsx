@@ -11,6 +11,7 @@ import {
   Cell,
 } from "recharts";
 import GraphCard from "./GraphCard";
+import { CardHeader } from "../ui/card";
 
 // Type for each contributor's data
 interface TopContributor {
@@ -48,13 +49,15 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
   title,
 }) => {
   return (
-    <GraphCard className="w-full max-w-[600px] h-[400px] flex flex-col basis-1/3">
-      <div className="pb-2 items-center flex justify-between">
-        <h2 className="text-lg font-bold">{title}</h2>
-        <div className="-mt-2">
-          <InfoButton description="Shows top 5 contributors based on a given metric" />
+    <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
+      <CardHeader className="pb-0">
+        <div className="pb-2 items-center flex ">
+          <h2 className="text-lg font-bold">{title}</h2>
+          <div className="-mt-2 ml-2">
+            <InfoButton description="Shows top 5 contributors based on a given metric" />
+          </div>
         </div>
-      </div>
+      </CardHeader>
 
       <div className="grow pt-0">
         <ResponsiveContainer width="100%" height="100%">

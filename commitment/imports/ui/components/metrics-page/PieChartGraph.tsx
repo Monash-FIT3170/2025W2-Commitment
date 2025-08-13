@@ -90,9 +90,9 @@ export function ContributionPieChart({ data }: Props) {
       className="flex flex-col max-w-md mx-auto shadow-none ring-0 border-0 outline-hidden"
       style={{ backgroundColor: graphBackgroundColour }}
     >
-      <CardHeader className="items-center pb-0">
+      <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
-          <h2 className="text-lg font-bold text-gray-800">{"Pie Chart"}</h2>
+          <h2 className="text-lg font-bold text-gray-800">PieChart</h2>
 
           {/* Special margin for the infoButton to get it centred */}
           <div className="relative -mt-2">

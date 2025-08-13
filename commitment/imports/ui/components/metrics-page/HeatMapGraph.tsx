@@ -215,11 +215,11 @@ export default function UserContributionHeatMap({
       }}
     >
       {title && (
-        <div className="flex items-center space-x-2 w-4/5 ">
+        <div className="flex w-4/5 ">
           <h2 className="text-lg font-bold text-gray-800">{title}</h2>
 
           {/* Special margin for the infoButton to get it centred */}
-          <div className="relative -mt-2 ">
+          <div className="relative -mt-3 ml-2">
             <InfoButton description={heatMapDescription} />
           </div>
         </div>

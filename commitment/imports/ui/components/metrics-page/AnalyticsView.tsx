@@ -99,7 +99,7 @@ const mockTotalLocData = [
 ];
 
 export const mockContributorDataset = {
-  title: "Total Lines of Code Over Time",
+  title: "Total Lines of Code",
   data: [
     { date: "2024-01-01", Alice: 120, Bob: 90, Charlie: 100 },
     { date: "2024-01-02", Alice: 140, Bob: 95, Charlie: 105 },
@@ -303,10 +303,10 @@ export const AnalyticsView = () => {
               yAxisLabel="Lines of Code Changed"
             />
 
-            <div className="rounded-2xl p-2 basis-1/3 min-w-[320px]">
+            <div className="rounded-2xl basis-1/3 min-w-[320px]">
               <LeaderboardGraph
                 data={topUsers}
-                title="Top Contributors Based on All Commits"
+                title="Top Contributors"
                 xAxisLabel="Commits"
               />
             </div>
