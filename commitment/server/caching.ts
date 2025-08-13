@@ -3,28 +3,75 @@ import { error } from 'console';
 import { CommitData, ContributorData, RepositoryData, BranchData } from './commitment_api/types';
 import { Mongo } from 'meteor/mongo'
 import { fetchDataFrom } from './commitment_api/commitment';
+import { serialize } from 'v8';
 
 
-
-// created to store repository data on the serverwith plain objects
-export interface ServerRepositoryData {
+// -------------Types -------------
+interface SerializableRepoData {
     name: string; 
     branches: BranchData[]; 
-    allCommits: {[key: string]: CommitData}; 
-    contributors: {[key: string]: ContributorData}; 
+    allCommits: {[key:string]: CommitData}; // Map converted to plain object
+    contributors: {[key:string]: ContributorData}; // Map converted to plain object
 }
 
-// uses plain objects
+
 export interface ServerRepoData {
   _id?: string
   url: string
   createdAt: Date
-  data: ServerRepositoryData
+  data: RepositoryData
 }
+
+// -------------- Helper Functions ----------------
+/**
+ * Convert RepositoryData's Maps into plain objects to store in DB.
+ */
+function serializeRepoData(data: RepositoryData): SerializableRepoData {
+  return {
+    ...data,
+    allCommits: data.allCommits instanceof Map ?Object.fromEntries(data.allCommits) : data.allCommits,
+    contributors:data.contributors instanceof Map ? Object.fromEntries(data.contributors) : data.contributors,
+  };
+}
+
+/**
+ * Convert serialized repo data (plain objects) back into RepositoryData with Maps.
+ */
+function deserializeRepoData(data: SerializableRepoData): RepositoryData {
+  return {
+    ...data,
+    allCommits: new Map(Object.entries(data.allCommits)),
+    contributors: new Map(Object.entries(data.contributors)),
+  };
+}
+
+// ----------- Meteor Methods ------------------------------
 
 const RepoCollection = new Mongo.Collection<ServerRepoData>('repoCollection');
 
 Meteor.methods({
+    async 'repoCollection.insertOrUpdateRepoData'(url: string, data:RepositoryData){
+    console.log("Inserting or updating repo data for URL:", url);
+
+    // convert Maps to plain objects before saving 
+    const serializableRepoData = serializeRepoData(data);
+
+    const updateDoc = {
+        $set: {
+            data: serializableRepoData, 
+            createdAt: new Date(),
+        }
+    }; 
+
+    const result = await RepoCollection.upsertAsync(
+        { url },   // filter to find existing doc
+        updateDoc  // update operation
+    );
+
+    console.log("Upsert result: ", result); 
+    return result;
+
+    },
     /**
      * Inserts a new link into the LinksCollection.
      *
@@ -35,19 +82,21 @@ Meteor.methods({
      * @throws {Meteor.Error} If the URL is invalid or does not start with 'http', not in db or not authorised.
      */
     async 'repoCollection.insertRepoData'(url: string, data: RepositoryData) {
-        // takes the maps and converts to objects 
-        const serializableRepoData: ServerRepositoryData = {
-            ...data,
-            allCommits: Object.fromEntries(data.allCommits),
-            contributors: Object.fromEntries(data.contributors),
-        }
+        console.log("Inserting repo data for URL:", url);
+        console.log('allCommits type:', typeof data.allCommits);
+        console.log('allCommits instanceof Map:', data.allCommits instanceof Map);
+        console.log('contributors type:', typeof data.contributors);
+        console.log('contributors instanceof Map:', data.contributors instanceof Map);
+
 
         const s: ServerRepoData = {
             url,
             createdAt: new Date(),
-            data: serializableRepoData,
+            data: data,
         }
-        return await RepoCollection.insertAsync(s);
+        const result = await RepoCollection.insertAsync(s);
+        console.log("Inserted repo data with ID:", result);
+        return result; 
     },
 
     /**
@@ -119,28 +168,40 @@ Meteor.methods({
                 throw new Meteor.Error('not-found', 'Repo data not found');
             }
             // works correctly here 
-            const serverData = repoData.data; 
+            const repoDataDeserialized = deserializeRepoData(repoData.data); 
 
-            //convert plain objects back to Maps: 
-            const repositoryData : RepositoryData = {
-                ...serverData, 
-                allCommits: new Map(Object.entries(serverData.allCommits)),
-                contributors: new Map(Object.entries(serverData.contributors)),
-            }
-            console.log("Fetched repo data:", repositoryData);
+            // //convert plain objects back to Maps: 
+            // const repositoryData : RepositoryData = {
+            //     ...serverData, 
+            //     allCommits: new Map(Object.entries(serverData.allCommits)),
+            //     contributors: new Map(Object.entries(serverData.contributors)),
+            // }
+            console.log("Fetched repo data:", repoDataDeserialized);
 
-             // return only the RepositoryData
-             return repositoryData;
+            //  // return only the RepositoryData
+            //  return repositoryData;
+            return repoDataDeserialized;
 
-        },
+        }
     });
+
 
 const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> => {
     // cache the data into the database TODO
     console.log("Caching data, allCommits size:", data.allCommits.size);
     console.log("Caching data, contributors size:", data.contributors.size);
-    return Meteor.call("repoCollection.insertRepoData", url, data)
-};
+    
+    return new Promise((resolve, reject) => {
+        Meteor.call("repoCollection.insertOrUpdateRepoData", url, data, (err, res) => {
+        if (err) {
+            console.error("Error inserting repo data:", err);
+            reject(err);
+        } else {
+            resolve(res);
+        }
+        });
+    });
+    };
 
 export const isInDatabase = async (url: string): Promise<Boolean> => {
     return Meteor.call("repoCollection.exists", url)
@@ -149,28 +210,52 @@ export const isInDatabase = async (url: string): Promise<Boolean> => {
 const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
   // try and get it from database 
   notifier.next('Searching database for your repo...');
-
-  // if data not found, reject promise 
-  if (!await isInDatabase(url)) {
-    console.log(`No data found in database for URL: ${url}`);
-    const s = 'Could not find data in the database';
-    notifier.next(s);
-    return Promise.reject(s);
+  const data = await RepoCollection.findOneAsync({ url });
+  console.log('Fetched data:', data);
+  if (!data) {
+    notifier.next('No data found in DB.');
+    return Promise.reject('No data found');
   }
-
-  // return found data
   notifier.next('Found your repo!');
-  return Promise.resolve(RepoCollection.findOneAsync({ url }));
-};
+  return data;
+  };
 
-export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => 
-    tryFromDatabase(url, notifier)
-    .catch(async (e) => {
+//   // return found data
+//   notifier.next('Found your repo!');
+//   return await RepoCollection.findOneAsync({ url });
+// };
+
+export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
+    try {
+        // to update back to this line of code:
+        // const data = await tryFromDatabase(url, notifier);
+        // delete these two lines later (need to update the URL being tested):
+        const data = await fetchDataFrom(url, notifier);
+        await cacheIntoDatabase(url, data); 
+
+        console.log("output from tryFromDatabase: ", data);
+        return data; 
+    } catch (e) {
         const data = await fetchDataFrom(url, notifier);
         console.log("Fetched data from external source:", data);
         await cacheIntoDatabase(url, data);
+        const savedData = await RepoCollection.findOneAsync({ url });
+        console.log("Saved data after caching:", savedData);
         return data;
-    });
+    }
+};
+
+    // tryFromDatabase(url, notifier)
+    // .then((data) => {
+    //     console.log("output from tryfromDatabase: ", data);
+    //     return data;
+    // })
+    // .catch(async (e) => {
+    //     const data = await fetchDataFrom(url, notifier);
+    //     console.log("Fetched data from external source:", data);
+    //     await cacheIntoDatabase(url, data);
+    //     return data;
+    // });
 
 
 
