@@ -11,7 +11,6 @@ import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
-import { topContributors } from "../../lib/utils";
 import GraphCard from "./GraphCard";
 
 // !!!: Remove this dummy data upon integration with AT3's real data
