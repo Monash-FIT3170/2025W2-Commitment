@@ -90,7 +90,7 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
 
   // send shit out
   notifier.next('Data processed!');
-
+  console.log("Sending repo data from commitment.ts:", repoData);
   return repoData;
 };
 
