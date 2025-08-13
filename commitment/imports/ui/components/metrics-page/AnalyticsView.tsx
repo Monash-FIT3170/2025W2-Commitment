@@ -3,10 +3,10 @@ import { format, subDays, addDays, isValid } from "date-fns";
 import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
-import { BranchDropDownMenu } from "./BranchDropDownMenuButton";
+import { BranchDropdownMenu } from "./BranchDropdownMenu";
 import UserContributionHeatMap from "./HeatMapGraph";
 import { dark2 } from "../ui/colors";
-import { ContributorDropDownMenu } from "./ContributorDropDownButton";
+import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
@@ -137,8 +137,8 @@ export const generateRandomContributions = (
   if (!endDate || !isValid(endDate)) {
     // In the case where no end date is given
     return [];
-  } 
-  console.log(startDate, endDate, "both")
+  }
+  console.log(startDate, endDate, "both");
   const data = [];
   const totalDays = Math.floor(
     (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -177,7 +177,7 @@ const transformToPieChartData = (data: any[]) => {
   }));
 };
 
-export const MetricsPage = () => {
+export const AnalyticsView = () => {
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
@@ -221,11 +221,11 @@ export const MetricsPage = () => {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Branch*</label>
-              <BranchDropDownMenu branches={dummyBranches} />
+              <BranchDropdownMenu branches={dummyBranches} />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
-              <ContributorDropDownMenu contributors={dummyContributors} />
+              <ContributorDropdownMenu contributors={dummyContributors} />
             </div>
           </div>
 
