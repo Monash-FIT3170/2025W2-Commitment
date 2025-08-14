@@ -8,8 +8,8 @@ interface ScalingRadialChartProps {
 }
 
 /**
- * 
- * @param value 
+ *
+ * @param value
  * @returns Radial Chart Component
  */
 export function ScalingRadialChart({ value }: ScalingRadialChartProps) {
@@ -57,11 +57,7 @@ export function ScalingRadialChart({ value }: ScalingRadialChartProps) {
           y="50%"
           textAnchor="middle"
           dominantBaseline="middle"
-          style={{
-            fill: "#ffffff",
-            fontSize: "0.7rem",
-            fontWeight: "bold",
-          }}
+          className="fill-git-int-text text-[0.7rem] font-bold"
         >
           {value}
         </text>

@@ -13,18 +13,8 @@ import {
 import { Button } from "../ui/button";
 import { GradingSheetForm } from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
+import type { UserScalingSummary } from "@server/commitment_api/types";
 
-export type AliasEmail = {
-  username: string;
-  email: string;
-};
-
-export type UserScalingSummary = {
-  name: string;
-  aliases: AliasEmail[];
-  finalGrade: number;
-  scale: number;
-};
 
 interface ScalingConfig {
   metrics: string[];
@@ -52,6 +42,33 @@ const userScalingSummaries: UserScalingSummary[] = [
     scale: 0.66,
   },
 ];
+
+
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState(
+    localStorage.getItem("theme") || "light"
+  );
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  return (
+    <button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="p-2 border rounded"
+    >
+      {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
+    </button>
+  );
+}
+
 
 function ScalingView() {
   const [completed, setCompleted] = useState(false);
@@ -107,6 +124,7 @@ function ScalingView() {
               Create New Scaling
             </Button>
           )}
+          <ThemeToggle/>
 
           {/* Show summary if completed */}
           {completed && config && gradingSheet && (

@@ -16,6 +16,8 @@ import {
   TableRow,
 } from "@ui/components/ui/table";
 
+import { ChevronRight } from "lucide-react";
+
 type AliasEmail = {
   username: string;
   email: string;
@@ -39,14 +41,17 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
   });
 
   return (
-    <div className="overflow-hidden rounded-md  bg-git-bg-elevated">
+    <div className="overflow-hidden rounded-md border-git-stroke-primary">
       <Table>
         {/* Table Header */}
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="font-bold">
+                <TableHead
+                  key={header.id}
+                  className="text-git-text-primary bg-git-int-secondary"
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -63,7 +68,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
         <TableBody>
           {table.getRowModel().rows.map((row) => (
             <React.Fragment key={row.id}>
-              {/* Undexpanded Rows */}
+              {/* Unexpanded Rows */}
               <TableRow
                 onClick={() => row.toggleExpanded()}
                 className="cursor-pointer"
@@ -73,13 +78,22 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                     key={cell.id}
                     className={
                       (idx === 0
-                        ? "rounded-l-md bg-git-int-primary hover:bg-git-int-primary text-white text-1xl"
+                        ? "rounded-l-md bg-git-int-primary hover:bg-git-int-primary text-git-int-text text-1xl"
                         : idx === row.getVisibleCells().length - 1
-                        ? "rounded-r-md bg-git-int-primary hover:bg-git-int-primary text-white"
-                        : "bg-git-int-primary hover:bg-git-int-primary text-white text-2xl font-bold") + //Final Grade is slightly larger and bolder than other text
+                        ? "rounded-r-md bg-git-int-primary hover:bg-git-int-primary text-git-int-text"
+                        : "bg-git-int-primary hover:bg-git-int-primary text-git-int-text text-2xl font-bold") +
                       " py-0"
                     }
                   >
+                    {idx === 0 && (
+                      <ChevronRight
+                        className={`inline-block mr-2 transition-transform duration-200 ${
+                          row.getIsExpanded() ? "rotate-90" : ""
+                        }`}
+                        size={16}
+                      />
+                    )}
+
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     {idx === row.getVisibleCells().length - 2 && "%"}
                   </TableCell>
@@ -90,26 +104,50 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
               {row.getIsExpanded() && row.original.aliases?.length > 0 && (
                 <>
                   {/* Row for Associated Accounts */}
-                  <TableRow className="bg-git-bg-elevated hover:bg-git-bg-elevated text-white border-black">
-                    <TableCell colSpan={columns.length}>
-                      <span className="ml-4 font-medium text-gray-800">
-                        Associated Accounts
-                      </span>
+
+                  <TableRow className="bg-git-int-secondary hover:bg-git-int-secondary !border-0 px-4">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="!border-0 p-0"
+                    >
+                      {/* Label */}
+                      <div className="px-4 py-2">
+                        <span className="ml-4 font-medium text-git-text-secondary">
+                          Associated Accounts
+                        </span>
+                      </div>
+
+                      {/* Inset solid black separator */}
+                      <div className=" border-b-2 border-git-stroke-primary mx-5" />
                     </TableCell>
                   </TableRow>
 
                   {/* Rows for Aliases */}
                   {row.original.aliases.map((alias, idx) => (
-                    <TableRow
-                      key={`${row.id}-alias-${idx}`}
-                      className="bg-git-bg-elevated hover:bg-git-bg-elevated border-style: dashed"
-                    >
-                      <TableCell colSpan={columns.length}>
-                        <div className="ml-8 text-sm text-gray-700">
-                          <strong>{alias.username}</strong> ({alias.email})
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                    <React.Fragment key={`${row.id}-alias-${idx}`}>
+                      <TableRow className="bg-git-int-secondary hover:bg-git-int-secondary !border-0">
+                        <TableCell
+                          colSpan={columns.length}
+                          className="!border-0 px-4"
+                        >
+                          <div className="ml-4 text-sm text-git-text-secondary">
+                            <strong>{alias.username}</strong> ({alias.email})
+                          </div>
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Dashed separator, only if not last alias */}
+                      {idx < row.original.aliases.length - 1 && (
+                        <TableRow className="!border-0">
+                          <TableCell
+                            colSpan={columns.length}
+                            className="!border-0 px-4"
+                          >
+                            <div className="h-0.5 border-t-2 border-dashed border-git-stroke-primary mx-1" />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
                   ))}
                 </>
               )}

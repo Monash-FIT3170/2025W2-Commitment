@@ -4,18 +4,9 @@ import React, { useMemo } from "react";
 import { DataTable } from "./ScalingTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { ScalingRadialChart } from "./ScalingRadialChart";
+import type { UserScalingSummary } from "@server/commitment_api/types";
 
-type AliasEmail = {
-  username: string;
-  email: string;
-};
 
-type UserScalingSummary = {
-  name: string;
-  aliases: AliasEmail[];
-  finalGrade: number;
-  scale: number;
-};
 
 
 interface ScalingSummaryProps {
@@ -33,9 +24,9 @@ interface ScalingSummaryProps {
 }
 
 /**
- * 
- * @param  userScalingSummaries contain the details of each person, their aliases with emails, their grade and the scaling applied to their grade.  
- * @returns 
+ *
+ * @param  userScalingSummaries contain the details of each person, their aliases with emails, their grade and the scaling applied to their grade.
+ * @returns
  */
 const ScalingSummary: React.FC<ScalingSummaryProps> = ({
   userScalingSummaries,
@@ -62,7 +53,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
   );
 
   return (
-    <div className="-mt-4 p-4 rounded-md bg-git-bg-elevated">
+    <div className="-mt-4  rounded-md bg-git-bg-elevated ">
       <div className="max-h-[600px]  rounded-md bg-git-bg-elevated">
         <DataTable columns={columns} data={userScalingSummaries} />
       </div>
