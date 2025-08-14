@@ -1,45 +1,35 @@
 import { Subject } from 'rxjs';
 import { CommitData, ContributorData, RepositoryData, BranchData } from './commitment_api/types';
 import { fetchDataFrom } from './commitment_api/commitment';
-import { serialize } from 'v8';
-
 
 // -------------Types -------------
 interface SerializableRepoData {
     name: string; 
     branches: BranchData[]; 
-    allCommits: {[key:string]: CommitData}; // Map converted to plain object
-    contributors: {[key:string]: ContributorData}; // Map converted to plain object
-}
-
-interface ChunkedRepoData {
-  _id?: string;
-  url: string;
-  createdAt: Date;
-  chunkIndex: number;
-  totalChunks: number;
-  data: SerializableRepoData;
+    allCommits: CommitData[]; // Already an array - no conversion needed!
+    contributors: ContributorData[]; // Already an array - no conversion needed!
 }
 
 export interface ServerRepoData {
   _id?: string
   url: string
   createdAt: Date
-  data: SerializableRepoData // Changed to SerializableRepoData
+  data: SerializableRepoData
 }
 
 // -------------- Helper Functions ----------------
 /**
- * Convert RepositoryData's Maps into plain objects for MongoDB storage
+ * Convert RepositoryData to serializable format for MongoDB storage
+ * Since we're now using arrays instead of Maps, this is much simpler!
  */
 const serializeRepoData = (data: RepositoryData): ServerRepoData['data'] => {
   try {
-    // Convert Map objects to plain objects for MongoDB storage
-    const serializedData = {
+    // Arrays are already JSON-compatible - no conversion needed!
+    const serializedData: SerializableRepoData = {
       name: data.name,
       branches: data.branches,
-      allCommits: Object.fromEntries(data.allCommits),
-      contributors: Object.fromEntries(data.contributors),
+      allCommits: data.allCommits, // Already an array
+      contributors: data.contributors, // Already an array
     };
     
     console.log('Serialization successful, data size:', JSON.stringify(serializedData).length);

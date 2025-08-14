@@ -5,8 +5,8 @@ import { isDate } from 'util';
 export type RepositoryData = Readonly<{
     name: string
     branches: BranchData[]
-    allCommits: Map<string, CommitData>
-    contributors: Map<string, ContributorData>
+    allCommits: CommitData[]
+    contributors: ContributorData[]
 }>
 
 export type BranchData = Readonly<{
@@ -62,7 +62,7 @@ export const isRepositoryData = (o: any): o is RepositoryData => typeof o === 'o
     && o != null
     && 'name' in o && typeof o.name === 'string'
     && 'branches' in o && (Array.isArray(o.branches)) && o.branches.every(isBranchData)
-    && 'allCommits' in o && isMapOf(o.allCommits, (s) => typeof s === 'string', isCommitData);
+    && 'allCommits' in o && (Array.isArray(o.allCommits)) && o.allCommits.every(isCommitData);
 
 export const isBranchData = (o: any): o is BranchData => typeof o === 'object'
     && o != null
