@@ -21,8 +21,9 @@ module Types (
 
 import Data.Map.Strict (Map)
 import Data.Time (UTCTime)
-import GHC.Generics (Generic)
-import Data.Aeson (ToJSON, FromJSON)
+import GHC.Generics 
+import Data.Aeson 
+import Data.Aeson.Types (defaultOptions, SumEncoding(..))
 
 -- | Represents the full repository data
 data RepositoryData = RepositoryData
@@ -57,8 +58,8 @@ data FileChanges = FileChanges
   } deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 data FileContents = FileContents
-  { contents :: String
-  , filepath :: String
+  { filepath :: String
+  , contents :: String
   } deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 -- | Change types: A = Added, M = Modified, D = Deleted, R = Renamed, C = Copied
@@ -82,7 +83,13 @@ data ExtraData
   = Modify ModifyData
   | Rename RenameData
   | Copy CopyData
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
+  deriving (Show, Eq, Generic)
+
+instance ToJSON ExtraData where
+  toJSON = genericToJSON defaultOptions { sumEncoding = UntaggedValue }
+
+instance FromJSON ExtraData where
+  parseJSON = genericParseJSON defaultOptions { sumEncoding = UntaggedValue }
 
 data ModifyData = ModifyData
   { previousFile :: FileContents

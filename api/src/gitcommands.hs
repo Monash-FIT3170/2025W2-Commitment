@@ -14,7 +14,7 @@ module GitCommands (
 ) where
 
 import Command
-import Control.Concurrent.STM
+import Control.Concurrent.STM ( TBQueue )
 
 quote :: String -> String
 quote s = "\"" ++ s ++ "\""
@@ -35,7 +35,7 @@ cloneRepo url targetDirectory = doNotLogData
 
 getBranches :: Command
 getBranches = doNotLogData
-  { command = "git branch -a"
+  { command = "git branch"
   }
 
 getAllCommitsFrom :: String -> Command
