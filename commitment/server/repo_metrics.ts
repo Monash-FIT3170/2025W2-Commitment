@@ -2,6 +2,15 @@
 
 import { RepositoryData, CommitData } from "./commitment_api/types";
 
+<<<<<<< Updated upstream
+=======
+import { AliasConfig, StudentAlias } from "..imports/api/aliasconfig"
+import { number } from "zod";
+
+export const zip = <T extends any[][]>(...lists: T): { [K in keyof T]: T[K][number] }[] => Array.from({ length: Math.min(...lists.map((list) => list.length)) }, (_, i) => lists.map((list) => list[i]) as { [K in keyof T]: T[K][number] });
+
+
+>>>>>>> Stashed changes
 /**
  * Count “LOC changed” for a commit.
  * NOTE: This shouldn't be final implementation of this method.
@@ -91,6 +100,20 @@ export function getAllContributorsCommits(data: RepositoryData): {
   return { title: "All Contributor Commits", data: list };
 }
 
+<<<<<<< Updated upstream
+=======
+export function getAllStudentCommits(data: RepositoryData, config: AliasConfig) {
+  const res = getAllContributorsCommits(data).data
+  return zip(config.aliases, config.aliases.map((a: StudentAlias) => {
+    const aliases = a.gitUsernames
+    return res
+      .filter(d => aliases.contains(d.name))
+      .map((v => v.commits))
+      .reduce((acc: number, i: number) => acc + i, 0)
+  }))
+} 
+
+>>>>>>> Stashed changes
 /** Total LOC by contributor (graph-ready list): [{ name, value }] */
 export function getTotalLocData(data: RepositoryData): { name: string; value: number }[] {
   const locs = new Map<string, number>();
