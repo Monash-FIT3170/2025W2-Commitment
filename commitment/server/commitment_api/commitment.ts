@@ -47,6 +47,18 @@ import {
   getRepoName,
 } from './git_commands';
 
+function serializeRepoData(data: RepositoryData): SerializableRepoData {
+    return {
+        ...data,
+        allCommits: data.allCommits
+            ? Array.from(data.allCommits, ([key, value]) => ({ key, value }))
+            : [],
+        contributors: data.contributors
+            ? Array.from(data.contributors, ([key, value]) => ({ key, value }))
+            : [],
+    };
+};
+
 // does not have a notifier which updates any frontend subscribers
 export const getDataFrom = async (url: string): Promise<RepositoryData> => fetchDataFrom(url, new Subject<string>());
 
@@ -90,8 +102,13 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
 
   // send shit out
   notifier.next('Data processed!');
+
   console.log("Sending repo data from commitment.ts:", repoData);
-  return repoData;
+
+  const serializedData = serializeRepoData(repoData);
+  console.log("Checking type of AllCommits in serialized data", typeof serializedData.allCommits);
+  
+  return serializedData;
 };
 
 const formulateRepoData = async (url: string, path: string, notifier: Subject<string>): Promise<RepositoryData> => {

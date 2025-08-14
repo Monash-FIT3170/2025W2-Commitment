@@ -10,8 +10,8 @@ import { serialize } from 'v8';
 interface SerializableRepoData {
     name: string; 
     branches: BranchData[]; 
-    allCommits: {[key:string]: CommitData}; // Map converted to plain object
-    contributors: {[key:string]: ContributorData}; // Map converted to plain object
+    allCommits: {key:string; value: CommitData}[]; // Map converted to a list of objects
+    contributors: {key:string; value: ContributorData}[]; // Map converted to a list of objects
 }
 
 
@@ -26,23 +26,27 @@ export interface ServerRepoData {
 /**
  * Convert RepositoryData's Maps into plain objects to store in DB.
  */
-function serializeRepoData(data: RepositoryData): SerializableRepoData {
-  return {
-    ...data,
-    allCommits: data.allCommits instanceof Map ?Object.fromEntries(data.allCommits) : data.allCommits,
-    contributors:data.contributors instanceof Map ? Object.fromEntries(data.contributors) : data.contributors,
-  };
-}
+// function serializeRepoData(data: RepositoryData): SerializableRepoData {
+//     return {
+//         ...data,
+//         allCommits: data.allCommits
+//             ? Array.from(data.allCommits, ([key, value]) => ({ key, value }))
+//             : [],
+//         contributors: data.contributors
+//             ? Array.from(data.contributors, ([key, value]) => ({ key, value }))
+//             : [],
+//     };
+// };
 
 /**
  * Convert serialized repo data (plain objects) back into RepositoryData with Maps.
  */
 function deserializeRepoData(data: SerializableRepoData): RepositoryData {
-  return {
-    ...data,
-    allCommits: new Map(Object.entries(data.allCommits)),
-    contributors: new Map(Object.entries(data.contributors)),
-  };
+    return {
+        ...data,
+        allCommits: new Map((data.allCommits ).map(entry => [entry.key, entry.value])),
+        contributors: new Map((data.contributors ).map(entry => [entry.key, entry.value])),
+    };
 }
 
 // ----------- Meteor Methods ------------------------------
@@ -54,7 +58,10 @@ Meteor.methods({
     console.log("Inserting or updating repo data for URL:", url);
 
     // convert Maps to plain objects before saving 
-    const serializableRepoData = serializeRepoData(data);
+    console.log("Data type for allCommits in the insertOrUpdateMethod:", typeof data.allCommits);
+    console.log("Data type for contributors in the insertOrUpdateMethod:", typeof data.contributors);
+    // const serializableRepoData = serializeRepoData(data);
+    const serializableRepoData = (data);
 
     const updateDoc = {
         $set: {
@@ -63,12 +70,13 @@ Meteor.methods({
         }
     }; 
 
+
     const result = await RepoCollection.upsertAsync(
         { url },   // filter to find existing doc
         updateDoc  // update operation
     );
 
-    console.log("Upsert result: ", result); 
+    console.log("Upsert result: ", serializableRepoData); 
     return result;
 
     },
@@ -169,6 +177,8 @@ Meteor.methods({
             }
             // works correctly here 
             const repoDataDeserialized = deserializeRepoData(repoData.data); 
+            // const repoDataDeserialized = repoData.data;
+
 
             // //convert plain objects back to Maps: 
             // const repositoryData : RepositoryData = {
@@ -231,9 +241,10 @@ export const getRepoData = async (url: string, notifier: Subject<string>): Promi
         // const data = await tryFromDatabase(url, notifier);
         // delete these two lines later (need to update the URL being tested):
         const data = await fetchDataFrom(url, notifier);
-        await cacheIntoDatabase(url, data); 
+        console.log("fetched data in getRepoData and checking type of allCommits", typeof data.allCommits);
+        await cacheIntoDatabase(url, data);
 
-        console.log("output from tryFromDatabase: ", data);
+        console.log("data returned from fetchDataFrom: ", data);
         return data; 
     } catch (e) {
         const data = await fetchDataFrom(url, notifier);
