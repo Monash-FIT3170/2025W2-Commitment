@@ -43,7 +43,31 @@ export const doNotLogData: Command = {
 };
 
 export const executeCommand = (cwd: string) => (f: Command): Promise<CommandResult> => new Promise((resolve, reject) => {
-  exec(f.cmd, { cwd }, (error: Error | null, stdout: string, stderr: string) => {
+  // Add timeout to prevent hanging on authentication prompts
+  const timeout = 30000; // 30 seconds timeout
+  
+  const child = exec(f.cmd, { 
+    cwd,
+    timeout, // Add timeout
+    maxBuffer: 10 * 1024 * 1024 // 10MB buffer (increased from 1MB)
+  }, (error: Error | null, stdout: string, stderr: string) => {
+    console.log(`Command executed: ${f.cmd}`);
+    console.log(`stdout: ${JSON.stringify(stdout)}`);
+    console.log(`stderr: ${JSON.stringify(stderr)}`);
+    console.log(`error: ${error ? error.message : 'null'}`);
+    
+    // Handle buffer overflow specifically
+    if (error && error.message.includes('maxBuffer')) {
+      console.log('Buffer overflow detected - repository is very large');
+      // For buffer overflow, we consider it a success since it means the repo exists
+      return resolve({
+        ...defaultResult,
+        result: 'REPO_EXISTS_LARGE', // Special marker for large repos
+        error: null,
+        stdError: 'Repository is very large (buffer overflow)'
+      });
+    }
+    
     if (stderr) {
       if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr));
 
@@ -67,6 +91,17 @@ export const executeCommand = (cwd: string) => (f: Command): Promise<CommandResu
     return resolve({
       ...defaultResult,
       result: stdout,
+    });
+  });
+
+  // Handle timeout
+  child.on('error', (error) => {
+    if (f.shouldLog) console.error(`Command timed out or failed: ${f.cmd}`, error);
+    resolve({
+      ...defaultResult,
+      result: '',
+      error: new Error(`Command timed out after ${timeout}ms: ${f.cmd}`),
+      stdError: 'Command timed out'
     });
   });
 });

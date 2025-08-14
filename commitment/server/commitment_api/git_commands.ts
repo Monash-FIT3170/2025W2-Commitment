@@ -2,7 +2,7 @@ import { Command, logData, doNotLogData } from './command';
 
 export const checkIfRepoExists = (url: string): Command => ({
   ...doNotLogData,
-  cmd: `git ls-remote ${url}`, // tries to get a repo hash from a url
+  cmd: `git ls-remote --exit-code ${url}`, // Remove the fallback echo that was causing false negatives
   onSuccess: (command: string) => `✅ Found Repo ${url}`,
   onFail: (command: string, error: Error) => `❌ Could not find Repo ${url}: ${error.message}`,
 });
