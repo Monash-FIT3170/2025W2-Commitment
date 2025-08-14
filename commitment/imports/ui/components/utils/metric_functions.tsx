@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { RepositoryData, CommitData, ContributorData, BranchData } from '/server/commitment_api/types';
-import { Subject } from "rxjs";\
+import { Subject } from "rxjs";
+import { SerializableRepoData, deserializeRepoData } from './helper';
 // import { StringDecoder } from 'string_decoder';
 
 // Functions to fetch repository data from the RepoCollection in a clean way
@@ -13,7 +14,7 @@ export const getRepoData = async (url: string, notifier: Subject<string>): Promi
         notifier.next('Fetching repo data...');
         // this is the NEW ERROR FOR NOW because i couldn't figure out how to transition to the metricspage correctly 
         // Meteor.call(repoCollection.getData) is what should be called. 
-        Meteor.call('repoCollection.getData', url, (err: Error, result: RepositoryData) => {
+        Meteor.call('repoCollection.getData', url, (err: Error, result: SerializableRepoData) => {
             console.log("in getrepodata")
             if (err) {
                 console.log(`Error fetching repo data for URL ${url}:`, err);
@@ -22,7 +23,12 @@ export const getRepoData = async (url: string, notifier: Subject<string>): Promi
             } else {
                 notifier.next('Repo data fetched successfully.');
                 console.log("In metric functions:", result);
-                resolve(result);
+                console.log(typeof result.allCommits)
+                console.log(result.allCommits)
+
+                const dRepo = deserializeRepoData(result);
+
+                resolve(dRepo);
             }
         });
     });

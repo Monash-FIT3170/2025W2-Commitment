@@ -7,7 +7,7 @@ import { serialize } from 'v8';
 
 
 // -------------Types -------------
-interface SerializableRepoData {
+export interface SerializableRepoData {
     name: string; 
     branches: BranchData[]; 
     allCommits: {key:string; value: CommitData}[]; // Map converted to a list of objects
@@ -41,7 +41,7 @@ export interface ServerRepoData {
 /**
  * Convert serialized repo data (plain objects) back into RepositoryData with Maps.
  */
-function deserializeRepoData(data: SerializableRepoData): RepositoryData {
+export function deserializeRepoData(data: SerializableRepoData): RepositoryData {
     return {
         ...data,
         allCommits: new Map((data.allCommits ).map(entry => [entry.key, entry.value])),
@@ -54,18 +54,25 @@ function deserializeRepoData(data: SerializableRepoData): RepositoryData {
 const RepoCollection = new Mongo.Collection<ServerRepoData>('repoCollection');
 
 Meteor.methods({
-    async 'repoCollection.insertOrUpdateRepoData'(url: string, data:RepositoryData){
+
+    /**
+     * 
+     * @param url 
+     * @param data 
+     * @returns 
+     */
+    async 'repoCollection.insertOrUpdateRepoData'(url: string, data:SerializableRepoData){
     console.log("Inserting or updating repo data for URL:", url);
 
     // convert Maps to plain objects before saving 
     console.log("Data type for allCommits in the insertOrUpdateMethod:", typeof data.allCommits);
     console.log("Data type for contributors in the insertOrUpdateMethod:", typeof data.contributors);
     // const serializableRepoData = serializeRepoData(data);
-    const serializableRepoData = (data);
+    // const serializableRepoData = (data);
 
     const updateDoc = {
         $set: {
-            data: serializableRepoData, 
+            data: data, 
             createdAt: new Date(),
         }
     }; 
@@ -76,7 +83,7 @@ Meteor.methods({
         updateDoc  // update operation
     );
 
-    console.log("Upsert result: ", serializableRepoData); 
+    console.log("Upsert result: ", data); 
     return result;
 
     },
@@ -163,7 +170,7 @@ Meteor.methods({
          * Get repository data by URL - added method by Milni in order to actually retrieve saved repo data 
          * @method repoCollection.getRepoData
          * @param {string} url - The URL of the repository.
-         * @returns {Promise<RepositoryData>} The repository data.
+         * @returns {Promise<SerializableRepoData>} The repository data.
          * @throws {Meteor.Error} If the repository data is not found or not authorised.
          * 
          */
@@ -186,20 +193,23 @@ Meteor.methods({
             //     allCommits: new Map(Object.entries(serverData.allCommits)),
             //     contributors: new Map(Object.entries(serverData.contributors)),
             // }
-            console.log("Fetched repo data:", repoDataDeserialized);
+            // console.log("Fetched repo data:", repoDataDeserialized);
+
+            console.log("Changing it up to return serialised data: ", repoData.data);
 
             //  // return only the RepositoryData
             //  return repositoryData;
-            return repoDataDeserialized;
+            // return repoDataDeserialized;
+            return repoData.data;
 
         }
     });
 
 
-const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> => {
+const cacheIntoDatabase = async (url: string, data: SerializableRepoData): Promise<boolean> => {
     // cache the data into the database TODO
-    console.log("Caching data, allCommits size:", data.allCommits.size);
-    console.log("Caching data, contributors size:", data.contributors.size);
+    // console.log("Caching data, allCommits size:", data.allCommits.size);
+    // console.log("Caching data, contributors size:", data.contributors.size);
     
     return new Promise((resolve, reject) => {
         Meteor.call("repoCollection.insertOrUpdateRepoData", url, data, (err, res) => {
@@ -235,7 +245,7 @@ const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<
 //   return await RepoCollection.findOneAsync({ url });
 // };
 
-export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
+export const getRepoData = async (url: string, notifier: Subject<string>): Promise<SerializableRepoData> => {
     try {
         // to update back to this line of code:
         // const data = await tryFromDatabase(url, notifier);
