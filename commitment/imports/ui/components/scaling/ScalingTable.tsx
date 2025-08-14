@@ -50,7 +50,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="text-git-text-primary bg-git-int-secondary"
+                  className="text-git-text-primary bg-git-int-secondary hover:bg-git-int-secondary"
                 >
                   {header.isPlaceholder
                     ? null

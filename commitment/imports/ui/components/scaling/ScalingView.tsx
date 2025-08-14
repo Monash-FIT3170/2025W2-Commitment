@@ -15,67 +15,17 @@ import { GradingSheetForm } from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
 import type { UserScalingSummary } from "@server/commitment_api/types";
 
-
 interface ScalingConfig {
   metrics: string[];
   method: string;
   customScript?: File[];
 }
 
-const userScalingSummaries: UserScalingSummary[] = [
-  {
-    name: "Jupyta Notebuk",
-    aliases: [
-      { username: "Bobert", email: "bobert@example.com" },
-      { username: "john", email: "john@example.com" },
-    ],
-    finalGrade: 78,
-    scale: 1,
-  },
-  {
-    name: "Poppy Willis",
-    aliases: [
-      { username: "capn america", email: "cap@example.com" },
-      { username: "iyan man", email: "iyan@example.com" },
-    ],
-    finalGrade: 42,
-    scale: 0.66,
-  },
-];
-
-
-
-function ThemeToggle() {
-  const [theme, setTheme] = useState(
-    localStorage.getItem("theme") || "light"
-  );
-
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  return (
-    <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="p-2 border rounded"
-    >
-      {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
-    </button>
-  );
-}
-
-
 function ScalingView() {
   const [completed, setCompleted] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [step, setStep] = useState<"config" | "sheet" | "done">("config");
   const [showDialog, setShowDialog] = useState(false);
-  const [dialogClosedManually, setDialogClosedManually] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
 
@@ -106,6 +56,9 @@ function ScalingView() {
     setStep("done");
   };
 
+  // This is the variable that must store the final grades, scalings, aliases and name of contributors
+  const userScalingSummaries: UserScalingSummary[] = [];
+
   return (
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
@@ -124,7 +77,6 @@ function ScalingView() {
               Create New Scaling
             </Button>
           )}
-          <ThemeToggle/>
 
           {/* Show summary if completed */}
           {completed && config && gradingSheet && (
@@ -159,9 +111,6 @@ function ScalingView() {
             open={showDialog}
             onOpenChange={(open) => {
               setShowDialog(open);
-              if (!open) {
-                setDialogClosedManually(true); // track if user manually closed
-              }
             }}
           >
             <DialogHeader>

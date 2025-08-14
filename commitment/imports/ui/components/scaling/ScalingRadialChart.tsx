@@ -8,7 +8,6 @@ interface ScalingRadialChartProps {
 }
 
 /**
- *
  * @param value
  * @returns Radial Chart Component
  */

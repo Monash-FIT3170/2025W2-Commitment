@@ -26,6 +26,8 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
 
   const handleToggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+
+    document.documentElement.classList.toggle("dark");
     // note to self: implement dark mode logic here later
     console.log("Dark mode toggled:", !isDarkMode);
   };
@@ -33,7 +35,11 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
   return (
     <div
       className={`z-50 flex items-center justify-between py-2 border-b bg-white  
-        ${isLandingPage ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32" : "relative px-4"}
+        ${
+          isLandingPage
+            ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32"
+            : "relative px-4"
+        }
       `}
     >
       <NavigationMenu>
@@ -73,9 +79,13 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
             <>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
+                  <Link
+                    to="/dashboard"
+                    className={navigationMenuTriggerStyle()}
+                  >
                     Dashboard
-                  </Link>                </NavigationMenuLink>
+                  </Link>{" "}
+                </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink>

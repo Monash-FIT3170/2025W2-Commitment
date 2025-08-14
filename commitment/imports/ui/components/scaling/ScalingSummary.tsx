@@ -6,20 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ScalingRadialChart } from "./ScalingRadialChart";
 import type { UserScalingSummary } from "@server/commitment_api/types";
 
-
-
-
 interface ScalingSummaryProps {
-  //      An example entry
-  //     {
-  //     name: "Jupyta Notebuk",
-  //     aliases: [
-  //       { username: "Bobert", email: "bobert@example.com" },
-  //       { username: "john", email: "john@example.com" },
-  //     ],
-  //     finalGrade: 78,
-  //     scale: 1,
-  //   }
   userScalingSummaries: UserScalingSummary[];
 }
 
