@@ -2,7 +2,7 @@ import React, {FC} from "react";
 import {Button} from "@ui/components/ui/button";
 import { z } from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {useForm} from "react-hook-form";
+import {useForm, UseFormReturn} from "react-hook-form";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@ui/components/ui/form";
 import {Checkbox} from "@ui/components/ui/checkbox";
 import FormInputWithErrors from "../../../shared/FormInputWithErrors";
@@ -11,11 +11,9 @@ import { Meteor } from 'meteor/meteor';
 import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
 
 
-
 export interface LoginFormProps {
   className?: string
 }
-
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -23,15 +21,16 @@ const formSchema = z.object({
   rememberMe: z.boolean()
 })
 
+type FormValues = z.infer<typeof formSchema>;
 
 const LoginForm: FC<LoginFormProps> = (props) => {
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form: UseFormReturn<FormValues> = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false
+      rememberMe: false,
     },
   });
 
@@ -77,11 +76,12 @@ const LoginForm: FC<LoginFormProps> = (props) => {
       }
     });
   }
+  //  as FormProviderProps<FieldValues, any, FieldValues>
 
   return (
-    <Form {...form}>
+    <Form<FormValues> {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className={`flex flex-col gap-2 ${props.className ?? ""}`}>
-        <FormField
+        <FormField<FormValues>
           control={form.control}
           name="email"
           render={({ field }) => (
@@ -94,13 +94,17 @@ const LoginForm: FC<LoginFormProps> = (props) => {
           )}
         />
 
-        <FormField
+        <FormField<FormValues>
           control={form.control}
           name="password"
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <FormInputWithErrors placeholder="Password" type="password" {...field}/>
+                <FormInputWithErrors
+                  placeholder="Password"
+                  type="password"
+                  {...field}
+                />
               </FormControl>
               <LoginFormErrorMessage/>
             </FormItem>
@@ -108,15 +112,14 @@ const LoginForm: FC<LoginFormProps> = (props) => {
         />
 
         <div className="inline-flex flex-col justify-center h-9">
-          <FormField
+          <FormField<FormValues>
             control={form.control}
             name="rememberMe"
             render={({ field }) => (
               <FormItem>
-
                 <div className="flex items-center space-x-2 ml-3">
                   <FormControl>
-                    <Checkbox checked={field.value} onCheckedChange={field.onChange}/>
+                    <Checkbox checked={field.value as boolean} onCheckedChange={field.onChange}/>
                   </FormControl>
                   <div className="space-y-1 leading-none align-middle inline-flex flex-col content-center">
                     <FormLabel>
