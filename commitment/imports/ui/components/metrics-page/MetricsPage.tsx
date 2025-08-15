@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import { format, subDays, addDays, isValid } from "date-fns";
+import React, { useState, useMemo, useEffect } from "react";
+import { format, subDays, addDays, isValid, set } from "date-fns";
 import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
@@ -13,6 +13,13 @@ import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import { topContributors } from "../../lib/utils";
 import GraphCard from "./GraphCard";
+import { useLocation } from "react-router-dom";
+import { getRepoData, getCommitsMap, getContributors, getBranches, getAllContributorsCommits} from "/imports/ui/components/utils/metric_functions";
+import { RepositoryData } from "/server/commitment_api/types";
+import { Subject } from "rxjs";
+import { get } from "http";
+
+
 
 // !!!: Remove this dummy data upon integration with AT3's real data
 const dummyBranches = [
@@ -129,6 +136,7 @@ const topUsers = topContributors(mockAllContributorDataset.data);
 const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
 
+
 export const generateRandomContributions = (
   startDate: Date,
   endDate: Date,
@@ -178,6 +186,41 @@ const transformToPieChartData = (data: any[]) => {
 };
 
 export const MetricsPage = () => {
+
+
+  // // attempt to get the repo data from the location state
+  //   // storing the repo data by calling getRepoData in metric_functions.tsx
+  const location = useLocation();
+  const repoUrl = location.state?.repoUrl 
+  const [repoData, setRepoData]= useState<RepositoryData | null> (null) ;
+  const [loading, setLoading] = useState<boolean>(true);  // Add loading state
+  const [error, setError] = React.useState<string | null>(null);
+
+
+  useEffect(() => {
+    // check if entering this useEffect
+    console.log("Entering useEffect with repoUrl:", repoUrl);
+    if (!repoUrl) {
+      setLoading(false);
+      console.log("No repo URL found");
+      return;
+    }
+    console.log("Starting getRepoData with URL:", repoUrl);
+
+    const notifier = new Subject<string>();
+    getRepoData(repoUrl, notifier).then((data) => {
+      console.log("Repo data fetched:", data);
+      setRepoData(data);
+      setLoading(false); 
+      notifier.complete(); 
+    })
+    .catch((e)=>{
+      setError(e.message);
+      setLoading(false); 
+      notifier.complete(); 
+    });
+  }, [repoUrl]);
+    // establishes date range defaults
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
@@ -191,7 +234,33 @@ export const MetricsPage = () => {
     () => generateRandomContributions(startDate, endDate),
     [startDate, endDate]
   );
+
+
   const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
+
+  // checking if repo data is still loading
+  if (loading) {
+    return <div>Loading repo data...</div>;
+  }
+  // checking if error has occurred
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  // checking if the repo data exists 
+  if (!repoData) {
+    return <div>No repo data available</div>;
+  }
+
+  // extracting information from metric functions 
+  const contributorData = getContributors(repoData);
+  const numContributors = contributorData.length;
+  const branchData = getBranches(repoData);
+  const numBranches = branchData.length;
+  const contributorCommitData = getAllContributorsCommits(repoData).data;
+
+
+
 
   return (
     <div className="m-0 scroll-smooth">
@@ -221,11 +290,11 @@ export const MetricsPage = () => {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Branch*</label>
-              <BranchDropDownMenu branches={dummyBranches} />
+              <BranchDropDownMenu branches={branchData} />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
-              <ContributorDropDownMenu contributors={dummyContributors} />
+              <ContributorDropDownMenu contributors={contributorData} />
             </div>
           </div>
 
@@ -285,8 +354,8 @@ export const MetricsPage = () => {
                 isPositive={false}
                 data={mockTotalLocData}
               />
-              <HighlightCardWithGraph title="No. of Contributors" value={5} />
-              <HighlightCardWithGraph title="Number of branches" value={5} />
+              <HighlightCardWithGraph title="No. of Contributors" value={numContributors} />
+              <HighlightCardWithGraph title="Number of branches" value={numBranches} />
             </div>
           </div>
 
@@ -305,7 +374,7 @@ export const MetricsPage = () => {
 
             <div className="rounded-2xl p-2 basis-1/3 min-w-[320px]">
               <LeaderboardGraph
-                data={topUsers}
+                data={contributorCommitData}
                 title="Top Contributors Based on All Commits"
                 xAxisLabel="Commits"
               />
