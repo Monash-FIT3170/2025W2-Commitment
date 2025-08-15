@@ -1,6 +1,6 @@
 // server/repo_metrics.ts
 
-import { RepositoryData, CommitData } from "./commitment_api/types";
+import { RepositoryData, CommitData } from "../imports/api/types";
 
 /**
  * Count “LOC changed” for a commit.
@@ -17,18 +17,18 @@ function getLOCFromCommit(commit: CommitData): number {
 
 /** Branch names */
 export function getBranches(data: RepositoryData): string[] {
-  return data.branches.map(b => b.branchName);
+  return data.branches.map((b) => b.branchName);
 }
 
 /** Contributors (from RepositoryData.contributors map) */
 export function getContributors(data: RepositoryData): string[] {
-  return Array.from(data.contributors.values()).map(c => c.name);
+  return Array.from(data.contributors.values()).map((c) => c.name);
 }
 
 /** Users who actually committed (derived from commits’ contributorName field) */
 export function getUsers(data: RepositoryData): string[] {
   const set = new Set<string>();
-  data.allCommits.forEach(c => set.add(c.contributorName));
+  data.allCommits.forEach((c) => set.add(c.contributorName));
   return Array.from(set);
 }
 
@@ -49,7 +49,7 @@ export function getLocLineData(data: RepositoryData): {
   // date -> { userName -> totalLocOnThatDate }
   const byDate = new Map<string, Record<string, number>>();
 
-  data.allCommits.forEach(commit => {
+  data.allCommits.forEach((commit) => {
     const user = commit.contributorName;
     const loc = getLOCFromCommit(commit);
     const date = commit.timestamp.toISOString().split("T")[0];
@@ -65,7 +65,7 @@ export function getLocLineData(data: RepositoryData): {
 
   return {
     title: "Lines of Codes Changed Over Time",
-    data: dataArray
+    data: dataArray,
   };
 }
 
@@ -82,7 +82,7 @@ export function getAllContributorsCommits(data: RepositoryData): {
 } {
   const counts = new Map<string, number>();
 
-  data.allCommits.forEach(commit => {
+  data.allCommits.forEach((commit) => {
     const user = commit.contributorName;
     counts.set(user, (counts.get(user) ?? 0) + 1);
   });
@@ -95,7 +95,7 @@ export function getAllContributorsCommits(data: RepositoryData): {
 export function getTotalLocData(data: RepositoryData): { name: string; value: number }[] {
   const locs = new Map<string, number>();
 
-  data.allCommits.forEach(commit => {
+  data.allCommits.forEach((commit) => {
     const user = commit.contributorName;
     const loc = getLOCFromCommit(commit);
     locs.set(user, (locs.get(user) ?? 0) + loc);
@@ -108,12 +108,12 @@ export function getTotalLocData(data: RepositoryData): { name: string; value: nu
 export type MetricFn = (data: RepositoryData) => any;
 
 export const metricsFunctions = new Map<string, MetricFn>([
-  ["branches",               getBranches],
-  ["contributors",           getContributors],
-  ["users",                  getUsers],
-  ["locLineData",            getLocLineData],
-  ["allContributorCommits",  getAllContributorsCommits],
-  ["totalLocData",           getTotalLocData],
+  ["branches", getBranches],
+  ["contributors", getContributors],
+  ["users", getUsers],
+  ["locLineData", getLocLineData],
+  ["allContributorCommits", getAllContributorsCommits],
+  ["totalLocData", getTotalLocData],
 ]);
 
 /** Convenience bundle (optional) */
