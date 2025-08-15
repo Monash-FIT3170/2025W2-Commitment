@@ -22,6 +22,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
   const handleSignOut = () => {
     // note to self: implement signing out logic here later
     console.log("Sign out clicked");
+    Meteor.logout()
   };
 
   const handleToggleDarkMode = () => {
