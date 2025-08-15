@@ -1,7 +1,8 @@
 {
   "eslint.workingDirectories": [
       {
-        "mode": "location"
+        "directory": "./commitment",
       }
     ],
+  
 }
