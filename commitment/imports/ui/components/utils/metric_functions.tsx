@@ -1,8 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { RepositoryData, CommitData, ContributorData, BranchData } from '/server/commitment_api/types';
+import { RepositoryData, CommitData } from '/server/commitment_api/types';
 import { Subject } from "rxjs";
-import { SerializableRepoData, deserializeRepoData } from './helper';
-// import { StringDecoder } from 'string_decoder';
 
 
 /** Return a Map of all commits */

@@ -1,8 +1,8 @@
 
 
 // ------------ IMPORTS ---------------------------------------------------
-import { RepositoryData, CommitData} from "/server/commitment_api/types";
-import { SerializableRepoData, deserializeRepoData } from './helper';
+import { RepositoryData, CommitData, SerializableRepoData} from "/server/commitment_api/types";
+import { deserializeRepoData } from '/imports/api/deserialise';
 import { Subject } from "rxjs";
 
 

@@ -14,7 +14,7 @@ import { ContributionPieChart } from "./PieChartGraph";
 import { topContributors } from "../../lib/utils";
 import GraphCard from "./GraphCard";
 import { useLocation } from "react-router-dom";
-import { getRepoData, getCommitsMap, getContributors, getBranches, getAllContributorsCommits} from "/imports/ui/components/utils/metric_functions";
+import { getContributors, getBranches, getAllContributorsCommits} from "/imports/ui/components/utils/metric_functions";
 import { RepositoryData } from "/server/commitment_api/types";
 import { Subject } from "rxjs";
 import { get } from "http";

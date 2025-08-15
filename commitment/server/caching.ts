@@ -1,26 +1,10 @@
 import { Subject } from 'rxjs';
-import { error } from 'console';
-import { CommitData, ContributorData, RepositoryData, BranchData } from './commitment_api/types';
+import { RepositoryData, SerializableRepoData, ServerRepoData } from './commitment_api/types';
 import { Mongo } from 'meteor/mongo'
 import { fetchDataFrom } from './commitment_api/commitment';
-import { serialize } from 'v8';
 
 
-// -------------Types -------------
-export interface SerializableRepoData {
-    name: string; 
-    branches: BranchData[]; 
-    allCommits: {key:string; value: CommitData}[]; // Map converted to a list of objects
-    contributors: {key:string; value: ContributorData}[]; // Map converted to a list of objects
-}
 
-
-export interface ServerRepoData {
-  _id?: string
-  url: string
-  createdAt: Date
-  data: RepositoryData
-}
 
 // -------------- Helper Functions ----------------
 /**
