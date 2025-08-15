@@ -18,7 +18,7 @@ import { getRepoData, getCommitsMap, getContributors, getBranches, getAllContrib
 import { RepositoryData } from "/server/commitment_api/types";
 import { Subject } from "rxjs";
 import { get } from "http";
-
+import { getFilteredRepoData } from "../utils/data_filter";
 
 
 // !!!: Remove this dummy data upon integration with AT3's real data
@@ -205,21 +205,40 @@ export const MetricsPage = () => {
       console.log("No repo URL found");
       return;
     }
-    console.log("Starting getRepoData with URL:", repoUrl);
+    console.log("Starting getFilteredRepoData with URL:", repoUrl);
 
     const notifier = new Subject<string>();
-    getRepoData(repoUrl, notifier).then((data) => {
-      console.log("Repo data fetched:", data);
-      setRepoData(data);
-      setLoading(false); 
-      notifier.complete(); 
-    })
-    .catch((e)=>{
-      setError(e.message);
-      setLoading(false); 
-      notifier.complete(); 
-    });
+    const filtered = getFilteredRepoData(repoUrl, notifier, 1000, "main", "Amy Tjea");
+    console.log("Date range being used:", filtered.dateRange);
+
+    filtered.repositoryData.then((data) => {
+        console.log("Filtered repo data fetched:", data);
+        setRepoData(data);
+        setLoading(false);
+        notifier.complete();
+      })
+      .catch((e) => {
+        setError(e.message);
+        setLoading(false);
+        notifier.complete();
+      });
   }, [repoUrl]);
+
+    // const filteredRepoData = getFilteredRepoData(repoUrl, new Subject<string>());
+    // console.log("here is the filtered data", filteredRepoData);
+
+  //   getRepoData(repoUrl, notifier).then((data) => {
+  //     console.log("Repo data fetched:", data);
+  //     setRepoData(data);
+  //     setLoading(false); 
+  //     notifier.complete(); 
+  //   })
+  //   .catch((e)=>{
+  //     setError(e.message);
+  //     setLoading(false); 
+  //     notifier.complete(); 
+  //   });
+  // }, [repoUrl]);
     // establishes date range defaults
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
@@ -259,7 +278,8 @@ export const MetricsPage = () => {
   const numBranches = branchData.length;
   const contributorCommitData = getAllContributorsCommits(repoData).data;
 
-
+  // const filteredRepoData = getFilteredRepoData(repoUrl, new Subject<string>());
+  // console.log("here is the filtered data", filteredRepoData);
 
 
   return (
