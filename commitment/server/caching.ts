@@ -1,13 +1,48 @@
 import { Subject } from "rxjs";
 import { error } from "console";
-import { CommitData, RepositoryData } from "../imports/api/types";
+import { RepositoryData, BranchData, CommitData, ContributorData } from "../imports/api/types";
 import { Mongo } from "meteor/mongo";
+
+// -------------Types -------------
+export type SerializableRepoData = Readonly<{
+  name: string;
+  branches: BranchData[];
+  allCommits: { key: string; value: CommitData }[]; // Map converted to a list of objects
+  contributors: { key: string; value: ContributorData }[]; // Map converted to a list of objects
+}>;
 
 export interface ServerRepoData {
   _id?: string;
   url: string;
   createdAt: Date;
-  data: RepositoryData;
+  data: SerializableRepoData;
+}
+
+// -------------- Helper Functions ----------------
+/**
+ * Convert RepositoryData's Maps into plain objects to store in DB.
+ */
+function serializeRepoData(data: RepositoryData): SerializableRepoData {
+  return {
+    ...data,
+    allCommits: data.allCommits
+      ? Array.from(data.allCommits, ([key, value]) => ({ key, value }))
+      : [],
+    contributors: data.contributors
+      ? Array.from(data.contributors, ([key, value]) => ({ key, value }))
+      : [],
+  };
+}
+
+/**
+ * Convert serialized repo data (plain objects) back into RepositoryData with Maps.
+ */
+function deserializeRepoData(data: SerializableRepoData): RepositoryData {
+  return {
+    ...data,
+    allCommits: new Map(data.allCommits.map((entry) => [entry.key, entry.value])),
+    contributors: new Map(data.contributors.map((entry) => [entry.key, entry.value])),
+  };
 }
 
 const RepoCollection = new Mongo.Collection<ServerRepoData>("repoCollection");
@@ -26,7 +61,7 @@ Meteor.methods({
     const s: ServerRepoData = {
       url,
       createdAt: new Date(),
-      data: data,
+      data: serializeRepoData(data),
     };
     return await RepoCollection.insertAsync(s);
   },
@@ -110,7 +145,7 @@ const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<
 
   // return found data
   notifier.next("Found your repo!");
-  return Promise.resolve(RepoCollection.findOneAsync({ url }));
+  return Promise.resolve(RepoCollection.findOneAsync({ url })).then(deserializeRepoData);
 };
 
 export const getRepoData = async (
