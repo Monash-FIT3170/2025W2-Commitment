@@ -24,8 +24,11 @@ Meteor.methods({
             throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
         }
 
-        const inDatabase = repoInDatabase(url)
-        if (!inDatabase) Promise.reject(new Error(`URL does not exist inside database: ${url}`))
+        // Fix: Actually await and check the result
+        const inDatabase = await repoInDatabase(url);
+        if (!inDatabase) {
+            throw new Meteor.Error('not-in-database', `URL does not exist inside database: ${url}`);
+        }
 
         const newLink: Link = {
             title,
@@ -68,5 +71,38 @@ Meteor.methods({
         check(url, String);
         const link = await LinksCollection.findOneAsync({ url });
         return !!link;
+    },
+
+    /**
+     * Stores a repository URL in the repositories collection.
+     * This method is called when users add a repository for analysis.
+     *
+     * @method repositories.storeUrl
+     * @param {string} url - The GitHub repository URL.
+     * @param {string} title - Optional title for the repository.
+     * @returns {Promise<string>} The ID of the stored repository document.
+     * @throws {Meteor.Error} If the URL is invalid or already exists.
+     */
+    async 'repositories.storeUrl'(url: string, title?: string) {
+        check(url, String);
+        if (title) check(title, String);
+
+        if (!url.startsWith('http')) {
+            throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
+        }
+
+        // Check if repository already exists in links collection
+        const existing = await LinksCollection.findOneAsync({ url });
+        if (existing) {
+            return existing._id; // Return existing ID if already stored
+        }
+
+        const newLink: Link = {
+            title: title || 'Repository Analysis',
+            url,
+            createdAt: new Date(),
+        };
+
+        return LinksCollection.insertAsync(newLink);
     },
 });
