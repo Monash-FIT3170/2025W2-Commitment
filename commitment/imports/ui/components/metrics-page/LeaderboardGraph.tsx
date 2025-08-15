@@ -11,7 +11,7 @@ import {
   Cell,
 } from "recharts";
 import GraphCard from "./GraphCard";
-import { CardHeader } from "../ui/card";
+import { CardHeader, CardContent } from "../ui/card";
 
 // Type for each contributor's data
 interface TopContributor {
@@ -59,7 +59,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
         </div>
       </CardHeader>
 
-      <div className="grow pt-0">
+      <CardContent className="grow flex items-center justify-center">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             layout="vertical"
@@ -81,7 +81,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </CardContent>
     </GraphCard>
   );
 };

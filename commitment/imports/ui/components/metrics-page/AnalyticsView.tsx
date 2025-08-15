@@ -231,44 +231,18 @@ export const AnalyticsView = () => {
 
           <div className="flex flex-wrap gap-6">
             {/* Heatmap */}
-            {/* <div
-              className="outline outline-2 rounded-2xl p-2 basis-1/3 min-w-[320px]"
-              style={{
-                backgroundColor: graphBackgroundColour,
-                outlineColor: "#35353140",
-              }}
-            >
-              <UserContributionHeatMap
-                data={data}
-                startDate={startDate}
-                endDate={endDate}
-                maxUsersToShow={24}
-                title="Heat Map"
-              />
-            </div> */}
-            <GraphCard>
-              <UserContributionHeatMap
-                data={data}
-                startDate={startDate}
-                endDate={endDate}
-                maxUsersToShow={24}
-                title="Heat Map"
-              />
-            </GraphCard>
+
+            <UserContributionHeatMap
+              data={data}
+              startDate={startDate}
+              endDate={endDate}
+              maxUsersToShow={24}
+              title="Heat Map"
+            />
 
             {/* Pie Chart */}
-            {/* <div
-              className="outline outline-2 rounded-2xl p-2 flex-1 min-w-[320px]"
-              style={{
-                backgroundColor: graphBackgroundColour,
-                outlineColor: "#35353140",
-              }}
-            >
-              <ContributionPieChart data={pieChartData} />
-            </div> */}
-            <GraphCard>
-              <ContributionPieChart data={pieChartData} />
-            </GraphCard>
+
+            <ContributionPieChart data={pieChartData} />
 
             <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
               <HighlightCardWithGraph

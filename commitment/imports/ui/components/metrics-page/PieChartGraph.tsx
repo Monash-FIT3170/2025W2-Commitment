@@ -13,6 +13,7 @@ import {
 } from "@ui/components/ui/card";
 import InfoButton from "../ui/infoButton";
 import { stat } from "fs";
+import GraphCard from "./GraphCard";
 
 export interface ChartEntry {
   user: string;
@@ -86,10 +87,7 @@ export function ContributionPieChart({ data }: Props) {
         : extendColorPalette(index - staticColorPalette.length),
   }));
   return (
-    <Card
-      className="flex flex-col max-w-md mx-auto shadow-none ring-0 border-0 outline-hidden"
-      style={{ backgroundColor: graphBackgroundColour }}
-    >
+    <GraphCard className="w-full max-w-[800px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
           <h2 className="text-lg font-bold text-gray-800">PieChart</h2>
@@ -159,6 +157,6 @@ export function ContributionPieChart({ data }: Props) {
         </CardFooter>
       </>
       )}
-    </Card>
+    </GraphCard>
   );
 }
