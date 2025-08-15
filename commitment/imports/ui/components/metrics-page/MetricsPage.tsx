@@ -14,7 +14,7 @@ import { ContributionPieChart } from "./PieChartGraph";
 import { topContributors } from "../../lib/utils";
 import GraphCard from "./GraphCard";
 import { useLocation } from "react-router-dom";
-import { getRepoData, getCommitsMap, getContributors, getBranches} from "/imports/ui/components/utils/metric_functions";
+import { getRepoData, getCommitsMap, getContributors, getBranches, getAllContributorsCommits} from "/imports/ui/components/utils/metric_functions";
 import { RepositoryData } from "/server/commitment_api/types";
 import { Subject } from "rxjs";
 import { get } from "http";
@@ -257,7 +257,7 @@ export const MetricsPage = () => {
   const numContributors = contributorData.length;
   const branchData = getBranches(repoData);
   const numBranches = branchData.length;
-
+  const contributorCommitData = getAllContributorsCommits(repoData).data;
 
 
 
@@ -374,7 +374,7 @@ export const MetricsPage = () => {
 
             <div className="rounded-2xl p-2 basis-1/3 min-w-[320px]">
               <LeaderboardGraph
-                data={topUsers}
+                data={contributorCommitData}
                 title="Top Contributors Based on All Commits"
                 xAxisLabel="Commits"
               />
