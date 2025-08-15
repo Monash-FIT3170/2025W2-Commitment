@@ -127,7 +127,7 @@ formulateRepoData _url path notifier = do
             emit notifier $ "Formulating all commit data (" ++ show count ++ "/" ++ show commitsFound ++ ")..."
             pure res
             )
-        (map getCommitDetails allCommitHashes)         
+        (map getCommitDetails allCommitHashes)    
 
     let filesFound = sum (map (length . involvedFiles) commitMetaData)
     fileCounter <- newTVarIO 0

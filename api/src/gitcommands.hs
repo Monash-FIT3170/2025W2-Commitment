@@ -64,7 +64,7 @@ getFileDataFromCommit hash path = doNotLogData
 
 getOldFileDataFromCommit :: String -> FilePath -> Command
 getOldFileDataFromCommit hash path = doNotLogData
-  { command = "git show " ++ hash ++ "^:" ++ path
+  { command = "git show " ++ hash ++ "~1:" ++ path
   }
 
 getRepoName :: Command

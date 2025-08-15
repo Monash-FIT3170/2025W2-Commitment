@@ -28,6 +28,7 @@ import Data.Time (UTCTime)
 import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Control.Applicative (Alternative, empty, (<|>))
 
+import Threading
 import Types
 import Command
 
@@ -175,18 +176,18 @@ extractCommitData :: (String -> IO String) -- getFileContents
   -> IO (ParseResult(String, String, [String]))
 extractCommitData getNew getOld filedata = do
     case filedata of
-      (changeStr:rest) -> do
-        let (changeChar:_ignored) = changeStr
+      ("M":newFile:_) -> do
+        newContents <- getNew newFile
+        oldContents <- getOld newFile
+        return $ Result (newContents, oldContents, filedata)
 
-        case lastElem rest of
-          Nothing -> return $ Error $ "rest not shaped correctly: " ++ show rest
-          Just newFile -> do
-            newContents <- if changeChar /= 'D' then getNew newFile else pure ""
-            oldContents <- case rest of
-              (oldFilePathTxt:_) | changeChar == 'M' -> getOld oldFilePathTxt
-              _ -> pure ""
-
-            return $ Result (newContents, oldContents, filedata)
+      ("D":oldFile:_) -> do
+        oldContents <- getOld oldFile
+        return $ Result ("", oldContents, filedata)
+      
+      (_:newFile:_) -> do
+        newContents <- getNew newFile
+        return $ Result (newContents, "", filedata)
 
       _ -> return $ Error $ "filedata not shaped correctly: " ++ show filedata
 
@@ -205,7 +206,10 @@ parseFileDataFromCommit newContents oldContents dataList = do
           let cleanLikeness = filter (/= ',') likenessStr
           case readMaybe cleanLikeness of
             Just likenessInt ->
-              pure $ Just $ Rename $ RenameData oldFilePathTxt likenessInt
+              case changeChar of 
+                'R' -> pure $ Just $ Rename $ RenameData oldFilePathTxt likenessInt
+                'C' -> pure $ Just $ Copy $ CopyData oldFilePathTxt likenessInt
+                _   -> Error "argument failed for some strange reason inside changeChar"
             Nothing ->
               Error $ "Failed to parse likeness int: " ++ cleanLikeness
 
