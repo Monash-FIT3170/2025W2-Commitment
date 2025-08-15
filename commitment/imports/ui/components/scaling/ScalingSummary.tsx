@@ -40,7 +40,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
   );
 
   return (
-    <div className="-mt-4  rounded-md bg-git-bg-elevated ">
+    <div className="-mt-4  rounded-md bg-git-bg-elevated overflow-scroll ">
       <div className="max-h-[600px]  rounded-md bg-git-bg-elevated">
         <DataTable columns={columns} data={userScalingSummaries} />
       </div>
