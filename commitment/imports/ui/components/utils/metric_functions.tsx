@@ -59,5 +59,6 @@ export const getContributorsMap = (repo: RepositoryData): Map<string, Contributo
  * Return a list of all contributors
  */
 export const getContributors = (repo: RepositoryData): string[] => {
-  const contributorsMap = getContributorsMap(repo);
-  return Array.from(contributorsMap.values()).map(contributor => contributor.name);};
+  const contributorsMap = repo.contributors;
+  return Array.from(contributorsMap.values()).map(contributor => contributor.name);
+};

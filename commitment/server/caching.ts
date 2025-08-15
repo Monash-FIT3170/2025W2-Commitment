@@ -227,7 +227,7 @@ export const isInDatabase = async (url: string): Promise<Boolean> => {
     return Meteor.call("repoCollection.exists", url)
 };
 
-const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
+const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<SerializableRepoData> => {
   // try and get it from database 
   notifier.next('Searching database for your repo...');
   const data = await RepoCollection.findOneAsync({ url });
@@ -248,11 +248,11 @@ const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<
 export const getRepoData = async (url: string, notifier: Subject<string>): Promise<SerializableRepoData> => {
     try {
         // to update back to this line of code:
-        // const data = await tryFromDatabase(url, notifier);
+        const data = await tryFromDatabase(url, notifier);
         // delete these two lines later (need to update the URL being tested):
-        const data = await fetchDataFrom(url, notifier);
-        console.log("fetched data in getRepoData and checking type of allCommits", typeof data.allCommits);
-        await cacheIntoDatabase(url, data);
+        // const data = await fetchDataFrom(url, notifier);
+        // console.log("fetched data in getRepoData and checking type of allCommits", typeof data.allCommits);
+        // await cacheIntoDatabase(url, data);
 
         console.log("data returned from fetchDataFrom: ", data);
         return data; 
