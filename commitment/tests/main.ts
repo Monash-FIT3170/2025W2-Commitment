@@ -1,5 +1,12 @@
 import { Meteor } from 'meteor/meteor';
 import assert from 'assert';
+import Enzyme from 'enzyme';
+import Adapter from '@cfaester/enzyme-adapter-react-18';
+
+Enzyme.configure({ adapter: new Adapter() });
+
+// Add your test imports here:
+import './LoginWidget.test.tsx';
 
 describe('meteor-app', function () {
   it('package.json has correct name', async function () {
