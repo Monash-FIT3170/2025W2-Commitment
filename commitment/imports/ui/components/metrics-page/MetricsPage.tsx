@@ -290,7 +290,7 @@ export const MetricsPage = () => {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Branch*</label>
-              <BranchDropDownMenu branches={dummyBranches} />
+              <BranchDropDownMenu branches={branchData} />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>

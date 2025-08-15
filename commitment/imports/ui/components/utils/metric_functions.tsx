@@ -44,16 +44,11 @@ export const getCommitsMap = (repo: RepositoryData): Map<string, CommitData> => 
  * Return a list of all branches 
  */
 
-export const getBranches = (repo: RepositoryData): BranchData[] => {
-    return repo.branches; 
-}; 
-
-/**
- * Return a Map of all contributors
- */
-export const getContributorsMap = (repo: RepositoryData): Map<string, ContributorData> => {
-    return new Map(Object.entries(repo.contributors));
+export const getBranches = (repo: RepositoryData): string[] => {
+    //get list of branch names 
+    return repo.branches.map(branch => branch.branchName);
 };
+
 
 /**
  * Return a list of all contributors
@@ -62,3 +57,4 @@ export const getContributors = (repo: RepositoryData): string[] => {
   const contributorsMap = repo.contributors;
   return Array.from(contributorsMap.values()).map(contributor => contributor.name);
 };
+
