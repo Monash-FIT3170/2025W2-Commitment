@@ -1,0 +1,44 @@
+# Stage 1: Build the Meteor app using official Meteor image
+FROM geoffreybooth/meteor-base:latest AS builder
+
+# Set working directory inside container
+WORKDIR /app
+
+# Copy source code to WD
+COPY ./commitment/ ./
+
+# Install npm dependencies
+RUN meteor npm install
+
+# Build bundle for Linux x86_64
+RUN meteor build --directory /build --architecture os.linux.x86_64 --server-only
+
+# Fix permissions so non-root user can access build output
+RUN chown -R 1000:1000 /build
+
+# Stage 2: Minimal Node runtime for running the built app
+FROM node:20-slim
+
+WORKDIR /app
+
+# Copy built Meteor bundle from builder stage
+COPY --from=builder /build/bundle /app/bundle
+
+# Install production dependencies for the server
+WORKDIR /app/bundle/programs/server
+RUN npm install --production
+
+# Switch to a non-root user to run the app
+RUN useradd -m appuser
+USER appuser
+
+WORKDIR /app/bundle
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+
+EXPOSE 3000
+
+# Run the Meteor app using Node
+CMD ["node", "main.js"]
