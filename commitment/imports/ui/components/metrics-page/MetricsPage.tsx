@@ -21,14 +21,6 @@ import { get } from "http";
 import { getFilteredRepoData } from "../utils/data_filter";
 
 
-// !!!: Remove this dummy data upon integration with AT3's real data
-const dummyBranches = [
-  "main",
-  "development",
-  "feature/login-page",
-  "bugfix/fix-chart",
-  "release/v1.2",
-];
 
 const dummyUsers = [
   "Alice",
@@ -41,38 +33,7 @@ const dummyUsers = [
   "Helen",
 ];
 
-const dummyContributors = [
-  "Michael",
-  "Andrew",
-  "Jessica",
-  "Andy",
-  "Barry",
-  "Georgia",
-  "Mary",
-  "Sophie",
-  "Bill",
-  "Simon",
-  "George",
-  "Tim",
-  "Rachel",
-  "Lora",
-];
 
-const mockLocLineData = [
-  { value: 50 },
-  { value: 58 },
-  { value: 62 },
-  { value: 65 },
-  { value: 60 },
-  { value: 68 },
-  { value: 72 },
-  { value: 70 },
-  { value: 76 },
-  { value: 85 },
-  { value: 82 },
-  { value: 90 },
-  { value: 95 },
-];
 const mockCommitLineData = [
   { value: 50 },
   { value: 58 },
@@ -131,7 +92,6 @@ export const mockAllContributorDataset = {
   ],
 };
 
-const topUsers = topContributors(mockAllContributorDataset.data);
 
 const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
@@ -193,9 +153,10 @@ export const MetricsPage = () => {
   const location = useLocation();
   const repoUrl = location.state?.repoUrl 
   const [repoData, setRepoData]= useState<RepositoryData | null> (null) ;
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true);  // Add loading state
   const [error, setError] = React.useState<string | null>(null);
-
+  const defaultDaysBack = 1000; 
 
   useEffect(() => {
     // check if entering this useEffect
@@ -208,12 +169,14 @@ export const MetricsPage = () => {
     console.log("Starting getFilteredRepoData with URL:", repoUrl);
 
     const notifier = new Subject<string>();
-    const filtered = getFilteredRepoData(repoUrl, notifier, 1000, "main", "Amy Tjea");
-    console.log("Date range being used:", filtered.dateRange);
+    const filtered = getFilteredRepoData(repoUrl, notifier, defaultDaysBack, "main");
 
     filtered.repositoryData.then((data) => {
         console.log("Filtered repo data fetched:", data);
         setRepoData(data);
+        setDateRange({ from: filtered.dateRange.start, to: filtered.dateRange.end });
+        console.log("Date range being used:", filtered.dateRange);
+
         setLoading(false);
         notifier.complete();
       })
@@ -224,38 +187,23 @@ export const MetricsPage = () => {
       });
   }, [repoUrl]);
 
-    // const filteredRepoData = getFilteredRepoData(repoUrl, new Subject<string>());
-    // console.log("here is the filtered data", filteredRepoData);
+  //   // establishes date range defaults
+  // const today = new Date();
+  // const lastWeek = subDays(today, 6); // Last 7 days including today
 
-  //   getRepoData(repoUrl, notifier).then((data) => {
-  //     console.log("Repo data fetched:", data);
-  //     setRepoData(data);
-  //     setLoading(false); 
-  //     notifier.complete(); 
-  //   })
-  //   .catch((e)=>{
-  //     setError(e.message);
-  //     setLoading(false); 
-  //     notifier.complete(); 
-  //   });
-  // }, [repoUrl]);
-    // establishes date range defaults
-  const today = new Date();
-  const lastWeek = subDays(today, 6); // Last 7 days including today
+  // const initialDateRange: DateRange = { from: lastWeek, to: today };
+  // // const [dateRange, setDateRange] = useState<DateRange>(initialDateRange);
 
-  const initialDateRange: DateRange = { from: lastWeek, to: today };
-  const [dateRange, setDateRange] = useState<DateRange>(initialDateRange);
+  // const startDate = dateRange.from!;
+  // const endDate = dateRange.to!;
 
-  const startDate = dateRange.from!;
-  const endDate = dateRange.to!;
-
-  const data = useMemo(
-    () => generateRandomContributions(startDate, endDate),
-    [startDate, endDate]
-  );
+  // const data = useMemo(
+  //   () => generateRandomContributions(startDate, endDate),
+  //   [startDate, endDate]
+  // );
 
 
-  const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
+  // const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
 
   // checking if repo data is still loading
   if (loading) {
@@ -335,7 +283,7 @@ export const MetricsPage = () => {
                 title="Heat Map"
               />
             </div> */}
-            <GraphCard>
+            {/* <GraphCard>
               <UserContributionHeatMap
                 data={data}
                 startDate={startDate}
@@ -343,7 +291,7 @@ export const MetricsPage = () => {
                 maxUsersToShow={24}
                 title="Heat Map"
               />
-            </GraphCard>
+            </GraphCard> */}
 
             {/* Pie Chart */}
             {/* <div
@@ -355,9 +303,9 @@ export const MetricsPage = () => {
             >
               <ContributionPieChart data={pieChartData} />
             </div> */}
-            <GraphCard>
+            {/* <GraphCard>
               <ContributionPieChart data={pieChartData} />
-            </GraphCard>
+            </GraphCard> */}
 
             <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
               <HighlightCardWithGraph

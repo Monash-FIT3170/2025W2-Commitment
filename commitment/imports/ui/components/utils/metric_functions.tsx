@@ -4,10 +4,11 @@ import { Subject } from "rxjs";
 import { SerializableRepoData, deserializeRepoData } from './helper';
 // import { StringDecoder } from 'string_decoder';
 
+
+
 // Functions to fetch repository data from the RepoCollection in a clean way
 // TO DO: add more functions tailoured to MetricPage needs - perhaps a new file ? 
-
-// this function is not being called by the metrics page correctly...
+// to do: remove getrepoData as this function no longer necessary (used in data_filter) function :
 export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
     console.log("this method called with url:", url);
     return new Promise((resolve, reject) => {
