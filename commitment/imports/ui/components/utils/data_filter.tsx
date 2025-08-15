@@ -7,6 +7,12 @@ import { Subject } from "rxjs";
 
 
 // ------------ METHOD TO GET THE REPO DATA BASED OFF A URL ---------------
+/** 
+ * Fetches the repository data from the server.
+ * @param url The url of the repository
+ * @param notifier A Subject to notify about the fetching process
+ * @returns A promise that resolves to the repository data
+ */
 export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
     console.log("this method called with url:", url);
     return new Promise((resolve, reject) => {
@@ -44,7 +50,7 @@ export interface FilteredData {
 }
 
 /**
- * 
+ * This method filters the repository data based on the provided parameters.
  * @param url The repo url
  * @param notifier 
  * @param daysBack Defines the date range for the repository data, defaulting to 7 days back. 
