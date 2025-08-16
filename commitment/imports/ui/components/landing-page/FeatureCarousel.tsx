@@ -165,7 +165,7 @@ export function FeatureCarousel() {
           <div
             key={index}
             className={`h-3 w-3 rounded-full ${
-              index === selectedIndex ? "bg-git" : "bg-[#F1502F]/30"
+              index === selectedIndex ? "bg-[#F1502F]/50" : "bg-[#F1502F]/30"
             }`}
           />
         ))}
