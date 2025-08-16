@@ -10,6 +10,8 @@ import SignUpButton from "./signUpButton";
 import ProfileMenu from "@ui/components/ui/profile-menu";
 import { Moon, Sun } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
+import { Accounts } from "meteor/accounts-base";
+
 interface NavBarProps {
   isLoggedIn: boolean;
 }
@@ -22,6 +24,10 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
   const handleSignOut = () => {
     // note to self: implement signing out logic here later
     console.log("Sign out clicked");
+
+    Accounts.logout(() => {
+      console.log("Signed out.")
+    });
   };
 
   const handleToggleDarkMode = () => {

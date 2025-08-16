@@ -141,6 +141,7 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
     return null
   }
 
+  const extraClassName = (body ? props.errorClassName : props.noErrorClassName) ?? "";
   return (
     <p
       data-slot="form-message"
