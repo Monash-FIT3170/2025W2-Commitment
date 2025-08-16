@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { Button } from "@ui/components/ui/button";
 import {
@@ -17,7 +15,7 @@ interface DropdownMenuCheckboxesProps {
   contributors: string[];
 }
 
-export function ContributorDropDownMenu({
+export function ContributorDropdownMenu({
   contributors,
 }: DropdownMenuCheckboxesProps) {
   const [selectedContributors, setContributors] =
