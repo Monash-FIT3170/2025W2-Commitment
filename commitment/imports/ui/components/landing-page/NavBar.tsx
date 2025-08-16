@@ -28,6 +28,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
     setIsDarkMode(!isDarkMode);
     // note to self: implement dark mode logic here later
     console.log("Dark mode toggled:", !isDarkMode);
+    document.documentElement.classList.toggle("dark");
   };
 
   return (
