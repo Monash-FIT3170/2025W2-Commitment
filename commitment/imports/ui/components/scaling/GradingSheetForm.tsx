@@ -20,8 +20,14 @@ function GradingSheetForm({
   return (
     <div className="max-w-full">
       <div className="text-2xl font-bold mb-4 text-center">
-        Want to upload a grading sheet?
+        Generate Scaling
       </div>
+      <p className="text-sm text-center mb-4">
+        Want to upload a scaling sheet?
+      </p>
+      <p className="text-sm text-muted-foreground text-center mb-4">
+        We'll update the sheet to apply the scaling.
+      </p>
       <Dropzone
         onDrop={handleDrop}
         onError={console.error}
@@ -50,7 +56,7 @@ function GradingSheetForm({
       </Dropzone>
 
       {/* NEXT BUTTON */}
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-6">
         <Button
           type="submit"
           className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-full px-8"
