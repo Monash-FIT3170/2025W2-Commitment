@@ -3,10 +3,10 @@ import { format, subDays, addDays, isValid } from "date-fns";
 import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
-import { BranchDropDownMenu } from "./BranchDropDownMenuButton";
+import { BranchDropdownMenu } from "./BranchDropdownMenu";
 import UserContributionHeatMap from "./HeatMapGraph";
 import { dark2 } from "../ui/colors";
-import { ContributorDropDownMenu } from "./ContributorDropDownButton";
+import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
@@ -99,7 +99,7 @@ const mockTotalLocData = [
 ];
 
 export const mockContributorDataset = {
-  title: "Total Lines of Code Over Time",
+  title: "Total Lines of Code",
   data: [
     { date: "2024-01-01", Alice: 120, Bob: 90, Charlie: 100 },
     { date: "2024-01-02", Alice: 140, Bob: 95, Charlie: 105 },
@@ -137,8 +137,8 @@ export const generateRandomContributions = (
   if (!endDate || !isValid(endDate)) {
     // In the case where no end date is given
     return [];
-  } 
-  console.log(startDate, endDate, "both")
+  }
+  console.log(startDate, endDate, "both");
   const data = [];
   const totalDays = Math.floor(
     (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -177,7 +177,7 @@ const transformToPieChartData = (data: any[]) => {
   }));
 };
 
-export const MetricsPage = () => {
+export const AnalyticsView = () => {
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
@@ -221,54 +221,28 @@ export const MetricsPage = () => {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Branch*</label>
-              <BranchDropDownMenu branches={dummyBranches} />
+              <BranchDropdownMenu branches={dummyBranches} />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
-              <ContributorDropDownMenu contributors={dummyContributors} />
+              <ContributorDropdownMenu contributors={dummyContributors} />
             </div>
           </div>
 
           <div className="flex flex-wrap gap-6">
             {/* Heatmap */}
-            {/* <div
-              className="outline outline-2 rounded-2xl p-2 basis-1/3 min-w-[320px]"
-              style={{
-                backgroundColor: graphBackgroundColour,
-                outlineColor: "#35353140",
-              }}
-            >
-              <UserContributionHeatMap
-                data={data}
-                startDate={startDate}
-                endDate={endDate}
-                maxUsersToShow={24}
-                title="Heat Map"
-              />
-            </div> */}
-            <GraphCard>
-              <UserContributionHeatMap
-                data={data}
-                startDate={startDate}
-                endDate={endDate}
-                maxUsersToShow={24}
-                title="Heat Map"
-              />
-            </GraphCard>
+
+            <UserContributionHeatMap
+              data={data}
+              startDate={startDate}
+              endDate={endDate}
+              maxUsersToShow={24}
+              title="Heat Map"
+            />
 
             {/* Pie Chart */}
-            {/* <div
-              className="outline outline-2 rounded-2xl p-2 flex-1 min-w-[320px]"
-              style={{
-                backgroundColor: graphBackgroundColour,
-                outlineColor: "#35353140",
-              }}
-            >
-              <ContributionPieChart data={pieChartData} />
-            </div> */}
-            <GraphCard>
-              <ContributionPieChart data={pieChartData} />
-            </GraphCard>
+
+            <ContributionPieChart data={pieChartData} />
 
             <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
               <HighlightCardWithGraph
@@ -303,10 +277,10 @@ export const MetricsPage = () => {
               yAxisLabel="Lines of Code Changed"
             />
 
-            <div className="rounded-2xl p-2 basis-1/3 min-w-[320px]">
+            <div className="rounded-2xl basis-1/3 min-w-[320px]">
               <LeaderboardGraph
                 data={topUsers}
-                title="Top Contributors Based on All Commits"
+                title="Top Contributors"
                 xAxisLabel="Commits"
               />
             </div>
