@@ -55,14 +55,15 @@ PORT=3000
 ### 2. Get Your MongoDB Atlas Connection String
 
 1. **Log into MongoDB Atlas**: Visit [cloud.mongodb.com](https://cloud.mongodb.com)
-2. **Navigate to your cluster**: Click on your cluster name
-3. **Click "Connect"**: In the cluster overview
-4. **Choose "Connect your application"**: Select this option
-5. **Copy the connection string**: It looks like this:
+2. ** Use the Commitment team email to log in, as the account has been set up already
+3. **Navigate to your cluster**: Click on your cluster name
+4. **Click "Connect"**: In the cluster overview
+5. **Choose "Connect your application"**: Select this option
+6. **Copy the connection string**: It looks like this:
    ```
    mongodb+srv://your_username:your_password@your_cluster.abc123.mongodb.net/your_database?retryWrites=true&w=majority
    ```
-6. **Replace placeholders**:
+7. **Replace placeholders**:
    - `<username>` → Your MongoDB Atlas username
    - `<password>` → Your MongoDB Atlas password
    - `<cluster>` → Your cluster identifier
