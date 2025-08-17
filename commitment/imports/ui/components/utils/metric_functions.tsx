@@ -50,3 +50,51 @@ export function getAllContributorsCommits(data: RepositoryData): {
   console.log("All contributor commits:", list);
   return { title: "All Contributor Commits", data: list };
 }
+
+/**
+ *
+ * @param repo
+ * @returns
+ */
+export const calculateTotalCommits = (
+  repo: RepositoryData
+): {
+  total: number;
+  percentageChange: number;
+  isPositive: boolean;
+  data: { value: number }[];
+} => {
+  const total = repo.allCommits.size;
+
+  // Group commits by day
+  const commitsByDay = new Map<string, number>();
+  repo.allCommits.forEach((commit) => {
+    const day = new Date(commit.timestamp).toISOString().slice(0, 10);
+    commitsByDay.set(day, (commitsByDay.get(day) ?? 0) + 1);
+  });
+
+  // Sort days chronologically
+  const sortedDays = Array.from(commitsByDay.entries()).sort(
+    (a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()
+  );
+
+  // Prepare graph data (daily counts)
+  const data = sortedDays.map(([_, count]) => ({ value: count }));
+
+  // Calculate percentage change = today vs yesterday
+  let percentageChange = 0;
+  let isPositive = true;
+  if (sortedDays.length >= 2) {
+    const last = sortedDays[sortedDays.length - 1][1];
+    const prev = sortedDays[sortedDays.length - 2][1];
+    percentageChange = prev === 0 ? 100 : ((last - prev) / prev) * 100;
+    isPositive = last >= prev;
+  }
+
+  return {
+    total,
+    percentageChange,
+    isPositive,
+    data,
+  };
+};

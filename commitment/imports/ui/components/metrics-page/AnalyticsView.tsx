@@ -18,7 +18,7 @@ import { LeaderboardGraph } from './LeaderboardGraph';
 import { ContributionPieChart } from './PieChartGraph';
 import { topContributors } from '../../lib/utils';
 import GraphCard from './GraphCard';
-import { getContributors, getBranches, getAllContributorsCommits } from '/imports/ui/components/utils/metric_functions';
+import { getContributors, getBranches, getAllContributorsCommits, calculateTotalCommits } from '/imports/ui/components/utils/metric_functions';
 import { RepositoryData } from '/server/commitment_api/types';
 import { getFilteredRepoData } from '../utils/data_filter';
 
@@ -234,12 +234,16 @@ export function AnalyticsView() {
     return <div>No repo data available</div>;
   }
 
+  console.log(repoData);
+
   // extracting information from metric functions
   const contributorData = getContributors(repoData);
   const numContributors = contributorData.length;
   const branchData = getBranches(repoData);
   const numBranches = branchData.length;
   const contributorCommitData = getAllContributorsCommits(repoData).data;
+
+  const totalCommits = calculateTotalCommits(repoData);
 
   // const filteredRepoData = getFilteredRepoData(repoUrl, new Subject<string>());
   // console.log("here is the filtered data", filteredRepoData);
@@ -321,25 +325,25 @@ export function AnalyticsView() {
               <ContributionPieChart data={pieChartData} />
             </GraphCard> */}
 
-            <UserContributionHeatMap
+            {/* <UserContributionHeatMap
               data={data}
               startDate={startDate}
               endDate={endDate}
               maxUsersToShow={24}
               title="Heat Map"
-            />
+            /> */}
 
             {/* Pie Chart */}
 
-            <ContributionPieChart data={pieChartData} />
+            {/* <ContributionPieChart data={pieChartData} /> */}
 
             <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
               <HighlightCardWithGraph
                 title="Total Commits"
-                value={123}
-                percentageChange={20}
-                isPositive
-                data={mockCommitLineData}
+                value={totalCommits.total}
+                percentageChange={totalCommits.percentageChange}
+                isPositive={totalCommits.isPositive}
+                data={totalCommits.data}
               />
               <HighlightCardWithGraph
                 title="Total Lines of Code"
