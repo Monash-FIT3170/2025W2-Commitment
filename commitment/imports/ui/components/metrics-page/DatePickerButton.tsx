@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { format, subMonths } from "date-fns";
 import { CalendarIcon } from "lucide-react";
