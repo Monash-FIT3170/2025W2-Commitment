@@ -1,32 +1,29 @@
-import { Meteor } from 'meteor/meteor'
-import { RepositoryData, CommitData } from '/server/commitment_api/types';
+import { Meteor } from "meteor/meteor";
+import { RepositoryData, CommitData } from "/server/commitment_api/types";
 import { Subject } from "rxjs";
-
 
 /** Return a Map of all commits */
 
-export const getCommitsMap = (repo: RepositoryData): Map<string, CommitData> => {
-    return new Map(Object.entries(repo.allCommits));
-};
+export const getCommitsMap = (repo: RepositoryData): Map<string, CommitData> =>
+  new Map(Object.entries(repo.allCommits));
 
-/** 
- * Return a list of all branches 
+/**
+ * Return a list of all branches
  */
 
-export const getBranches = (repo: RepositoryData): string[] => {
-    //get list of branch names 
-    return repo.branches.map(branch => branch.branchName);
-};
-
+export const getBranches = (repo: RepositoryData): string[] =>
+  // get list of branch names
+  repo.branches.map((branch) => branch.branchName);
 
 /**
  * Return a list of all contributors
  */
 export const getContributors = (repo: RepositoryData): string[] => {
   const contributorsMap = repo.contributors;
-  return Array.from(contributorsMap.values()).map(contributor => contributor.name);
+  return Array.from(contributorsMap.values()).map(
+    (contributor) => contributor.name
+  );
 };
-
 
 /**
  * Total commits by contributor (graph-ready)
@@ -41,12 +38,15 @@ export function getAllContributorsCommits(data: RepositoryData): {
 } {
   const counts = new Map<string, number>();
 
-  data.allCommits.forEach(commit => {
+  data.allCommits.forEach((commit) => {
     const user = commit.contributorName;
     counts.set(user, (counts.get(user) ?? 0) + 1);
   });
 
-  const list = Array.from(counts.entries()).map(([name, commits]) => ({ name, commits }));
+  const list = Array.from(counts.entries()).map(([name, commits]) => ({
+    name,
+    commits,
+  }));
   console.log("All contributor commits:", list);
   return { title: "All Contributor Commits", data: list };
 }
