@@ -29,12 +29,20 @@ export const fetchRepo = (url: string, subject: Subject<string>) => {
     })
 }
 
-export const repoInDatabase = async (url: string) => {
+export const repoInDatabase = async (url: string): Promise<boolean> => {
     return new Promise<boolean>((resolve, reject) => {
+        if (!Meteor.status().connected) {
+            return reject(new Error("Server is not connected"));
+        }
+
         Meteor.call('repoInDatabase', url, (err: Error, result: boolean) => {
-            if (err) reject(err)    
-            resolve(result)
+            if (err) {
+                console.error('Error checking if repo is in database:', err);
+                reject(err);
+            } else {
+                resolve(result);
+            }
         });
-    })
+    });
 }
 
