@@ -7,7 +7,7 @@ interface FeatureCardProps {
   description: string;
   image: string;
   alt: string;
-  className: string;
+  className?: string;
 }
 
 export function FeatureCard({
