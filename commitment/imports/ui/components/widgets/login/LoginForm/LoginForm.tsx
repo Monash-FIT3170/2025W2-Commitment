@@ -75,7 +75,7 @@ function LoginForm(props: LoginFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className={`flex flex-col gap-2 ${props.className ?? ''}`}>
+      <form onSubmit={(e) => { void form.handleSubmit(onSubmit)(e); }} className={`flex flex-col gap-2 ${props.className ?? ''}`}>
         <FormField
           control={form.control}
           name="email"
