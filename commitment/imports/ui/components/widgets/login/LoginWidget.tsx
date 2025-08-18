@@ -9,7 +9,7 @@ export interface LoginWidgetProps {
   className?: string
 }
 
-const LoginWidget: FC<LoginWidgetProps> = (props) => {
+const LoginWidget: FC<LoginWidgetProps> = (className) => {
   const cardElement = (
     <Card className="max-w-md w-96 grow">
       <CardHeader>
@@ -24,7 +24,7 @@ const LoginWidget: FC<LoginWidgetProps> = (props) => {
   );
 
   return (
-    <div className={cx('inline-flex flex-row content-center justify-center', props.className)}>
+    <div className={cx('inline-flex flex-row content-center justify-center', className)}>
       <div>
         {cardElement}
       </div>
