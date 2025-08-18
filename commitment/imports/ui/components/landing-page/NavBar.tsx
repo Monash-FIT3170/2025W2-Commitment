@@ -15,7 +15,7 @@ interface NavBarProps {
   isLoggedIn: boolean;
 }
 
-const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
+function NavBar({ isLoggedIn }: NavBarProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
   const isLandingPage = location.pathname === '/';
@@ -91,6 +91,7 @@ const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
 
       <div className="flex items-center space-x-4">
         <button
+          type="button"
           onClick={handleToggleDarkMode}
           className="p-2 rounded-full hover:bg-gray-200 transition-colors"
           aria-label={
