@@ -10,7 +10,7 @@ import { fetchDataFrom } from './commitment_api/commitment';
 /**
  * COLLECTION OF REPOSITORIES
  */
-const RepoCollection = new Mongo.Collection<ServerRepoData>('repoCollection');
+export const RepoCollection = new Mongo.Collection<ServerRepoData>('repoCollection');
 
 Meteor.methods({
   /**
