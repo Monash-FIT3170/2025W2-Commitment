@@ -3,7 +3,7 @@ import { format, subDays, addDays, isValid } from "date-fns";
 import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
-import { BranchDropdownMenu } from "./BranchDropdownMenu";
+import  BranchDropdownMenu  from "./BranchDropdownMenu";
 import UserContributionHeatMap from "./HeatMapGraph";
 import { dark2 } from "../ui/colors";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";

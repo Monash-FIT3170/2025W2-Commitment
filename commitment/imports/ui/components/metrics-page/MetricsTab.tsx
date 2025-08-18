@@ -29,7 +29,7 @@ const allTabData: TabData[] = [
   },
 ];
 
-export function MetricsTabs() {
+export default function MetricsTabs() {
   return (
     <Tabs
       defaultValue="metrics"

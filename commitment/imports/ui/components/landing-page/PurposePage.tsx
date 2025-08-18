@@ -1,25 +1,14 @@
-import React from 'react';
-import { Separator } from '@ui/components/ui/separator';
-import { Card, CardContent } from '@ui/components/ui/card';
-import GetStartedButton from './getStartedButton';
-
-const purpose = () => (
-  <div className="flex flex-col justify-center items-center mt-20">
-    <Header />
-
-    <CircleNumber />
-
-    <PurposeCard />
-    <GetStartedButton className="mt-12" />
-  </div>
-);
-
-export default purpose;
+import React from "react";
+import { Separator } from "@ui/components/ui/separator";
+import { Card, CardContent } from "@ui/components/ui/card";
+import GetStartedButton from "./getStartedButton";
 
 function Header() {
   return (
     <div className="flex flex-col justify-center items-center">
-      <h4 className="font-mono text text-git-500 text-lg font-semibold">HOW TO USE?</h4>
+      <h4 className="font-mono text text-git-500 text-lg font-semibold">
+        HOW TO USE?
+      </h4>
       <h1 className="font-mono text-5xl">Get Started in Three Steps</h1>
     </div>
   );
@@ -84,3 +73,16 @@ function PurposeCard() {
     </Card>
   );
 }
+
+const purpose = () => (
+  <div className="flex flex-col justify-center items-center mt-20">
+    <Header />
+
+    <CircleNumber />
+
+    <PurposeCard />
+    <GetStartedButton className="mt-12" />
+  </div>
+);
+
+export default purpose;

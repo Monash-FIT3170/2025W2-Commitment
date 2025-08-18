@@ -3,7 +3,7 @@ import {
 } from '@radix-ui/react-dropdown-menu';
 import { ArrowDownUp, ArrowDown, ArrowUp } from 'lucide-react';
 import React from 'react';
-import { Button } from 'react-day-picker';
+import { Button } from '@ui/components/ui/button';
 
 type SortKey = 'createdAt' | 'lastViewed' | null
 type SortDir = 'asc' | 'desc' | null
@@ -14,6 +14,14 @@ interface SortMenuOptions{
 }
 
 export default function SortMenu() {
+  // Helper function to render the sort icon
+  function renderSortIcon(key: SortKey) {
+    if (sortKey !== key) return null;
+    if (sortDir === 'desc') return <ArrowDown className="ml-2 h-4 w-4" />;
+    if (sortDir === 'asc') return <ArrowUp className="ml-2 h-4 w-4" />;
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -33,13 +41,13 @@ export default function SortMenu() {
         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycle('lastViewed'); }}>
           Last viewed
           {' '}
-          {sortKey === 'lastViewed' && (sortDir === 'desc' ? <ArrowDown className="ml-2 h-4 w-4" /> : sortDir === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : null)}
+          {renderSortIcon('lastViewed')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycle('createdAt'); }}>
           Date bookmarked
           {' '}
-          {sortKey === 'createdAt' && (sortDir === 'desc' ? <ArrowDown className="ml-2 h-4 w-4" /> : sortDir === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : null)}
+          {renderSortIcon('createdAt')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

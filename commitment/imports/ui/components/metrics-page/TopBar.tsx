@@ -1,7 +1,7 @@
 import React from 'react';
 import { Settings } from 'lucide-react';
 
-export function TopBar() {
+export default function TopBar() {
   return (
     <div className="flex items-center justify-between px-10 py-3 border-b border-gray-200 bg-[#FEFEFA]">
       <div className="flex items-center gap-3">
