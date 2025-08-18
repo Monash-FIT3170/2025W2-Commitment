@@ -5,49 +5,49 @@ import { DataTable } from "./ScalingTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { ScalingRadialChart } from "./ScalingRadialChart";
 import type { UserScalingSummary } from "@server/commitment_api/types";
-
 interface ScalingSummaryProps {
-  userScalingSummaries: UserScalingSummary[];
+  userScalingSummaries: UserScalingSummary[]; //IF A GRADING SHEET IS PROVIDED, THE VALUES OF THIS PARAMETER MUST REFLECT THE FINAL GRADE, THUS CALCULATIONS ARE DONE AT THE GradingSheetForm STAGE
+  hasGradingSheet: boolean;
 }
 
-/**
- *
- * @param  userScalingSummaries contain the details of each person, their aliases with emails, their grade and the scaling applied to their grade.
- * @returns
- */
 const ScalingSummary: React.FC<ScalingSummaryProps> = ({
   userScalingSummaries,
+  hasGradingSheet,
 }) => {
-  const columns: ColumnDef<UserScalingSummary>[] = useMemo(
-    () => [
+  const columns: ColumnDef<UserScalingSummary>[] = useMemo(() => {
+    const baseCols: ColumnDef<UserScalingSummary>[] = [
       {
         accessorKey: "name",
         header: "Contributor Name",
         cell: ({ row }) => row.getValue("name"),
       },
       {
+        accessorKey: "scale",
+        header: "Scale",
+        cell: ({ row }) => (
+          <ScalingRadialChart value={row.getValue("scale") as number} />
+        ),
+      },
+    ];
+
+    // Insert Final Grade only if grading sheet exists
+    if (hasGradingSheet) {
+      baseCols.splice(1, 0, {
         accessorKey: "finalGrade",
         header: "Final Grade",
         cell: ({ row }) => {
-          const grade = row.getValue("finalGrade") as number | null | undefined;
-          return grade ?? 0; //a grade of 0 as we can't assume any grade
+          const grade = row.getValue("finalGrade") as number | null;
+          return grade ?? 0;
         },
-      },
-      {
-        accessorKey: "scale",
-        header: "Scale",
-        cell: ({ row }) => {
-          const scale = row.getValue("scale") as number | null | undefined;
-          return <ScalingRadialChart value={scale ?? 1} />; //a scale of 1 as no scaling has been applied
-        },
-      },
-    ],
-    []
-  );
+      });
+    }
+
+    return baseCols;
+  }, [hasGradingSheet]);
 
   return (
-    <div className="-mt-4  rounded-md bg-git-bg-elevated overflow-scroll ">
-      <div className="max-h-[600px]  rounded-md bg-git-bg-elevated">
+    <div className="-mt-4 rounded-md bg-git-bg-elevated overflow-scroll">
+      <div className="max-h-[600px] rounded-md bg-git-bg-elevated">
         <DataTable columns={columns} data={userScalingSummaries} />
       </div>
     </div>

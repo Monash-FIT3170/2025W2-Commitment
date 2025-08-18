@@ -121,6 +121,6 @@ export type AliasEmail = {
 export type UserScalingSummary = {
   name: string;
   aliases: AliasEmail[];
-  finalGrade: number | null;
-  scale: number | null;
+  finalGrade: number | null; // may be missing -> if there is a grading sheet, this must be populated
+  scale: number;  // always present
 };

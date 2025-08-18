@@ -18,10 +18,7 @@ import {
 
 import { ChevronRight } from "lucide-react";
 
-type AliasEmail = {
-  username: string;
-  email: string;
-};
+import type { AliasEmail } from "@server/commitment_api/types";
 
 interface DataTableProps<TData extends { aliases?: AliasEmail[] }, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -95,7 +92,9 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                     )}
 
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    {idx === row.getVisibleCells().length - 2 && "%"}
+                    {idx === row.getVisibleCells().length - 2 &&
+                      typeof cell.getValue() === "number" &&
+                      "%"}
                   </TableCell>
                 ))}
               </TableRow>

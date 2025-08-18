@@ -63,9 +63,6 @@ function ScalingView() {
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-          {/* {hasLoaded && !completed && !showDialog && (
-       
-        )} */}
           {!(completed && config) && (
             <Button
               className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary -hover"
@@ -79,9 +76,14 @@ function ScalingView() {
           )}
 
           {/* Show summary if completed */}
-          {completed && config && (
+          {completed && step === "done" && config && (
             <div>
-              <ScalingSummary userScalingSummaries={userScalingSummaries} />
+              {completed && config && (
+                <ScalingSummary
+                  userScalingSummaries={userScalingSummaries}
+                  hasGradingSheet={!!gradingSheet}
+                />
+              )}
 
               <div className="flex justify-center gap-6 p-4">
                 <Button
@@ -110,14 +112,20 @@ function ScalingView() {
           <Dialog
             open={showDialog}
             onOpenChange={(open) => {
+              if (!open && step === "sheet") {
+                // if user closed grading sheet with cross button
+                setCompleted(true);
+                setStep("done");
+              }
               setShowDialog(open);
             }}
           >
-            <DialogHeader>
-              <DialogTitle />
-              <DialogDescription />
-            </DialogHeader>
             <DialogContent className="max-w-full">
+              <DialogHeader>
+                <DialogTitle />
+                <DialogDescription />
+              </DialogHeader>
+
               {step === "config" && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
