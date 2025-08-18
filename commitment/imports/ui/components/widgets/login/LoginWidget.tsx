@@ -9,7 +9,7 @@ export interface LoginWidgetProps {
   className?: string
 }
 
-const LoginWidget: FC<LoginWidgetProps> = (className) => {
+const LoginWidget: FC<LoginWidgetProps> = ({ className }) => {
   const cardElement = (
     <Card className="max-w-md w-96 grow">
       <CardHeader>
