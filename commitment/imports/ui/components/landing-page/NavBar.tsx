@@ -27,6 +27,8 @@ function NavBar({ isLoggedIn }: NavBarProps) {
 
   const handleToggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+
+    document.documentElement.classList.toggle("dark");
     // note to self: implement dark mode logic here later
     console.log('Dark mode toggled:', !isDarkMode);
   };
@@ -74,6 +76,7 @@ function NavBar({ isLoggedIn }: NavBarProps) {
             <>
               <NavigationMenuItem>
                 <NavigationMenuLink>
+
                   <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
                     Dashboard
                   </Link>

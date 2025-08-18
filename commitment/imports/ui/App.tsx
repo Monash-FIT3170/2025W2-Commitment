@@ -17,6 +17,7 @@ export default function App() {
 
         {/* Add more routes as needed */}
 
+
         <Route path="/loading" element={<LoadingPage />} />
         <Route path="/metrics" element={<MetricsPage />} />
         <Route path="/dashboard" element={<DashboardView />} />

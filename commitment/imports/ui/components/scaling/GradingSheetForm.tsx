@@ -1,5 +1,45 @@
-import React from 'react';
+import React, { useState, ChangeEvent } from "react";
+import { Button } from "../ui/button";
 
-export function GradingSheetForm() {
-  return <div>GRADING SHEET FORM</div>;
+interface GradingSheetFormProps {
+  onSubmit: (file?: File | null) => void;
 }
+
+export const GradingSheetForm: React.FC<GradingSheetFormProps> = ({
+  onSubmit,
+}) => {
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = () => {
+    onSubmit(file); // will be null if no file is provided
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Upload Grading Sheet (optional)
+        </label>
+        <input
+          type="file"
+          accept=".csv,.xlsx,.xls"
+          onChange={handleFileChange}
+          className="mt-1 block w-full"
+        />
+      </div>
+      <Button
+        className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+        onClick={handleSubmit}
+      >
+        Submit
+      </Button>
+    </div>
+  );
+};
+
