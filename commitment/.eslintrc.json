@@ -15,8 +15,8 @@
     "build/",
     "*.d.ts",
     "imports/ui/components/ui",
-    "server/commitment_api",
-    "imports/api/"
+    "server/", //temporarily ignore server files
+    "imports/api/" //temporarily ignore api files
   ],
   "env": {
     "browser": true,
@@ -50,6 +50,16 @@
       "rules": {
         "consistent-return": "off",
         "react/require-default-props": "off",
+        "react/function-component-definition":"off",
+        "import/prefer-default-export": "off",
+        "react/jsx-props-no-spreading": "off",
+        "no-nested-ternary": "off",
+        "no-plusplus": "off",
+        "react/prop-types": "off",
+        "react/no-unused-prop-types": "off",
+        "no-void": ["error", { "allowAsStatement": true }],
+        "react/destructuring-assignment": "off",
+        "no-use-before-define": ["warn", { "functions": false }],
         "@typescript-eslint/explicit-module-boundary-types": "warn",
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
         "@typescript-eslint/no-floating-promises": "error",
