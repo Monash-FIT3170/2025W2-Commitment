@@ -55,20 +55,20 @@ export function ContributorDropdownMenu({
         <DropdownMenuLabel>Select Contributors</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ScrollArea className="h-48">
-          {contributors.map((contributors) => (
+          {contributors.map((contributor) => (
             <DropdownMenuCheckboxItem
               onSelect={(event) => event.preventDefault()}
-              key={contributors}
-              checked={selectedContributors.includes(contributors)}
+              key={contributor}
+              checked={selectedContributors.includes(contributor)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setContributors((prev) => [...prev, contributors]);
+                  setContributors((prev) => [...prev, contributor]);
                 } else {
-                  setContributors((prev) => prev.filter((c) => c !== contributors));
+                  setContributors((prev) => prev.filter((c) => c !== contributor));
                 }
               }}
             >
-              {contributors}
+              {contributor}
             </DropdownMenuCheckboxItem>
           ))}
         </ScrollArea>
