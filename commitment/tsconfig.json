@@ -39,7 +39,6 @@
     "types": ["node", "mocha", "meteor"],
     "esModuleInterop": true,
     "preserveSymlinks": true
-
   },
   "exclude": [
     "./.meteor/**",
