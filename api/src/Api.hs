@@ -116,4 +116,4 @@ fallback req respond = do
                 encodeError "No repository data found."
 
 appHTTP :: Application
-appHTTP = websocketsOr defaultConnectionOptions appWS fallback
+appHTTP = fallback

@@ -153,6 +153,7 @@ Meteor.methods({
 
 /**
  * Method to cache fetched data into the database.
+ * Use Meteor.call to insert or update the repo data in the database
  *
  * @param url URL of the repository to cache.
  * @param data The repo data to be cached, should be of RepositoryData type.
@@ -164,20 +165,12 @@ Meteor.methods({
 export const cacheIntoDatabase = async (
   url: string,
   data: RepositoryData,
-): Promise<boolean> =>
-  // Use Meteor.call to insert or update the repo data in the database
-  new Promise((resolve, reject) => {
-    Meteor.call(
-      'repoCollection.insertOrUpdateRepoData',
-      url,
-      data,
+): Promise<boolean> => new Promise((resolve, reject) => {
+    Meteor.call('repoCollection.insertOrUpdateRepoData',
+      url, data,
       (err: any, res: boolean | PromiseLike<boolean>) => {
-        if (err) {
-          console.error('Error inserting repo data:', err);
-          reject(err);
-        } else {
-          resolve(res);
-        }
+        if (err) reject(err)
+        else resolve(res)
       },
     );
   });
@@ -205,12 +198,12 @@ export const tryFromDatabase = async (
   url: string,
   notifier: Subject<string>,
 ): Promise<RepositoryData> => {
-  // try and get it from database
+  // try and get it from database 
   notifier.next('Searching database for your repo...');
   const data = await RepoCollection.findOneAsync({ url })
 
   if (!data) {
-    const s = "Couldn't find your repo, fetching from the API..."
+    const s = "Couldn't find your repo in the database"
     notifier.next(s);
     return Promise.reject(s);
   }

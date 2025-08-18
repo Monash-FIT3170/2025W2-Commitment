@@ -10,8 +10,7 @@
     "dist/",
     "build/",
     "*.d.ts",
-    "imports/ui/components/ui",
-    "server/commitment_api"
+    "imports/ui/components/ui"
   ],
   "env": {
     "browser": true,

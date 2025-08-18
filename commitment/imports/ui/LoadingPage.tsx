@@ -43,11 +43,12 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
     if (!repoUrl) return;
 
     const notifier = new Subject<string>();
-    const sub = notifier.subscribe(msg => setMessage(msg));
+    const sub = notifier.subscribe(setMessage);
+    //const $sout = notifier.subscribe(console.log) // for debugging purposes
 
     fetchRepo(repoUrl, notifier)
       .then(() => {
-        notifier.next(" Repository data loaded!");
+        notifier.next("Repository data loaded!");
         setProgress(100);
 
         // redirect to the metrics page 
@@ -56,7 +57,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
         }, 1000);
       })
       .catch(err => {
-        notifier.next(` ${err}`);
+        notifier.next(`${err}`);
         // Wait 10 seconds to let user read the error, then redirect back
         setTimeout(() => {
           navigate("/home", { replace: true });
@@ -65,6 +66,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
 
     return () => {
       sub.unsubscribe();
+      //$sout.unsubscribe()
       notifier.complete();
     };
   }, [repoUrl, navigate]);

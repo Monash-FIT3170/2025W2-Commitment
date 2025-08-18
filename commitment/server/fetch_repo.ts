@@ -1,5 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
+import { WebSocket } from "ws";
 
 import { RepositoryData } from "../imports/api/types";
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
@@ -48,12 +49,7 @@ Meteor.methods({
     const subject = sub || new Subject<string>();
 
     // returns whether it was successful in caching to the database or not
-    try {
-      await getRepoData(repoUrl, subject);
-      return true;
-    } catch (error) {
-      return false;
-    }
+    return await getRepoData(repoUrl, subject)
   },
 });
 
@@ -75,26 +71,25 @@ Meteor.methods({
 export const getRepoData = async (
   url: string,
   notifier: Subject<string>,
-): Promise<RepositoryData> => {
-  try {
-    // to update back to this line of code:
-    const data = await tryFromDatabase(url, notifier);
-    // delete these two lines later (need to update the URL being tested):
-    // const data = await fetchDataFrom(url, notifier);
-    // console.log("fetched data in getRepoData and checking type of allCommits", typeof data.allCommits);
-    // await cacheIntoDatabase(url, data);
-    return data;
-
-  } catch (e) {
-    const data = await fetchDataFromHaskellApp(url, notifier);
-    cacheIntoDatabase(url, data);
-    // const savedData = await RepoCollection.findOneAsync({ url });
-    return data;
-  }
-};
+): Promise<boolean> => 
+  tryFromDatabase(url, notifier)
+    .then(v => true)
+    .catch(async (e) => 
+      fetchDataFromHaskellApp(url, notifier)
+        .then(data => {
+          notifier.next(`Successfuil`)
+          cacheIntoDatabase(url, data)
+          return true
+        })
+        .catch(e => {
+          notifier.next(`API fetch failed...: ${e}`)
+          return false
+        })
+    )
 
 /**
  * Fetches the repository data structure from the Haskell API
+ * Uses Websockets to recieve reactive messages from the app
  * 
  * @param url url to run the API on
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
@@ -105,7 +100,11 @@ const fetchDataFromHaskellApp = async (
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
-    const socket = new WebSocket("ws://localhost:8081");
+
+    notifier.next("Connecting to the API...")
+    const socket = new WebSocket("ws://haskell-api:8081", {
+      perMessageDeflate: false
+    });
 
     socket.onopen = () => {
       // Step 1: Send repo URL
@@ -117,15 +116,17 @@ const fetchDataFromHaskellApp = async (
       );
     };
 
-    socket.onmessage = (event) => {
+    socket.onmessage = (event: any) => {
       // Step 2: Await response from haskell app
       const data = event.data;
       const parsed = JSON.parse(data);
 
-      if (parsed.type === "text_update") notifier.next(data.replace("text_update: ", ""));
-      else if (parsed.type === "value") resolve(data.value);
+      if (parsed.type === "text_update") notifier.next(parsed.data);
+      else if (parsed.type === "value") resolve(parsed.data);
       else if (parsed.type === "error") reject(parsed.message);
     };
 
-    socket.onclose = () => {};
+    socket.onclose = () => {
+      notifier.next("Consolidating new data into database...")
+    };
   });

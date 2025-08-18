@@ -17,12 +17,12 @@ export const fetchRepo = (url: string, subject: Subject<string>) => {
     })
 
     // Call the server method to start data retrieval
-    return new Promise<boolean>((resolve, reject) => {
+    return new Promise<boolean>(async (resolve, reject) => {
         if (!Meteor.status().connected) {
             return reject(new Error("Server is not found"))
         }
 
-        Meteor.call('getGitHubRepoData', url, (err: Error, result: boolean) => {
+        return await Meteor.call('getGitHubRepoData', url, (err: Error, result: boolean) => {
             if (err) reject(err)
             resolve(result)
         });
