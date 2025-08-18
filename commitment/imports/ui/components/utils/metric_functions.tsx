@@ -2,10 +2,6 @@ import { Meteor } from "meteor/meteor";
 import { RepositoryData, CommitData } from "/server/commitment_api/types";
 import { Subject } from "rxjs";
 
-/** Return a Map of all commits */
-
-export const getCommitsMap = (repo: RepositoryData): Map<string, CommitData> =>
-  new Map(Object.entries(repo.allCommits));
 
 /**
  * Return a list of all branches
