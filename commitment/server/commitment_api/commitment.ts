@@ -107,10 +107,8 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
   // send shit out
   notifier.next('Data processed!');
 
-  console.log("Sending repo data from commitment.ts:", repoData);
 
   const serializedData = serializeRepoData(repoData);
-  console.log("Checking type of AllCommits in serialized data", typeof serializedData.allCommits);
   
   return serializedData;
 };
