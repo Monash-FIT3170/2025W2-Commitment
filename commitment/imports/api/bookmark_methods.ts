@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { last } from 'rxjs';
 import { BookmarksCollection, Bookmark } from './bookmarks';
 
 import { repoInDatabase } from './call_repo';
@@ -13,7 +12,8 @@ Meteor.methods({
      * @param {string} title - The title of the link.
      * @param {string} url - The URL of the link. Must start with 'http' or 'https'.
      * @returns {Promise<string>} The ID of the newly inserted link document.
-     * @throws {Meteor.Error} If the URL is invalid or does not start with 'http', not in db or not authorised.
+     * @throws {Meteor.Error} If the URL is invalid or does not start with 'http'.
+     * @throws {Meteor.Error} If the URL is not in db or not authorised.
      */
   async 'bookmarks.insertBookmark'(title: string, url: string) {
     check(title, String);
@@ -40,7 +40,7 @@ Meteor.methods({
       lastViewed: new Date(),
     };
 
-    return await BookmarksCollection.insertAsync(newBookmark);
+    return BookmarksCollection.insertAsync(newBookmark);
   },
 
   /**
@@ -62,6 +62,12 @@ Meteor.methods({
 
     if (!bm) {
       throw new Meteor.Error('link-not-found', 'Link not found');
+    }
+
+    // Ensure the bookmark has an _id before attempting to remove it
+    // This is a safeguard, as the _id should always be present in a valid document
+    if (!bm._id) {
+      throw new Meteor.Error('invalid-id', 'Bookmark _id is missing');
     }
 
     return BookmarksCollection.removeAsync(bm._id);
@@ -107,6 +113,12 @@ Meteor.methods({
       throw new Meteor.Error('bookmark-not-found', 'Bookmark not found');
     }
 
+    // Ensure the bookmark has an _id before attempting to remove it
+    // This is a safeguard, as the _id should always be present in a valid document
+    if (!bm._id) {
+      throw new Meteor.Error('invalid-id', 'Bookmark _id is missing');
+    }
+
     return BookmarksCollection.updateAsync(bm._id, { $set: { lastViewed: new Date() } });
   },
 
@@ -117,11 +129,11 @@ Meteor.methods({
      * @returns {Promise<Bookmark[]>} An array of bookmarks for the current user.
      * @throws {Meteor.Error} If not authorised.
      */
-  async 'bookmarks.getAllBookmarks'() {
+  'bookmarks.getAllBookmarks'() {
     if (!this.userId) {
       throw new Meteor.Error('not-authorized', 'You must be logged in to view bookmarks.');
     }
-    const bm = await BookmarksCollection.find({ userID: this.userId }).fetch();
+    const bm = BookmarksCollection.find({ userID: this.userId }).fetch();
     // console.log(this.userId)
     // console.log(bm)
 
@@ -135,11 +147,14 @@ Meteor.methods({
          * @returns {Promise<Bookmark[]>} An array of bookmarks for the current user.
          * @throws {Meteor.Error} If not authorised.
          */
-  async 'bookmarks.getNBookmarks'(numBookmarks:number) {
+  'bookmarks.getNBookmarks'(numBookmarks:number) {
+    check(numBookmarks, Number);
     if (!this.userId) {
       throw new Meteor.Error('not-authorized', 'You must be logged in to view bookmarks.');
     }
-    const bm = await BookmarksCollection.find({ userID: this.userId }, { limit: numBookmarks }).fetch();
+    const bm = BookmarksCollection
+      .find({ userID: this.userId }, { limit: numBookmarks })
+      .fetch();
     // console.log(this.userId)
     // console.log(bm)
 
