@@ -21,7 +21,7 @@ const formSchema = z.object({
   rememberMe: z.boolean(),
 });
 
-const LoginForm: FC<LoginFormProps> = (props) => {
+function LoginForm(props: LoginFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
