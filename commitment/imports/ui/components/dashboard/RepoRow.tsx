@@ -7,8 +7,8 @@ import BookmarkButton from '../ui/BookmarkButton';
 
 export interface RepoRowProps {
   bookmark: Bookmark;
-  onclick?: () => void;
-  onInfo?: () => void;
+  onclick: () => void;
+  onInfo: () => void;
 }
 
 export default function RepoRow({ bookmark, onclick, onInfo }: RepoRowProps) {

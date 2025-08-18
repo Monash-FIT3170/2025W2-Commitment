@@ -13,7 +13,7 @@ interface DropdownMenuCheckboxesProps {
   branches: string[];
 }
 
-export function BranchDropdownMenu({ branches }: DropdownMenuCheckboxesProps) {
+export default function BranchDropdownMenu({ branches }: DropdownMenuCheckboxesProps) {
   const [selectedBranch, setSelectedBranch] = React.useState<string | null>(
     branches.length > 0 ? branches[0] : null,
   );

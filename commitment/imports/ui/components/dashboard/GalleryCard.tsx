@@ -9,7 +9,7 @@ import BookmarkButton from '../ui/BookmarkButton';
 
 interface GalleryCardProps {
   bookmark: Bookmark;
-  onclick?: () => void; // method passed by parent to view repository metrics + scaling
+  onclick: () => void; // method passed by parent to view repository metrics + scaling
 }
 
 export default function GalleryCard({
