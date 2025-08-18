@@ -1,5 +1,5 @@
-import React from 'react';
-import { FeatureCarousel } from './FeatureCarousel';
+import React from "react";
+import { FeatureCarousel } from "./FeatureCarousel";
 
 export function Features() {
   return (
