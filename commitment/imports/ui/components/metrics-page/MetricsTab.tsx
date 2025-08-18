@@ -3,11 +3,11 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
-} from "@ui/components/ui/tabs";
-import React from "react";
-import { OverviewPage } from "./OverviewPage";
-import { AnalyticsView } from "./AnalyticsView";
-import ScalingView from "../scaling/ScalingView";
+} from '@ui/components/ui/tabs';
+import React from 'react';
+import { OverviewPage } from './OverviewPage';
+import { AnalyticsView } from './AnalyticsView';
+import ScalingView from '../scaling/ScalingView';
 
 interface TabData {
   value: string;
@@ -20,12 +20,12 @@ const allTabData: TabData[] = [
   //   label: "Overview",
   // },
   {
-    value: "metrics",
-    label: "Metrics",
+    value: 'metrics',
+    label: 'Metrics',
   },
   {
-    value: "scaling",
-    label: "Scaling",
+    value: 'scaling',
+    label: 'Scaling',
   },
 ];
 

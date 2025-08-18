@@ -1,6 +1,6 @@
-import React, { useEffect, useCallback, useState } from "react";
-import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useEffect, useCallback, useState } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface FeatureCardProps {
   title: string;
@@ -10,13 +10,13 @@ interface FeatureCardProps {
   className?: string;
 }
 
-export const FeatureCard = ({
+export function FeatureCard({
   title,
   description,
   image,
   alt,
-  className = "",
-}: FeatureCardProps) => {
+  className = '',
+}: FeatureCardProps) {
   return (
     <div
       className={`flex flex-col justify-between 
@@ -41,7 +41,7 @@ export const FeatureCard = ({
       </p>
     </div>
   );
-};
+}
 
 interface Feature {
   title: string;
@@ -52,46 +52,46 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    title: "Repository Analytics Dashboard",
+    title: 'Repository Analytics Dashboard',
     description:
-      "View summary analytics for each Git repository, including activity levels and trends.",
-    image: "/feature-placeholder.svg",
-    alt: "Alt image.",
+      'View summary analytics for each Git repository, including activity levels and trends.',
+    image: '/feature-placeholder.svg',
+    alt: 'Alt image.',
   },
   {
-    title: "Team Comparison View",
+    title: 'Team Comparison View',
     description:
-      "Compare multiple users across contribution metrics for peer review or group assessment.",
-    image: "/feature-placeholder.svg",
-    alt: "Alt image.",
+      'Compare multiple users across contribution metrics for peer review or group assessment.',
+    image: '/feature-placeholder.svg',
+    alt: 'Alt image.',
   },
   {
-    title: "Custom Filtering",
+    title: 'Custom Filtering',
     description:
-      "Filter analytics by time frame, contributor or branch to focus on different analytics.",
-    image: "/feature-placeholder.svg",
-    alt: "Alt image.",
+      'Filter analytics by time frame, contributor or branch to focus on different analytics.',
+    image: '/feature-placeholder.svg',
+    alt: 'Alt image.',
   },
   {
-    title: "Moodle Gradebook Integration",
+    title: 'Moodle Gradebook Integration',
     description:
-      "As an educator, upload a gradebook to apply scaling based on metrics for streamlined grading.",
-    image: "/feature-placeholder.svg",
-    alt: "Alt image.",
+      'As an educator, upload a gradebook to apply scaling based on metrics for streamlined grading.',
+    image: '/feature-placeholder.svg',
+    alt: 'Alt image.',
   },
   {
-    title: "Per-User Contribution Insights",
+    title: 'Per-User Contribution Insights',
     description:
-      "Track individual contributions such as commit frequency and lines of code.",
-    image: "/feature-placeholder.svg",
-    alt: "Alt image.",
+      'Track individual contributions such as commit frequency and lines of code.',
+    image: '/feature-placeholder.svg',
+    alt: 'Alt image.',
   },
 ];
 
 export function FeatureCarousel() {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
-    align: "center",
+    align: 'center',
   });
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -103,7 +103,7 @@ export function FeatureCarousel() {
     if (!emblaApi) return;
 
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
-    emblaApi.on("select", onSelect);
+    emblaApi.on('select', onSelect);
     onSelect();
   }, [emblaApi]);
 
@@ -125,11 +125,11 @@ export function FeatureCarousel() {
                 key={index}
                 className={`
                   shrink-0 px-2 ease-in-out 
-                  ${isSelected ? "opacity-100 blur-none" : "opacity-50 blur-xs"}
+                  ${isSelected ? 'opacity-100 blur-none' : 'opacity-50 blur-xs'}
                 `}
                 style={{
-                  width: "33.3333%", // Always 3 cards
-                  scrollSnapAlign: "center",
+                  width: '33.3333%', // Always 3 cards
+                  scrollSnapAlign: 'center',
                 }}
               >
                 <FeatureCard
@@ -137,7 +137,7 @@ export function FeatureCarousel() {
                   description={feature.description}
                   image={feature.image}
                   alt={feature.alt}
-                  className={isSelected ? "shadow-xl" : ""}
+                  className={isSelected ? 'shadow-xl' : ''}
                 />
               </div>
             );
@@ -167,7 +167,7 @@ export function FeatureCarousel() {
           <div
             key={index}
             className={`h-3 w-3 rounded-full ${
-              index === selectedIndex ? "bg-git" : "bg-[#F1502F]/30"
+              index === selectedIndex ? 'bg-git' : 'bg-[#F1502F]/30'
             }`}
           />
         ))}
@@ -175,4 +175,3 @@ export function FeatureCarousel() {
     </div>
   );
 }
-

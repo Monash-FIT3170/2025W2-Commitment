@@ -1,7 +1,7 @@
-import React from "react";
-import { FeatureCarousel } from "./FeatureCarousel";
+import React from 'react';
+import { FeatureCarousel } from './FeatureCarousel';
 
-export const Features = () => {
+export function Features() {
   return (
     <div className="ml-32 mr-32">
       <div className="w-full text-center mt-10">

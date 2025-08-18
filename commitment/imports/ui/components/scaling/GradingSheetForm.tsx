@@ -1,5 +1,5 @@
-import React from "react";
+import React from 'react';
 
-export const GradingSheetForm = () => {
+export function GradingSheetForm() {
   return <div>GRADING SHEET FORM</div>;
-};
+}
