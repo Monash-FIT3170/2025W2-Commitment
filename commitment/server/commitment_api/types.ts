@@ -121,6 +121,6 @@ export type AliasEmail = {
 export type UserScalingSummary = {
   name: string;
   aliases: AliasEmail[];
-  finalGrade: number;
-  scale: number;
+  finalGrade: number | null;
+  scale: number | null;
 };

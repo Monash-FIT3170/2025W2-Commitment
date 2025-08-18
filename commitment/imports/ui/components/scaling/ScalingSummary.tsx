@@ -28,12 +28,18 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
       {
         accessorKey: "finalGrade",
         header: "Final Grade",
-        cell: ({ row }) => row.getValue("finalGrade"),
+        cell: ({ row }) => {
+          const grade = row.getValue("finalGrade") as number | null | undefined;
+          return grade ?? 0; //a grade of 0 as we can't assume any grade
+        },
       },
       {
         accessorKey: "scale",
         header: "Scale",
-        cell: ({ row }) => <ScalingRadialChart value={row.getValue("scale")} />,
+        cell: ({ row }) => {
+          const scale = row.getValue("scale") as number | null | undefined;
+          return <ScalingRadialChart value={scale ?? 1} />; //a scale of 1 as no scaling has been applied
+        },
       },
     ],
     []

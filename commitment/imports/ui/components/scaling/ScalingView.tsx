@@ -49,8 +49,8 @@ function ScalingView() {
     setStep("sheet");
   };
 
-  const handleSheetSubmit = (sheetFile: File | null) => {
-    setGradingSheet(sheetFile);
+  const handleSheetSubmit = (sheetFile?: File | null) => {
+    setGradingSheet(sheetFile || null);
     setCompleted(true);
     setShowDialog(false);
     setStep("done");
@@ -66,7 +66,7 @@ function ScalingView() {
           {/* {hasLoaded && !completed && !showDialog && (
        
         )} */}
-          {!(completed && config && gradingSheet) && (
+          {!(completed && config) && (
             <Button
               className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary -hover"
               onClick={() => {
@@ -79,7 +79,7 @@ function ScalingView() {
           )}
 
           {/* Show summary if completed */}
-          {completed && config && gradingSheet && (
+          {completed && config && (
             <div>
               <ScalingSummary userScalingSummaries={userScalingSummaries} />
 

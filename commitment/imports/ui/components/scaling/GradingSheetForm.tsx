@@ -2,7 +2,7 @@ import React, { useState, ChangeEvent } from "react";
 import { Button } from "../ui/button";
 
 interface GradingSheetFormProps {
-  onSubmit: (file: File) => void;
+  onSubmit: (file?: File | null) => void;
 }
 
 export const GradingSheetForm: React.FC<GradingSheetFormProps> = ({
@@ -17,18 +17,14 @@ export const GradingSheetForm: React.FC<GradingSheetFormProps> = ({
   };
 
   const handleSubmit = () => {
-    if (file) {
-      onSubmit(file);
-    } else {
-      alert("Please upload a file before submitting.");
-    }
+    onSubmit(file); // will be null if no file is provided
   };
 
   return (
     <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700">
-          Upload Grading Sheet
+          Upload Grading Sheet (optional)
         </label>
         <input
           type="file"
