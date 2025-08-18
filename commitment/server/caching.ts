@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import { error } from 'console';
+import { Mongo } from 'meteor/mongo';
 import { CommitData, RepositoryData } from './commitment_api/types';
-import { Mongo } from 'meteor/mongo'
 import { fetchDataFrom } from './commitment_api/commitment';
 
 export interface ServerRepoData {
@@ -14,7 +14,7 @@ export interface ServerRepoData {
 const RepoCollection = new Mongo.Collection<ServerRepoData>('repoCollection');
 
 Meteor.methods({
-    /**
+  /**
      * Inserts a new link into the LinksCollection.
      *
      * @method links.insert
@@ -23,16 +23,16 @@ Meteor.methods({
      * @returns {Promise<string>} The ID of the newly inserted link document.
      * @throws {Meteor.Error} If the URL is invalid or does not start with 'http', not in db or not authorised.
      */
-    async 'repoCollection.insertRepoData'(url: string, data: RepositoryData) {
-        const s: ServerRepoData = {
-            url,
-            createdAt: new Date(),
-            data: data,
-        }
-        return await RepoCollection.insertAsync(s);
-    },
+  async 'repoCollection.insertRepoData'(url: string, data: RepositoryData) {
+    const s: ServerRepoData = {
+      url,
+      createdAt: new Date(),
+      data,
+    };
+    return await RepoCollection.insertAsync(s);
+  },
 
-    /**
+  /**
      * Removes a repo from the RepoCollection by its URL.
      *
      * @method links.remove
@@ -40,21 +40,21 @@ Meteor.methods({
      * @returns {Promise<number>} The number of documents removed (should be 1 if successful).
      * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
      */
-    async 'repoCollection.removeRepo'(url: string) {
-        if (!isInDatabase(url)) {
-            throw new Meteor.Error('not-in-database', 'The repo must exist in the database to be removed');
-        }
+  async 'repoCollection.removeRepo'(url: string) {
+    if (!isInDatabase(url)) {
+      throw new Meteor.Error('not-in-database', 'The repo must exist in the database to be removed');
+    }
 
-        const d = await RepoCollection.findOneAsync({ url });
+    const d = await RepoCollection.findOneAsync({ url });
 
-        if (!d) {
-            throw new Meteor.Error('link-not-found', 'Link not found');
-        }
+    if (!d) {
+      throw new Meteor.Error('link-not-found', 'Link not found');
+    }
 
-        return RepoCollection.removeAsync(d._id);
-    },
+    return RepoCollection.removeAsync(d._id);
+  },
 
-    /**
+  /**
      * Checks whether a link with the given URL exists in the LinksCollection.
      *
      * @method links.isBookmarked
@@ -62,12 +62,12 @@ Meteor.methods({
      * @returns {Promise<boolean>} True if the URL is bookmarked, false otherwise.
      * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
      */
-    async 'repoCollection.exists'(url: string) {
-        const ret = await RepoCollection.findOneAsync({ url })
-        return ret !== null;
-    },
+  async 'repoCollection.exists'(url: string) {
+    const ret = await RepoCollection.findOneAsync({ url });
+    return ret !== null;
+  },
 
-        /**
+  /**
      * Updates the lastViewed parameter of the bookmark.
      *
      * @method bookmarks.updateLastViewed
@@ -75,31 +75,27 @@ Meteor.methods({
      * @returns {Promise<number>} The number of documents updated (should be 1 if successful).
      * @throws {Meteor.Error} If the URL is invalid, bookmark not found, or not authorised.
      */
-         async 'repoCollection.updateLastViewed'(url: string) {
-            const bm = await RepoCollection.findOneAsync({ url });
-    
-            if (!bm) {
-                throw new Meteor.Error('bookmark-not-found', 'Bookmark not found');
-            }
-    
-            return RepoCollection.updateAsync(bm._id, { $set: { lastViewed: new Date() } });
-        }
+  async 'repoCollection.updateLastViewed'(url: string) {
+    const bm = await RepoCollection.findOneAsync({ url });
+
+    if (!bm) {
+      throw new Meteor.Error('bookmark-not-found', 'Bookmark not found');
+    }
+
+    return RepoCollection.updateAsync(bm._id, { $set: { lastViewed: new Date() } });
+  },
 });
 
-const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> => {
-    // cache the data into the database TODO
-    return Meteor.call("repoCollection.insertRepoData", url, data)
-};
-
-export const isInDatabase = async (url: string): Promise<Boolean> => {
-    return Meteor.call("repoCollection.exists", url)
-};
+const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> =>
+// cache the data into the database TODO
+  Meteor.call('repoCollection.insertRepoData', url, data);
+export const isInDatabase = async (url: string): Promise<boolean> => Meteor.call('repoCollection.exists', url);
 
 const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
-  // try and get it from database 
+  // try and get it from database
   notifier.next('Searching database for your repo...');
 
-  // if data not found, reject promise 
+  // if data not found, reject promise
   if (!await isInDatabase(url)) {
     const s = 'Could not find data in the database';
     notifier.next(s);
@@ -111,10 +107,9 @@ const tryFromDatabase = async (url: string, notifier: Subject<string>): Promise<
   return Promise.resolve(RepoCollection.findOneAsync({ url }));
 };
 
-export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => 
-    tryFromDatabase(url, notifier)
-    .catch(async (e) => {
-        const data = await fetchDataFrom(url, notifier);
-        await cacheIntoDatabase(url, data);
-        return data;
-    });
+export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => tryFromDatabase(url, notifier)
+  .catch(async (e) => {
+    const data = await fetchDataFrom(url, notifier);
+    await cacheIntoDatabase(url, data);
+    return data;
+  });

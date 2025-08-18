@@ -85,4 +85,4 @@ function ScalingView() {
   );
 }
 
-export default ScalingView
+export default ScalingView;

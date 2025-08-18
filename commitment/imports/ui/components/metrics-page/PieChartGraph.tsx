@@ -103,7 +103,7 @@ export function ContributionPieChart({ data }: Props) {
           </div>
         </div>
 
-        {/* <CardDescription>Last 6 months</CardDescription> */}
+        {/* <CardDescription>Last 6 months</CardDescription> */}
       </CardHeader>
 
       {coloredData.length === 0 ? (
@@ -125,8 +125,8 @@ export function ContributionPieChart({ data }: Props) {
                 animationDuration={800}
                 labelLine={false}
               >
-                {coloredData.map((entry, i) => (
-                  <Cell key={`cell-${i}`} fill={entry.fill} stroke="none" />
+                {coloredData.map((entry) => (
+                  <Cell key={entry.user} fill={entry.fill} stroke="none" />
                 ))}
               </Pie>
               <Tooltip
@@ -138,8 +138,8 @@ export function ContributionPieChart({ data }: Props) {
             {/* Legend */}
             <div className="w-full flex justify-center">
               <ul className="inline-flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
-                {data.map((entry, i) => (
-                  <li key={`legend-${i}`} className="flex items-center gap-1">
+                {data.map((entry) => (
+                  <li key={entry.user} className="flex items-center gap-1">
                     <span
                       className="inline-block h-3 w-3 rounded-sm"
                       style={{ backgroundColor: entry.fill }}
@@ -153,11 +153,11 @@ export function ContributionPieChart({ data }: Props) {
 
           <CardFooter className="flex flex-col gap-1 text-sm text-muted-foreground">
             <div className="flex items-center gap-2 font-medium leading-none">
-              Trending up by 5.2 % this month
+              Trending up by 5.2% this month
               <TrendingUp className="h-4 w-4 text-green-500" />
             </div>
             <p className="leading-none">
-              Showing total contributions for the last 6 months
+              Showing total contributions for the last 6 months
             </p>
           </CardFooter>
         </>

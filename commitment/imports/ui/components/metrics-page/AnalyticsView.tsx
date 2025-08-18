@@ -3,7 +3,7 @@ import { format, subDays, addDays, isValid } from "date-fns";
 import { DateRange } from "react-day-picker";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
-import { BranchDropdownMenu } from "./BranchDropdownMenu";
+import  BranchDropdownMenu  from "./BranchDropdownMenu";
 import UserContributionHeatMap from "./HeatMapGraph";
 import { dark2 } from "../ui/colors";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
@@ -12,9 +12,14 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import { topContributors } from "../../lib/utils";
-import GraphCard from "./GraphCard";
 
 // !!!: Remove this dummy data upon integration with AT3's real data
+type ContributionEntry = {
+  name: string;
+  date: string;
+  count: number;
+};
+
 const dummyBranches = [
   "main",
   "development",
@@ -101,13 +106,48 @@ const mockTotalLocData = [
 export const mockContributorDataset = {
   title: "Total Lines of Code",
   data: [
-    { date: "2024-01-01", Alice: 120, Bob: 90, Charlie: 100 },
-    { date: "2024-01-02", Alice: 140, Bob: 95, Charlie: 105 },
-    { date: "2024-01-03", Alice: 135, Bob: 100, Charlie: 98 },
-    { date: "2024-01-04", Alice: 160, Bob: 110, Charlie: 110 },
-    { date: "2024-01-05", Alice: 170, Bob: 120, Charlie: 115 },
-    { date: "2024-01-06", Alice: 180, Bob: 125, Charlie: 120 },
-    { date: "2024-01-07", Alice: 190, Bob: 130, Charlie: 125 },
+    {
+      date: "2024-01-01",
+      Alice: 120,
+      Bob: 90,
+      Charlie: 100,
+    },
+    {
+      date: "2024-01-02",
+      Alice: 140,
+      Bob: 95,
+      Charlie: 105,
+    },
+    {
+      date: "2024-01-03",
+      Alice: 135,
+      Bob: 100,
+      Charlie: 98,
+    },
+    {
+      date: "2024-01-04",
+      Alice: 160,
+      Bob: 110,
+      Charlie: 110,
+    },
+    {
+      date: "2024-01-05",
+      Alice: 170,
+      Bob: 120,
+      Charlie: 115,
+    },
+    {
+      date: "2024-01-06",
+      Alice: 180,
+      Bob: 125,
+      Charlie: 120,
+    },
+    {
+      date: "2024-01-07",
+      Alice: 190,
+      Bob: 130,
+      Charlie: 125,
+    },
   ],
 };
 
@@ -139,36 +179,35 @@ export const generateRandomContributions = (
     return [];
   }
   console.log(startDate, endDate, "both");
-  const data = [];
+  const data: ContributionEntry[] = [];
   const totalDays = Math.floor(
     (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  for (const user of users) {
-    for (let i = 0; i <= totalDays; i++) {
+  users.forEach((user) => {
+    Array.from({ length: totalDays + 1 }).forEach((_, i) => {
       const currentDate = addDays(startDate, i);
       const contributed = Math.random() < 0.45;
-      const count = contributed
-        ? Math.floor(Math.pow(Math.random(), 2) * 150 + 5)
-        : 0;
+      const count = contributed ? Math.floor(Math.random() ** 2 * 150 + 5) : 0;
 
       data.push({
         name: user,
         date: format(currentDate, "yyyy-MM-dd"),
         count,
       });
-    }
-  }
+    });
+  });
 
   return data;
 };
 
-const transformToPieChartData = (data: any[]) => {
-  const userTotals: Record<string, number> = {};
 
-  for (const entry of data) {
-    userTotals[entry.name] = (userTotals[entry.name] || 0) + entry.count;
-  }
+
+const transformToPieChartData = (data: ContributionEntry[]) => {
+  const userTotals = data.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.name] = (acc[entry.name] || 0) + entry.count;
+    return acc;
+  }, {});
 
   return Object.entries(userTotals).map(([user, contributions], i) => ({
     user,
@@ -177,7 +216,7 @@ const transformToPieChartData = (data: any[]) => {
   }));
 };
 
-export const AnalyticsView = () => {
+export function AnalyticsView() {
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
@@ -211,7 +250,7 @@ export const AnalyticsView = () => {
           {/* Filters */}
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Date Range*</label>
+              <p className="text-sm text-gray-600">Date Range*</p>
               <DateRangePicker
                 defaultValue={dateRange}
                 onChange={(range) => {
@@ -220,11 +259,11 @@ export const AnalyticsView = () => {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Branch*</label>
+              <p className="text-sm text-gray-600">Branch*</p>
               <BranchDropdownMenu branches={dummyBranches} />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Contributors*</label>
+              <p className="text-sm text-gray-600">Contributors*</p>
               <ContributorDropdownMenu contributors={dummyContributors} />
             </div>
           </div>
@@ -249,7 +288,7 @@ export const AnalyticsView = () => {
                 title="Total Commits"
                 value={123}
                 percentageChange={20}
-                isPositive={true}
+                isPositive
                 data={mockCommitLineData}
               />
               <HighlightCardWithGraph
@@ -289,4 +328,4 @@ export const AnalyticsView = () => {
       </div>
     </div>
   );
-};
+}
