@@ -29,7 +29,7 @@
     "sourceType": "module"
   },
   "settings": {
-    "import/resolver": {                   // + add
+    "import/resolver": {                   
       "typescript": {
         "project": ["./tsconfig.json"],
         "alwaysTryTypes": true
