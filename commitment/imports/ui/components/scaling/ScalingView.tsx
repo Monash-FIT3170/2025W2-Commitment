@@ -127,6 +127,7 @@ function ScalingView() {
               </DialogHeader>
 
               {step === "config" && (
+
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
               {step === "sheet" && (
