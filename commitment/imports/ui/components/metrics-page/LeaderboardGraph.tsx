@@ -76,7 +76,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
             {data.map((_entry, index) => {
               const color = staticColorPalette[index]
                   ?? extendColorPalette(index - staticColorPalette.length);
-              return <Cell key={`cell-${index}`} fill={color} />;
+              return <Cell key={`cell-${_entry.name}`} fill={color} />;
             })}
           </Bar>
         </BarChart>
