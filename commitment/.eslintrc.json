@@ -2,7 +2,9 @@
   "extends": [
     "@meteorjs/eslint-config-meteor",
     "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:import/recommended",         
+    "plugin:import/typescript"  
   ],
   "ignorePatterns": [
     "node_modules/",
@@ -20,11 +22,22 @@
     "mocha": true
   },
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "import"],
   "parserOptions": {
     "project": "./tsconfig.json",
     "tsconfigRootDir": ".",
     "sourceType": "module"
+  },
+  "settings": {
+    "import/resolver": {                   // + add
+      "typescript": {
+        "project": ["./tsconfig.json"],
+        "alwaysTryTypes": true
+      },
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx", ".d.ts", ".mjs", ".cjs", ".json"]
+      }
+    }
   },
   "overrides": [
     {
@@ -34,7 +47,8 @@
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
         "@typescript-eslint/no-floating-promises": "error",
         "no-console": "warn",
-        "prefer-const": "warn"
+        "prefer-const": "warn",
+        "import/no-unresolved": "error" 
       }
     }
   ]
