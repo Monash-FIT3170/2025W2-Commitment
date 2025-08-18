@@ -21,9 +21,6 @@ export const getRepoData = async (
   console.log("this method called with url:", url);
   return new Promise((resolve, reject) => {
     notifier.next("Fetching repo data...");
-    // this is the NEW ERROR FOR NOW because i couldn't figure out how
-    // to transition to the metricspage correctly
-    // Meteor.call(repoCollection.getData) is what should be called.
     Meteor.call(
       "repoCollection.getData",
       url,
