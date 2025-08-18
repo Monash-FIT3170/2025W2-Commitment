@@ -56,8 +56,8 @@ const DashboardView: React.FC = () => {
     }));
   };
 
-  const applyFilter = (bm: Bookmark, filters: FiltersState): boolean =>
-    Object.entries(filters).every(([filterKey, { isUsed, value }]) => {
+  const applyFilter = (bm: Bookmark, filterState: FiltersState): boolean =>
+    Object.entries(filterState).every(([filterKey, { isUsed, value }]) => {
       if (!isUsed) return true;
 
       switch (filterKey) {
@@ -152,7 +152,7 @@ const DashboardView: React.FC = () => {
       <NavBar isLoggedIn />
       <h1 className="pt-12 pl-[12%] text-4xl font-bold">
         {userName}
-        's Dashboard
+        &apos;s Dashboard
       </h1>
 
       {/* Toolbar – right-aligned row */}

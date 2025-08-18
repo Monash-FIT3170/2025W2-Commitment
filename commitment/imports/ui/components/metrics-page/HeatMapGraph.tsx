@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
 import {
   format,
   parseISO,
@@ -7,10 +7,10 @@ import {
   getDay,
   getMonth,
   getYear,
-} from 'date-fns';
-import InfoButton from '../ui/infoButton';
-import GraphCard from './GraphCard';
-import { CardHeader, CardTitle, CardContent } from '../ui/card';
+} from "date-fns";
+import InfoButton from "../ui/infoButton";
+import GraphCard from "./GraphCard";
+import { CardHeader, CardTitle, CardContent } from "../ui/card";
 
 type ContributionDataItem = {
   name: string;
@@ -26,18 +26,19 @@ interface HeatMapProps {
   title?: string; // This changes depending on the heatmap name - if it needs to change at all
 }
 
-const heatMapDescription = 'Gain a visual insight on how contributors are performing within a certain period of time'; // FIX: Make a better heatmap description
+const heatMapDescription =
+  "Gain a visual insight on how contributors are performing within a certain period of time"; // FIX: Make a better heatmap description
 
 // FIX: When the Product Managers define the colours in the system, use those instead of cardcoding
 const levels = [
-  'bg-orange-200',
-  'bg-orange-300',
-  'bg-orange-500',
-  'bg-orange-600',
-  'bg-orange-800',
+  "bg-orange-200",
+  "bg-orange-300",
+  "bg-orange-500",
+  "bg-orange-600",
+  "bg-orange-800",
 ];
 
-const graphBackgroundColour = '#E8E8DD';
+const graphBackgroundColour = "#E8E8DD";
 
 // Applying normalisation to the data -> the gradient is represented by the value
 const getLevelClassNormalized = (ratio: number) => {
@@ -58,13 +59,32 @@ export default function UserContributionHeatMap({
 }: HeatMapProps & { title?: string }) {
   // Mapping on many different properties - Days/ Weeks/ Months or Years
 
+  const users = useMemo(
+    () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
+    [data, maxUsersToShow]
+  );
+
+  const from = useMemo(() => {
+    if (startDate) return startDate;
+    return parseISO(
+      data.reduce((min, d) => (d.date < min ? d.date : min), data[0]?.date)
+    );
+  }, [data, startDate]);
+
+  const to = useMemo(() => {
+    if (endDate) return endDate;
+    return parseISO(
+      data.reduce((max, d) => (d.date > max ? d.date : max), data[0]?.date)
+    );
+  }, [data, endDate]);
+
   // In the case where no data is given
   if (!data || data.length === 0) {
     return (
       <div
         className="rounded border p-6 overflow-x-auto font-mono "
         style={{
-          maxWidth: 'fit-content',
+          maxWidth: "fit-content",
           backgroundColor: graphBackgroundColour,
         }}
       >
@@ -85,74 +105,55 @@ export default function UserContributionHeatMap({
     );
   }
 
-  const users = useMemo(
-    () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
-    [data, maxUsersToShow],
-  );
-
-  const from = useMemo(() => {
-    if (startDate) return startDate;
-    return parseISO(
-      data.reduce((min, d) => (d.date < min ? d.date : min), data[0]?.date),
-    );
-  }, [data, startDate]);
-
-  const to = useMemo(() => {
-    if (endDate) return endDate;
-    return parseISO(
-      data.reduce((max, d) => (d.date > max ? d.date : max), data[0]?.date),
-    );
-  }, [data, endDate]);
-
   const totalDays = differenceInCalendarDays(to, from) + 1;
 
-  type Mode = 'dayOfWeek' | 'weeks' | 'months' | 'years';
+  type Mode = "dayOfWeek" | "weeks" | "months" | "years";
   let mode: Mode;
 
   if (totalDays <= 7) {
-    mode = 'dayOfWeek';
+    mode = "dayOfWeek";
   } else if (totalDays <= 28) {
-    mode = 'weeks';
+    mode = "weeks";
   } else if (getYear(to) > getYear(from)) {
-    mode = 'years';
+    mode = "years";
   } else {
-    mode = 'months';
+    mode = "months";
   }
 
   const xLabels: string[] = [];
   let bucketsCount = 0;
 
-  if (mode === 'dayOfWeek') {
-    xLabels.push(...['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
+  if (mode === "dayOfWeek") {
+    xLabels.push(...["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
     bucketsCount = 7;
-  } else if (mode === 'weeks') {
+  } else if (mode === "weeks") {
     const numWeeks = Math.min(4, Math.ceil(totalDays / 7));
     bucketsCount = numWeeks;
     for (let i = 0; i < numWeeks; i++) {
       const weekStart = addDays(from, i * 7);
       const weekEnd = addDays(weekStart, 6);
       xLabels.push(
-        `${format(weekStart, 'MMM d')} - ${format(
+        `${format(weekStart, "MMM d")} - ${format(
           weekEnd < to ? weekEnd : to,
-          'MMM d',
-        )}`,
+          "MMM d"
+        )}`
       );
     }
-  } else if (mode === 'months') {
+  } else if (mode === "months") {
     bucketsCount = 12;
     xLabels.push(
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
     );
   } else {
     const endYear = getYear(to);
@@ -164,17 +165,19 @@ export default function UserContributionHeatMap({
 
   const table: Record<string, number[]> = {};
   users.forEach((user) => {
-    table[user] = Array(bucketsCount).fill(0);
+    table[user] = Array<number>(bucketsCount).fill(0);
   });
 
   const getBucketIndex = (dateStr: string): number => {
     const date = parseISO(dateStr);
-    if (mode === 'dayOfWeek') {
+    if (mode === "dayOfWeek") {
       return getDay(date);
-    } if (mode === 'weeks') {
+    }
+    if (mode === "weeks") {
       const diffDays = differenceInCalendarDays(date, from);
       return Math.min(Math.floor(diffDays / 7), bucketsCount - 1);
-    } if (mode === 'months') {
+    }
+    if (mode === "months") {
       return getMonth(date);
     }
     const year = getYear(date);
@@ -223,14 +226,14 @@ export default function UserContributionHeatMap({
         {/* STYLING FOR HEATMAP OVERALL */}
         <div
           style={{
-            display: 'grid',
+            display: "grid",
             gridTemplateColumns,
             gridTemplateRows,
             gap: `${spacing}px ${spacing}px`,
-            boxSizing: 'border-box',
-            padding: '0',
-            width: 'fit-content',
-            maxWidth: '100%',
+            boxSizing: "border-box",
+            padding: "0",
+            width: "fit-content",
+            maxWidth: "100%",
           }}
         >
           {/*  Y AXIS LABELS */}
@@ -242,7 +245,7 @@ export default function UserContributionHeatMap({
                 gridRow: idx + 1,
                 height: cellSize,
                 lineHeight: `${cellSize}px`,
-                overflow: 'hidden',
+                overflow: "hidden",
               }}
               className="text-sm text-gray-700 truncate font-semibold "
               title={user}
@@ -251,37 +254,39 @@ export default function UserContributionHeatMap({
             </div>
           ))}
           {/* MAP USERS TO ROWS */}
-          {users.map((user, rowIdx) => table[user].map((count, colIdx) => {
-            const max = userMaxMap[user];
-            const ratio = max === 0 ? 0 : count / max;
-            return (
-              <div
-                key={`${user}-${colIdx}`}
-                className={`rounded-sm cursor-default  ${getLevelClassNormalized(
-                  ratio,
-                )}`}
-                style={{
-                  gridColumn: colIdx + 2,
-                  gridRow: rowIdx + 1,
-                  width: cellSize,
-                  height: cellSize,
-                }}
-                title={`${user} · ${xLabels[colIdx]}: ${count} LOC (max: ${max})`}
-              />
-            );
-          }))}
+          {users.map((user, rowIdx) =>
+            table[user].map((count, colIdx) => {
+              const max = userMaxMap[user];
+              const ratio = max === 0 ? 0 : count / max;
+              return (
+                <div
+                  key={`${user}-${xLabels[colIdx]}`}
+                  className={`rounded-sm cursor-default  ${getLevelClassNormalized(
+                    ratio
+                  )}`}
+                  style={{
+                    gridColumn: colIdx + 2,
+                    gridRow: rowIdx + 1,
+                    width: cellSize,
+                    height: cellSize,
+                  }}
+                  title={`${user} · ${xLabels[colIdx]}: ${count} LOC (max: ${max})`}
+                />
+              );
+            })
+          )}
           {/* X AXIS LABELS */}
           {xLabels.map((label, idx) => (
             <div
-              key={`x-label-${idx}`}
+              key={`x-label-${label}`}
               style={{
                 gridColumn: idx + 2,
                 gridRow: users.length + 1,
                 width: cellSize,
-                textAlign: 'center',
+                textAlign: "center",
                 fontWeight: 600,
-                fontSize: '0.875rem',
-                color: '#4B5563',
+                fontSize: "0.875rem",
+                color: "#4B5563",
               }}
             >
               {label}
