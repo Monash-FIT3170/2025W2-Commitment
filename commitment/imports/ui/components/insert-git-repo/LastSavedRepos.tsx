@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor';
 import React, { useEffect, useState } from 'react';
 import { cn } from '@ui/lib/utils';
 import { ChevronRight } from 'lucide-react';
@@ -20,7 +21,7 @@ function LastSavedRepos() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
 
   useEffect(() => {
-    Meteor.call('bookmarks.getNBookmarks', 2, (error: any, result: React.SetStateAction<Bookmark[]>) => {
+    Meteor.call('bookmarks.getNBookmarks', 2, (error: Error | undefined, result: React.SetStateAction<Bookmark[]>) => {
       if (error) {
         console.error('Error fetching bookmarks:', error);
       } else {
