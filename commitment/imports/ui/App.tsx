@@ -7,7 +7,7 @@ import LoadingPage from './LoadingPage';
 import MetricsPage from './MetricsPage';
 import DashboardView from './views/DashboardView/DashboardView';
 
-export function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>

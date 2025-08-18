@@ -1,56 +1,59 @@
-import React, { useState, useMemo } from 'react';
-import {
-  format, subDays, addDays, isValid,
-} from 'date-fns';
-import { DateRange } from 'react-day-picker';
-import InfoButton from '../ui/infoButton';
-import { DateRangePicker } from './DatePickerButton';
-import { BranchDropdownMenu } from './BranchDropdownMenu';
-import UserContributionHeatMap from './HeatMapGraph';
-import { dark2 } from '../ui/colors';
-import { ContributorDropdownMenu } from './ContributorDropdownMenu';
-import { HighlightCardWithGraph } from './HighlightCard';
-import { ContributorLineGraph } from './LineGraph';
-import { LeaderboardGraph } from './LeaderboardGraph';
-import { ContributionPieChart } from './PieChartGraph';
-import { topContributors } from '../../lib/utils';
-import GraphCard from './GraphCard';
+import React, { useState, useMemo } from "react";
+import { format, subDays, addDays, isValid } from "date-fns";
+import { DateRange } from "react-day-picker";
+import InfoButton from "../ui/infoButton";
+import { DateRangePicker } from "./DatePickerButton";
+import { BranchDropdownMenu } from "./BranchDropdownMenu";
+import UserContributionHeatMap from "./HeatMapGraph";
+import { dark2 } from "../ui/colors";
+import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
+import { HighlightCardWithGraph } from "./HighlightCard";
+import { ContributorLineGraph } from "./LineGraph";
+import { LeaderboardGraph } from "./LeaderboardGraph";
+import { ContributionPieChart } from "./PieChartGraph";
+import { topContributors } from "../../lib/utils";
 
 // !!!: Remove this dummy data upon integration with AT3's real data
+type ContributionEntry = {
+  name: string;
+  date: string;
+  count: number;
+};
+
 const dummyBranches = [
-  'main',
-  'development',
-  'feature/login-page',
-  'bugfix/fix-chart',
-  'release/v1.2',
+  "main",
+  "development",
+  "feature/login-page",
+  "bugfix/fix-chart",
+  "release/v1.2",
 ];
 
 const dummyUsers = [
-  'Alice',
-  'Bob',
-  'Charlie',
-  'David',
-  'Eva',
-  'Frank',
-  'Grace',
-  'Helen',
+  "Alice",
+  "Bob",
+  "Charlie",
+  "David",
+  "Eva",
+  "Frank",
+  "Grace",
+  "Helen",
 ];
 
 const dummyContributors = [
-  'Michael',
-  'Andrew',
-  'Jessica',
-  'Andy',
-  'Barry',
-  'Georgia',
-  'Mary',
-  'Sophie',
-  'Bill',
-  'Simon',
-  'George',
-  'Tim',
-  'Rachel',
-  'Lora',
+  "Michael",
+  "Andrew",
+  "Jessica",
+  "Andy",
+  "Barry",
+  "Georgia",
+  "Mary",
+  "Sophie",
+  "Bill",
+  "Simon",
+  "George",
+  "Tim",
+  "Rachel",
+  "Lora",
 ];
 
 const mockLocLineData = [
@@ -101,89 +104,110 @@ const mockTotalLocData = [
 ];
 
 export const mockContributorDataset = {
-  title: 'Total Lines of Code',
+  title: "Total Lines of Code",
   data: [
     {
-      date: '2024-01-01', Alice: 120, Bob: 90, Charlie: 100,
+      date: "2024-01-01",
+      Alice: 120,
+      Bob: 90,
+      Charlie: 100,
     },
     {
-      date: '2024-01-02', Alice: 140, Bob: 95, Charlie: 105,
+      date: "2024-01-02",
+      Alice: 140,
+      Bob: 95,
+      Charlie: 105,
     },
     {
-      date: '2024-01-03', Alice: 135, Bob: 100, Charlie: 98,
+      date: "2024-01-03",
+      Alice: 135,
+      Bob: 100,
+      Charlie: 98,
     },
     {
-      date: '2024-01-04', Alice: 160, Bob: 110, Charlie: 110,
+      date: "2024-01-04",
+      Alice: 160,
+      Bob: 110,
+      Charlie: 110,
     },
     {
-      date: '2024-01-05', Alice: 170, Bob: 120, Charlie: 115,
+      date: "2024-01-05",
+      Alice: 170,
+      Bob: 120,
+      Charlie: 115,
     },
     {
-      date: '2024-01-06', Alice: 180, Bob: 125, Charlie: 120,
+      date: "2024-01-06",
+      Alice: 180,
+      Bob: 125,
+      Charlie: 120,
     },
     {
-      date: '2024-01-07', Alice: 190, Bob: 130, Charlie: 125,
+      date: "2024-01-07",
+      Alice: 190,
+      Bob: 130,
+      Charlie: 125,
     },
   ],
 };
 
 export const mockAllContributorDataset = {
-  title: 'All Contributor Commits',
+  title: "All Contributor Commits",
   data: [
-    { name: 'Alice', commits: 100 },
-    { name: 'Bob', commits: 80 },
-    { name: 'Michael', commits: 40 },
-    { name: 'Andrew', commits: 130 },
-    { name: 'David', commits: 60 },
-    { name: 'Tim', commits: 70 },
-    { name: 'George', commits: 95 },
+    { name: "Alice", commits: 100 },
+    { name: "Bob", commits: 80 },
+    { name: "Michael", commits: 40 },
+    { name: "Andrew", commits: 130 },
+    { name: "David", commits: 60 },
+    { name: "Tim", commits: 70 },
+    { name: "George", commits: 95 },
   ],
 };
 
 const topUsers = topContributors(mockAllContributorDataset.data);
 
-const metricsPageDescription = 'This page gives an overview of key metrics and performance trends.';
+const metricsPageDescription =
+  "This page gives an overview of key metrics and performance trends.";
 
 export const generateRandomContributions = (
   startDate: Date,
   endDate: Date,
-  users = dummyUsers,
+  users = dummyUsers
 ) => {
   if (!endDate || !isValid(endDate)) {
     // In the case where no end date is given
     return [];
   }
-  console.log(startDate, endDate, 'both');
-  const data = [];
+  console.log(startDate, endDate, "both");
+  const data: ContributionEntry[] = [];
   const totalDays = Math.floor(
-    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  for (const user of users) {
-    for (let i = 0; i <= totalDays; i++) {
+  users.forEach((user) => {
+    Array.from({ length: totalDays + 1 }).forEach((_, i) => {
       const currentDate = addDays(startDate, i);
       const contributed = Math.random() < 0.45;
-      const count = contributed
-        ? Math.floor(Math.random() ** 2 * 150 + 5)
-        : 0;
+      const count = contributed ? Math.floor(Math.random() ** 2 * 150 + 5) : 0;
 
       data.push({
         name: user,
-        date: format(currentDate, 'yyyy-MM-dd'),
+        date: format(currentDate, "yyyy-MM-dd"),
         count,
       });
-    }
-  }
+    });
+  });
 
   return data;
 };
 
-const transformToPieChartData = (data: any[]) => {
-  const userTotals: Record<string, number> = {};
 
-  for (const entry of data) {
-    userTotals[entry.name] = (userTotals[entry.name] || 0) + entry.count;
-  }
+
+const transformToPieChartData = (data: ContributionEntry[]) => {
+  const userTotals = data.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.name] = (acc[entry.name] || 0) + entry.count;
+    return acc;
+  }, {});
 
   return Object.entries(userTotals).map(([user, contributions], i) => ({
     user,
@@ -204,7 +228,7 @@ export function AnalyticsView() {
 
   const data = useMemo(
     () => generateRandomContributions(startDate, endDate),
-    [startDate, endDate],
+    [startDate, endDate]
   );
   const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
 
@@ -226,7 +250,7 @@ export function AnalyticsView() {
           {/* Filters */}
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Date Range*</label>
+              <p className="text-sm text-gray-600">Date Range*</p>
               <DateRangePicker
                 defaultValue={dateRange}
                 onChange={(range) => {
@@ -235,11 +259,11 @@ export function AnalyticsView() {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Branch*</label>
+              <p className="text-sm text-gray-600">Branch*</p>
               <BranchDropdownMenu branches={dummyBranches} />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Contributors*</label>
+              <p className="text-sm text-gray-600">Contributors*</p>
               <ContributorDropdownMenu contributors={dummyContributors} />
             </div>
           </div>
