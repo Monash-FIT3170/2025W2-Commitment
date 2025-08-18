@@ -14,8 +14,11 @@ interface LocationState {
 
 const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => {
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const { repoUrl } = (state as LocationState) || {};
+  const location = useLocation();
+  
+  // Safely type-check the state before destructuring
+  const locationState = location.state as LocationState | null;
+  const repoUrl = locationState?.repoUrl;
 
   // Notifier message replaces header
   const [message, setMessage] = useState<string>('Starting…');
