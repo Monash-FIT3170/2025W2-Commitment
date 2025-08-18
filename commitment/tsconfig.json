@@ -32,11 +32,12 @@
         "node_modules/@types/meteor/*",
         ".meteor/local/types/packages.d.ts"
       ],
-      "@ui/*": ["imports/ui/*"]
+      "@ui/*": ["imports/ui/*"],
+      "@server/*": ["server/*"]
     },
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "types": ["node", "mocha"],
+    "types": ["node", "mocha", "meteor"],
     "esModuleInterop": true,
     "preserveSymlinks": true
   },

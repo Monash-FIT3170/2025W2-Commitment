@@ -23,11 +23,11 @@ interface HeatMapProps {
   startDate?: Date;
   endDate?: Date;
   maxUsersToShow?: number;
-  title?: string; //This changes depending on the heatmap name - if it needs to change at all
+  title?: string; // This changes depending on the heatmap name - if it needs to change at all
 }
 
 const heatMapDescription =
-  "Gain a visual insight on how contributors are performing within a certain period of time"; //FIX: Make a better heatmap description
+  "Gain a visual insight on how contributors are performing within a certain period of time"; // FIX: Make a better heatmap description
 
 // FIX: When the Product Managers define the colours in the system, use those instead of cardcoding
 const levels = [
@@ -57,7 +57,26 @@ export default function UserContributionHeatMap({
   maxUsersToShow,
   title,
 }: HeatMapProps & { title?: string }) {
-  //Mapping on many different properties - Days/ Weeks/ Months or Years
+  // Mapping on many different properties - Days/ Weeks/ Months or Years
+
+  const users = useMemo(
+    () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
+    [data, maxUsersToShow]
+  );
+
+  const from = useMemo(() => {
+    if (startDate) return startDate;
+    return parseISO(
+      data.reduce((min, d) => (d.date < min ? d.date : min), data[0]?.date)
+    );
+  }, [data, startDate]);
+
+  const to = useMemo(() => {
+    if (endDate) return endDate;
+    return parseISO(
+      data.reduce((max, d) => (d.date > max ? d.date : max), data[0]?.date)
+    );
+  }, [data, endDate]);
 
   // In the case where no data is given
   if (!data || data.length === 0) {
@@ -85,25 +104,6 @@ export default function UserContributionHeatMap({
       </div>
     );
   }
-
-  const users = useMemo(
-    () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
-    [data, maxUsersToShow]
-  );
-
-  const from = useMemo(() => {
-    if (startDate) return startDate;
-    return parseISO(
-      data.reduce((min, d) => (d.date < min ? d.date : min), data[0]?.date)
-    );
-  }, [data, startDate]);
-
-  const to = useMemo(() => {
-    if (endDate) return endDate;
-    return parseISO(
-      data.reduce((max, d) => (d.date > max ? d.date : max), data[0]?.date)
-    );
-  }, [data, endDate]);
 
   const totalDays = differenceInCalendarDays(to, from) + 1;
 
@@ -165,24 +165,25 @@ export default function UserContributionHeatMap({
 
   const table: Record<string, number[]> = {};
   users.forEach((user) => {
-    table[user] = Array(bucketsCount).fill(0);
+    table[user] = Array<number>(bucketsCount).fill(0);
   });
 
   const getBucketIndex = (dateStr: string): number => {
     const date = parseISO(dateStr);
     if (mode === "dayOfWeek") {
       return getDay(date);
-    } else if (mode === "weeks") {
+    }
+    if (mode === "weeks") {
       const diffDays = differenceInCalendarDays(date, from);
       return Math.min(Math.floor(diffDays / 7), bucketsCount - 1);
-    } else if (mode === "months") {
-      return getMonth(date);
-    } else {
-      const year = getYear(date);
-      const endYear = getYear(to);
-      const idx = endYear - year;
-      return idx >= 0 && idx < bucketsCount ? bucketsCount - 1 - idx : -1;
     }
+    if (mode === "months") {
+      return getMonth(date);
+    }
+    const year = getYear(date);
+    const endYear = getYear(to);
+    const idx = endYear - year;
+    return idx >= 0 && idx < bucketsCount ? bucketsCount - 1 - idx : -1;
   };
 
   data.forEach(({ name, date, count }) => {
@@ -259,7 +260,7 @@ export default function UserContributionHeatMap({
               const ratio = max === 0 ? 0 : count / max;
               return (
                 <div
-                  key={`${user}-${colIdx}`}
+                  key={`${user}-${xLabels[colIdx]}`}
                   className={`rounded-sm cursor-default  ${getLevelClassNormalized(
                     ratio
                   )}`}
@@ -277,7 +278,7 @@ export default function UserContributionHeatMap({
           {/* X AXIS LABELS */}
           {xLabels.map((label, idx) => (
             <div
-              key={`x-label-${idx}`}
+              key={`x-label-${label}`}
               style={{
                 gridColumn: idx + 2,
                 gridRow: users.length + 1,
