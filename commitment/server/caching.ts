@@ -208,7 +208,6 @@ export const tryFromDatabase = async (
   // try and get it from database
   notifier.next('Searching database for your repo...');
   const data = await RepoCollection.findOneAsync({ url })
-    .then(deserializeRepoData);
 
   if (!data) {
     const s = "Couldn't find your repo, fetching from the API..."
@@ -217,7 +216,7 @@ export const tryFromDatabase = async (
   }
 
   notifier.next('Found your repo in the database!');
-  return data;
+  return deserializeRepoData(data);
 };
 
 

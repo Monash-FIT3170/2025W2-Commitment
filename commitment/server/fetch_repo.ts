@@ -109,6 +109,7 @@ const fetchDataFromHaskellApp = async (
 
     socket.onopen = () => {
       // Step 1: Send repo URL
+      notifier.next("Connected to the API!")
       socket.send(
         JSON.stringify({
           url: url,
