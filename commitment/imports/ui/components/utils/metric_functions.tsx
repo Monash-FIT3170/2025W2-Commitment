@@ -1,63 +1,25 @@
-import { Meteor } from 'meteor/meteor'
-import { RepositoryData, CommitData, ContributorData, BranchData } from '/server/commitment_api/types';
+import { Meteor } from "meteor/meteor";
+import { RepositoryData, CommitData } from "/server/commitment_api/types";
 import { Subject } from "rxjs";
-import { SerializableRepoData, deserializeRepoData } from './helper';
-// import { StringDecoder } from 'string_decoder';
 
-// Functions to fetch repository data from the RepoCollection in a clean way
-// TO DO: add more functions tailoured to MetricPage needs - perhaps a new file ? 
 
-// this function is not being called by the metrics page correctly...
-export const getRepoData = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
-    console.log("this method called with url:", url);
-    return new Promise((resolve, reject) => {
-        notifier.next('Fetching repo data...');
-        // this is the NEW ERROR FOR NOW because i couldn't figure out how to transition to the metricspage correctly 
-        // Meteor.call(repoCollection.getData) is what should be called. 
-        Meteor.call('repoCollection.getData', url, (err: Error, result: SerializableRepoData) => {
-            console.log("in getrepodata")
-            if (err) {
-                console.log(`Error fetching repo data for URL ${url}:`, err);
-                notifier.next(`Error fetching repo data: ${err.message}`);
-                reject(err);
-            } else {
-                notifier.next('Repo data fetched successfully.');
-                console.log("In metric functions:", result);
-                console.log(typeof result.allCommits)
-                console.log(result.allCommits)
-
-                const dRepo = deserializeRepoData(result);
-
-                resolve(dRepo);
-            }
-        });
-    });
-};
-
-/** Return a Map of all commits */
-
-export const getCommitsMap = (repo: RepositoryData): Map<string, CommitData> => {
-    return new Map(Object.entries(repo.allCommits));
-};
-
-/** 
- * Return a list of all branches 
+/**
+ * Return a list of all branches
  */
 
-export const getBranches = (repo: RepositoryData): string[] => {
-    //get list of branch names 
-    return repo.branches.map(branch => branch.branchName);
-};
-
+export const getBranches = (repo: RepositoryData): string[] =>
+  // get list of branch names
+  repo.branches.map((branch) => branch.branchName);
 
 /**
  * Return a list of all contributors
  */
 export const getContributors = (repo: RepositoryData): string[] => {
   const contributorsMap = repo.contributors;
-  return Array.from(contributorsMap.values()).map(contributor => contributor.name);
+  return Array.from(contributorsMap.values()).map(
+    (contributor) => contributor.name
+  );
 };
-
 
 /**
  * Total commits by contributor (graph-ready)
@@ -72,12 +34,63 @@ export function getAllContributorsCommits(data: RepositoryData): {
 } {
   const counts = new Map<string, number>();
 
-  data.allCommits.forEach(commit => {
+  data.allCommits.forEach((commit) => {
     const user = commit.contributorName;
     counts.set(user, (counts.get(user) ?? 0) + 1);
   });
 
-  const list = Array.from(counts.entries()).map(([name, commits]) => ({ name, commits }));
+  const list = Array.from(counts.entries()).map(([name, commits]) => ({
+    name,
+    commits,
+  }));
   console.log("All contributor commits:", list);
   return { title: "All Contributor Commits", data: list };
 }
+
+/**
+ *
+ * @param repo
+ * @returns
+ */
+export const calculateTotalCommits = (
+  repo: RepositoryData
+): {
+  total: number;
+  percentageChange: number;
+  isPositive: boolean;
+  data: { value: number }[];
+} => {
+  const total = repo.allCommits.size;
+
+  // Group commits by day
+  const commitsByDay = new Map<string, number>();
+  repo.allCommits.forEach((commit) => {
+    const day = new Date(commit.timestamp).toISOString().slice(0, 10);
+    commitsByDay.set(day, (commitsByDay.get(day) ?? 0) + 1);
+  });
+
+  // Sort days chronologically
+  const sortedDays = Array.from(commitsByDay.entries()).sort(
+    (a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()
+  );
+
+  // Prepare graph data (daily counts)
+  const data = sortedDays.map(([_, count]) => ({ value: count }));
+
+  // Calculate percentage change = today vs yesterday
+  let percentageChange = 0;
+  let isPositive = true;
+  if (sortedDays.length >= 2) {
+    const last = sortedDays[sortedDays.length - 1][1];
+    const prev = sortedDays[sortedDays.length - 2][1];
+    percentageChange = prev === 0 ? 100 : ((last - prev) / prev) * 100;
+    isPositive = last >= prev;
+  }
+
+  return {
+    total,
+    percentageChange,
+    isPositive,
+    data,
+  };
+};

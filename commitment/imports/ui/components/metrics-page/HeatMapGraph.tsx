@@ -9,6 +9,8 @@ import {
   getYear,
 } from "date-fns";
 import InfoButton from "../ui/infoButton";
+import GraphCard from "./GraphCard";
+import { CardHeader, CardTitle, CardContent } from "../ui/card";
 
 type ContributionDataItem = {
   name: string;
@@ -61,9 +63,9 @@ export default function UserContributionHeatMap({
   if (!data || data.length === 0) {
     return (
       <div
-        className="rounded border p-6 overflow-x-auto font-mono " 
+        className="rounded border p-6 overflow-x-auto font-mono "
         style={{
-          maxWidth: "fit-content", 
+          maxWidth: "fit-content",
           backgroundColor: graphBackgroundColour,
         }}
       >
@@ -77,7 +79,9 @@ export default function UserContributionHeatMap({
           </div>
         )}
 
-        <div className="p-4 text-gray-500">Please select an End Date in the Date Range</div>
+        <div className="p-4 text-gray-500">
+          Please select an End Date in the Date Range
+        </div>
       </div>
     );
   }
@@ -207,99 +211,88 @@ export default function UserContributionHeatMap({
 
   return (
     //   The things actually in this component
-    <div
-      className="rounded border p-6 overflow-x-auto font-mono " //could be issue here with padding
-      style={{
-        maxWidth: "fit-content", // limit width to content width
-        backgroundColor: graphBackgroundColour,
-      }}
-    >
-      {title && (
-        <div className="flex items-center space-x-2 w-4/5 ">
-          <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-
-          {/* Special margin for the infoButton to get it centred */}
-          <div className="relative -mt-2 ">
+    <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+      <CardHeader className="pb-0">
+        <CardTitle className="flex text-lg mt-0 font-bold ">
+          {title}
+          <div className="relative -mt-3 ml-2">
             <InfoButton description={heatMapDescription} />
           </div>
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="grow flex flex-col items-center justify-center pt-2">
+        {/* STYLING FOR HEATMAP OVERALL */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns,
+            gridTemplateRows,
+            gap: `${spacing}px ${spacing}px`,
+            boxSizing: "border-box",
+            padding: "0",
+            width: "fit-content",
+            maxWidth: "100%",
+          }}
+        >
+          {/*  Y AXIS LABELS */}
+          {users.map((user, idx) => (
+            <div
+              key={user}
+              style={{
+                gridColumn: 1,
+                gridRow: idx + 1,
+                height: cellSize,
+                lineHeight: `${cellSize}px`,
+                overflow: "hidden",
+              }}
+              className="text-sm text-gray-700 truncate font-semibold "
+              title={user}
+            >
+              {user}
+            </div>
+          ))}
+          {/* MAP USERS TO ROWS */}
+          {users.map((user, rowIdx) =>
+            table[user].map((count, colIdx) => {
+              const max = userMaxMap[user];
+              const ratio = max === 0 ? 0 : count / max;
+              return (
+                <div
+                  key={`${user}-${colIdx}`}
+                  className={`rounded-sm cursor-default  ${getLevelClassNormalized(
+                    ratio
+                  )}`}
+                  style={{
+                    gridColumn: colIdx + 2,
+                    gridRow: rowIdx + 1,
+                    width: cellSize,
+                    height: cellSize,
+                  }}
+                  title={`${user} · ${xLabels[colIdx]}: ${count} LOC (max: ${max})`}
+                />
+              );
+            })
+          )}
+          {/* X AXIS LABELS */}
+          {xLabels.map((label, idx) => (
+            <div
+              key={`x-label-${idx}`}
+              style={{
+                gridColumn: idx + 2,
+                gridRow: users.length + 1,
+                width: cellSize,
+                textAlign: "center",
+                fontWeight: 600,
+                fontSize: "0.875rem",
+                color: "#4B5563",
+              }}
+            >
+              {label}
+            </div>
+          ))}
         </div>
-      )}
-
-      {/* STYLING FOR HEATMAP OVERALL */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns,
-          gridTemplateRows,
-          gap: `${spacing}px ${spacing}px`,
-          boxSizing: "border-box",
-          padding: "0",
-          border: "1px solid #e5e7eb",
-          borderRadius: "0.375rem",
-          width: "fit-content",
-          maxWidth: "100%",
-          backgroundColor: graphBackgroundColour, // keep heatmap itself white
-        }}
-      >
-        {/*  Y AXIS LABELS */}
-        {users.map((user, idx) => (
-          <div
-            key={user}
-            style={{
-              gridColumn: 1,
-              gridRow: idx + 1,
-              height: cellSize,
-              lineHeight: `${cellSize}px`,
-              overflow: "hidden",
-            }}
-            className="text-sm text-gray-700 truncate font-semibold "
-            title={user}
-          >
-            {user}
-          </div>
-        ))}
-
-        {/* MAP USERS TO ROWS */}
-        {users.map((user, rowIdx) =>
-          table[user].map((count, colIdx) => {
-            const max = userMaxMap[user];
-            const ratio = max === 0 ? 0 : count / max;
-            return (
-              <div
-                key={`${user}-${colIdx}`}
-                className={`rounded-sm cursor-default  ${getLevelClassNormalized(
-                  ratio
-                )}`}
-                style={{
-                  gridColumn: colIdx + 2,
-                  gridRow: rowIdx + 1,
-                  width: cellSize,
-                  height: cellSize,
-                }}
-                title={`${user} · ${xLabels[colIdx]}: ${count} LOC (max: ${max})`}
-              />
-            );
-          })
-        )}
-
-        {/* X AXIS LABELS */}
-        {xLabels.map((label, idx) => (
-          <div
-            key={`x-label-${idx}`}
-            style={{
-              gridColumn: idx + 2,
-              gridRow: users.length + 1,
-              width: cellSize,
-              textAlign: "center",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              color: "#4B5563",
-            }}
-          >
-            {label}
-          </div>
-        ))}
-      </div>
-    </div>
+      </CardContent>
+    </GraphCard>
   );
 }

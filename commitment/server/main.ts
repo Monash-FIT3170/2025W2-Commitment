@@ -152,9 +152,7 @@ Meteor.startup(async () => {
     ];
 
     if (firstTwoUsers[0]) {
-      console.log(
-        `Inserting into user ${firstTwoUsers[0].profile.name} with id ${firstTwoUsers[0]._id}`
-      );
+      console.log(`Inserting into user ${firstTwoUsers[0].profile?.name || '(no name)'} with id ${firstTwoUsers[0]._id}`);
       testBookmarks.slice(0, 2).forEach((bookmark) => {
         BookmarksCollection.insertAsync({
           title: bookmark.title,
@@ -166,9 +164,7 @@ Meteor.startup(async () => {
     }
 
     if (firstTwoUsers[1]) {
-      console.log(
-        `Inserting into user ${firstTwoUsers[1].profile.name} with id ${firstTwoUsers[1]._id}`
-      );
+      console.log(`Inserting into user ${firstTwoUsers[1].profile?.name || '(no name)'} with id ${firstTwoUsers[1]._id}`);
       testBookmarks.slice(2, 5).forEach((bookmark) => {
         BookmarksCollection.insertAsync({
           title: bookmark.title,
@@ -180,9 +176,7 @@ Meteor.startup(async () => {
     }
 
     if (firstTwoUsers[2]) {
-      console.log(
-        `Inserting into user ${firstTwoUsers[2].profile.name} with id ${firstTwoUsers[2]._id}`
-      );
+      console.log(`Inserting into user ${firstTwoUsers[2].profile?.name || '(no name)'} with id ${firstTwoUsers[2]._id}`);
       [testBookmarks[5]].forEach((bookmark) => {
         BookmarksCollection.insertAsync({
           title: bookmark.title,
