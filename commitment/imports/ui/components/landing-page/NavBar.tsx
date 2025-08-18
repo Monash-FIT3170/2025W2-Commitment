@@ -49,23 +49,23 @@ function NavBar({ isLoggedIn }: NavBarProps) {
             <>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                  <div href="#about" className={navigationMenuTriggerStyle()}>
+                  <a href="#about" className={navigationMenuTriggerStyle()}>
                     About
-                  </div>
+                  </a>
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                  <div href="#features" className={navigationMenuTriggerStyle()}>
+                  <a href="#features" className={navigationMenuTriggerStyle()}>
                     Features
-                  </div>
+                  </a>
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                  <div href="#howto" className={navigationMenuTriggerStyle()}>
+                  <a href="#howto" className={navigationMenuTriggerStyle()}>
                     How-To
-                  </div>
+                  </a>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -107,9 +107,9 @@ function NavBar({ isLoggedIn }: NavBarProps) {
 
         {!isLoggedIn && (
           <>
-            <div href="/login" className={navigationMenuTriggerStyle()}>
+            <a href="/login" className={navigationMenuTriggerStyle()}>
               Login
-            </div>
+            </a>
             <SignUpButton />
           </>
         )}
