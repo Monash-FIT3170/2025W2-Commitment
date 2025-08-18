@@ -13,15 +13,7 @@ interface SortMenuOptions{
     sortDir:SortDir
 }
 
-export default function SortMenu() {
-  // Helper function to render the sort icon
-  function renderSortIcon(key: SortKey) {
-    if (sortKey !== key) return null;
-    if (sortDir === 'desc') return <ArrowDown className="ml-2 h-4 w-4" />;
-    if (sortDir === 'asc') return <ArrowUp className="ml-2 h-4 w-4" />;
-    return null;
-  }
-
+export default function SortMenu({sortKey, sortDir}: SortMenuOptions) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -41,13 +33,13 @@ export default function SortMenu() {
         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycle('lastViewed'); }}>
           Last viewed
           {' '}
-          {renderSortIcon('lastViewed')}
+          {sortKey === 'lastViewed' && (sortDir === 'desc' ? <ArrowDown className="ml-2 h-4 w-4" /> : sortDir === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : null)}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycle('createdAt'); }}>
           Date bookmarked
           {' '}
-          {renderSortIcon('createdAt')}
+          {sortKey === 'createdAt' && (sortDir === 'desc' ? <ArrowDown className="ml-2 h-4 w-4" /> : sortDir === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : null)}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
