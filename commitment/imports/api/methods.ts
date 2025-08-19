@@ -22,7 +22,7 @@ Meteor.methods({
       throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
     }
 
-    const inDatabase = repoInDatabase(url);
+    const inDatabase = await repoInDatabase(url);
     if (!inDatabase) Promise.reject(new Error(`URL does not exist inside database: ${url}`));
 
     const newLink: Link = {

@@ -5,29 +5,29 @@ import { Subject } from "rxjs"
 
 const ServerResponses = new Mongo.Collection('fetchRepoMessagesCollection');
 
-export const fetchRepo = (url: string, subject: Subject<string>) => {
+type PersonalMessageObject = Readonly<{ text: string }>
 
-    // Subscribe to your personal message stream
-    Meteor.subscribe('fetchRepoMessages')
+export const fetchRepo = (url: string, subject: Subject<string>): Promise<boolean> => 
+    new Promise<boolean>(async (resolve, reject) => {
+			// Subscribe to your personal message stream
+			Meteor.subscribe('fetchRepoMessages')
 
-    // Reactively log messages
-    Tracker.autorun(() => {
-        const messages = ServerResponses.find({}, { sort: { createdAt: -1 } }).fetch()
-        messages.forEach((m: any) => subject.next(m.text));
-    })
+			// Reactively log messages
+			Tracker.autorun(() => {
+				const messages: [PersonalMessageObject] = ServerResponses.find({}, { sort: { createdAt: -1 } }).fetch()
+				messages.forEach((m: PersonalMessageObject) => subject.next(m.text));
+			})
 
-    // Call the server method to start data retrieval
-    return new Promise<boolean>(async (resolve, reject) => {
-        if (!Meteor.status().connected) {
-            return reject(new Error("Server is not found"))
-        }
+			// Call the server method to start data retrieval
+			if (!Meteor.status().connected) {
+				return reject(new Error("Server is not found"))
+			}
 
-        return await Meteor.call('getGitHubRepoData', url, (err: Error, result: boolean) => {
-            if (err) reject(err)
-            resolve(result)
-        });
-    })
-}
+			Meteor.call('getGitHubRepoData', url, (err: Error, result: boolean) => {
+				if (err) reject(err)
+				resolve(result)
+			});
+})
 
 export const repoInDatabase = async (url: string) => 
     new Promise<boolean>((resolve, reject) => {
@@ -37,7 +37,6 @@ export const repoInDatabase = async (url: string) =>
         });
     })
 
-
 export const getMetric = async <T>(url: string, f: string) => 
     new Promise<T>((resolve, reject) => {
         Meteor.call('getMetricFromRepo', url, f, (err: Error, result: T) => {
@@ -45,5 +44,3 @@ export const getMetric = async <T>(url: string, f: string) =>
             resolve(result)
         });
     })
-
-
