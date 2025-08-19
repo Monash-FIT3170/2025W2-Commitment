@@ -3,49 +3,36 @@ import { Separator } from "@ui/components/ui/separator";
 import { Card, CardContent } from "@ui/components/ui/card";
 import GetStartedButton from "./getStartedButton";
 
-const purpose = () => {
-  return (
-    <div className="flex flex-col justify-center items-center mt-20">
-      <Header />
-
-      <CircleNumber />
-
-      <PurposeCard />
-      <GetStartedButton className="mt-12"/>
-    </div>
-  );
-};
-
-export default purpose;
-
-const Header = () => {
+function Header() {
   return (
     <div className="flex flex-col justify-center items-center">
-      <h4 className="font-mono text text-git-500 text-lg font-semibold">HOW TO USE?</h4>
+      <h4 className="font-mono text text-git-500 text-lg font-semibold">
+        HOW TO USE?
+      </h4>
       <h1 className="font-mono text-5xl">Get Started in Three Steps</h1>
     </div>
   );
-};
+}
 
-const CircleNumber = () => {
+function CircleNumber() {
   return (
     <div className="flex flex-row pt-7 pb-3 items-center gap-2 justify-center">
       <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
         1
       </div>
-      <Separator decorative className="bg-black"/>
+      <Separator decorative className="bg-black" />
       <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
         2
       </div>
-      <Separator decorative className="bg-black"/>
+      <Separator decorative className="bg-black" />
       <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
         3
       </div>
     </div>
   );
-};
+}
 
-const PurposeCard = () => {
+function PurposeCard() {
   return (
     <Card className="max-w-4xl shadow-md pt-2">
       <CardContent className="grid grid-row-2 gap-4 text-center pt-4">
@@ -85,4 +72,17 @@ const PurposeCard = () => {
       </CardContent>
     </Card>
   );
-};
+}
+
+const purpose = () => (
+  <div className="flex flex-col justify-center items-center mt-20">
+    <Header />
+
+    <CircleNumber />
+
+    <PurposeCard />
+    <GetStartedButton className="mt-12" />
+  </div>
+);
+
+export default purpose;

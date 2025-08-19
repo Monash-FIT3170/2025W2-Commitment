@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   format, subDays, addDays, isValid, set,
@@ -116,37 +117,39 @@ export const generateRandomContributions = (
     // In the case where no end date is given
     return [];
   }
+  
   console.log(startDate, endDate, 'both');
   const data = [];
+
   const totalDays = Math.floor(
     (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  for (const user of users) {
-    for (let i = 0; i <= totalDays; i++) {
+  users.forEach((user) => {
+    Array.from({ length: totalDays + 1 }).forEach((_, i) => {
       const currentDate = addDays(startDate, i);
       const contributed = Math.random() < 0.45;
       const count = contributed
         ? Math.floor(Math.random() ** 2 * 150 + 5)
         : 0;
 
+
       data.push({
         name: user,
         date: format(currentDate, 'yyyy-MM-dd'),
         count,
       });
-    }
-  }
+    });
+  });
 
   return data;
 };
 
-const transformToPieChartData = (data: any[]) => {
-  const userTotals: Record<string, number> = {};
-
-  for (const entry of data) {
-    userTotals[entry.name] = (userTotals[entry.name] || 0) + entry.count;
-  }
+const transformToPieChartData = (data: ContributionEntry[]) => {
+  const userTotals = data.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.name] = (acc[entry.name] || 0) + entry.count;
+    return acc;
+  }, {});
 
   return Object.entries(userTotals).map(([user, contributions], i) => ({
     user,
@@ -159,8 +162,8 @@ export function AnalyticsView() {
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
-  // // attempt to get the repo data from the location state
-  //   // storing the repo data by calling getRepoData in metric_functions.tsx
+  // attempt to get the repo data from the location state
+  // storing the repo data by calling getRepoData in metric_functions.tsx
   const location = useLocation();
   const repoUrl = location.state?.repoUrl;
   const [repoData, setRepoData] = useState<RepositoryData | null>(null);
@@ -266,7 +269,7 @@ export function AnalyticsView() {
           {/* Filters */}
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Date Range*</label>
+              <p className="text-sm text-gray-600">Date Range*</p>
               <DateRangePicker
                 defaultValue={dateRange}
                 onChange={(range) => {
@@ -344,7 +347,8 @@ export function AnalyticsView() {
                 percentageChange={totalCommits.percentageChange}
                 isPositive={totalCommits.isPositive}
                 data={totalCommits.data}
-              />
+                />
+              
               <HighlightCardWithGraph
                 title="Total Lines of Code"
                 value={4567}

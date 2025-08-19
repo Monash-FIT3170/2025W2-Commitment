@@ -1,7 +1,7 @@
-import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
-import { Tracker } from 'meteor/tracker'
-import { Subject } from "rxjs"
+import { Meteor } from 'meteor/meteor';
+import { Mongo } from 'meteor/mongo';
+import { Tracker } from 'meteor/tracker';
+import { Subject } from 'rxjs';
 
 const ServerResponses = new Mongo.Collection('fetchRepoMessagesCollection');
 
@@ -45,5 +45,6 @@ export const getMetric = async <T>(url: string, f: string) =>
             resolve(result)
         });
     })
+
 
 

@@ -10,13 +10,13 @@ interface FeatureCardProps {
   className?: string;
 }
 
-export const FeatureCard = ({
+export function FeatureCard({
   title,
   description,
   image,
   alt,
   className = "",
-}: FeatureCardProps) => {
+}: FeatureCardProps) {
   return (
     <div
       className={`flex flex-col justify-between 
@@ -41,7 +41,7 @@ export const FeatureCard = ({
       </p>
     </div>
   );
-};
+}
 
 interface Feature {
   title: string;
@@ -122,7 +122,7 @@ export function FeatureCarousel() {
 
             return (
               <div
-                key={index}
+                key={feature.title}
                 className={`
                   shrink-0 px-2 ease-in-out 
                   ${isSelected ? "opacity-100 blur-none" : "opacity-50 blur-xs"}
@@ -147,6 +147,7 @@ export function FeatureCarousel() {
 
       {/* Nav buttons */}
       <button
+        type="button"
         onClick={scrollPrev}
         className="absolute left-[25%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
         aria-label="Previous slide"
@@ -154,6 +155,7 @@ export function FeatureCarousel() {
         <ChevronLeft size={30} />
       </button>
       <button
+        type="button"
         onClick={scrollNext}
         className="absolute right-[25%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
         aria-label="Next slide"
@@ -163,9 +165,9 @@ export function FeatureCarousel() {
 
       {/* Dots */}
       <div className="flex justify-center mt-6 gap-2">
-        {features.map((_, index) => (
+        {features.map((feature, index) => (
           <div
-            key={index}
+            key={feature.title}
             className={`h-3 w-3 rounded-full ${
               index === selectedIndex ? "bg-git" : "bg-[#F1502F]/30"
             }`}
@@ -175,4 +177,3 @@ export function FeatureCarousel() {
     </div>
   );
 }
-

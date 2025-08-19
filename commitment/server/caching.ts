@@ -93,6 +93,7 @@ Meteor.methods({
   },
 
   /**
+
    * Checks whether a link with the given URL exists in the LinksCollection.
    *
    * @method links.isBookmarked
