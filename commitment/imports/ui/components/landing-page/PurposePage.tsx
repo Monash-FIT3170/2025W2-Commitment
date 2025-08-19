@@ -3,7 +3,23 @@ import { Separator } from "@ui/components/ui/separator";
 import { Card, CardContent } from "@ui/components/ui/card";
 import GetStartedButton from "./getStartedButton";
 
-function Header() {
+const purpose = () => {
+  return (
+    <div className="flex flex-col justify-center items-center mt-20">
+      <Header />
+
+      <CircleNumber />
+
+      <PurposeCard />
+      <GetStartedButton className="mt-12" />
+    </div>
+  );
+};
+
+export default purpose;
+
+const Header = () => {
+
   return (
     <div className="flex flex-col justify-center items-center">
       <h4 className="font-mono text text-git-500 text-lg font-semibold">
@@ -17,15 +33,15 @@ function Header() {
 function CircleNumber() {
   return (
     <div className="flex flex-row pt-7 pb-3 items-center gap-2 justify-center">
-      <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="font-mono w-12 h-12 bg-git-bg-tertiary rounded-full flex justify-center items-center text-center p-5 text-xl">
         1
       </div>
       <Separator decorative className="bg-black" />
-      <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="font-mono w-12 h-12 bg-git-bg-tertiary rounded-full flex justify-center items-center text-center p-5 text-xl">
         2
       </div>
       <Separator decorative className="bg-black" />
-      <div className="font-mono w-12 h-12 bg-[#D9D9D9] rounded-full flex justify-center items-center text-center p-5 text-xl">
+      <div className="font-mono w-12 h-12 bg-git-bg-tertiary rounded-full flex justify-center items-center text-center p-5 text-xl">
         3
       </div>
     </div>
@@ -34,7 +50,7 @@ function CircleNumber() {
 
 function PurposeCard() {
   return (
-    <Card className="max-w-4xl shadow-md pt-2">
+    <Card className="max-w-4xl shadow-md pt-2 bg-git-bg-elevated">
       <CardContent className="grid grid-row-2 gap-4 text-center pt-4">
         <div className="grid grid-cols-3 gap-4 items-center justify-items-center">
           <img src="/github_logo.svg" alt="Github Logo" className="max-h-32" />

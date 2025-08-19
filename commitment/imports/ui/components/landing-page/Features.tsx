@@ -8,13 +8,11 @@ export function Features() {
         <p className="text-git-500 text-lg font-semibold font-mono tracking-wide">
           OUR FEATURES?
         </p>
-        <h1 className="text-5xl text-black mt-2 font-mono">
-          Get The Full Picture...
-        </h1>
+        <h1 className="text-5xl mt-2 font-mono">Get The Full Picture...</h1>
       </div>
       <FeatureCarousel />
     </div>
   );
-}
+};
 
 export default Features;
