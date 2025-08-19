@@ -1,6 +1,7 @@
 import { Subject } from "rxjs";
-import { RepositoryData, BranchData, CommitData, ContributorData } from "../imports/api/types";
 import { Mongo } from "meteor/mongo";
+
+import { RepositoryData, BranchData, CommitData, ContributorData } from "../imports/api/types";
 
 // -------------Types -------------
 
@@ -96,7 +97,7 @@ Meteor.methods({
       throw new Meteor.Error("link-not-found", "Link not found");
     }
 
-    return RepoCollection.removeAsync(d._id);
+    return RepoCollection.removeAsync({ url });
   },
 
   /**
@@ -127,7 +128,7 @@ Meteor.methods({
       throw new Meteor.Error("bookmark-not-found", "Bookmark not found");
     }
 
-    return RepoCollection.updateAsync(bm._id, { $set: { lastViewed: new Date() } });
+    return RepoCollection.updateAsync({ url }, { $set: { lastViewed: new Date() } });
   },
 
   /**
@@ -137,17 +138,18 @@ Meteor.methods({
    *
    * @param {string} url - The URL of the repository.
    *
-   * @returns {Promise<SerializableRepoData>} The repository data.
+   * @returns {Promise<RepositoryData>} The repository data.
    * @throws {Meteor.Error} If the repository data is not found or not authorised.
    *
    */
   async 'repoCollection.getData'(url: string) {
     const repoData = await RepoCollection.findOneAsync({ url });
+
     if (!repoData) {
       throw new Meteor.Error('not-found', 'Repo data not found');
     }
 
-    return repoData.data;
+    return deserializeRepoData(repoData.data);
   },
 });
 
@@ -197,19 +199,21 @@ export const isInDatabase = async (url: string): Promise<boolean> => Meteor.call
 export const tryFromDatabase = async (
   url: string,
   notifier: Subject<string>,
-): Promise<RepositoryData> => {
-  // try and get it from database 
-  notifier.next('Searching database for your repo...');
-  const data = await RepoCollection.findOneAsync({ url })
+): Promise<RepositoryData> => new Promise((resolve, reject) => {
+  // try and get it from database, catching an error as a failed fetch
+  notifier.next('Searching database for your repo...')
+  Meteor.call('repoCollection.getData', url, 
+    (err: Error, res: RepositoryData | PromiseLike<RepositoryData>) => {
+        if (err) {
+          const s = "Couldn't find your repo in the database"
+          notifier.next(s)
+          return reject(s)
+        }
 
-  if (!data) {
-    const s = "Couldn't find your repo in the database"
-    notifier.next(s);
-    return Promise.reject(s);
-  }
-
-  notifier.next('Found your repo in the database!');
-  return deserializeRepoData(data);
-};
+        notifier.next('Found your repo in the database!')
+        return resolve(res)
+      }
+  )
+})
 
 

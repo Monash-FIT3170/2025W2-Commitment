@@ -73,15 +73,15 @@ export const getRepoData = async (
   notifier: Subject<string>,
 ): Promise<boolean> => 
   tryFromDatabase(url, notifier)
-    .then(v => true)
-    .catch(async (e) => 
+    .then((_v: RepositoryData) => true)
+    .catch(async (_e) => 
       fetchDataFromHaskellApp(url, notifier)
-        .then(data => {
+        .then((data: RepositoryData) => {
           notifier.next(`Successfuil`)
           cacheIntoDatabase(url, data)
           return true
         })
-        .catch(e => {
+        .catch((e) => {
           notifier.next(`API fetch failed...: ${e}`)
           return false
         })
