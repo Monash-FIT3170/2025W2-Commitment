@@ -1,6 +1,18 @@
 import React from "react";
 
-function Header() {
+const AboutUs = () => {
+  return (
+    <div className="flex flex-col justify-center items-center mt-6 ">
+      <Header />
+      <Description />
+      <KeyFeatureImage />
+    </div>
+  );
+};
+
+export default AboutUs;
+
+const Header = () => {
   return (
     <div className="flex flex-col justify-center items-center">
       <h4 className="font-mono text-lg font-semibold text-git-500">
@@ -9,9 +21,9 @@ function Header() {
       <h1 className="text-5xl font-mono">Your Contribution Analyser </h1>
     </div>
   );
-}
+};
 
-function Description() {
+const Description = () => {
   return (
     <div className="flex flex-col justify-center items-center mt-6 max-w-xl mx-auto">
       <p className="text-sm text-center font-mono">
@@ -22,9 +34,9 @@ function Description() {
       </p>
     </div>
   );
-}
+};
 
-function KeyFeatureImage() {
+const KeyFeatureImage = () => {
   return (
     <div className="mt-6">
       <img
@@ -34,16 +46,4 @@ function KeyFeatureImage() {
       />
     </div>
   );
-}
-
-function AboutUs() {
-  return (
-    <div className="flex flex-col justify-center items-center mt-6 ">
-      <Header />
-      <Description />
-      <KeyFeatureImage />
-    </div>
-  );
-}
-
-export default AboutUs;
+};

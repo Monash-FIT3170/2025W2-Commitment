@@ -10,7 +10,7 @@ RUN METEOR_ALLOW_SUPERUSER=true curl https://install.meteor.com/ | sh
 # Upgrade NPM version
 RUN npm install -g npm@11.3.0
 
-# Create a non-root user
+# Create a non-root user    
 RUN useradd -ms /bin/bash devuser
 
 # Switch to non-root user
