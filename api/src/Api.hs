@@ -27,6 +27,7 @@ import Network.HTTP.Types
   )
 
 import Data.Aeson
+import qualified Data.Text as T
 import Data.Text (Text)
 import GHC.Generics
 import qualified Data.ByteString.Lazy as BL
@@ -38,6 +39,7 @@ import Control.Monad (forever, void)
 
 import Commitment (fetchDataFrom)
 import Types ()
+import Threading (safePrint)
 
 -- Incoming JSON from JS
 data ClientMessage = ClientMessage { url :: String }
@@ -58,18 +60,18 @@ encodeError msg = encode $ object ["type" .= ("error" :: Text), "message" .= msg
 appWS :: ServerApp
 appWS pendingConn = do
   conn <- acceptRequest pendingConn
-  putStrLn "WebSocket client connected"
+  --safePrint "WebSocket client connected"
 
   -- Step 1: Wait for { "url": "..." } from client
   msg <- receiveData conn
   case eitherDecode (BL.fromStrict msg) of
     Left err -> do
-      putStrLn $ "Invalid JSON: " ++ err
+      --safePrint $ "Invalid JSON: " ++ err
       sendTextData conn $ encodeError "Invalid JSON format. Expected: {\"url\": \"...\"}"
       sendClose conn ("Bad input" :: Text)
 
     Right (ClientMessage repoUrl) -> do
-      putStrLn $ "Processing URL (WS): " ++ repoUrl
+      safePrint $ "Processing URL (WS): " ++ repoUrl
       notifier <- atomically $ newTBQueue 1000
 
       -- Stream text_update messages
@@ -80,8 +82,8 @@ appWS pendingConn = do
       -- Run the actual job
       result <- fetchDataFrom repoUrl notifier
       case result of
-        Just repoData -> sendTextData conn $ BL.toStrict $ encodeValue "value" repoData
-        Nothing       -> sendTextData conn $ BL.toStrict $ encodeError "No repository data found."
+        Right repoData -> sendTextData conn $ BL.toStrict $ encodeValue "value" repoData
+        Left errmsg    -> sendTextData conn $ BL.toStrict $ encodeError (T.pack ("err: " ++ errmsg))
 
       sendClose conn ("Done" :: Text)
 
@@ -96,11 +98,11 @@ fallback req respond = do
       body <- strictRequestBody req
       case eitherDecode body of
         Left err -> do
-          putStrLn $ "Invalid JSON (HTTP): " ++ err
+          --safePrint $ "Invalid JSON (HTTP): " ++ err
           respond $ responseLBS status400 [("Content-Type", "application/json")] $ encodeError "Invalid JSON format. Expected: {\"url\": \"...\"}"
 
         Right (ClientMessage repoUrl) -> do
-          putStrLn $ "Processing URL (HTTP): " ++ repoUrl
+          safePrint $ "Processing URL (HTTP): " ++ repoUrl
           notifier <- atomically $ newTBQueue 1000
 
           -- We discard updates for HTTP; could log or save
@@ -108,12 +110,12 @@ fallback req respond = do
 
           result <- fetchDataFrom repoUrl notifier
           case result of
-            Just repoData ->
+            Right repoData ->
               respond $ responseLBS status200 [("Content-Type", "application/json")] $
                 encodeValue "value" repoData
-            Nothing ->
+            Left errmsg ->
               respond $ responseLBS status500 [("Content-Type", "application/json")] $
-                encodeError "No repository data found."
+                encodeError (T.pack ("err: " ++ errmsg))
 
 appHTTP :: Application
 appHTTP = fallback

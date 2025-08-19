@@ -151,7 +151,7 @@ data InbetweenCommitData = InbetweenCommitData
 parseCommitData :: String -> ParseResult InbetweenCommitData
 parseCommitData txt
   | failedOutput txt = Error txt
-  | length blocks < 6 = Error ("has less than 6 blocks: " ++ show blocks)
+  | length blocks < 6 = Error ("has less than 6 blocks: \"" ++ show blocks ++ "\" | txt: \"" ++ txt ++ "\"")
   | otherwise = do
       ts <- parseTimeM True defaultTimeLocale "%a %b %-d %T %Y %z" (trim $ blocks !! 2)
       return InbetweenCommitData

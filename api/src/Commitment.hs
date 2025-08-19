@@ -53,16 +53,16 @@ execAndParseAll notifier cwd cmds parser msg = passAllAsync commandPool parsingP
     (pure . parsed msg . parser . parsed msg . successful)
     cmds
 
-fetchDataFrom :: String -> TBQueue String -> IO (Maybe RepositoryData)
+fetchDataFrom :: String -> TBQueue String -> IO (Either String RepositoryData)
 fetchDataFrom url notifier = do
     workingDir <- getCurrentDirectory
     let cloneRoot = workingDir </> "cloned-repos"
 
-    _awaitCloneDirectoryCreation <- createDirectoryIfMissing True cloneRoot
+    createDirectoryIfMissing True cloneRoot
     emit notifier "Validating repo exists..."
 
     let execCmdInWorkingDir = execAndParse notifier workingDir
-    _assertRepoExists <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
+    _ <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
 
     emit notifier "Found the repo!"
     emit notifier "Formulating parsers..."
@@ -71,32 +71,31 @@ fetchDataFrom url notifier = do
         repoRelativePath = "cloned-repos" </> repoNameFromUrl
         repoAbsPath = workingDir </> repoRelativePath
 
-    _awaitContentDeletion <- deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
-    _awaitRepoDirectoryCreation <- createDirectoryIfMissing True repoAbsPath
+    deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
+    createDirectoryIfMissing True repoAbsPath
 
     emit notifier "Cloning repo..."
-    assertSuccess <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool (
-            \path -> successful <$> executeCommand notifier workingDir (cloneRepo url path)
-        ) repoAbsPath)
-
+    assertSuccess <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
+        (\path -> successful <$> executeCommand notifier workingDir (cloneRepo url path))
+        repoAbsPath
+        )
     emit notifier (show assertSuccess)
 
     emit notifier "Getting repository data..."
-    res <- (do
+    let res = (do
             repoData <- formulateRepoData url repoAbsPath notifier
             emit notifier "Data processed!"
             pure (Right repoData)
-        )
-        `catch` \(e :: SomeException) -> do
-            let errMsg = displayException e
-            emit notifier ("Error occurred:\n" ++ errMsg)
-            pure (Left errMsg)
-        `finally` do
-            deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
+            )
+            `catch` \(e :: SomeException) -> do
+                let errMsg = displayException e
+                emit notifier ("Error occurred:\n" ++ errMsg)
+                pure (Left $ show errMsg)
+            `finally` do
+                deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
 
-    case res of
-        Right repoData -> pure $ Just repoData
-        Left _         -> pure Nothing
+    res
+    
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
 formulateRepoData :: String -> FilePath -> TBQueue String -> IO RepositoryData
@@ -147,7 +146,7 @@ formulateRepoData _url path notifier = do
             Result (n, o, fd) -> do
                 let res = parseFileDataFromCommit n o fd
                 count <- atomically $ do
-                    modifyTVar' fileCounter (+1)
+                    modifyTVar' fileCounter (+1)    
                     readTVar fileCounter
                 emit notifier $ "Formulating all file data (" ++ show count ++ "/" ++ show filesFound ++ ")..."
                 pure res

@@ -35,12 +35,12 @@ cloneRepo url targetDirectory = doNotLogData
 
 getBranches :: Command
 getBranches = doNotLogData
-  { command = "git branch"
+  { command = "git branch --format=" ++ quote "%(refname:short)"
   }
 
 getAllCommitsFrom :: String -> Command
 getAllCommitsFrom branch = doNotLogData
-  { command = "git log " ++ branch ++ " --format=%H"
+  { command = "git --no-pager log " ++ branch ++ " --format=%H"
   }
 
 getContributorEmails :: String -> Command
@@ -50,7 +50,7 @@ getContributorEmails name = doNotLogData
 
 getCommitDetails :: String -> Command
 getCommitDetails hash = doNotLogData
-  { command = "git show \"--pretty=format:%H\\n|||END|||%an\\n|||END|||%ad\\n|||END|||%s\\n|||END|||%b\\n|||END|||\" \"--diff-filter=ADMRC\" \"--name-status\" " ++ hash 
+  { command = "git show \"--pretty=format:%H\\n|||END|||%an\\n|||END|||%ad\\n|||END|||%s\\n|||END|||%b\\n|||END|||\" \"--name-status\" " ++ hash 
   }
 
 getFileContents :: TBQueue String -> FilePath -> String -> (String -> String -> Command) -> String -> IO String
