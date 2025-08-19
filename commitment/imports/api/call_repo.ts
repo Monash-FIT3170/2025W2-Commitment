@@ -3,9 +3,14 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { Subject } from "rxjs"
 
-const ServerResponses = new Mongo.Collection('fetchRepoMessagesCollection');
+// Define the schema for documents in the collection
+interface PersonalServerResponse {
+  _id?: string;
+  text: string;
+  createdAt?: Date;
+}
 
-type PersonalMessageObject = Readonly<{ text: string }>
+const ServerResponses = new Mongo.Collection<PersonalServerResponse>("fetchRepoMessagesCollection");
 
 export const fetchRepo = (url: string, subject: Subject<string>): Promise<boolean> => 
     new Promise<boolean>((resolve, reject) => {
@@ -14,8 +19,8 @@ export const fetchRepo = (url: string, subject: Subject<string>): Promise<boolea
 
 			// Reactively log messages
 			Tracker.autorun(() => {
-				const messages: [PersonalMessageObject] = ServerResponses.find({}, { sort: { createdAt: -1 } }).fetch()
-				messages.forEach((m: PersonalMessageObject) => subject.next(m.text));
+				const messages: PersonalServerResponse[] = ServerResponses.find({}, { sort: { createdAt: -1 } }).fetch()
+				messages.forEach((m: PersonalServerResponse) => subject.next(m.text));
 			})
 
 			// Call the server method to start data retrieval
@@ -25,9 +30,9 @@ export const fetchRepo = (url: string, subject: Subject<string>): Promise<boolea
 
 			Meteor.call('getGitHubRepoData', url, (err: Error, result: boolean) => {
 				if (err) reject(err)
-				resolve(result)
+				resolve(result ?? false)
 			});
-})
+	})
 
 export const repoInDatabase = async (url: string) => 
     new Promise<boolean>((resolve, reject) => {

@@ -45,13 +45,13 @@ Meteor.methods({
   async 'links.remove'(url: string) {
     check(url, String);
 
-    const link = await LinksCollection.findOneAsync({ url });
+    const link = await LinksCollection.findOneAsync({ url })
 
     if (!link) {
       throw new Meteor.Error('link-not-found', 'Link not found');
     }
 
-    const result = LinksCollection.removeAsync(link._id);
+    const result = LinksCollection.removeAsync({ url })
     return result;
   },
 
@@ -64,7 +64,7 @@ Meteor.methods({
      */
   async 'links.isBookmarked'(url: string) {
     check(url, String);
-    const link = await LinksCollection.findOneAsync({ url });
+    const link = await LinksCollection.findOneAsync({ url })
     return !!link;
   },
 });
