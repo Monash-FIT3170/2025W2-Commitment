@@ -14,7 +14,6 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import GraphCard from "./GraphCard";
-import {ContributionEntry} from "@server/commitment_api/types"
 import {
   getContributors,
   getBranches,
@@ -22,7 +21,7 @@ import {
   calculateTotalCommits,
 } from "/imports/ui/components/utils/metric_functions";
 
-import { RepositoryData } from "/server/commitment_api/types";
+import { RepositoryData, ContributionEntry } from "/imports/api/types";
 import { getFilteredRepoData } from "../utils/data_filter";
 
 // -----------------------------

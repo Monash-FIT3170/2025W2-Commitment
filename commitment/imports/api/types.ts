@@ -57,3 +57,9 @@ export type UserScalingSummary = {
   finalGrade: number | null; // may be missing -> if there is a grading sheet, this must be populated
   scale: number;  // always present
 };
+
+export type ContributionEntry = {
+  name: string;
+  date: string;
+  count: number;
+};
