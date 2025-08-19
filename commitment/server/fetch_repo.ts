@@ -50,6 +50,8 @@ Meteor.methods({
 
     // returns whether it was successful in caching to the database or not
     return await getRepoData(repoUrl, subject)
+      .then(_ => true)
+      .catch(_e => false)
   },
 });
 
@@ -71,19 +73,17 @@ Meteor.methods({
 export const getRepoData = async (
   url: string,
   notifier: Subject<string>,
-): Promise<boolean> => 
+): Promise<RepositoryData> => 
   tryFromDatabase(url, notifier)
-    .then((_v: RepositoryData) => true)
-    .catch(async (_e) => 
+    .catch((_e) => 
       fetchDataFromHaskellApp(url, notifier)
         .then((data: RepositoryData) => {
-          notifier.next(`Successfuil`)
           cacheIntoDatabase(url, data)
-          return true
+          return data
         })
         .catch((e) => {
-          notifier.next(`API fetch failed...: ${e}`)
-          return false
+          notifier.next(`API fetch failed: ${e}`)
+          throw e
         })
     )
 

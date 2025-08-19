@@ -84,12 +84,11 @@ Meteor.methods({
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
    */
   async "repoCollection.removeRepo"(url: string) {
-    if (!isInDatabase(url)) {
-      throw new Meteor.Error(
+    if (!isInDatabase(url)) throw new Meteor.Error(
         "not-in-database",
         "The repo must exist in the database to be removed"
       );
-    }
+    
 
     const d = await RepoCollection.findOneAsync({ url });
 

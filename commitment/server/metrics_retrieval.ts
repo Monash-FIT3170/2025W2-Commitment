@@ -1,10 +1,9 @@
-
-
-
 import { Subject } from "rxjs";
+
 import { RepositoryData } from "../imports/api/types";
-import { metricsFunctions, MetricFn } from "./repo_metrics";
-import { getRepoData } from "./caching";
+import { metricsFunctions, MetricFn } from "../server/repo_metrics";
+import { getRepoData } from "../server/fetch_repo";
+
 
 Meteor.methods({
   /**
