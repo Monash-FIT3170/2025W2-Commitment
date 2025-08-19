@@ -1,32 +1,36 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@ui/components/ui/navigation-menu";
-import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
-import SignUpButton from "./signUpButton";
-import ProfileMenu from "@ui/components/ui/profile-menu";
-import { Moon, Sun } from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
+  navigationMenuTriggerStyle,
+} from '@ui/components/ui/navigation-menu';
+import ProfileMenu from '@ui/components/ui/profile-menu';
+import { Moon, Sun } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom';
+import SignUpButton from './signUpButton';
+
 interface NavBarProps {
   isLoggedIn: boolean;
 }
 
-export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
+function NavBar({ isLoggedIn }: NavBarProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
-  const isLandingPage = location.pathname === "/";
+  const isLandingPage = location.pathname === '/';
 
   const handleSignOut = () => {
     // note to self: implement signing out logic here later
-    console.log("Sign out clicked");
+    console.log('Sign out clicked');
   };
 
   const handleToggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+
+    document.documentElement.classList.toggle("dark");
     // note to self: implement dark mode logic here later
+
     console.log("Dark mode toggled:", !isDarkMode);
     document.documentElement.classList.toggle("dark");
   };
@@ -43,7 +47,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
     >
       <NavigationMenu>
         <NavigationMenuList className="flex space-x-4">
-          <a className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3">
             <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
             <span className="text-xl"></span>
           </a>
@@ -91,7 +95,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                  <a className={navigationMenuTriggerStyle()}>Docs</a>
+                  <div className={navigationMenuTriggerStyle()}>Docs</div>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -101,10 +105,11 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
 
       <div className="flex items-center space-x-4">
         <button
+          type="button"
           onClick={handleToggleDarkMode}
           className="p-2 rounded-full hover:bg-gray-200 transition-colors"
           aria-label={
-            isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+            isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'
           }
         >
           {isDarkMode ? (

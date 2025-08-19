@@ -1,31 +1,33 @@
-import React, { useEffect, useState } from "react";
-import { Meteor } from "meteor/meteor";
-import { useLocation, useNavigate, Navigate } from "react-router-dom";
-import { Subject } from "rxjs";
+import React, { useEffect, useState } from 'react';
+import { Meteor } from 'meteor/meteor';
+import { useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { Subject } from 'rxjs';
 
-import LoadingBar from "@ui/components/Loading-page/LoadingBar";
-import TipBox from "@ui/components/Loading-page/TipBox";
-import NavBar from "@ui/components/landing-page/NavBar";
-import { fetchRepo } from "../api/call_repo";
+import LoadingBar from '@ui/components/Loading-page/LoadingBar';
+import TipBox from '@ui/components/Loading-page/TipBox';
+import NavBar from '@ui/components/landing-page/NavBar';
+import { fetchRepo } from '../api/call_repo';
 
 interface LocationState {
   repoUrl?: string;
 }
-
 const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => {
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const { repoUrl } = (state as LocationState) || {};
+  const location = useLocation();
+  
+  // Safely type-check the state before destructuring
+  const locationState = location.state as LocationState | null;
+  const repoUrl = locationState?.repoUrl;
 
   // Notifier message replaces header
-  const [message, setMessage] = useState<string>("Starting…");
+  const [message, setMessage] = useState<string>('Starting…');
 
   // Rotating tips
   const [tipIndex, setTipIndex] = useState<number>(0);
   const tips = [
-    "Tip 1: Use keyboard shortcuts to improve productivity.",
-    "Tip 2: Frequently commit your code to avoid loss.",
-    "Tip 3: Write meaningful commit messages.",
+    'Tip 1: Use keyboard shortcuts to improve productivity.',
+    'Tip 2: Frequently commit your code to avoid loss.',
+    'Tip 3: Write meaningful commit messages.',
   ];
 
   // Progress bar state
@@ -34,7 +36,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
   // Rotate tips every 4s
   useEffect(() => {
     const id = Meteor.setInterval(() => {
-      setTipIndex(i => (i + 1) % tips.length);
+      setTipIndex((i) => (i + 1) % tips.length);
     }, 4000);
     return () => Meteor.clearInterval(id);
   }, []);
@@ -44,18 +46,23 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
     if (!repoUrl) return;
 
     const notifier = new Subject<string>();
-    const sub = notifier.subscribe(msg => setMessage(msg));
+    const sub = notifier.subscribe((msg) => setMessage(msg));
 
     fetchRepo(repoUrl, notifier)
       .then(() => {
-        notifier.next(" Repository data loaded!");
+        notifier.next(' Repository data loaded!');
         setProgress(100);
+
+        // redirect to the metrics page 
+        setTimeout(() => {
+          navigate("/metrics", { replace: true, state: { repoUrl } });
+        }, 1000);
       })
-      .catch(err => {
+      .catch((err) => {
         notifier.next(` ${err}`);
         // Wait 10 seconds to let user read the error, then redirect back
         setTimeout(() => {
-          navigate("/home", { replace: true });
+          navigate('/home', { replace: true });
         }, 20000);
       });
 
@@ -69,11 +76,11 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
   if (!repoUrl) return <Navigate to="/insert-git-repo" replace />;
 
   const containerClasses = [
-    darkMode ? "dark" : "",
-    "min-h-screen bg-background text-foreground",
+    darkMode ? 'dark' : '',
+    'min-h-screen bg-background text-foreground',
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   return (
     <div className={containerClasses}>

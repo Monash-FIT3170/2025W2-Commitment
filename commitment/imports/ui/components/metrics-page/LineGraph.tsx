@@ -1,6 +1,4 @@
-import React from "react";
-import InfoButton from "../ui/infoButton";
-
+import React from 'react';
 import {
   CartesianGrid,
   Line,
@@ -8,16 +6,18 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
-} from "recharts";
-import { CardContent, CardHeader, CardTitle } from "../ui/card";
+} from 'recharts';
+import InfoButton from '../ui/infoButton';
+
+import { CardContent, CardHeader, CardTitle } from '../ui/card';
 
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "../ui/chart";
-import GraphCard from "./GraphCard";
+} from '../ui/chart';
+import GraphCard from './GraphCard';
 
 // Interface for the contributor data point
 interface ContributorDataPoint {
@@ -33,17 +33,17 @@ interface ContributorsLineChart {
 }
 
 const staticColorPalette = [
-  "#4E79A7",
-  "#F28E2B",
-  "#59A14F",
-  "#E15759",
-  "#76B7B2",
-  "#EDC948",
-  "#B07AA1",
-  "#FF9DA7",
-  "#9C755F",
-  "#BAB0AC",
-  "#D37295",
+  '#4E79A7',
+  '#F28E2B',
+  '#59A14F',
+  '#E15759',
+  '#76B7B2',
+  '#EDC948',
+  '#B07AA1',
+  '#FF9DA7',
+  '#9C755F',
+  '#BAB0AC',
+  '#D37295',
 ];
 
 const extendColorPalette = (index: number): string => {
@@ -58,7 +58,6 @@ const tickMarginForXAxis = (dataLength: number) => {
   return 2;
 };
 
-
 // container with the contributor line graph.
 export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   data,
@@ -68,7 +67,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
 }) => {
   // gets the contributors from the data, assuming data is formatted: {date="2023-01-01", contributor1: 1, contributor2: 2}
   const contributors = Object.keys(data[0] || {}).filter(
-    (key) => key !== "date"
+    (key) => key !== 'date',
   );
 
   // creates a config object for each contributor with a specific color
@@ -77,9 +76,8 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   // Maps over the contributors and assigns a color to each one
   // staticColorPalette is used for the first 10 contributors, and extendColorPalette is used for the rest
   contributors.forEach((contributor, index) => {
-    const color =
-      staticColorPalette[index] ??
-      extendColorPalette(index - staticColorPalette.length);
+    const color = staticColorPalette[index]
+      ?? extendColorPalette(index - staticColorPalette.length);
     chartConfig[contributor] = {
       label: contributor,
       color,
@@ -89,14 +87,12 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   // card with the line graph
   return (
     // <Card  className="flex flex-col w-[475px] h-[400px] bg-[#f0f0e8] border-0 rounded-xl" style={{ backgroundColor: graphBackgroundColour }}>
-    <GraphCard>
-      {/* Title*/}
-      <CardHeader className="h-[100px] flex items-center px-4">
-        <CardTitle className="flex justify-between items-start text-lg mt-0 font-bold ">
+    <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
+      {/* Title */}
+      <CardHeader className="pb-0">
+        <CardTitle className="flex text-lg mt-0 font-bold ">
           {title}
-        </CardTitle>
-        <CardTitle>
-          <div className="relative -mt-2">
+          <div className="relative -mt-3 ml-2">
             <InfoButton description="Shows contributor performance over time." />
           </div>
         </CardTitle>
@@ -108,32 +104,34 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
-              margin={{ top: 12, right: 12, bottom: 20, left: 12 }}
+              margin={{
+                top: 12, right: 12, bottom: 20, left: 12,
+              }}
             >
-              <CartesianGrid vertical={true} strokeDasharray="3 3" />
+              <CartesianGrid vertical strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
-                tickLine={true}
-                axisLine={true}
+                tickLine
+                axisLine
                 tickMargin={tickMarginForXAxis(data.length)}
                 label={{
                   value: xAxisLabel,
-                  position: "insideBottom",
+                  position: 'insideBottom',
                   offset: -5,
                 }}
                 tick={{ fontSize: 11 }}
               />
               <YAxis
                 tickLine={false}
-                axisLine={true}
+                axisLine
                 tickMargin={2}
                 label={{
                   value: yAxisLabel,
                   angle: -90,
-                  position: "center",
+                  position: 'center',
                   dy: 0,
                   dx: -20,
-                  style: { textAnchor: "middle" },
+                  style: { textAnchor: 'middle' },
                 }}
               />
               <ChartTooltip cursor={false} content={<ChartTooltipContent />} />

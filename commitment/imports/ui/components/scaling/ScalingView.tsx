@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import ScalingConfigForm from './ScalingConfigForm';
+"use client";
+
+import React, { useState, useEffect } from "react";
+import ScalingConfigForm from "./ScalingConfigForm";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
+} from "../ui/dialog";
 
-import { Button } from '../ui/button';
-import { GradingSheetForm } from './GradingSheetForm';
+import { Button } from "../ui/button";
+import { GradingSheetForm } from "./GradingSheetForm";
+import ScalingSummary from "./ScalingSummary";
+import type { UserScalingSummary } from "@server/commitment_api/types";
 
 interface ScalingConfig {
   metrics: string[];
@@ -18,65 +22,117 @@ interface ScalingConfig {
 }
 
 function ScalingView() {
-  // Grab from local storage, defines if completed or not
   const [completed, setCompleted] = useState(false);
-
-  // Step of scaling config wizard
-  const [step, setStep] = useState<'config' | 'sheet' | 'done'>('config');
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [step, setStep] = useState<"config" | "sheet" | "done">("config");
   const [showDialog, setShowDialog] = useState(false);
-
-  // Shared state for config and grading sheet
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
 
-  // Flow for first visits
+  // Load from localStorage on first mount
   useEffect(() => {
-    // Grab from local storage first
-    const lsCompleted = localStorage.getItem('hasVisitedScaling') === 'true';
+    const lsCompleted = localStorage.getItem("hasVisitedScaling") === "true";
     setCompleted(lsCompleted);
-    setShowDialog(!completed); // Opens automatically if we haven't made scaling yet
+    if (!lsCompleted) setShowDialog(true);
+    setHasLoaded(true);
   }, []);
+
+  // Persist to localStorage
+  useEffect(() => {
+    if (hasLoaded) {
+      localStorage.setItem("hasVisitedScaling", completed ? "true" : "false");
+    }
+  }, [completed, hasLoaded]);
 
   const handleConfigSubmit = (configData: ScalingConfig) => {
     setConfig(configData);
-    console.log('Config submitted:', configData);
-    setStep('sheet');
+    setStep("sheet");
   };
 
-  const handleSheetSubmit = (sheetFile: File) => {
-    setGradingSheet(sheetFile);
-    setStep('done');
+  const handleSheetSubmit = (sheetFile?: File | null) => {
+    setGradingSheet(sheetFile || null);
     setCompleted(true);
     setShowDialog(false);
+    setStep("done");
   };
+
+  // This is the variable that must store the final grades, scalings, aliases and name of contributors
+  const userScalingSummaries: UserScalingSummary[] = [];
 
   return (
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
         <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-          {/* DEFAULT BACKGROUND */}
-          <Button
-            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-            onClick={() => {
-              setStep('config');
-              setShowDialog(true);
+          {!(completed && config) && (
+            <Button
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary -hover"
+              onClick={() => {
+                setStep("config");
+                setShowDialog(true);
+              }}
+            >
+              Create New Scaling
+            </Button>
+          )}
+
+          {/* Show summary if completed */}
+          {completed && step === "done" && config && (
+            <div>
+              {completed && config && (
+                <ScalingSummary
+                  userScalingSummaries={userScalingSummaries}
+                  hasGradingSheet={!!gradingSheet}
+                />
+              )}
+
+              <div className="flex justify-center gap-6 p-4">
+                <Button
+                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                  onClick={() => {
+                    setStep("sheet");
+                    setShowDialog(true);
+                  }}
+                >
+                  Upload Grading Sheet
+                </Button>
+                <Button
+                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                  onClick={() => {
+                    setStep("config");
+                    setShowDialog(true);
+                  }}
+                >
+                  Generate New Scaling
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Multi-Step Dialog */}
+          <Dialog
+            open={showDialog}
+            onOpenChange={(open) => {
+              if (!open && step === "sheet") {
+                // if user closed grading sheet with cross button
+                setCompleted(true);
+                setStep("done");
+              }
+              setShowDialog(open);
             }}
           >
-            Create New Scaling
-          </Button>
-
-          {/* MULTI STEP DIALOG */}
-          <Dialog open={showDialog} onOpenChange={setShowDialog}>
-            {/* here to mute any errors */}
-            <DialogHeader>
-              <DialogTitle />
-              <DialogDescription />
-            </DialogHeader>
             <DialogContent className="max-w-full">
-              {step === 'config' && (
+              <DialogHeader>
+                <DialogTitle />
+                <DialogDescription />
+              </DialogHeader>
+
+              {step === "config" && (
+
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
-              {step === 'sheet' && <GradingSheetForm />}
+              {step === "sheet" && (
+                <GradingSheetForm onSubmit={handleSheetSubmit} />
+              )}
             </DialogContent>
           </Dialog>
         </div>
@@ -85,4 +141,4 @@ function ScalingView() {
   );
 }
 
-export default ScalingView
+export default ScalingView;

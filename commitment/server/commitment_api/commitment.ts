@@ -3,6 +3,10 @@ import { Observable, Subject, map } from 'rxjs';
 // imports a list of helper functions
 import { last, zip } from './helpers';
 
+import {
+  SerializableRepoData,
+} from '../caching';
+
 // imports types
 import {
   RepositoryData,
@@ -47,11 +51,23 @@ import {
   getRepoName,
 } from './git_commands';
 
+export function serializeRepoData(data: RepositoryData): SerializableRepoData {
+    return {
+        ...data,
+        allCommits: data.allCommits
+            ? Array.from(data.allCommits, ([key, value]) => ({ key, value }))
+            : [],
+        contributors: data.contributors
+            ? Array.from(data.contributors, ([key, value]) => ({ key, value }))
+            : [],
+    };
+};
+
 // does not have a notifier which updates any frontend subscribers
-export const getDataFrom = async (url: string): Promise<RepositoryData> => fetchDataFrom(url, new Subject<string>());
+export const getDataFrom = async (url: string): Promise<SerializableRepoData> => fetchDataFrom(url, new Subject<string>());
 
 // gets the repository data from the url
-export const fetchDataFrom = async (url: string, notifier: Subject<string>): Promise<RepositoryData> => {
+export const fetchDataFrom = async (url: string, notifier: Subject<string>): Promise<SerializableRepoData> => {
   // creates path to clone repos in if filepath if it doesnt already exist
   const workingDir = process.cwd();
   if (!doesFilePathExist(workingDir)) createFilePath(`${workingDir}/cloned-repos/`);
@@ -91,7 +107,10 @@ export const fetchDataFrom = async (url: string, notifier: Subject<string>): Pro
   // send shit out
   notifier.next('Data processed!');
 
-  return repoData;
+
+  const serializedData = serializeRepoData(repoData);
+  
+  return serializedData;
 };
 
 const formulateRepoData = async (url: string, path: string, notifier: Subject<string>): Promise<RepositoryData> => {

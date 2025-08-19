@@ -21,6 +21,6 @@ const GetStartedButton: React.FC<GetStartedButtonProps> = ({ className }) => {
       Get Started
     </Button>
   );
-};
+}
 
 export default GetStartedButton;
