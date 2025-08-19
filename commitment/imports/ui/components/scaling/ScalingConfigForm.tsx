@@ -52,6 +52,7 @@ function ScalingConfigForm({
 
   const metricOptions = [
     "Total No. Commits",
+    "Use AI to filter out commits",
     "LOC",
     "LOC per commit",
     "Commits per day",

@@ -1,10 +1,12 @@
-import React from "react";
-import LoginWidget from "@ui/components/widgets/login/LoginWidget";
+import React from 'react';
+import LoginWidget from '@ui/components/widgets/login/LoginWidget';
 
-const LoginView = () => (
-  <div className="h-screen flex flex-col justify-center content-center bg-secondary">
-    <LoginWidget></LoginWidget>
-  </div>
-);
+function LoginView() {
+  return (
+    <div className="h-screen flex flex-col justify-center content-center bg-secondary">
+      <LoginWidget />
+    </div>
+  );
+}
 
 export default LoginView;

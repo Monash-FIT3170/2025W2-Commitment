@@ -112,3 +112,15 @@ export const getTypeBy = (c: string): ChangeType | null => {
 };
 
 export const sortCommitByTimeStamp = (c1: CommitData, c2: CommitData): number => c2.timestamp.getTime() - c1.timestamp.getTime();
+
+export type AliasEmail = {
+  username: string;
+  email: string;
+};
+
+export type UserScalingSummary = {
+  name: string;
+  aliases: AliasEmail[];
+  finalGrade: number | null; // may be missing -> if there is a grading sheet, this must be populated
+  scale: number;  // always present
+};
