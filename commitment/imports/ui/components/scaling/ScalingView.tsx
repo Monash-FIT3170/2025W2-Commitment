@@ -11,7 +11,7 @@ import {
 } from "../ui/dialog";
 
 import { Button } from "../ui/button";
-import { GradingSheetForm } from "./GradingSheetForm";
+import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
 import type { UserScalingSummary } from "@server/commitment_api/types";
 
@@ -56,7 +56,6 @@ function ScalingView() {
 
   const handleSheetSubmit = (sheetFile: File) => {
     setGradingSheet(sheetFile || null);
-    setStep("done");
     setCompleted(true);
     setShowDialog(false);
     setStep("done");
