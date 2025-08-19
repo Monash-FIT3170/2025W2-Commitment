@@ -14,12 +14,6 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import GraphCard from "./GraphCard";
-import {
-  getContributors,
-  getBranches,
-  getAllContributorsCommits,
-  calculateTotalCommits,
-} from "/imports/ui/components/utils/metric_functions";
 
 import { RepositoryData, ContributionEntry } from "/imports/api/types";
 import { getFilteredRepoData } from "../utils/data_filter";
@@ -175,12 +169,28 @@ export function AnalyticsView() {
   }
 
   // Extracted repo metrics
-  const contributorData = getContributors(repoData);
+  const contributorData = ["placeholder"] //getContributors(repoData);
   const numContributors = contributorData.length;
-  const branchData = getBranches(repoData);
+  const branchData = ["placeholder"]// getBranches(repoData);
   const numBranches = branchData.length;
-  const contributorCommitData = getAllContributorsCommits(repoData).data;
-  const totalCommits = calculateTotalCommits(repoData);
+  const contributorCommitData = [
+    {
+      name: "yeetus feleetus",
+      commits: -1
+    }
+  ] //getAllContributorsCommits(repoData).data;
+  const totalCommits = [
+    {
+      total: 0,
+      percentageChange: 1,
+      isPositive: false,
+      data: [
+        {
+          value: 0
+        }
+      ]
+    }
+  ] //calculateTotalCommits(repoData);
 
   return (
     <div className="m-0 scroll-smooth">
