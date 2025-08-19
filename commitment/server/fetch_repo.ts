@@ -1,11 +1,10 @@
-import { Meteor } from 'meteor/meteor';
-import { Subject } from 'rxjs';
-
-import { isInDatabase, getRepoData } from './caching';
+import { Meteor } from "meteor/meteor";
+import { Subject } from "rxjs";
+import { isInDatabase, getRepoData } from "../server/caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
-Meteor.publish('fetchRepoMessages', function () {
+Meteor.publish("fetchRepoMessages", function () {
   const connectionId = this.connection.id;
 
   // Create subject if not exists
@@ -16,15 +15,19 @@ Meteor.publish('fetchRepoMessages', function () {
   // get subject
   const subject = clientMessageStreams[connectionId];
 
+  // First add an empty initial document
+  this.added("fetchRepoMessagesCollection", connectionId, {
+    text: "",
+    createdAt: new Date(),
+  });
+
   // Send message manually when .next() is called
-  const subscription = subject.subscribe((msg: string) => this.changed(
-    'fetchRepoMessagesCollection',
-    connectionId,
-    {
+  const subscription = subject.subscribe((msg: string) =>
+    this.changed("fetchRepoMessagesCollection", connectionId, {
       text: msg,
       createdAt: new Date(),
-    },
-  ));
+    })
+  );
 
   // Cleanup on stop
   this.onStop(() => subscription.unsubscribe());
@@ -34,7 +37,7 @@ Meteor.publish('fetchRepoMessages', function () {
 });
 
 Meteor.methods({
-  async 'getGitHubRepoData' (repoUrl: string) {
+  async getGitHubRepoData(repoUrl: string) {
     // gets the current connection id to identify the stream the updates should be sent to
     const connectionId = this.connection!.id;
     const sub = clientMessageStreams[connectionId];
@@ -53,5 +56,7 @@ Meteor.methods({
 });
 
 Meteor.methods({
-  async 'repoInDatabase' (repoUrl: string) { return isInDatabase(repoUrl); },
+  async repoInDatabase(repoUrl: string) {
+    return isInDatabase(repoUrl);
+  },
 });

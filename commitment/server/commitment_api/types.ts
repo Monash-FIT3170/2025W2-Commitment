@@ -2,6 +2,35 @@
 
 import { isDate } from 'util';
 
+
+/**
+ * (DE)SERIALIZABLE TYPES 
+ * 
+ * Types used for serializing and deserializing data between the server and client.
+ */
+
+export interface SerializableRepoData {
+    name: string; 
+    branches: BranchData[]; 
+    allCommits: {key:string; value: CommitData}[]; // Map converted to a list of objects
+    contributors: {key:string; value: ContributorData}[]; // Map converted to a list of objects
+}
+
+
+export interface ServerRepoData {
+  _id?: string
+  url: string
+  createdAt: Date
+  data: RepositoryData
+}
+
+
+/**
+ * REPOSITORY DATA TYPES
+ * 
+ * Types representing the structure of a repository, including branches, commits, contributors, and file changes.
+ */
+
 export type RepositoryData = Readonly<{
     name: string
     branches: BranchData[]
