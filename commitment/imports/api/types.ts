@@ -45,3 +45,15 @@ export type ChangeType = "A" | "M" | "D" | "R" | "C";
 export type ModifyData = Readonly<{ previousFile: FileContents }>;
 export type RenameData = Readonly<{ oldFilePath: string; likeness: number }>;
 export type CopyData = Readonly<{ oldFilePath: string; copyLikeness: number }>;
+
+export type AliasEmail = {
+  username: string;
+  email: string;
+};
+
+export type UserScalingSummary = {
+  name: string;
+  aliases: AliasEmail[];
+  finalGrade: number | null; // may be missing -> if there is a grading sheet, this must be populated
+  scale: number;  // always present
+};
