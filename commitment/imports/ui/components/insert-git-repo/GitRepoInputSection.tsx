@@ -7,8 +7,9 @@ const GitRepoInputSection = () => {
     const navigate = useNavigate();
     const [repoUrl, setRepoUrl] = useState('');
     const [validationError, setValidationError] = useState<string | null>(null);
+    const [isValidating, setIsValidating] = useState(false);
 
-    const validateRepoUrl = (url: string): string | null => {
+    const validateRepoUrl = async (url: string): Promise<string | null> => {
         const trimmedUrl = url.trim();
         const cleanUrl = trimmedUrl.startsWith('@') ? trimmedUrl.substring(1) : trimmedUrl;
 
@@ -21,7 +22,25 @@ const GitRepoInputSection = () => {
         }
 
         if (githubHttpsRegex.test(cleanUrl) || githubSshRegex.test(cleanUrl)) {
-            return null; // URL is valid
+            // Format is valid, now check if the repository actually exists using GitHub API
+            try {
+                // Extract owner and repo from GitHub URL
+                const match = cleanUrl.match(/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?$/);
+                if (!match) {
+                    return "Invalid GitHub URL format.";
+                }
+                
+                const [, owner, repo] = match;
+                const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
+                
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    return "GitHub repository not found. Please check the URL and try again.";
+                }
+                return null; // URL is valid and repository exists
+            } catch (error) {
+                return "Unable to validate repository. Please check your internet connection.";
+            }
         } else {
             return "Invalid GitHub repository link format. Please use one of these formats:\n" +
                    "- HTTPS: https://github.com/username/repo or https://github.com/username/repo.git\n" +
@@ -29,20 +48,27 @@ const GitRepoInputSection = () => {
         }
     };
 
-    const handleAnalyseClick = () => {
-        const error = validateRepoUrl(repoUrl);
-        setValidationError(error);
+    const handleAnalyseClick = async () => {
+        setIsValidating(true);
+        setValidationError(null);
+        
+        try {
+            const error = await validateRepoUrl(repoUrl);
+            setValidationError(error);
 
-        if (!error) {
-            // TODO: Implement repository analysis logic here
-            console.log('Valid repo URL:', repoUrl);
-            navigate('/loading', { state: { repoUrl } });
+            if (!error) {
+                // TODO: Implement repository analysis logic here
+                console.log('Valid repo URL:', repoUrl);
+                navigate('/loading', { state: { repoUrl } });
+            }
+        } finally {
+            setIsValidating(false);
         }
     };
 
-    const handleInputKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+    const handleInputKeyPress = async (event: KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
-            handleAnalyseClick();
+            await handleAnalyseClick();
         }
     };
 
@@ -65,11 +91,13 @@ const GitRepoInputSection = () => {
             )}
             <Button 
                 className={cn(
-                    "w-[341px] h-auto text-white font-mono text-2xl rounded-full text-center bg-git-int-primary hover:bg-git-int-primary-hover mt-4"
+                    "w-[341px] h-auto text-white font-mono text-2xl rounded-full text-center bg-git-int-primary hover:bg-git-int-primary-hover mt-4",
+                    isValidating && "opacity-50 cursor-not-allowed"
                 )}
                 onClick={handleAnalyseClick}
+                disabled={isValidating}
             >
-                Analyse Repository
+                {isValidating ? "Validating..." : "Analyse Repository"}
             </Button>
         </>
     );
