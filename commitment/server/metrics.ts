@@ -4,13 +4,10 @@
 USE THE CONTENTS OF THIS FILE FOR IDEAS ONLY.
 DISREGARD CODE ITSELF */
 
-
-
-
 // // Importing required types to enforce structure of input data
 // import { RepositoryData, CommitData } from "./commitment_api/types";
 
-// // Type definitions for the output structs 
+// // Type definitions for the output structs
 
 // // LOC over time (for line graph)
 // export type TimeLOCEntry = { timestamp: Date; locChanged: number };

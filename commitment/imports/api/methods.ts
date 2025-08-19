@@ -1,5 +1,3 @@
-import { Subject } from 'rxjs';
-
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { LinksCollection, Link } from './links';
@@ -24,8 +22,8 @@ Meteor.methods({
       throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
     }
 
-    const inDatabase = repoInDatabase(url);
-    if (!inDatabase) Promise.reject(new Error(`URL does not exist inside database: ${url}`));
+    const inDatabase = await repoInDatabase(url);
+    if (!inDatabase) throw new Error(`URL does not exist inside database: ${url}`)
 
     const newLink: Link = {
       title,
@@ -47,13 +45,13 @@ Meteor.methods({
   async 'links.remove'(url: string) {
     check(url, String);
 
-    const link = await LinksCollection.findOneAsync({ url });
+    const link = await LinksCollection.findOneAsync({ url })
 
     if (!link) {
       throw new Meteor.Error('link-not-found', 'Link not found');
     }
 
-    const result = LinksCollection.removeAsync(link._id);
+    const result = LinksCollection.removeAsync({ url })
     return result;
   },
 
@@ -66,7 +64,7 @@ Meteor.methods({
      */
   async 'links.isBookmarked'(url: string) {
     check(url, String);
-    const link = await LinksCollection.findOneAsync({ url });
+    const link = await LinksCollection.findOneAsync({ url })
     return !!link;
   },
 });
