@@ -61,17 +61,16 @@ function ScalingConfigForm({
   const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
 
   return (
-    <div className="max-w-full">
+    <div className="w-full">
+      <div className="absolute top-2 left-2 flex space-x-1">
+        <span className="w-2 h-2 rounded-full bg-[#F1502F]/50" />
+        <span className="w-2 h-2 rounded-full bg-[#F1502F]/30" />
+      </div>
       <Form {...form}>
         <div className="text-2xl font-bold mb-4 text-center">
           Generate Scaling
         </div>
-        <form
-          onSubmit={(e) => {
-            void form.handleSubmit(handleSubmit)(e);
-          }}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           {/* METRICS CHECKBOXES */}
           <FormField
             control={form.control}

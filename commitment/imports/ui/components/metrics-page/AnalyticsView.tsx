@@ -1,76 +1,39 @@
-import React, { useState, useMemo } from "react";
-import { format, subDays, addDays, isValid } from "date-fns";
-import { DateRange } from "react-day-picker";
-import InfoButton from "../ui/infoButton";
-import { DateRangePicker } from "./DatePickerButton";
-import  BranchDropdownMenu  from "./BranchDropdownMenu";
-import UserContributionHeatMap from "./HeatMapGraph";
-import { dark2 } from "../ui/colors";
-import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
-import { HighlightCardWithGraph } from "./HighlightCard";
-import { ContributorLineGraph } from "./LineGraph";
-import { LeaderboardGraph } from "./LeaderboardGraph";
-import { ContributionPieChart } from "./PieChartGraph";
-import { topContributors } from "../../lib/utils";
 
-// !!!: Remove this dummy data upon integration with AT3's real data
-type ContributionEntry = {
-  name: string;
-  date: string;
-  count: number;
-};
-
-const dummyBranches = [
-  "main",
-  "development",
-  "feature/login-page",
-  "bugfix/fix-chart",
-  "release/v1.2",
-];
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  format, subDays, addDays, isValid, set,
+} from 'date-fns';
+import { DateRange } from 'react-day-picker';
+import { useLocation } from 'react-router-dom';
+import { Subject } from 'rxjs';
+import { get } from 'http';
+import InfoButton from '../ui/infoButton';
+import { DateRangePicker } from './DatePickerButton';
+import { BranchDropdownMenu } from './BranchDropdownMenu';
+import UserContributionHeatMap from './HeatMapGraph';
+import { dark2 } from '../ui/colors';
+import { ContributorDropdownMenu } from './ContributorDropdownMenu';
+import { HighlightCardWithGraph } from './HighlightCard';
+import { ContributorLineGraph } from './LineGraph';
+import { LeaderboardGraph } from './LeaderboardGraph';
+import { ContributionPieChart } from './PieChartGraph';
+import { topContributors } from '../../lib/utils';
+import GraphCard from './GraphCard';
+import { getContributors, getBranches, getAllContributorsCommits, calculateTotalCommits } from '/imports/ui/components/utils/metric_functions';
+import { RepositoryData } from '/server/commitment_api/types';
+import { getFilteredRepoData } from '../utils/data_filter';
 
 const dummyUsers = [
-  "Alice",
-  "Bob",
-  "Charlie",
-  "David",
-  "Eva",
-  "Frank",
-  "Grace",
-  "Helen",
+  'Alice',
+  'Bob',
+  'Charlie',
+  'David',
+  'Eva',
+  'Frank',
+  'Grace',
+  'Helen',
 ];
 
-const dummyContributors = [
-  "Michael",
-  "Andrew",
-  "Jessica",
-  "Andy",
-  "Barry",
-  "Georgia",
-  "Mary",
-  "Sophie",
-  "Bill",
-  "Simon",
-  "George",
-  "Tim",
-  "Rachel",
-  "Lora",
-];
-
-const mockLocLineData = [
-  { value: 50 },
-  { value: 58 },
-  { value: 62 },
-  { value: 65 },
-  { value: 60 },
-  { value: 68 },
-  { value: 72 },
-  { value: 70 },
-  { value: 76 },
-  { value: 85 },
-  { value: 82 },
-  { value: 90 },
-  { value: 95 },
-];
 const mockCommitLineData = [
   { value: 50 },
   { value: 58 },
@@ -104,95 +67,76 @@ const mockTotalLocData = [
 ];
 
 export const mockContributorDataset = {
-  title: "Total Lines of Code",
+  title: 'Total Lines of Code',
   data: [
     {
-      date: "2024-01-01",
-      Alice: 120,
-      Bob: 90,
-      Charlie: 100,
+      date: '2024-01-01', Alice: 120, Bob: 90, Charlie: 100,
     },
     {
-      date: "2024-01-02",
-      Alice: 140,
-      Bob: 95,
-      Charlie: 105,
+      date: '2024-01-02', Alice: 140, Bob: 95, Charlie: 105,
     },
     {
-      date: "2024-01-03",
-      Alice: 135,
-      Bob: 100,
-      Charlie: 98,
+      date: '2024-01-03', Alice: 135, Bob: 100, Charlie: 98,
     },
     {
-      date: "2024-01-04",
-      Alice: 160,
-      Bob: 110,
-      Charlie: 110,
+      date: '2024-01-04', Alice: 160, Bob: 110, Charlie: 110,
     },
     {
-      date: "2024-01-05",
-      Alice: 170,
-      Bob: 120,
-      Charlie: 115,
+      date: '2024-01-05', Alice: 170, Bob: 120, Charlie: 115,
     },
     {
-      date: "2024-01-06",
-      Alice: 180,
-      Bob: 125,
-      Charlie: 120,
+      date: '2024-01-06', Alice: 180, Bob: 125, Charlie: 120,
     },
     {
-      date: "2024-01-07",
-      Alice: 190,
-      Bob: 130,
-      Charlie: 125,
+      date: '2024-01-07', Alice: 190, Bob: 130, Charlie: 125,
     },
   ],
 };
 
 export const mockAllContributorDataset = {
-  title: "All Contributor Commits",
+  title: 'All Contributor Commits',
   data: [
-    { name: "Alice", commits: 100 },
-    { name: "Bob", commits: 80 },
-    { name: "Michael", commits: 40 },
-    { name: "Andrew", commits: 130 },
-    { name: "David", commits: 60 },
-    { name: "Tim", commits: 70 },
-    { name: "George", commits: 95 },
+    { name: 'Alice', commits: 100 },
+    { name: 'Bob', commits: 80 },
+    { name: 'Michael', commits: 40 },
+    { name: 'Andrew', commits: 130 },
+    { name: 'David', commits: 60 },
+    { name: 'Tim', commits: 70 },
+    { name: 'George', commits: 95 },
   ],
 };
 
-const topUsers = topContributors(mockAllContributorDataset.data);
-
-const metricsPageDescription =
-  "This page gives an overview of key metrics and performance trends.";
+const metricsPageDescription = 'This page gives an overview of key metrics and performance trends.';
 
 export const generateRandomContributions = (
   startDate: Date,
   endDate: Date,
-  users = dummyUsers
+  users = dummyUsers,
 ) => {
   if (!endDate || !isValid(endDate)) {
     // In the case where no end date is given
     return [];
   }
-  console.log(startDate, endDate, "both");
-  const data: ContributionEntry[] = [];
+  
+  console.log(startDate, endDate, 'both');
+  const data = [];
+
   const totalDays = Math.floor(
-    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   users.forEach((user) => {
     Array.from({ length: totalDays + 1 }).forEach((_, i) => {
       const currentDate = addDays(startDate, i);
       const contributed = Math.random() < 0.45;
-      const count = contributed ? Math.floor(Math.random() ** 2 * 150 + 5) : 0;
+      const count = contributed
+        ? Math.floor(Math.random() ** 2 * 150 + 5)
+        : 0;
+
 
       data.push({
         name: user,
-        date: format(currentDate, "yyyy-MM-dd"),
+        date: format(currentDate, 'yyyy-MM-dd'),
         count,
       });
     });
@@ -200,8 +144,6 @@ export const generateRandomContributions = (
 
   return data;
 };
-
-
 
 const transformToPieChartData = (data: ContributionEntry[]) => {
   const userTotals = data.reduce<Record<string, number>>((acc, entry) => {
@@ -220,17 +162,94 @@ export function AnalyticsView() {
   const today = new Date();
   const lastWeek = subDays(today, 6); // Last 7 days including today
 
-  const initialDateRange: DateRange = { from: lastWeek, to: today };
-  const [dateRange, setDateRange] = useState<DateRange>(initialDateRange);
+  // attempt to get the repo data from the location state
+  // storing the repo data by calling getRepoData in metric_functions.tsx
+  const location = useLocation();
+  const repoUrl = location.state?.repoUrl;
+  const [repoData, setRepoData] = useState<RepositoryData | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [loading, setLoading] = useState<boolean>(true); // Add loading state
+  const [error, setError] = React.useState<string | null>(null);
+  const defaultDaysBack = 1000;
 
-  const startDate = dateRange.from!;
-  const endDate = dateRange.to!;
+  useEffect(() => {
+    // check if entering this useEffect
+    console.log('Entering useEffect with repoUrl:', repoUrl);
+    if (!repoUrl) {
+      setLoading(false);
+      console.log('No repo URL found');
+      return;
+    }
+    console.log('Starting getFilteredRepoData with URL:', repoUrl);
 
-  const data = useMemo(
-    () => generateRandomContributions(startDate, endDate),
-    [startDate, endDate]
-  );
-  const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
+    const notifier = new Subject<string>();
+    const filtered = getFilteredRepoData(repoUrl, notifier, defaultDaysBack, 'main');
+
+    filtered.repositoryData.then((data) => {
+      console.log('Filtered repo data fetched:', data);
+      setRepoData(data);
+      setDateRange({ from: filtered.dateRange.start, to: filtered.dateRange.end });
+      console.log('Date range being used:', filtered.dateRange);
+
+      setLoading(false);
+      notifier.complete();
+    })
+      .catch((e) => {
+        setError(e.message);
+        setLoading(false);
+        notifier.complete();
+      });
+  }, [repoUrl]);
+
+  //   // establishes date range defaults
+  // const today = new Date();
+  // const lastWeek = subDays(today, 6); // Last 7 days including today
+
+  // const initialDateRange: DateRange = { from: lastWeek, to: today };
+  // // const [dateRange, setDateRange] = useState<DateRange>(initialDateRange);
+
+  // const startDate = dateRange.from!;
+  // const endDate = dateRange.to!;
+
+  // const data = useMemo(
+  //   () => generateRandomContributions(startDate, endDate),
+  //   [startDate, endDate]
+  // );
+
+  // const pieChartData = useMemo(() => transformToPieChartData(data), [data]);
+
+  // checking if repo data is still loading
+  if (loading) {
+    return <div>Loading repo data...</div>;
+  }
+  // checking if error has occurred
+  if (error) {
+    return (
+      <div>
+        Error:
+        {error}
+      </div>
+    );
+  }
+
+  // checking if the repo data exists
+  if (!repoData) {
+    return <div>No repo data available</div>;
+  }
+
+  console.log(repoData);
+
+  // extracting information from metric functions
+  const contributorData = getContributors(repoData);
+  const numContributors = contributorData.length;
+  const branchData = getBranches(repoData);
+  const numBranches = branchData.length;
+  const contributorCommitData = getAllContributorsCommits(repoData).data;
+
+  const totalCommits = calculateTotalCommits(repoData);
+
+  // const filteredRepoData = getFilteredRepoData(repoUrl, new Subject<string>());
+  // console.log("here is the filtered data", filteredRepoData);
 
   return (
     <div className="m-0 scroll-smooth">
@@ -259,38 +278,77 @@ export function AnalyticsView() {
               />
             </div>
             <div className="flex flex-col">
-              <p className="text-sm text-gray-600">Branch*</p>
-              <BranchDropdownMenu branches={dummyBranches} />
+              <label className="text-sm text-gray-600">Branch*</label>
+              <BranchDropdownMenu branches={branchData} />
             </div>
             <div className="flex flex-col">
-              <p className="text-sm text-gray-600">Contributors*</p>
-              <ContributorDropdownMenu contributors={dummyContributors} />
+              <label className="text-sm text-gray-600">Contributors*</label>
+              <ContributorDropdownMenu contributors={contributorData} />
             </div>
           </div>
 
           <div className="flex flex-wrap gap-6">
             {/* Heatmap */}
+            {/* <div
+              className="outline outline-2 rounded-2xl p-2 basis-1/3 min-w-[320px]"
+              style={{
+                backgroundColor: graphBackgroundColour,
+                outlineColor: "#35353140",
+              }}
+            >
+              <UserContributionHeatMap
+                data={data}
+                startDate={startDate}
+                endDate={endDate}
+                maxUsersToShow={24}
+                title="Heat Map"
+              />
+            </div> */}
+            {/* <GraphCard>
+              <UserContributionHeatMap
+                data={data}
+                startDate={startDate}
+                endDate={endDate}
+                maxUsersToShow={24}
+                title="Heat Map"
+              />
+            </GraphCard> */}
 
-            <UserContributionHeatMap
+            {/* Pie Chart */}
+            {/* <div
+              className="outline outline-2 rounded-2xl p-2 flex-1 min-w-[320px]"
+              style={{
+                backgroundColor: graphBackgroundColour,
+                outlineColor: "#35353140",
+              }}
+            >
+              <ContributionPieChart data={pieChartData} />
+            </div> */}
+            {/* <GraphCard>
+              <ContributionPieChart data={pieChartData} />
+            </GraphCard> */}
+
+            {/* <UserContributionHeatMap
               data={data}
               startDate={startDate}
               endDate={endDate}
               maxUsersToShow={24}
               title="Heat Map"
-            />
+            /> */}
 
             {/* Pie Chart */}
 
-            <ContributionPieChart data={pieChartData} />
+            {/* <ContributionPieChart data={pieChartData} /> */}
 
             <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
               <HighlightCardWithGraph
                 title="Total Commits"
-                value={123}
-                percentageChange={20}
-                isPositive
-                data={mockCommitLineData}
-              />
+                value={totalCommits.total}
+                percentageChange={totalCommits.percentageChange}
+                isPositive={totalCommits.isPositive}
+                data={totalCommits.data}
+                />
+              
               <HighlightCardWithGraph
                 title="Total Lines of Code"
                 value={4567}
@@ -298,8 +356,8 @@ export function AnalyticsView() {
                 isPositive={false}
                 data={mockTotalLocData}
               />
-              <HighlightCardWithGraph title="No. of Contributors" value={5} />
-              <HighlightCardWithGraph title="Number of branches" value={5} />
+              <HighlightCardWithGraph title="No. of Contributors" value={numContributors} />
+              <HighlightCardWithGraph title="Number of branches" value={numBranches} />
             </div>
           </div>
 
@@ -318,7 +376,7 @@ export function AnalyticsView() {
 
             <div className="rounded-2xl basis-1/3 min-w-[320px]">
               <LeaderboardGraph
-                data={topUsers}
+                data={contributorCommitData}
                 title="Top Contributors"
                 xAxisLabel="Commits"
               />
