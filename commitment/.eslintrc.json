@@ -14,9 +14,7 @@
     "dist/",
     "build/",
     "*.d.ts",
-    "imports/ui/components/ui",
-    "server/", //temporarily ignore server files
-    "imports/api/" //temporarily ignore api files
+    "imports/ui/components/ui"
   ],
   "env": {
     "browser": true,
