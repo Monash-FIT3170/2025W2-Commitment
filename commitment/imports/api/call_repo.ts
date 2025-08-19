@@ -8,7 +8,7 @@ const ServerResponses = new Mongo.Collection('fetchRepoMessagesCollection');
 type PersonalMessageObject = Readonly<{ text: string }>
 
 export const fetchRepo = (url: string, subject: Subject<string>): Promise<boolean> => 
-    new Promise<boolean>(async (resolve, reject) => {
+    new Promise<boolean>((resolve, reject) => {
 			// Subscribe to your personal message stream
 			Meteor.subscribe('fetchRepoMessages')
 
@@ -20,7 +20,7 @@ export const fetchRepo = (url: string, subject: Subject<string>): Promise<boolea
 
 			// Call the server method to start data retrieval
 			if (!Meteor.status().connected) {
-				return reject(new Error("Server is not found"))
+				reject(new Error("Server is not found"))
 			}
 
 			Meteor.call('getGitHubRepoData', url, (err: Error, result: boolean) => {
@@ -32,8 +32,8 @@ export const fetchRepo = (url: string, subject: Subject<string>): Promise<boolea
 export const repoInDatabase = async (url: string) => 
     new Promise<boolean>((resolve, reject) => {
         Meteor.call('repoInDatabase', url, (err: Error, result: boolean) => {
-            if (err) reject(err)    
-            resolve(result)
+					if (err) reject(err)    
+					resolve(result)
         });
     })
 

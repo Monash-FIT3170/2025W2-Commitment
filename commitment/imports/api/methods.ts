@@ -23,7 +23,7 @@ Meteor.methods({
     }
 
     const inDatabase = await repoInDatabase(url);
-    if (!inDatabase) Promise.reject(new Error(`URL does not exist inside database: ${url}`));
+    if (!inDatabase) throw new Error(`URL does not exist inside database: ${url}`)
 
     const newLink: Link = {
       title,
