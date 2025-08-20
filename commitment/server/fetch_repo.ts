@@ -2,10 +2,22 @@ import { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
 import { WebSocket } from "ws";
 
-import { RepositoryData } from "../imports/api/types";
+import { RepositoryData, SerializableRepoData } from "../imports/api/types";
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
+
+export function serializeRepoData(data: RepositoryData): SerializableRepoData {
+    return {
+        ...data,
+        allCommits: data.allCommits
+            ? Array.from(data.allCommits, ([key, value]) => ({ key, value }))
+            : [],
+        contributors: data.contributors
+            ? Array.from(data.contributors, ([key, value]) => ({ key, value }))
+            : [],
+    };
+};
 
 Meteor.publish("fetchRepoMessages", function () {
   const connectionId = this.connection.id;
@@ -67,29 +79,35 @@ Meteor.methods({
  * @param url URL of the repository to fetch data from.
  * @param notifier Subject to notify about the status of the fetch operation.
  *
- * @returns {Promise<RepositoryData>} A promise that resolves to the fetched repository data.
+ * @returns {Promise<SerializableRepoData>} A promise that resolves to the fetched repository data.
  * @throws {Error} If there is an error during the fetch operation.
  */
 export const getRepoData = async (
   url: string,
   notifier: Subject<string>,
-): Promise<RepositoryData> => 
-  tryFromDatabase(url, notifier)
-    .catch((_e) => 
-      fetchDataFromHaskellAppWS(url, notifier)
-        .catch(_e => {
-          notifier.next(`Websockets failed, trying HTTP...`)
-          return fetchDataFromHaskellAppHTTP(url)
-        })
-        .then((data: RepositoryData) => {
-          cacheIntoDatabase(url, data)
-          return data
-        })
-        .catch((e) => {
-          notifier.next(`API fetch failed: ${e}`)
-          throw e
-        })
-    )
+): Promise<SerializableRepoData> => {
+  let rawData: RepositoryData | null = null;
+  let serializedData: SerializableRepoData;
+  try {
+    const rawData = await tryFromDatabase(url, notifier); // raw fetch
+    return rawData;
+  } catch {
+    try {
+      rawData = await fetchDataFromHaskellAppWS(url, notifier);
+    } catch {
+      notifier.next(`Websockets failed, trying HTTP...`);
+      rawData = await fetchDataFromHaskellAppHTTP(url);
+    }
+  }
+
+  // Serialize once to match SerializableRepoData
+  serializedData = serializeRepoData(rawData);
+
+  // Cache the serialized version
+  await cacheIntoDatabase(url, serializedData);
+
+  return serializedData;
+};
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -145,7 +163,7 @@ const fetchDataFromHaskellAppWS = async (
 const fetchDataFromHaskellAppHTTP = async (
   url: string
 ): Promise<RepositoryData> =>
-  new Promise<RepositoryData>((resolve, reject) => 
+  new Promise<RepositoryData>((resolve, reject) =>
     fetch("http://haskell-api:8081", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

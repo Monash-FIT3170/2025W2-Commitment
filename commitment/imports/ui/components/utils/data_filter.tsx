@@ -1,10 +1,13 @@
 import { Meteor } from 'meteor/meteor' 
 import {
   RepositoryData,
+  SerializableRepoData, 
   CommitData
 } from "/imports/api/types";
 import { Subject } from "rxjs";
+import { deserializeRepoData
 
+ } from '/imports/api/deserialize';
 // ------------ METHOD TO GET THE REPO DATA BASED OFF A URL ---------------
 /**
  * Fetches the repository data from the server.
@@ -22,7 +25,7 @@ export const getRepoData = async (
     Meteor.call(
       "repoCollection.getData",
       url,
-      (err: Error, result: RepositoryData) => {
+      (err: Error, result: SerializableRepoData) => {
         console.log("in getrepodata");
         if (err) {
           console.log(`Error fetching repo data for URL ${url}:`, err);
@@ -34,7 +37,9 @@ export const getRepoData = async (
           console.log(typeof result.allCommits);
           console.log(result.allCommits);
 
-          resolve(result);
+          const dRepo = deserializeRepoData(result);
+
+          resolve(dRepo);
         }
       }
     );
