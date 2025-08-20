@@ -14,6 +14,13 @@ function GradingSheetForm({
   // Handle drop of files in the dropzone
   const handleDrop = (gradingSheet: File[]) => {
     console.log(gradingSheet);
+    
+    // Additional validation for CSV files
+    if (gradingSheet[0] && !gradingSheet[0].name.toLowerCase().endsWith('.csv')) {
+      console.error('Please upload a CSV file only');
+      return;
+    }
+    
     setSheet(gradingSheet);
   };
 
@@ -37,7 +44,7 @@ function GradingSheetForm({
         onDrop={handleDrop}
         onError={console.error}
         src={sheet}
-        accept={{ ".xlsx": [] }}
+        accept={{ ".csv": [] }}
         maxFiles={1}
         className="border-2 border-dashed border-muted-foreground rounded-md transition-colors hover:border-primary focus:border-primary"
       >
@@ -52,7 +59,7 @@ function GradingSheetForm({
                 Drag and drop or click to select
               </p>
               <p className="text-muted-foreground text-xs mb-0.5">
-                File format accepted: .xlsx
+                File format accepted: .csv
               </p>
             </div>
           </div>
