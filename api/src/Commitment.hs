@@ -58,7 +58,7 @@ fetchDataFrom url notifier = do
     workingDir <- getCurrentDirectory
     let cloneRoot = workingDir </> "cloned-repos"
 
-    createDirectoryIfMissing True cloneRoot
+    awaitOutsideCloneDir <- createDirectoryIfMissing True cloneRoot
     emit notifier "Validating repo exists..."
 
     let execCmdInWorkingDir = execAndParse notifier workingDir
@@ -71,8 +71,8 @@ fetchDataFrom url notifier = do
         repoRelativePath = "cloned-repos" </> repoNameFromUrl
         repoAbsPath = workingDir </> repoRelativePath
 
-    deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
-    createDirectoryIfMissing True repoAbsPath
+    awaitRepoDirDeletion <- deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
+    awaitCreateRepoDir <- createDirectoryIfMissing True repoAbsPath
 
     emit notifier "Cloning repo..."
     assertSuccess <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool

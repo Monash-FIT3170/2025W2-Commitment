@@ -6,9 +6,9 @@ import { RepositoryData, BranchData, CommitData, ContributorData } from "../impo
 // -------------Types -------------
 
 type SerialisableMapObject<K, V> = {
-  key: K,
-  value: V
-}
+  key: K;
+  value: V;
+};
 
 export type SerializableRepoData = Readonly<{
   name: string;
@@ -29,15 +29,17 @@ export interface ServerRepoData {
  * Convert RepositoryData's Maps into plain objects to store in DB.
  */
 function serializeRepoData(data: RepositoryData): SerializableRepoData {
-  return {
+  const d: SerializableRepoData = {
     ...data,
     allCommits: data.allCommits
-      ? Array.from(data.allCommits, ([key, value]) => ({ key, value }))
+      ? Array.from(data.allCommits.entries()).map(([key, value]) => ({ key, value }))
       : [],
     contributors: data.contributors
-      ? Array.from(data.contributors, ([key, value]) => ({ key, value }))
+      ? Array.from(data.contributors.entries()).map(([key, value]) => ({ key, value }))
       : [],
   };
+  console.log("serialise: " + JSON.stringify(d, null, 2));
+  return d;
 }
 
 function deserializeRepoData(data: SerializableRepoData): RepositoryData {
@@ -71,7 +73,7 @@ Meteor.methods({
     };
     return await RepoCollection.upsertAsync(
       { url }, // filter to find existing doc
-      s, // update operation
+      s // update operation
     );
   },
 
@@ -84,11 +86,11 @@ Meteor.methods({
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
    */
   async "repoCollection.removeRepo"(url: string) {
-    if (!isInDatabase(url)) throw new Meteor.Error(
+    if (!isInDatabase(url))
+      throw new Meteor.Error(
         "not-in-database",
         "The repo must exist in the database to be removed"
       );
-    
 
     const d = await RepoCollection.findOneAsync({ url });
 
@@ -141,11 +143,11 @@ Meteor.methods({
    * @throws {Meteor.Error} If the repository data is not found or not authorised.
    *
    */
-  async 'repoCollection.getData'(url: string) {
+  async "repoCollection.getData"(url: string) {
     const repoData = await RepoCollection.findOneAsync({ url });
 
     if (!repoData) {
-      throw new Meteor.Error('not-found', 'Repo data not found');
+      throw new Meteor.Error("not-found", "Repo data not found");
     }
 
     return deserializeRepoData(repoData.data);
@@ -163,16 +165,16 @@ Meteor.methods({
  *                              or false otherwise.
  * @throws {Error} If there is an error during the caching process.
  */
-export const cacheIntoDatabase = async (
-  url: string,
-  data: RepositoryData,
-): Promise<boolean> => new Promise((resolve, reject) => {
-    Meteor.call('repoCollection.insertOrUpdateRepoData',
-      url, data,
+export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> =>
+  new Promise((resolve, reject) => {
+    Meteor.call(
+      "repoCollection.insertOrUpdateRepoData",
+      url,
+      data,
       (err: any, res: boolean | PromiseLike<boolean>) => {
-        if (err) reject(err)
-        else resolve(res)
-      },
+        if (err) reject(err);
+        else resolve(res);
+      }
     );
   });
 
@@ -184,7 +186,8 @@ export const cacheIntoDatabase = async (
  *                              or false otherwise.
  * @throws {Error} If there is an error during the check.
  */
-export const isInDatabase = async (url: string): Promise<boolean> => Meteor.call('repoCollection.exists', url);
+export const isInDatabase = async (url: string): Promise<boolean> =>
+  Meteor.call("repoCollection.exists", url);
 
 /**
  * Tries to retrieve repository data from the database.
@@ -197,22 +200,23 @@ export const isInDatabase = async (url: string): Promise<boolean> => Meteor.call
  */
 export const tryFromDatabase = async (
   url: string,
-  notifier: Subject<string>,
-): Promise<RepositoryData> => new Promise((resolve, reject) => {
-  // try and get it from database, catching an error as a failed fetch
-  notifier.next('Searching database for your repo...')
-  Meteor.call('repoCollection.getData', url, 
-    (err: Error, res: RepositoryData | PromiseLike<RepositoryData>) => {
+  notifier: Subject<string>
+): Promise<RepositoryData> =>
+  new Promise((resolve, reject) => {
+    // try and get it from database, catching an error as a failed fetch
+    notifier.next("Searching database for your repo...");
+    Meteor.call(
+      "repoCollection.getData",
+      url,
+      (err: Error, res: RepositoryData | PromiseLike<RepositoryData>) => {
         if (err) {
-          const s = "Couldn't find your repo in the database"
-          notifier.next(s)
-          return reject(s)
+          const s = "Couldn't find your repo in the database";
+          notifier.next(s);
+          return reject(s);
         }
 
-        notifier.next('Found your repo in the database!')
-        return resolve(res)
+        notifier.next("Found your repo in the database!");
+        return resolve(res);
       }
-  )
-})
-
-
+    );
+  });

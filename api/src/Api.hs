@@ -29,6 +29,7 @@ import Network.HTTP.Types
 import Data.Aeson
 import qualified Data.Text as T
 import Data.Text (Text)
+import Data.Char (isSpace)
 import GHC.Generics
 import qualified Data.ByteString.Lazy as BL
 import Data.ByteString.Lazy.Char8() 
@@ -53,6 +54,10 @@ encodeValue label val = encode $ object ["type" .= label, "data" .= val]
 
 encodeError :: Text -> BL.ByteString
 encodeError msg = encode $ object ["type" .= ("error" :: Text), "message" .= msg]
+
+trim :: String -> String
+trim = f . f
+  where f = reverse . dropWhile isSpace
 
 ------------------------------------------------------------
 -- 📡 WebSocket Handler
@@ -80,7 +85,7 @@ appWS pendingConn = do
         sendTextData conn $ BL.toStrict $ encodeValue "text_update" update
 
       -- Run the actual job
-      result <- fetchDataFrom repoUrl notifier
+      result <- fetchDataFrom (trim repoUrl) notifier
       case result of
         Right repoData -> sendTextData conn $ BL.toStrict $ encodeValue "value" repoData
         Left errmsg    -> sendTextData conn $ BL.toStrict $ encodeError (T.pack ("err: " ++ errmsg))
@@ -108,7 +113,7 @@ fallback req respond = do
           -- We discard updates for HTTP; could log or save
           _ <- forkIO $ forever $ void (atomically (readTBQueue notifier))
 
-          result <- fetchDataFrom repoUrl notifier
+          result <- fetchDataFrom (trim repoUrl) notifier
           case result of
             Right repoData ->
               respond $ responseLBS status200 [("Content-Type", "application/json")] $

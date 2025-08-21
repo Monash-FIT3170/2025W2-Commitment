@@ -49,9 +49,9 @@ Meteor.methods({
     const subject = sub || new Subject<string>();
 
     // returns whether it was successful in caching to the database or not
-    return await getRepoData(repoUrl, subject)
-      .then(_ => true)
-      .catch(_e => false)
+    return await getRepoData(repoUrl.trim(), subject)
+      .then((_) => true)
+      .catch((_e) => false);
   },
 });
 
@@ -72,29 +72,28 @@ Meteor.methods({
  */
 export const getRepoData = async (
   url: string,
-  notifier: Subject<string>,
-): Promise<RepositoryData> => 
-  tryFromDatabase(url, notifier)
-    .catch((_e) => 
-      fetchDataFromHaskellAppWS(url, notifier)
-        .catch(_e => {
-          notifier.next(`Websockets failed, trying HTTP...`)
-          return fetchDataFromHaskellAppHTTP(url)
-        })
-        .then((data: RepositoryData) => {
-          cacheIntoDatabase(url, data)
-          return data
-        })
-        .catch((e) => {
-          notifier.next(`API fetch failed: ${e}`)
-          throw e
-        })
-    )
+  notifier: Subject<string>
+): Promise<RepositoryData> =>
+  tryFromDatabase(url, notifier).catch((_e) =>
+    fetchDataFromHaskellAppWS(url, notifier)
+      .catch((_e) => {
+        notifier.next(`Websockets failed, trying HTTP...`);
+        return fetchDataFromHaskellAppHTTP(url);
+      })
+      .then((data: RepositoryData) => {
+        cacheIntoDatabase(url, data);
+        return data;
+      })
+      .catch((e) => {
+        notifier.next(`API fetch failed: ${e}`);
+        throw e;
+      })
+  );
 
 /**
  * Fetches the repository data structure from the Haskell API
  * Uses Websockets to recieve reactive messages from the app
- * 
+ *
  * @param url url to run the API on
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
  * @returns Promise<RepositoryData>: a promise of the API completion
@@ -104,15 +103,14 @@ const fetchDataFromHaskellAppWS = async (
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
-
-    notifier.next("Connecting to the API...")
+    notifier.next("Connecting to the API...");
     const socket = new WebSocket("ws://haskell-api:8081", {
-      perMessageDeflate: false
+      perMessageDeflate: false,
     });
 
     socket.onopen = () => {
       // Step 1: Send repo URL
-      notifier.next("Connected to the API!")
+      notifier.next("Connected to the API!");
       socket.send(
         JSON.stringify({
           url: url,
@@ -131,30 +129,25 @@ const fetchDataFromHaskellAppWS = async (
     };
 
     socket.onclose = () => {
-      notifier.next("Consolidating new data into database...")
+      notifier.next("Consolidating new data into database...");
     };
   });
 
 /**
  * Fetches the repository data structure from the Haskell API
  * Uses HTTP to recieve data from the API when the Websockets fail
- * 
+ *
  * @param url url to run the API on
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppHTTP = async (
-  url: string
-): Promise<RepositoryData> =>
-  new Promise<RepositoryData>((resolve, reject) => 
+const fetchDataFromHaskellAppHTTP = async (url: string): Promise<RepositoryData> =>
+  new Promise<RepositoryData>((resolve, reject) =>
     fetch("http://haskell-api:8081", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: url })
+      body: JSON.stringify({ url: url }),
+    }).then((response) => {
+      if (!response.ok) reject(`Haskell API returned status ${response.status}`);
+      response.json().then((d) => resolve(d.data));
     })
-    .then(response => {
-      if (!response.ok) reject(`Haskell API returned status ${response.status}`)
-      response.json()
-        .then(d => resolve(d.data))
-    })
-  )
-
+  );
