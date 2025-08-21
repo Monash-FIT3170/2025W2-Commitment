@@ -1,8 +1,8 @@
 services:
   dev-env:
-    build: 
+    build:
       context: ./commitment
-      dockerfile: Dockerfile.meteor
+      dockerfile: Dockerfile.MeteorDev
     image: commitment-img
     container_name: 3170-env
     ports:
@@ -39,7 +39,7 @@ services:
     volumes:
       - mongo-data:/data/db
     networks:
-      - app-network   
+      - app-network
 
 volumes:
   mongo-data:
