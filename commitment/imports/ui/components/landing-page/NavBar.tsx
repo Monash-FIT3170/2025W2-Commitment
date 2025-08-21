@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
   navigationMenuTriggerStyle,
-} from '@ui/components/ui/navigation-menu';
-import ProfileMenu from '@ui/components/ui/profile-menu';
-import { Moon, Sun } from 'lucide-react';
-import { useLocation, Link } from 'react-router-dom';
-import SignUpButton from './signUpButton';
+} from "@ui/components/ui/navigation-menu";
+import ProfileMenu from "@ui/components/ui/profile-menu";
+import { Moon, Sun } from "lucide-react";
+import { useLocation, Link } from "react-router-dom";
+import SignUpButton from "./signUpButton";
 
 interface NavBarProps {
   isLoggedIn: boolean;
@@ -18,21 +18,26 @@ interface NavBarProps {
 function NavBar({ isLoggedIn }: NavBarProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
-  const isLandingPage = location.pathname === '/';
+  const isLandingPage = location.pathname === "/";
 
   const handleSignOut = () => {
     // note to self: implement signing out logic here later
-    console.log('Sign out clicked');
+    console.log("Sign out clicked");
   };
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+    setIsDarkMode((prev) => {
+      const newMode = !prev;
 
-    document.documentElement.classList.toggle("dark");
-    // note to self: implement dark mode logic here later
+      if (newMode) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
 
-    console.log("Dark mode toggled:", !isDarkMode);
-    document.documentElement.classList.toggle("dark");
+      console.log("Dark mode toggled:", newMode);
+      return newMode;
+    });
   };
 
   return (
@@ -50,7 +55,7 @@ function NavBar({ isLoggedIn }: NavBarProps) {
           <div className="flex items-center space-x-3">
             <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
             <span className="text-xl"></span>
-          </a>
+          </div>
 
           {isLandingPage ? (
             // Landing page navigation items
@@ -109,7 +114,7 @@ function NavBar({ isLoggedIn }: NavBarProps) {
           onClick={handleToggleDarkMode}
           className="p-2 rounded-full hover:bg-gray-200 transition-colors"
           aria-label={
-            isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'
+            isDarkMode ? "Switch to light mode" : "Switch to dark mode"
           }
         >
           {isDarkMode ? (
@@ -131,6 +136,6 @@ function NavBar({ isLoggedIn }: NavBarProps) {
       </div>
     </div>
   );
-};
+}
 
 export default NavBar;
