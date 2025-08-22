@@ -89,16 +89,3 @@ function PurposeCard() {
     </Card>
   );
 }
-
-const purpose = () => (
-  <div className="flex flex-col justify-center items-center mt-20">
-    <Header />
-
-    <CircleNumber />
-
-    <PurposeCard />
-    <GetStartedButton className="mt-12" />
-  </div>
-);
-
-export default purpose;
