@@ -54,7 +54,9 @@ const LoginWidget: FC<LoginWidgetProps> = (props) => {
             <TabsTrigger value={page.name}>{page.title}</TabsTrigger>
           ))}
         </TabsList>
-        {pages.map(CreateCardElement)}
+        <div className={"h-96"}>
+          {pages.map(CreateCardElement)}
+        </div>
       </Tabs>
     </div>
   );
