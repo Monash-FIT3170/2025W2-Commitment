@@ -1,0 +1,55 @@
+# Stage 1: Build the Meteor app
+FROM geoffreybooth/meteor-base:latest AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code
+COPY . .
+
+# Install NPM deps
+RUN meteor npm install
+
+# Build Meteor bundle for Linux x86_64
+RUN meteor build --directory /build --architecture os.linux.x86_64 --server-only
+
+# Stage 2: Runtime image
+# ⚠️ Make sure Node version matches your Meteor version!
+# For Meteor 3.0+, Node 20 is correct. For Meteor 2.x use node:14-slim or node:16-slim.
+FROM node:20-slim
+
+# Install needed OS dependencies (e.g. if bcrypt or sharp needed)
+RUN apt-get update && apt-get install -y \
+    python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy built Meteor bundle
+COPY --from=builder /build/bundle ./bundle
+
+# Install server dependencies
+WORKDIR /app/bundle/programs/server
+RUN npm install --production --legacy-peer-deps
+
+# Create non-root user
+RUN useradd -m -s /bin/bash appuser
+USER appuser    
+
+WORKDIR /app/bundle
+
+# Env vars
+ENV NODE_ENV=production
+ENV PORT=3000 
+
+# Point ROOT_URL to your domain in docker-compose or runtime
+ENV ROOT_URL=http://localhost:3000
+
+# Configure Mongo URL at runtime
+ENV MONGO_URL=mongodb://mongo:27017/meteor
+
+EXPOSE 3000
+
+# Start Meteor (via Node)
+CMD ["node", "main.js"]

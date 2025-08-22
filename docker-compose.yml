@@ -1,6 +1,8 @@
 services:
   dev-env:
-    build: .
+    build: 
+      context: ./commitment
+      dockerfile: Dockerfile.MeteorDev
     image: commitment-img
     container_name: 3170-env
     ports:
@@ -13,6 +15,21 @@ services:
       - mongo
     tty: true
     stdin_open: true
+    networks:
+      - app-network
+
+  haskell-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.haskell
+    image: haskell-api-img
+    container_name: haskell-api
+    volumes:
+      - ./commitment:/projects/api
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
 
   mongo:
     image: mongo:6
@@ -21,6 +38,12 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - app-network   
 
 volumes:
   mongo-data:
+
+networks:
+  app-network:
+    driver: bridge

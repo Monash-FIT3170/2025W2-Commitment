@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -40,33 +40,36 @@ const location = useLocation();
     >
       <NavigationMenu>
         <NavigationMenuList className="flex space-x-4">
-          <a className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3">
             <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-            <span className="text-xl text-gray-900"></span>
-          </a>
+            <span className="text-xl"></span>
+          </div>
 
           {isLandingPage ? (
             // Landing page navigation items
             <>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#about" className={navigationMenuTriggerStyle()}>
-                    About
-                  </a>
+                <NavigationMenuLink
+                  href="#about"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  About
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#features" className={navigationMenuTriggerStyle()}>
-                    Features
-                  </a>
+                <NavigationMenuLink
+                  href="#features"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  Features
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#howto" className={navigationMenuTriggerStyle()}>
-                    How-To
-                  </a>
+                <NavigationMenuLink
+                  href="#howto"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  How-To
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -75,13 +78,17 @@ const location = useLocation();
             <>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
+                  <Link
+                    to="/dashboard"
+                    className={navigationMenuTriggerStyle()}
+                  >
                     Dashboard
-                  </Link>                </NavigationMenuLink>
+                  </Link>{" "}
+                </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                  <a className={navigationMenuTriggerStyle()}>Docs</a>
+                  <div className={navigationMenuTriggerStyle()}>Docs</div>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -93,6 +100,7 @@ const location = useLocation();
 {/* Right hand side nav */}
       <div className="flex items-center space-x-4 ">
         <button
+          type="button"
           onClick={handleToggleDarkMode}
           className="p-2 rounded-full hover:bg-git-bg-bottom/30 transition-colors"
           aria-label={
@@ -109,7 +117,7 @@ const location = useLocation();
         {!isLoggedIn && (
           <>
             <a href="/login" className={navigationMenuTriggerStyle()}>
-              Login
+              Log in
             </a>
             <SignUpButton />
           </>
@@ -119,6 +127,6 @@ const location = useLocation();
     </div>
 
   );
-};
+}
 
 export default NavBar;
