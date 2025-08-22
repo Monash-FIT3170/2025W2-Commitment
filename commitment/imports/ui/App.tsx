@@ -6,6 +6,7 @@ import InsertGitRepoView from '@ui/views/InsertGitRepoView/InsertGitRepo';
 import LoadingPage from "./LoadingPage";
 import MetricsMain from "./MetricsMain";
 import DashboardView from "./views/DashboardView/DashboardView";
+import Authorized from "@ui/components/shared/Authorized";
 
 
 export const App = () => {
@@ -21,8 +22,11 @@ export const App = () => {
 
         <Route path="/loading" element={<LoadingPage/>}></Route>
         <Route path="/metrics" element={<MetricsMain />}></Route>
-        <Route path="/dashboard" element={<DashboardView/>}></Route>
-        
+        <Route path="/dashboard" element={
+          <Authorized>
+            <DashboardView/>
+          </Authorized>
+        }/>
       </Routes>
     </BrowserRouter>
   );

@@ -3,13 +3,12 @@ import {Button} from "@ui/components/ui/button";
 import { z } from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@ui/components/ui/form";
+import {Form, FormControl, FormField, FormItem, FormLabel} from "@ui/components/ui/form";
 import {Checkbox} from "@ui/components/ui/checkbox";
 import FormInputWithErrors from "../../../shared/FormInputWithErrors";
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
-
 
 
 export interface LoginFormProps {
@@ -25,7 +24,6 @@ const formSchema = z.object({
 
 
 const LoginForm: FC<LoginFormProps> = (props) => {
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
