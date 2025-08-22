@@ -3,12 +3,10 @@ import {Button} from "@ui/components/ui/button";
 import { z } from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@ui/components/ui/form";
-import {Checkbox} from "@ui/components/ui/checkbox";
+import {Form, FormControl, FormField, FormItem} from "@ui/components/ui/form";
 import FormInputWithErrors from "../../../shared/FormInputWithErrors";
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
-import SignupFormErrorMessage from "@ui/components/widgets/login/SignupForm/LoginFormErrorMessage";
 import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
 import { Accounts } from "meteor/accounts-base";
 
@@ -22,10 +20,8 @@ export interface SignupFormProps {
 
 const formSchema = z.object({
   username: z.string().min(2).max(50).regex(/^([a-zA-Z0-9]|[_\-+=|$])+$/, "Username can only contain numbers, letters and characters _-+=|$"),
-  name: z.string().min(1).max(100).trim(),
   email: z.string().email(),
   password: z.string().min(8),
-  // rememberMe: z.boolean(),
   confirmPassword: z.string(),
 })
 
@@ -39,7 +35,7 @@ const SignupForm: FC<SignupFormProps> = (props) => {
       email: "",
       password: "",
       confirmPassword: "",
-      rememberMe: false
+      // rememberMe: false
     },
   });
 
@@ -68,7 +64,7 @@ const SignupForm: FC<SignupFormProps> = (props) => {
         email: values.email,
         password: values.password,
         profile: {
-          name: values.name,
+          name: values.username,
         }
       },
       (err?: Meteor.Error) => {
@@ -90,10 +86,10 @@ const SignupForm: FC<SignupFormProps> = (props) => {
           });
 
           // Also set error on password field for better UX
-          form.setError("name", {
-            type: "manual",
-            message: " " // Empty space to maintain form layout
-          });
+          // form.setError("name", {
+          //   type: "manual",
+          //   message: " " // Empty space to maintain form layout
+          // });
           form.setError("email", {
             type: "manual",
             message: " " // Empty space to maintain form layout
@@ -108,11 +104,8 @@ const SignupForm: FC<SignupFormProps> = (props) => {
           });
 
         } else {
-
           navigate("/home");
         }
-
-
       }
     );
   }
@@ -135,26 +128,15 @@ const SignupForm: FC<SignupFormProps> = (props) => {
 
         <FormField
           control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <FormInputWithErrors placeholder="Name" {...field} type="name"/>
-              </FormControl>
-              <LoginFormErrorMessage/>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
               <FormControl>
                 <FormInputWithErrors placeholder="Email" {...field} type="email"/>
               </FormControl>
-              <LoginFormErrorMessage/>
+              <div className="min-h-3">
+                <LoginFormErrorMessage/>
+              </div>
             </FormItem>
           )}
         />
@@ -180,7 +162,9 @@ const SignupForm: FC<SignupFormProps> = (props) => {
               <FormControl>
                 <FormInputWithErrors placeholder="Retype Password" type="password" {...field}/>
               </FormControl>
-              <LoginFormErrorMessage/>
+              <div className="min-h-3">
+                <LoginFormErrorMessage/>
+              </div>
             </FormItem>
           )}
         />
