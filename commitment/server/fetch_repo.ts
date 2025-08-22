@@ -104,9 +104,7 @@ const fetchDataFromHaskellAppWS = async (
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
     notifier.next("Connecting to the API...");
-    const socket = new WebSocket("ws://haskell-api:8081", {
-      perMessageDeflate: false,
-    });
+    const socket = new WebSocket("ws://haskell-api:8081");
 
     socket.onopen = () => {
       // Step 1: Send repo URL
