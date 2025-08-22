@@ -1,14 +1,16 @@
-import React, { FC } from 'react';
-import { Button } from '@ui/components/ui/button';
+import React from "react";
+import { Button } from "@ui/components/ui/button";
+import { Checkbox } from "@ui/components/ui/checkbox";
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import {
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
+  Form, FormControl, FormField, FormItem, FormLabel,
 } from '@ui/components/ui/form';
-import { Checkbox } from '@ui/components/ui/checkbox';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
+import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
+
 import FormInputWithErrors from '../../../shared/FormInputWithErrors';
 
 export interface LoginFormProps {
@@ -84,7 +86,7 @@ function LoginForm(props: LoginFormProps) {
               <FormControl>
                 <FormInputWithErrors placeholder="Email" {...field} type="email" />
               </FormControl>
-              <FormMessage displayWithoutError className="transition-all" noErrorClassName="h-0 opacity-0" errorClassName="h-5" />
+              <LoginFormErrorMessage/>
             </FormItem>
           )}
         />
@@ -97,7 +99,7 @@ function LoginForm(props: LoginFormProps) {
               <FormControl>
                 <FormInputWithErrors placeholder="Password" type="password" {...field} />
               </FormControl>
-              <FormMessage displayWithoutError className="transition-all ease-out" noErrorClassName="h-0 opacity-0" errorClassName="h-5" />
+              <LoginFormErrorMessage/>
             </FormItem>
           )}
         />
@@ -128,6 +130,6 @@ function LoginForm(props: LoginFormProps) {
       </form>
     </Form>
   );
-};
+}
 
 export default LoginForm;

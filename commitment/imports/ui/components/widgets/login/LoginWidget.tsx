@@ -1,33 +1,64 @@
-import React, { FC } from 'react';
+import React, { FC, ReactNode, useCallback } from 'react';
 import {
   Card, CardContent, CardHeader, CardTitle,
 } from '@ui/components/ui/card';
 import LoginForm from '@ui/components/widgets/login/LoginForm/LoginForm';
+import SignupForm from "@ui/components/widgets/login/LoginForm/SignupForm";
 import { cx } from 'class-variance-authority';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@ui/components/ui/tabs";
 
 export interface LoginWidgetProps {
-  className?: string
+  className?: string,
+  defaultTab: "login" | "signup"
 }
 
-const LoginWidget: FC<LoginWidgetProps> = ({ className }) => {
-  const cardElement = (
-    <Card className="max-w-md w-96 grow">
-      <CardHeader>
-        <CardTitle>
-          Log in
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <LoginForm />
-      </CardContent>
-    </Card>
-  );
+interface Page {
+  name: string,
+  title: string,
+  form: ReactNode,
+}
+
+const pages: Page[] = [
+  {
+    name: "login",
+    title: "Log in",
+    form: (<LoginForm/>)
+  },
+  {
+    name: "signup",
+    title: "Sign up",
+    form: (<SignupForm/>)
+  }
+];
+
+const LoginWidget: FC<LoginWidgetProps> = (props) => {
+  const CreateCardElement = useCallback((page: Page) => (
+    <TabsContent value={page.name}>
+      <Card className="max-w-md w-96 grow">
+        <CardHeader>
+          <CardTitle>
+            {page.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {page.form}
+        </CardContent>
+      </Card>
+    </TabsContent>
+  ), []);
 
   return (
-    <div className={cx('inline-flex flex-row content-center justify-center', className)}>
-      <div>
-        {cardElement}
-      </div>
+    <div className={cx('inline-flex flex-row content-center justify-center', props.className)}>
+      <Tabs defaultValue={props.defaultTab}>
+        <TabsList>
+          {pages.map((page: Page) => (
+            <TabsTrigger value={page.name}>{page.title}</TabsTrigger>
+          ))}
+        </TabsList>
+        <div className={'h-96'}>
+          {pages.map(CreateCardElement)}
+        </div>
+      </Tabs>
     </div>
   );
 };
