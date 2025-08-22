@@ -4,7 +4,7 @@ import {
   CommitData,
   SerializableRepoData,
 } from "/server/commitment_api/types";
-import { deserializeRepoData } from "/imports/api/deserialise";
+import { deserializeRepoData } from "imports/utils/deserializeRepoData";
 import { Subject } from "rxjs";
 
 // ------------ METHOD TO GET THE REPO DATA BASED OFF A URL ---------------

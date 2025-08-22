@@ -2,7 +2,7 @@ services:
   dev-env:
     build: 
       context: ./commitment
-      dockerfile: Dockerfile.meteor
+      dockerfile: Dockerfile.MeteorDev
     image: commitment-img
     container_name: 3170-env
     ports:

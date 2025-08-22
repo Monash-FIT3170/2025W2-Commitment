@@ -50,7 +50,7 @@ function NavBar({ isLoggedIn }: NavBarProps) {
           <div className="flex items-center space-x-3">
             <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
             <span className="text-xl"></span>
-          </a>
+          </div>
 
           {isLandingPage ? (
             // Landing page navigation items
