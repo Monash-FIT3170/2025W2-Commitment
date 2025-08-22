@@ -13,7 +13,8 @@ import {
 import { Button } from "../ui/button";
 import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
-import type { UserScalingSummary } from "@server/commitment_api/types";
+import type { UserScalingSummary } from "../../../api/types";
+import type { GradingSheetRow } from "../utils/GradingSheetParser";
 
 interface ScalingConfig {
   metrics: string[];
@@ -30,11 +31,10 @@ function ScalingView() {
   const [showDialog, setShowDialog] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
+  const [parsedGradingData, setParsedGradingData] = useState<GradingSheetRow[] | null>(null);
 
   // Load from localStorage on first mount
   useEffect(() => {
-
-    // Grab from local storage first
     const lsCompleted = localStorage.getItem("hasVisitedScaling") === "true";
     setCompleted(lsCompleted);
     if (!lsCompleted) setShowDialog(true);
@@ -54,8 +54,33 @@ function ScalingView() {
     setStep("sheet");
   };
 
-  const handleSheetSubmit = (sheetFile: File) => {
-    setGradingSheet(sheetFile || null);
+  const handleSheetSubmit = (sheetFile: File, parsedData?: GradingSheetRow[]) => {
+    console.log("📁 Grading sheet submitted:", sheetFile.name);
+    console.log("📊 Parsed data received:", parsedData ? `${parsedData.length} students` : "No parsed data");
+    
+    setGradingSheet(sheetFile);
+    setParsedGradingData(parsedData || null);
+    
+    // Log the complete scaling configuration
+    console.log("🎯 Complete Scaling Configuration:");
+    console.log("📋 Config:", config);
+    console.log("📁 File:", sheetFile);
+    console.log("📊 Parsed Data Sample:", parsedData?.slice(0, 2));
+    
+    if (parsedData && parsedData.length > 0) {
+      // Get summary for final logging
+      const totalStudents = parsedData.length;
+      const sampleStudents = parsedData.slice(0, 3);
+      const totalGrades = parsedData.reduce((sum, student) => sum + student.grade, 0);
+      const averageGrade = totalStudents > 0 ? totalGrades / totalStudents : 0;
+      
+      console.log("📈 Quick Summary:", {
+        totalStudents,
+        sampleStudents,
+        averageGrade: Math.round(averageGrade * 100) / 100
+      });
+    }
+    
     setCompleted(true);
     setShowDialog(false);
     setStep("done");
