@@ -5,7 +5,7 @@ import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
 import { BranchDropDownMenu } from "./BranchDropDownMenuButton";
 import UserContributionHeatMap from "./HeatMapGraph";
-import { dark2 } from "../ui/colors";
+// import { dark2 } from "../ui/colors";
 import { ContributorDropDownMenu } from "./ContributorDropDownButton";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
@@ -97,6 +97,17 @@ const mockTotalLocData = [
   { value: 58 },
   { value: 55 },
 ];
+
+
+const dark2 =[
+  "--chart-1",
+  "--chart-2",
+  "--chart-3",
+  "--chart-4",
+  "--chart-5",
+  "--chart-6",
+  "--chart-7",
+]
 
 export const mockContributorDataset = {
   title: "Total Lines of Code Over Time",

@@ -8,13 +8,10 @@ import { TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@ui/components/ui/card";
 import InfoButton from "../ui/infoButton";
-import { stat } from "fs";
 
 export interface ChartEntry {
   user: string;

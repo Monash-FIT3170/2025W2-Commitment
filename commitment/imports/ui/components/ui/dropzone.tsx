@@ -7,7 +7,7 @@ import { createContext, useContext } from 'react';
 import type { DropEvent, DropzoneOptions, FileRejection } from 'react-dropzone';
 import { useDropzone } from 'react-dropzone';
 import { Button } from './button';
-import { cn } from '../../lib/utils';
+import { cn } from '@ui/lib/utils';
 
 type DropzoneContextType = {
   src?: File[];
@@ -84,7 +84,7 @@ export const Dropzone = ({
     >
       <Button
         className={cn(
-          'relative h-auto w-full flex-col overflow-hidden p-8',
+          'border-2 border-dashed border-muted-foreground rounded-md transition-colors hover:border-primary/60 focus:border-primary/60 relative h-auto w-full flex-col overflow-hidden p-8',
           isDragActive && 'outline-none ring-1 ring-ring',
           className
         )}
