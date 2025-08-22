@@ -133,11 +133,17 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
   )
 }
 
-function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
+export interface FormMessageProps extends React.ComponentProps<"p"> {
+  errorClassName?: string,
+  noErrorClassName?: string,
+  displayWithoutError?: boolean,
+}
+
+function FormMessage({ className, ...props }: FormMessageProps) {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message ?? "") : props.children
 
-  if (!body) {
+  if (!body && !props.displayWithoutError) {
     return null
   }
 
@@ -146,7 +152,7 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn("text-destructive text-sm", className)}
+      className={cn("text-destructive text-sm", className, extraClassName)}
       {...props}
     >
       {body}
