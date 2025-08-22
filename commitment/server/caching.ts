@@ -28,18 +28,26 @@ export interface ServerRepoData {
 /**
  * Convert RepositoryData's Maps into plain objects to store in DB.
  */
+
+const mapToArray = <K, V>(m: unknown): { key: K; value: V }[] => {
+  if (m instanceof Map) {
+    return Array.from(m.entries()).map(([key, value]) => ({ key, value }));
+  } else if (m && typeof m === "object") {
+    // plain object fallback
+    return Object.entries(m).map(([key, value]) => ({
+      key: key as K,
+      value: value as V,
+    }));
+  }
+  return [];
+};
+
 function serializeRepoData(data: RepositoryData): SerializableRepoData {
-  const d: SerializableRepoData = {
+  return {
     ...data,
-    allCommits: data.allCommits
-      ? Array.from(data.allCommits.entries()).map(([key, value]) => ({ key, value }))
-      : [],
-    contributors: data.contributors
-      ? Array.from(data.contributors.entries()).map(([key, value]) => ({ key, value }))
-      : [],
+    allCommits: mapToArray(data.allCommits),
+    contributors: mapToArray(data.contributors),
   };
-  console.log("serialise: " + JSON.stringify(d, null, 2));
-  return d;
 }
 
 function deserializeRepoData(data: SerializableRepoData): RepositoryData {

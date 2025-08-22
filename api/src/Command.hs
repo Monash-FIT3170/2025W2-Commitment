@@ -20,7 +20,8 @@ import System.IO
 import Control.Monad (when)
 import Control.Concurrent.STM (TBQueue)
 import Control.Exception (evaluate)
-import System.Directory (doesDirectoryExist)
+import System.Directory (doesDirectoryExist, removePathForcibly)
+
 import System.Process
 import Control.DeepSeq (force)
 
@@ -118,6 +119,5 @@ deleteDirectoryIfExists :: FilePath -> IO () -> IO ()
 deleteDirectoryIfExists dir f = do
   exists <- doesDirectoryExist dir
   when exists $ do
-    _unused <- f
-    let cmd = "rmdir /S /Q \"" ++ dir ++ "\""
-    callCommand cmd
+    _ <- f
+    removePathForcibly dir
