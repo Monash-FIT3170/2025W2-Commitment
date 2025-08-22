@@ -1,5 +1,5 @@
-import React from "react";
-import LoginWidget from "@ui/components/widgets/login/LoginWidget";
+import React from 'react';
+import LoginWidget from '@ui/components/widgets/login/LoginWidget';
 
 export interface LoginViewProps {
   defaultTab?: "login" | "signup"

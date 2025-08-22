@@ -4,19 +4,19 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
+  navigationMenuTriggerStyle,
 } from "@ui/components/ui/navigation-menu";
-import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
-import SignUpButton from "./signUpButton";
 import ProfileMenu from "@ui/components/ui/profile-menu";
 import { Moon, Sun } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
+import SignUpButton from "./signUpButton";
 
 interface NavBarProps {
   isLoggedIn: boolean;
 }
 
-export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
+function NavBar({ isLoggedIn }: NavBarProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
@@ -31,46 +31,62 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
   };
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    // note to self: implement dark mode logic here later
-    console.log("Dark mode toggled:", !isDarkMode);
+    setIsDarkMode((prev) => {
+      const newMode = !prev;
+
+      if (newMode) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+
+      console.log("Dark mode toggled:", newMode);
+      return newMode;
+    });
   };
 
   return (
     <div
-      className={`z-50 flex items-center justify-between py-2 border-b bg-white  
-        ${isLandingPage ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32" : "relative px-4"}
+      className={`z-50 flex items-center justify-between py-2 border-b bg-git-bg-bottom
+        ${
+          isLandingPage
+            ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32"
+            : "relative px-4"
+        }
       `}
     >
       <NavigationMenu>
         <NavigationMenuList className="flex space-x-4">
-          <a className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3">
             <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-            <span className="text-xl text-gray-900"></span>
-          </a>
+            <span className="text-xl"></span>
+          </div>
 
           {isLandingPage ? (
             // Landing page navigation items
             <>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#about" className={navigationMenuTriggerStyle()}>
-                    About
-                  </a>
+                <NavigationMenuLink
+                  href="#about"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  About
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#features" className={navigationMenuTriggerStyle()}>
-                    Features
-                  </a>
+                <NavigationMenuLink
+                  href="#features"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  Features
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#howto" className={navigationMenuTriggerStyle()}>
-                    How-To
-                  </a>
+                <NavigationMenuLink
+                  href="#howto"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  How-To
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -79,13 +95,17 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
             <>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
+                  <Link
+                    to="/dashboard"
+                    className={navigationMenuTriggerStyle()}
+                  >
                     Dashboard
-                  </Link>                </NavigationMenuLink>
+                  </Link>{" "}
+                </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink>
-                  <a className={navigationMenuTriggerStyle()}>Docs</a>
+                  <div className={navigationMenuTriggerStyle()}>Docs</div>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -95,6 +115,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
 
       <div className="flex items-center space-x-4">
         <button
+          type="button"
           onClick={handleToggleDarkMode}
           className="p-2 rounded-full hover:bg-gray-200 transition-colors"
           aria-label={
@@ -111,7 +132,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
         {!isLoggedIn && (
           <>
             <a href="/login" className={navigationMenuTriggerStyle()}>
-              Login
+              Log in
             </a>
             <SignUpButton />
           </>
@@ -120,6 +141,6 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
       </div>
     </div>
   );
-};
+}
 
 export default NavBar;
