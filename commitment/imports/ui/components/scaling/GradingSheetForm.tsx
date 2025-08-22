@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { CheckCheck, CircleXIcon, LoaderCircle, UploadIcon } from "lucide-react";
 
-import { UploadIcon } from "lucide-react";
+import { Alert, AlertDescription } from "@ui/components/ui/alert";
 import { Button } from "@ui/components/ui/button";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
 import { GradingSheetParserService, type GradingSheetRow, type ParseResult } from "../utils/GradingSheetParser";
+
 
 function GradingSheetForm({
   onSubmit,
@@ -35,29 +37,21 @@ function GradingSheetForm({
     if (gradingSheet[0]) {
       setIsLoading(true);
       try {
-        console.log("🔄 Starting CSV parsing for file:", gradingSheet[0].name);
         const result = await GradingSheetParserService.parseGradingSheet(gradingSheet[0]);
         
-        console.log("📊 CSV Parsing Result:", result);
-        
         if (result.success && result.data) {
-          console.log("✅ Successfully parsed", result.rowCount, "students");
-          console.log("📋 First 3 students:", result.data.slice(0, 3));
-          
-          // Get summary statistics
-          const summary = GradingSheetParserService.getDataSummary(result.data);
-          console.log("📈 Data Summary:", summary);
+          console.log("Successfully parsed");
           
           if (result.warnings && result.warnings.length > 0) {
-            console.warn("⚠️ Parsing warnings:", result.warnings);
+            console.warn("Parsing warnings:", result.warnings);
           }
         } else {
-          console.error("❌ Parsing failed:", result.error);
+          console.error("Parsing failed:", result.error);
         }
         
         setParseResult(result);
       } catch (error) {
-        console.error("💥 Unexpected parsing error:", error);
+        console.error("Unexpected parsing error:", error);
         setParseResult({
           success: false,
           error: 'Unexpected error during parsing'
@@ -69,18 +63,8 @@ function GradingSheetForm({
   };
 
   const handleSubmit = () => {
-    if (sheet?.[0]) {
-      console.log("🚀 Submitting grading sheet with parsed data");
-      console.log("📁 File:", sheet[0].name);
-      console.log("📊 Parsed data available:", !!parseResult?.data);
-      
-      if (parseResult?.success && parseResult.data) {
-        console.log("📋 Submitting with", parseResult.data.length, "parsed student records");
-        onSubmit(sheet[0], parseResult.data);
-      } else {
-        console.log("📋 Submitting without parsed data (parsing failed or not completed)");
-        onSubmit(sheet[0]);
-      }
+    if (sheet?.[0]) {  
+      onSubmit(sheet[0], parseResult?.data);
     }
   };
 
@@ -129,26 +113,21 @@ function GradingSheetForm({
 
       {/* Parsing Status Display */}
       {isLoading && (
-        <div className="mt-4 p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded">
-          🔄 Parsing CSV file...
-        </div>
+        <Alert className="mt-4 border-blue-200 bg-blue-50">
+          <LoaderCircle className="h-4 w-4 animate-spin" />
+          <AlertDescription className="text-blue-700">
+            Parsing CSV file...
+          </AlertDescription>
+        </Alert>
       )}
       
       {parseResult?.success === false && (
-        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          ❌ {parseResult.error}
-        </div>
-      )}
-      
-      {parseResult?.success && parseResult.data && (
-        <div className="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-          ✅ CSV parsed successfully! Found {parseResult.rowCount} students.
-          {parseResult.warnings && parseResult.warnings.length > 0 && (
-            <div className="mt-2 text-orange-600">
-              ⚠️ Warnings: {parseResult.warnings.join('; ')}
-            </div>
-          )}
-        </div>
+        <Alert className="mt-4 border-red-200 bg-red-50" variant="destructive">
+          <CircleXIcon className="h-4 w-4" />
+          <AlertDescription>
+            {parseResult.error}
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* NEXT BUTTON */}

@@ -55,32 +55,10 @@ function ScalingView() {
   };
 
   const handleSheetSubmit = (sheetFile: File, parsedData?: GradingSheetRow[]) => {
-    console.log("📁 Grading sheet submitted:", sheetFile.name);
-    console.log("📊 Parsed data received:", parsedData ? `${parsedData.length} students` : "No parsed data");
-    
     setGradingSheet(sheetFile);
+    console.log("Sheet submitted:", parsedData || null);
     setParsedGradingData(parsedData || null);
-    
-    // Log the complete scaling configuration
-    console.log("🎯 Complete Scaling Configuration:");
-    console.log("📋 Config:", config);
-    console.log("📁 File:", sheetFile);
-    console.log("📊 Parsed Data Sample:", parsedData?.slice(0, 2));
-    
-    if (parsedData && parsedData.length > 0) {
-      // Get summary for final logging
-      const totalStudents = parsedData.length;
-      const sampleStudents = parsedData.slice(0, 3);
-      const totalGrades = parsedData.reduce((sum, student) => sum + student.grade, 0);
-      const averageGrade = totalStudents > 0 ? totalGrades / totalStudents : 0;
-      
-      console.log("📈 Quick Summary:", {
-        totalStudents,
-        sampleStudents,
-        averageGrade: Math.round(averageGrade * 100) / 100
-      });
-    }
-    
+
     setCompleted(true);
     setShowDialog(false);
     setStep("done");
