@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { format, subDays, addDays, isValid } from "date-fns";
+import { format, addDays, isValid } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { useLocation } from "react-router-dom";
-import { Subject } from "rxjs";
 
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
@@ -12,11 +11,10 @@ import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
-import { ContributionPieChart } from "./PieChartGraph";
-import GraphCard from "./GraphCard";
+// import { ContributionPieChart } from "./PieChartGraph";
+// import GraphCard from "./GraphCard";
 
-import { RepositoryData, ContributionEntry } from "/imports/api/types";
-import { getFilteredRepoData } from "../utils/data_filter";
+import { RepositoryData, ContributionEntry, FilteredData} from "/imports/api/types";
 
 // -----------------------------
 // Mock Data
@@ -112,74 +110,71 @@ const transformToPieChartData = (data: ContributionEntry[]) => {
 // Main Component
 // -----------------------------
 export function AnalyticsView() {
-  const today = new Date();
-  const lastWeek = subDays(today, 6);
 
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
 
+  // setting up filters 
   const [repoData, setRepoData] = useState<RepositoryData | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [selectedBranch, setSelectedBranch] = useState<string>("main");
+  const [selectedContributors, setSelectedContributors] = useState<string[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const defaultDaysBack = 1000;
-  const graphBackgroundColour = "#f9f9f9";
 
-  useEffect(() => {
-    if (!repoUrl) {
-      setLoading(false);
-      return;
-    }
+   const fetchFilteredData = () => {
+    if (!repoUrl) return;
 
-    const notifier = new Subject<string>();
-    const filtered = getFilteredRepoData(
-      repoUrl,
-      notifier,
-      defaultDaysBack,
-      "main"
+    setLoading(true);
+    setError(null);
+
+    Meteor.call(
+      "repo.getFilteredData",
+      {
+        daysBack: defaultDaysBack,
+        branch: selectedBranch,
+        contributors: selectedContributors,
+      },
+      (err: Error, filtered: FilteredData) => {
+        if (err) {
+          setError(err.message);
+          setLoading(false);
+        } else {
+          setRepoData(filtered.repositoryData);
+          setDateRange({ from: filtered.dateRange.start, to: filtered.dateRange.end });
+          setLoading(false);
+        }
+      }
     );
+  };
 
-    filtered.repositoryData
-      .then((data) => {
-        setRepoData(data);
-        setDateRange({
-          from: filtered.dateRange.start,
-          to: filtered.dateRange.end,
-        });
-        setLoading(false);
-        notifier.complete();
-      })
-      .catch((e) => {
-        setError(e.message);
-        setLoading(false);
-        notifier.complete();
-      });
-  }, [repoUrl]);
+  // Fetch when component mounts or filters change
+  useEffect(() => {
+    fetchFilteredData(); 
+  }, [repoUrl, selectedBranch, selectedContributors]);
 
   // Loading & Error States
-  if (loading) {
-    return <div>Loading repo data...</div>;
-  }
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-  if (!repoData) {
-    return <div>No repo data available</div>;
-  }
+  if (loading) return <div>Loading repo data...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!repoData) return <div>No repo data available</div>;
 
-  // Extracted repo metrics
-  const contributorData = ["placeholder"] //getContributors(repoData);
-  const numContributors = contributorData.length;
-  const branchData = ["placeholder"]// getBranches(repoData);
+  // Example placeholders for UI
+  const branchData = Array.from(repoData.branches.map((b) => b.branchName));
+  const contributorData = Array.from(repoData.contributors.keys());
   const numBranches = branchData.length;
+  const numContributors = contributorData.length;
+
   const contributorCommitData = [
     {
       name: "yeetus feleetus",
       commits: -1
     }
   ] //getAllContributorsCommits(repoData).data;
-  const totalCommits = [
+  
+  const totalCommits = 
     {
       total: 0,
       percentageChange: 1,
@@ -190,7 +185,7 @@ export function AnalyticsView() {
         }
       ]
     }
-  ] //calculateTotalCommits(repoData);
+   //calculateTotalCommits(repoData);
 
   return (
     <div className="m-0 scroll-smooth">
