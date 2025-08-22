@@ -81,6 +81,7 @@ export const getRepoData = async (
         return fetchDataFromHaskellAppHTTP(url);
       })
       .then((data: RepositoryData) => {
+        notifier.next("Consolidating new data into database...");
         cacheIntoDatabase(url, data);
         return data;
       })
@@ -126,9 +127,7 @@ const fetchDataFromHaskellAppWS = async (
       else if (parsed.type === "error") reject(parsed.message);
     };
 
-    socket.onclose = () => {
-      notifier.next("Consolidating new data into database...");
-    };
+    socket.onclose = () => {};
   });
 
 /**
