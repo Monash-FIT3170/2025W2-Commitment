@@ -29,33 +29,43 @@ export interface ServerRepoData {
  * Convert RepositoryData's Maps into plain objects to store in DB.
  */
 
-const mapToArray = <K, V>(m: unknown): { key: K; value: V }[] => {
+const mapToArray = <K, V>(m: unknown): SerialisableMapObject<K, V>[] => {
   if (m instanceof Map) {
-    return Array.from(m.entries()).map(([key, value]) => ({ key, value }));
+    return Array.from(m.entries()).map(([key, value]) => ({ key, value }))
   } else if (m && typeof m === "object") {
     // plain object fallback
     return Object.entries(m).map(([key, value]) => ({
       key: key as K,
       value: value as V,
-    }));
+    }))
   }
-  return [];
+  return []
 };
+
+const arrayToMap = <K, V>(a: unknown): Map<K, V> => {
+  if (a instanceof Array){
+    return new Map(a.map(e => [e.key as K, e.value as V]))
+  } else if (a && typeof a == "object") {
+    // object fallback
+    return new Map(Object.entries(a).map(e => [e[0] as K, e[1] as V]))
+  }
+  return new Map()
+}
 
 function serializeRepoData(data: RepositoryData): SerializableRepoData {
   return {
     ...data,
-    allCommits: mapToArray(data.allCommits),
-    contributors: mapToArray(data.contributors),
-  };
+    allCommits: mapToArray<string, CommitData>(data.allCommits),
+    contributors: mapToArray<string, ContributorData>(data.contributors),
+  }
 }
 
 function deserializeRepoData(data: SerializableRepoData): RepositoryData {
   return {
     ...data,
-    allCommits: new Map(data.allCommits.map((entry) => [entry.key, entry.value])),
-    contributors: new Map(data.contributors.map((entry) => [entry.key, entry.value])),
-  };
+    allCommits: arrayToMap<string, CommitData>(data.allCommits),
+    contributors: arrayToMap<string, ContributorData>(data.contributors),
+  }
 }
 
 /**
