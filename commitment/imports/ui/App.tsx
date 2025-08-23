@@ -6,6 +6,7 @@ import InsertGitRepoView from "@ui/views/InsertGitRepoView/InsertGitRepo";
 import LoadingPage from "./LoadingPage";
 import MetricsPage from "./MetricsPage";
 import DashboardView from "./views/DashboardView/DashboardView";
+import SettingsPage from "./components/settings/SettingsPage";
 
 export default function App() {
   return (
@@ -17,10 +18,10 @@ export default function App() {
 
         {/* Add more routes as needed */}
 
-
         <Route path="/loading" element={<LoadingPage />} />
         <Route path="/metrics" element={<MetricsPage />} />
         <Route path="/dashboard" element={<DashboardView />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </BrowserRouter>
   );

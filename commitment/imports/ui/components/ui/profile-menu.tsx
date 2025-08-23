@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { HelpCircle, LogOut, User, ChevronDown, Settings } from "lucide-react";
 import { Button } from "./button";
 import { Separator } from "./separator";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileMenuProps {
   onSignOut: () => void;
@@ -12,6 +13,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -24,6 +26,11 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleSettingsClick = () => {
+    setIsOpen(false);
+    navigate('/settings');
+  };
 
   return (
     <div className="relative" ref={menuRef}>
@@ -49,6 +56,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
             <Separator />
 
             <button
+              onClick={handleSettingsClick}
               className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >
               <Settings className="h-4 w-4" />
