@@ -9,6 +9,10 @@ import {
 /**
  * Filters repository data based on branch, date range, and optionally contributor.
  * Returns all data in a serializable format.
+ * @param repo Full repository data
+ * @param daysBack Number of days to look back (default: 7)
+ * @param filteredBranchName Branch to filter (optional)
+ * @param filteredContributorName Contributor to filter (optional)
  */
 export const getFilteredRepoDataServer = (
   repo: SerializableRepoData,
@@ -33,7 +37,7 @@ export const getFilteredRepoDataServer = (
   const filterBranch = repo.branches.find(b => b.branchName === filteredBranchName);
   const branchCommitHashes = new Set(filterBranch?.commitHashes ?? []);
 
-  // FILTER COMMITS → use the array, not repo.allCommits directly
+  // FILTER COMMITS 
   const filteredCommits = allCommitsArray.filter(({ key, value }) => {
     const commitDate = new Date(value.timestamp);
     const isInBranchAndDate =
@@ -47,7 +51,7 @@ export const getFilteredRepoDataServer = (
     return isInBranchAndDate && isCorrectContributor;
   });
 
-  // FILTER CONTRIBUTORS → use the array, not repo.contributors directly
+  // FILTER CONTRIBUTORS 
   const filteredContributors = filteredContributorName
     ? contributorsArray.filter(({ key }) => key === filteredContributorName)
     : contributorsArray;
@@ -55,8 +59,8 @@ export const getFilteredRepoDataServer = (
   // RETURN serializable repo
   const serializableRepo: SerializableRepoData = {
     ...repo,
-    allCommits: filteredCommits,
-    contributors: filteredContributors,
+    allCommits: filteredCommits.map(({ key, value }) => ({ key, value })),
+    contributors: filteredContributors.map(({ key, value }) => ({ key, value })),
   };
 
   return {
