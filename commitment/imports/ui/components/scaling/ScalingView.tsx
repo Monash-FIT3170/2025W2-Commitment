@@ -56,7 +56,6 @@ function ScalingView() {
 
   const handleSheetSubmit = (sheetFile: File, parsedData?: GradingSheetRow[]) => {
     setGradingSheet(sheetFile);
-    console.log("Sheet submitted:", parsedData || null);
     setParsedGradingData(parsedData || null);
 
     setCompleted(true);
