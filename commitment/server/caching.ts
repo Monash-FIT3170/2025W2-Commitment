@@ -1,22 +1,12 @@
 import { Subject } from "rxjs";
 import { Mongo } from "meteor/mongo";
 
-import { RepositoryData, BranchData, CommitData, ContributorData } from "../imports/api/types";
+import { RepositoryData, SerializableRepoData } from "../imports/api/types";
+import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation"
 
-// -------------Types -------------
-
-type SerialisableMapObject<K, V> = {
-  key: K;
-  value: V;
-};
-
-export type SerializableRepoData = Readonly<{
-  name: string;
-  branches: BranchData[];
-  allCommits: SerialisableMapObject<string, CommitData>[]; // Map converted to a list of objects
-  contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
-}>;
-
+/**
+ * COLLECTION OF REPOSITORY METHODS
+ */
 export interface ServerRepoData {
   _id?: string;
   url: string;
@@ -24,53 +14,6 @@ export interface ServerRepoData {
   data: SerializableRepoData;
 }
 
-// -------------- Helper Functions ----------------
-/**
- * Convert RepositoryData's Maps into plain objects to store in DB.
- */
-
-const mapToArray = <K, V>(m: unknown): SerialisableMapObject<K, V>[] => {
-  if (m instanceof Map) {
-    return Array.from(m.entries()).map(([key, value]) => ({ key, value }))
-  } else if (m && typeof m === "object") {
-    // plain object fallback
-    return Object.entries(m).map(([key, value]) => ({
-      key: key as K,
-      value: value as V,
-    }))
-  }
-  return []
-};
-
-const arrayToMap = <K, V>(a: unknown): Map<K, V> => {
-  if (a instanceof Array){
-    return new Map(a.map(e => [e.key as K, e.value as V]))
-  } else if (a && typeof a == "object") {
-    // object fallback
-    return new Map(Object.entries(a).map(e => [e[0] as K, e[1] as V]))
-  }
-  return new Map()
-}
-
-function serializeRepoData(data: RepositoryData): SerializableRepoData {
-  return {
-    ...data,
-    allCommits: mapToArray<string, CommitData>(data.allCommits),
-    contributors: mapToArray<string, ContributorData>(data.contributors),
-  }
-}
-
-function deserializeRepoData(data: SerializableRepoData): RepositoryData {
-  return {
-    ...data,
-    allCommits: arrayToMap<string, CommitData>(data.allCommits),
-    contributors: arrayToMap<string, ContributorData>(data.contributors),
-  }
-}
-
-/**
- * COLLECTION OF REPOSITORY METHODS
- */
 const RepoCollection = new Mongo.Collection<ServerRepoData>("repoCollection");
 
 Meteor.methods({
@@ -79,15 +22,15 @@ Meteor.methods({
    *
    * @method repoCollection.insertOrUpdateRepoData
    * @param {string} url - The URL of the link. Must start with 'http' or 'https'.
-   * @param {string} data - the repo metadata to be saved
+   * @param {SerializableRepoData} data - the repo metadata to be saved
    * @returns {Promise<string>} The ID of the newly inserted link document.
    * @throws {Meteor.Error} If the URL is invalid or does not start with 'http', not in db or not authorised.
    */
-  async "repoCollection.insertOrUpdateRepoData"(url: string, data: RepositoryData) {
+  async "repoCollection.insertOrUpdateRepoData"(url: string, data: SerializableRepoData) {
     const s: ServerRepoData = {
       url,
       createdAt: new Date(),
-      data: serializeRepoData(data),
+      data: data,
     };
     return await RepoCollection.upsertAsync(
       { url }, // filter to find existing doc
@@ -165,7 +108,7 @@ Meteor.methods({
    *
    * @method repoCollection.getRepoData
    * @param {string} url - The URL of the repository.
-   * @returns {Promise<RepositoryData>} The repository data.
+   * @returns {Promise<SerializableRepoData>} The repository data.
    * @throws {Meteor.Error} If the repository data is not found or not authorised.
    *
    */
@@ -176,7 +119,7 @@ Meteor.methods({
       throw new Meteor.Error("not-found", "Repo data not found");
     }
 
-    return deserializeRepoData(repoData.data);
+    return repoData.data;
   },
 });
 
@@ -192,14 +135,14 @@ Meteor.methods({
  * @throws {Error} If there is an error during the caching process.
  */
 export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> =>
-  new Promise((resolve, reject) => {
+  new Promise((resolve, _reject) => {
     Meteor.call(
       "repoCollection.insertOrUpdateRepoData",
       url,
-      data,
-      (err: any, res: boolean | PromiseLike<boolean>) => {
-        if (err) reject(err);
-        else resolve(res);
+      serializeRepoData(data),
+      (err: any, _res: any) => {
+        if (err) resolve(false);
+        else resolve(true);
       }
     );
   });
@@ -234,7 +177,7 @@ export const tryFromDatabase = async (
     Meteor.call(
       "repoCollection.getData",
       url,
-      (err: Error, res: RepositoryData | PromiseLike<RepositoryData>) => {
+      (err: Error, res: SerializableRepoData) => {
         if (err) {
           const s = "Couldn't find your repo in the database";
           notifier.next(s);
@@ -242,7 +185,7 @@ export const tryFromDatabase = async (
         }
 
         notifier.next("Found your repo in the database!");
-        return resolve(res);
+        return resolve(deserializeRepoData(res));
       }
     );
   });

@@ -63,3 +63,16 @@ export type ContributionEntry = {
   date: string;
   count: number;
 };
+
+export type SerialisableMapObject<K, V> = {
+  key: K;
+  value: V;
+};
+
+export type SerializableRepoData = Readonly<{
+  name: string;
+  branches: BranchData[];
+  allCommits: SerialisableMapObject<string, CommitData>[]; // Map converted to a list of objects
+  contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
+}>;
+

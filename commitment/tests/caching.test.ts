@@ -3,8 +3,8 @@ import { Subject } from "rxjs";
 import sinon from "sinon";
 
 import { RepositoryData } from "../imports/api/types";
-import { tryFromDatabase } from "/server/caching";
-import { deserialize, serialize } from "v8";
+import { tryFromDatabase, cacheIntoDatabase } from "/server/caching";
+import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation"
 
 describe("caching.ts", () => {
   const fakeRepo: RepositoryData = {
@@ -28,27 +28,27 @@ describe("caching.ts", () => {
   });
 
   it("can properly serialise data", async () => {
-    const inverted = deserialize(serialize(fakeRepo))
+    const inverted = deserializeRepoData(serializeRepoData(fakeRepo))
     expect(inverted).to.deep.equal(fakeRepo);
   });
 
   it("can insert and fetch repo data", async () => {
     const url = "http://test"
-    await Meteor.call("repoCollection.insertOrUpdateRepoData", url, fakeRepo)
+    await cacheIntoDatabase(url, fakeRepo)
     const found = await Meteor.call("repoCollection.exists", url)
     expect(found).to.equal(true);
   });
 
-  it("returns data from database if present", async function () {
+  it("returns data from database if present", async () => {
     const url = "http://missing"
-    await Meteor.call("repoCollection.insertOrUpdateRepoData", url, fakeRepo)
+    await cacheIntoDatabase(url, fakeRepo)
     const notifier = new Subject<string>();
     const result = await tryFromDatabase("http://missing", notifier)
       .catch((_e: Error) => expect(false).to.equal(true));
     expect(result.data).to.deep.equal(fakeRepo);
   });
 
-  it("throws when removing missing repo", async function () {
+  it("throws when removing missing repo", async () => {
     Meteor.callAsync(
         "repoCollection.removeRepo",
         "http://does-not-exist"

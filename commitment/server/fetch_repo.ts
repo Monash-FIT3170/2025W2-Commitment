@@ -3,8 +3,8 @@ import { Subject } from "rxjs";
 import { WebSocket } from "ws";
 
 import { RepositoryData } from "../imports/api/types";
+import {deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
-import { SocketAddress } from "net";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -76,11 +76,12 @@ export const getRepoData = async (
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
   tryFromDatabase(url, notifier).catch((_e) =>
-    fetchDataFromHaskellAppWS(url, notifier)
+    fetchDataFromHaskellAppWS(url, notifier)  
       .catch((_e) => {
         notifier.next(`Websockets failed, trying HTTP...`);
         return fetchDataFromHaskellAppHTTP(url);
       })
+      .then(serializeRepoData).then(deserializeRepoData) // enforces strong typing for the map object
       .then((data: RepositoryData) => {
         notifier.next("Consolidating new data into database...");
         cacheIntoDatabase(url, data);
