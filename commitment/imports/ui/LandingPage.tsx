@@ -8,7 +8,7 @@ import Features from "@ui/components/landing-page/Features";
 import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
 
-export const LandingPage = () => {
+export default function LandingPage() {
   const user = useTracker(() => Meteor.user());
 
   return (
@@ -30,4 +30,4 @@ export const LandingPage = () => {
       </div>
     </div>
   );
-};
+}
