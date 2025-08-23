@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { BookmarksCollection } from '../imports/api/bookmarks';
+import './methods/scale.js';
+
 
 import '../imports/api/methods';
 
