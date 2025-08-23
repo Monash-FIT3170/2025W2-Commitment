@@ -5,6 +5,7 @@ import { BookmarksCollection } from "../imports/api/bookmarks";
 import "../imports/api/methods";
 
 import "../imports/api/bookmark_methods";
+import "../imports/api/alias_config_methods";
 
 import "./fetch_repo";
 import "./caching";

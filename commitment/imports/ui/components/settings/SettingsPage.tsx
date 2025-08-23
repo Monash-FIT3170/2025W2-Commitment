@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@ui/components/ui/tabs';
 import { Button } from '@ui/components/ui/button';
-import { Upload, Info, FileText, X } from 'lucide-react';
+import { Upload, Info, FileText, X, CheckCircle, AlertCircle, Download } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const user = useTracker(() => Meteor.user());
@@ -18,6 +18,12 @@ export const SettingsPage: React.FC = () => {
   const [fileContent, setFileContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  
+  // Config state
+  const [parsedAliases, setParsedAliases] = useState<any>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
   // Reference to the hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +67,9 @@ export const SettingsPage: React.FC = () => {
     // Reset previous state
     setError('');
     setFileContent('');
+    setParsedAliases(null);
+    setShowConfirmation(false);
+    setSuccessMessage('');
     
     // Basic file validation
     if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
@@ -81,9 +90,18 @@ export const SettingsPage: React.FC = () => {
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        // Try to parse JSON to validate it
-        JSON.parse(content);
+        const parsed = JSON.parse(content);
+        
+        // Validate the structure
+        const validationResult = validateConfigStructure(parsed);
+        if (!validationResult.isValid) {
+          setError(validationResult.error || 'Invalid configuration structure');
+          setSelectedFile(null);
+          return;
+        }
+        
         setFileContent(content);
+        setParsedAliases(parsed);
         setError('');
       } catch (parseError) {
         setError('Invalid JSON file. Please check the file format.');
@@ -101,14 +119,155 @@ export const SettingsPage: React.FC = () => {
     reader.readAsText(file);
   };
 
+  // Validate config structure
+  const validateConfigStructure = (data: any): { isValid: boolean; error?: string } => {
+    // Check if data has required top-level properties
+    if (!data.name || typeof data.name !== 'string') {
+      return { isValid: false, error: 'Config must have a "name" field (string)' };
+    }
+    
+    if (!data.aliases || !Array.isArray(data.aliases)) {
+      return { isValid: false, error: 'Config must have an "aliases" field (array)' };
+    }
+    
+    if (data.aliases.length === 0) {
+      return { isValid: false, error: 'Config must have at least one student alias' };
+    }
+    
+    // Validate each alias
+    for (let i = 0; i < data.aliases.length; i++) {
+      const alias = data.aliases[i];
+      const aliasIndex = i + 1;
+      
+      if (!alias.officialName || typeof alias.officialName !== 'string') {
+        return { isValid: false, error: `Alias ${aliasIndex}: missing or invalid "officialName"` };
+      }
+      
+      if (!alias.gitUsernames || !Array.isArray(alias.gitUsernames)) {
+        return { isValid: false, error: `Alias ${aliasIndex}: missing or invalid "gitUsernames" array` };
+      }
+      
+      if (alias.gitUsernames.length === 0) {
+        return { isValid: false, error: `Alias ${aliasIndex}: "gitUsernames" array cannot be empty` };
+      }
+      
+      if (!alias.emails || !Array.isArray(alias.emails)) {
+        return { isValid: false, error: `Alias ${aliasIndex}: missing or invalid "emails" array` };
+      }
+      
+      if (alias.emails.length === 0) {
+        return { isValid: false, error: `Alias ${aliasIndex}: "emails" array cannot be empty` };
+      }
+      
+      // Validate array contents are strings
+      if (!alias.gitUsernames.every((u: any) => typeof u === 'string')) {
+        return { isValid: false, error: `Alias ${aliasIndex}: "gitUsernames" must contain only strings` };
+      }
+      
+      if (!alias.emails.every((e: any) => typeof e === 'string')) {
+        return { isValid: false, error: `Alias ${aliasIndex}: "emails" must contain only strings` };
+      }
+    }
+    
+    return { isValid: true };
+  };
+
   // Remove selected file
   const removeFile = () => {
     setSelectedFile(null);
     setFileContent('');
+    setParsedAliases(null);
+    setShowConfirmation(false);
     setError('');
+    setSuccessMessage('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  // Handle Apply button click
+  const handleApply = () => {
+    if (!parsedAliases) {
+      setError('Please upload and validate a config file first');
+      return;
+    }
+    
+    setShowConfirmation(true);
+  };
+
+  // Handle final confirmation and save
+  const handleConfirmSave = async () => {
+    if (!parsedAliases) return;
+    
+    setIsSaving(true);
+    setError('');
+    
+    try {
+      // Call Meteor method to save config
+      await new Promise((resolve, reject) => {
+        Meteor.call('aliasConfigs.create', parsedAliases.name, parsedAliases.aliases, (error: any, result: any) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        });
+      });
+      
+      // Success!
+      setSuccessMessage('Configuration saved successfully!');
+      setShowConfirmation(false);
+      
+      // Reset form after a delay
+      setTimeout(() => {
+        removeFile();
+      }, 2000);
+      
+    } catch (error: any) {
+      setError(error.message ? error.message : 'Failed to save configuration');
+      setShowConfirmation(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Cancel confirmation
+  const handleCancelSave = () => {
+    setShowConfirmation(false);
+  };
+
+  // Download sample template
+  const downloadTemplate = () => {
+    const template = {
+      name: "Monash Sem 2 2025",
+      aliases: [
+        {
+          officialName: "John Smith",
+          gitUsernames: ["johnsmith", "jsmith_dev"],
+          emails: ["john.smith@university.edu", "jsmith@github.com"]
+        },
+        {
+          officialName: "Sarah Johnson",
+          gitUsernames: ["sarahj", "sarah_dev"],
+          emails: ["sarah.johnson@university.edu", "sarahj@github.com"]
+        },
+        {
+          officialName: "Michael Chen",
+          gitUsernames: ["mchen", "michael_c"],
+          emails: ["michael.chen@university.edu", "mchen@github.com"]
+        }
+      ]
+    };
+
+    const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'alias-config-template.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -123,7 +282,7 @@ export const SettingsPage: React.FC = () => {
           This is the settings page. Content coming soon!
         </p>
 
-        {/* This is the tab system - using EXACT same styling as MetricsTab */}
+        {/* This is the tab system using same styling as MetricsTab */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full bg-[#FEFEFA] shadow-sm justify-items-start">
           {/* This creates the tab buttons at the top - same styling as MetricsTab */}
           <TabsList className="flex bg-[#FEFEFA] border-b">
@@ -186,6 +345,25 @@ export const SettingsPage: React.FC = () => {
                   <Info className="h-5 w-5 text-git-text-secondary" />
                 </div>
                 <p className="text-git-text-secondary">Map multiple accounts to a single user.</p>
+              </div>
+
+              {/* Template Download */}
+              <div className="mb-6 p-4 bg-git-bg-secondary border border-git-stroke-secondary rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-git-text-primary mb-1">Need help with the format?</h3>
+                    <p className="text-xs text-git-text-secondary">Download a sample configuration file to see the expected structure.</p>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={downloadTemplate}
+                    className="border-git-stroke-primary text-git-text-primary hover:bg-git-bg-elevated"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Template
+                  </Button>
+                </div>
               </div>
 
               {/* Hidden file input */}
@@ -252,7 +430,20 @@ export const SettingsPage: React.FC = () => {
               {/* Error Display */}
               {error && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-sm">{error}</p>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <p className="text-red-600 text-sm">{error}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {successMessage && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <p className="text-green-600 text-sm">{successMessage}</p>
+                  </div>
                 </div>
               )}
 
@@ -268,12 +459,50 @@ export const SettingsPage: React.FC = () => {
                 </div>
               )}
 
+              {/* Confirmation Dialog */}
+              {showConfirmation && (
+                <div className="mt-6 p-4 bg-git-bg-secondary border border-git-stroke-primary rounded-lg">
+                  <h3 className="text-lg font-semibold text-git-text-primary mb-3">Confirm Configuration</h3>
+                  <div className="mb-4">
+                    <p className="text-git-text-secondary mb-2">
+                      <strong>Name:</strong> {parsedAliases?.name}
+                    </p>
+                    <p className="text-git-text-secondary mb-2">
+                      <strong>Students:</strong> {parsedAliases?.aliases?.length || 0}
+                    </p>
+                    <p className="text-git-text-secondary">
+                      <strong>Total Aliases:</strong> {parsedAliases?.aliases?.reduce((acc: number, alias: any) => 
+                        acc + (alias.gitUsernames?.length || 0) + (alias.emails?.length || 0), 0
+                      ) || 0}
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={handleConfirmSave}
+                      disabled={isSaving}
+                      className="bg-git-int-primary hover:bg-git-int-primary-hover text-git-int-text"
+                    >
+                      {isSaving ? 'Saving...' : 'Save Configuration'}
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={handleCancelSave}
+                      disabled={isSaving}
+                      className="border-git-stroke-primary text-git-text-primary hover:bg-git-bg-elevated"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Apply Button */}
               <div className="mt-6 text-center">
                 <Button 
                   size="lg"
                   className="bg-git-int-primary hover:bg-git-int-primary-hover text-git-int-text px-8"
-                  disabled={!selectedFile || !!error}
+                  disabled={!selectedFile || !!error || !parsedAliases}
+                  onClick={handleApply}
                 >
                   Apply
                 </Button>
