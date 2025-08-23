@@ -45,7 +45,7 @@ describe("caching.ts", () => {
     const notifier = new Subject<string>();
     const result = await tryFromDatabase("http://missing", notifier)
       .catch((_e: Error) => expect(false).to.equal(true));
-    expect(result.data).to.deep.equal(fakeRepo);
+    expect(result).to.deep.equal(fakeRepo);
   });
 
   it("throws when removing missing repo", async () => {
