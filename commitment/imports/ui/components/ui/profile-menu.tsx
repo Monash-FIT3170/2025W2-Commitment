@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { HelpCircle, LogOut, User, ChevronDown } from "lucide-react";
+import { HelpCircle, LogOut, User, ChevronDown, Settings } from "lucide-react";
 import { Button } from "./button";
 import { Separator } from "./separator";
 
@@ -44,6 +44,15 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
             >
               <HelpCircle className="h-4 w-4" />
               <span>Help</span>
+            </button>
+
+            <Separator />
+
+            <button
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
             </button>
 
             <Separator />
