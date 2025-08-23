@@ -54,47 +54,47 @@ execAndParseAll notifier cwd cmds parser msg = passAllAsync commandPool parsingP
     cmds
 
 fetchDataFrom :: String -> TBQueue String -> IO (Either String RepositoryData)
-fetchDataFrom url notifier = do
-    workingDir <- getCurrentDirectory
-    let cloneRoot = workingDir </> "cloned-repos"
+fetchDataFrom url notifier = (do
+        workingDir <- getCurrentDirectory
+        let cloneRoot = workingDir </> "cloned-repos"
 
-    awaitOutsideCloneDir <- createDirectoryIfMissing True cloneRoot
-    emit notifier "Validating repo exists..."
+        awaitOutsideCloneDir <- createDirectoryIfMissing True cloneRoot
+        emit notifier "Validating repo exists..."
 
-    let execCmdInWorkingDir = execAndParse notifier workingDir
-    _ <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
+        let execCmdInWorkingDir = execAndParse notifier workingDir
+        _ <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
 
-    emit notifier "Found the repo!"
-    emit notifier "Formulating parsers..."
+        emit notifier "Found the repo!"
+        emit notifier "Formulating parsers..."
 
-    let repoNameFromUrl = lastSplit '/' url
-        repoRelativePath = "cloned-repos" </> repoNameFromUrl
-        repoAbsPath = workingDir </> repoRelativePath
+        let repoNameFromUrl = lastSplit '/' url
+            repoRelativePath = "cloned-repos" </> repoNameFromUrl
+            repoAbsPath = workingDir </> repoRelativePath
 
-    awaitRepoDirDeletion <- deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
-    awaitCreateRepoDir <- createDirectoryIfMissing True repoAbsPath
+        awaitRepoDirDeletion <- deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
+        awaitCreateRepoDir   <- createDirectoryIfMissing True repoAbsPath
 
-    emit notifier "Cloning repo..."
-    assertSuccess <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
-        (\path -> successful <$> executeCommand notifier workingDir (cloneRepo url path))
-        repoAbsPath
-        )
-    emit notifier (show assertSuccess)
-
-    emit notifier "Getting repository data..."
-    let res = (do
-            repoData <- formulateRepoData url repoAbsPath notifier
-            emit notifier "Data processed!"
-            pure (Right repoData)
+        emit notifier "Cloning repo..."
+        assertSuccess <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
+            (\path -> successful <$> executeCommand notifier workingDir (cloneRepo url path))
+            repoAbsPath
             )
-            `catch` \(e :: SomeException) -> do
-                let errMsg = displayException e
-                emit notifier ("Error occurred:\n" ++ errMsg)
-                pure (Left $ show errMsg)
-            `finally` do
-                deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
 
-    res
+        emit notifier "Getting repository data..."
+        repoData <- formulateRepoData url repoAbsPath notifier
+        emit notifier "Data processed!"
+        pure (Right repoData)
+    )
+    `catch` \(e :: SomeException) -> do
+        let errMsg = displayException e
+        emit notifier ("Error occurred:\n" ++ errMsg)
+        pure (Left errMsg)
+    `finally` do
+        -- cleanup no matter what
+        workingDir <- getCurrentDirectory
+        let repoNameFromUrl = lastSplit '/' url
+            repoAbsPath     = workingDir </> "cloned-repos" </> repoNameFromUrl
+        deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
     
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data

@@ -3,6 +3,7 @@ import { Subject } from "rxjs";
 import { WebSocket } from "ws";
 
 import { RepositoryData } from "../imports/api/types";
+import {deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
@@ -75,11 +76,12 @@ export const getRepoData = async (
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
   tryFromDatabase(url, notifier).catch((_e) =>
-    fetchDataFromHaskellAppWS(url, notifier)
+    fetchDataFromHaskellAppWS(url, notifier)  
       .catch((_e) => {
         notifier.next(`Websockets failed, trying HTTP...`);
         return fetchDataFromHaskellAppHTTP(url);
       })
+      .then(serializeRepoData).then(deserializeRepoData) // enforces strong typing for the map object
       .then((data: RepositoryData) => {
         notifier.next("Consolidating new data into database...");
         cacheIntoDatabase(url, data);
@@ -108,8 +110,9 @@ const fetchDataFromHaskellAppWS = async (
     const socket = new WebSocket("ws://haskell-api:8081");
 
     socket.onopen = () => {
-      // Step 1: Send repo URL
+      // notify that connection to the api was successful
       notifier.next("Connected to the API!");
+      // send data through socket
       socket.send(
         JSON.stringify({
           url: url,
@@ -117,18 +120,33 @@ const fetchDataFromHaskellAppWS = async (
       );
     };
 
-    socket.onmessage = (event: any) => {
+    socket.onmessage = (event: WebSocket.MessageEvent) => {
       // Step 2: Await response from haskell app
-      const data = event.data;
-      const parsed = JSON.parse(data);
+      try {
+        
+        const data = event.data;
+        const parsed = JSON.parse(data);
 
-      if (parsed.type === "text_update") notifier.next(parsed.data);
-      else if (parsed.type === "value") resolve(parsed.data);
-      else if (parsed.type === "error") reject(parsed.message);
-    };
+        if (parsed.type === "text_update") notifier.next(parsed.data);
+        else if (parsed.type === "error") reject(parsed.message);
+        else if (parsed.type === "value") {
+          resolve(parsed.data);
+          socket.close();
+        } 
 
-    socket.onclose = () => {};
-  });
+      } catch (err) {
+        reject(err);
+        socket.close();
+      }
+    }
+
+    socket.onerror = (_err: WebSocket.ErrorEvent) => {
+      const s = "Encountered a Websocket Error"
+      notifier.next(s);
+      reject(new Error(s))
+      socket.close()
+    }
+  })
 
 /**
  * Fetches the repository data structure from the Haskell API
