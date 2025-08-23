@@ -15,6 +15,7 @@ import { LeaderboardGraph } from "./LeaderboardGraph";
 // import GraphCard from "./GraphCard";
 
 import { RepositoryData, ContributionEntry, FilteredData} from "/imports/api/types";
+import { deserializeRepoData } from "/imports/api/serialisation";
 
 // -----------------------------
 // Mock Data
@@ -143,7 +144,8 @@ export function AnalyticsView() {
           setError(err.message);
           setLoading(false);
         } else {
-          setRepoData(filtered.repositoryData);
+          const repoData = deserializeRepoData(filtered.repositoryData);
+          setRepoData(repoData);
           setDateRange({ from: filtered.dateRange.start, to: filtered.dateRange.end });
           setLoading(false);
         }
@@ -163,7 +165,7 @@ export function AnalyticsView() {
 
   // Example placeholders for UI
   const branchData = Array.from(repoData.branches.map((b) => b.branchName));
-  const contributorData = Array.from(repoData.contributors.keys());
+  const contributorData = Array.from(repoData.contributors.values()).map((c) => c.name);
   const numBranches = branchData.length;
   const numContributors = contributorData.length;
 

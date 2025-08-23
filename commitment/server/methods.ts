@@ -1,6 +1,10 @@
 import { Meteor } from "meteor/meteor";
 import { getFilteredRepoDataServer } from "./filter";
-import { RepositoryData, FilteredData} from "/imports/api/types";
+import { SerializableRepoData, FilteredData, RepositoryData} from "/imports/api/types";
+import { tryFromDatabase } from "./caching";
+import { Subject } from "rxjs";
+import { Sub } from "@radix-ui/react-navigation-menu";
+import { getRepoData } from "./fetch_repo";
 
 Meteor.methods({
   /**
@@ -22,16 +26,17 @@ Meteor.methods({
     repoUrl: string; // pass the URl from the frontend 
   }): Promise<FilteredData> {
     // Get full repository data from db
-    const repo: RepositoryData = await Meteor.call("repoCollection.getData", repoUrl);
-
+  const repo: SerializableRepoData = await Meteor.callAsync('repoCollection.getData');
+  console.log("repoCollection.getData:", repo);
+  console.log("checking type of commits,  contributors: ", typeof repo.allCommits, typeof repo.contributors);
     // Apply filtering
-    const filteredData = getFilteredRepoDataServer(
-      repo,
-      daysBack,
-      branch,
-      contributor
-    );
-
+  const filteredData = getFilteredRepoDataServer(
+    repo,
+    daysBack,
+    branch,
+    contributor
+  );
+    console.log("Filtered Data:", filteredData);
     return filteredData;
   },
 });

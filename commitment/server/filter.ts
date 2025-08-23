@@ -1,24 +1,17 @@
 import {
   RepositoryData,
   CommitData, 
-  FilteredData
+  FilteredData,
+  SerializableRepoData,
+  ContributorData
 } from "/imports/api/types";
-
-
-
-// ------------ METHODS TO FILTER THE REPO DATA --------------------------------
-// storing Date Range, RepositoryData in a data structure
 
 /**
  * Filters repository data based on branch, date range, and optionally contributor.
- * @param repo The complete repository data (from cache or DB)
- * @param daysBack Number of days to look back for commits (default: 7)
- * @param filteredBranchName Name of the branch to filter on (default: "main")
- * @param filteredContributorName (Optional) Specific contributor to filter on
- * @returns FilteredData object
+ * Returns all data in a serializable format.
  */
 export const getFilteredRepoDataServer = (
-  repo: RepositoryData,
+  repo: SerializableRepoData,
   daysBack: number = 7,
   filteredBranchName?: string,
   filteredContributorName?: string
@@ -27,59 +20,47 @@ export const getFilteredRepoDataServer = (
   const start = new Date();
   start.setDate(end.getDate() - daysBack);
 
-  // Find the specified branch
-  const filterBranch = repo.branches.find(
-    (b) => b.branchName === filteredBranchName
-  );
+  // Convert plain objects into arrays of { key, value } if not already arrays
+  const allCommitsArray: { key: string; value: CommitData }[] = Array.isArray(repo.allCommits)
+    ? repo.allCommits as { key: string; value: CommitData }[]
+    : Object.entries(repo.allCommits as Record<string, CommitData>).map(([key, value]) => ({ key, value }));
 
-  if (!filterBranch) {
-    console.warn(`Branch ${filteredBranchName} not found in repo.`);
-    return {
-      dateRange: { start, end },
-      repositoryData: {
-        ...repo,
-        allCommits: new Map(),
-        contributors: repo.contributors,
-      },
-    };
-  }
+  const contributorsArray: { key: string; value: ContributorData }[] = Array.isArray(repo.contributors)
+    ? repo.contributors as { key: string; value: ContributorData }[]
+    : Object.entries(repo.contributors as Record<string, ContributorData>).map(([key, value]) => ({ key, value }));
 
-  const branchCommitHashes = new Set(filterBranch.commitHashes);
+  // Find the branch
+  const filterBranch = repo.branches.find(b => b.branchName === filteredBranchName);
+  const branchCommitHashes = new Set(filterBranch?.commitHashes ?? []);
 
-  // Filter commits by branch, date, and optionally contributor
-  const filteredCommits = new Map<string, CommitData>(
-    Array.from(repo.allCommits.entries()).filter(([hash, commit]) => {
-      const commitDate = new Date(commit.timestamp);
-      const isInBranchAndDate =
-        branchCommitHashes.has(hash) &&
-        commitDate >= start &&
-        commitDate <= end;
-      const isCorrectContributor =
-        !filteredContributorName ||
-        commit.contributorName === filteredContributorName;
+  // FILTER COMMITS → use the array, not repo.allCommits directly
+  const filteredCommits = allCommitsArray.filter(({ key, value }) => {
+    const commitDate = new Date(value.timestamp);
+    const isInBranchAndDate =
+      branchCommitHashes.has(key) &&
+      commitDate >= start &&
+      commitDate <= end;
 
-      return isInBranchAndDate && isCorrectContributor;
-    })
-  );
+    const isCorrectContributor =
+      !filteredContributorName || value.contributorName === filteredContributorName;
 
-  // Filter contributors if contributor name is provided
+    return isInBranchAndDate && isCorrectContributor;
+  });
+
+  // FILTER CONTRIBUTORS → use the array, not repo.contributors directly
   const filteredContributors = filteredContributorName
-    ? new Map(
-        Array.from(repo.contributors.entries()).filter(
-          ([name]) => name === filteredContributorName
-        )
-      )
-    : repo.contributors;
+    ? contributorsArray.filter(({ key }) => key === filteredContributorName)
+    : contributorsArray;
+
+  // RETURN serializable repo
+  const serializableRepo: SerializableRepoData = {
+    ...repo,
+    allCommits: filteredCommits,
+    contributors: filteredContributors,
+  };
 
   return {
     dateRange: { start, end },
-    repositoryData: {
-      ...repo,
-      allCommits: filteredCommits,
-      contributors: filteredContributors,
-    },
+    repositoryData: serializableRepo,
   };
 };
-
-
-
