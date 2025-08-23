@@ -4,6 +4,7 @@ import sinon from "sinon";
 
 import { RepositoryData } from "../imports/api/types";
 import { tryFromDatabase } from "/server/caching";
+import { deserialize, serialize } from "v8";
 
 describe("caching.ts", () => {
   const fakeRepo: RepositoryData = {
@@ -24,6 +25,11 @@ describe("caching.ts", () => {
           })
       );
     sinon.restore();
+  });
+
+  it("can properly serialise data", async () => {
+    const inverted = deserialize(serialize(fakeRepo))
+    expect(inverted).to.deep.equal(fakeRepo);
   });
 
   it("can insert and fetch repo data", async () => {
