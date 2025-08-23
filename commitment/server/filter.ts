@@ -24,21 +24,12 @@ export const getFilteredRepoDataServer = (
   const start = new Date();
   start.setDate(end.getDate() - daysBack);
 
-  // Convert plain objects into arrays of { key, value } if not already arrays
-  const allCommitsArray: { key: string; value: CommitData }[] = Array.isArray(repo.allCommits)
-    ? repo.allCommits as { key: string; value: CommitData }[]
-    : Object.entries(repo.allCommits as Record<string, CommitData>).map(([key, value]) => ({ key, value }));
-
-  const contributorsArray: { key: string; value: ContributorData }[] = Array.isArray(repo.contributors)
-    ? repo.contributors as { key: string; value: ContributorData }[]
-    : Object.entries(repo.contributors as Record<string, ContributorData>).map(([key, value]) => ({ key, value }));
-
   // Find the branch
   const filterBranch = repo.branches.find(b => b.branchName === filteredBranchName);
   const branchCommitHashes = new Set(filterBranch?.commitHashes ?? []);
 
-  // FILTER COMMITS 
-  const filteredCommits = allCommitsArray.filter(({ key, value }) => {
+  // FILTER COMMITS → use the array, not repo.allCommits directly
+  const filteredCommits = repo.allCommits.filter(({ key, value }) => {
     const commitDate = new Date(value.timestamp);
     const isInBranchAndDate =
       branchCommitHashes.has(key) &&
@@ -53,11 +44,11 @@ export const getFilteredRepoDataServer = (
 
   // FILTER CONTRIBUTORS 
   const filteredContributors = filteredContributorName
-    ? contributorsArray.filter(({ key }) => key === filteredContributorName)
-    : contributorsArray;
+    ? repo.contributors.filter(({ key }) => key === filteredContributorName)
+    : repo.contributors;
 
   // RETURN serializable repo
-  const serializableRepo: SerializableRepoData = {
+  const filteredRepo: SerializableRepoData = {
     ...repo,
     allCommits: filteredCommits.map(({ key, value }) => ({ key, value })),
     contributors: filteredContributors.map(({ key, value }) => ({ key, value })),
@@ -65,6 +56,6 @@ export const getFilteredRepoDataServer = (
 
   return {
     dateRange: { start, end },
-    repositoryData: serializableRepo,
+    repositoryData: filteredRepo,
   };
 };
