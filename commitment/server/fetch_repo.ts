@@ -4,6 +4,7 @@ import { WebSocket } from "ws";
 
 import { RepositoryData } from "../imports/api/types";
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
+import { SocketAddress } from "net";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -108,8 +109,9 @@ const fetchDataFromHaskellAppWS = async (
     const socket = new WebSocket("ws://haskell-api:8081");
 
     socket.onopen = () => {
-      // Step 1: Send repo URL
+      // notify that connection to the api was successful
       notifier.next("Connected to the API!");
+      // send data through socket
       socket.send(
         JSON.stringify({
           url: url,
@@ -117,18 +119,33 @@ const fetchDataFromHaskellAppWS = async (
       );
     };
 
-    socket.onmessage = (event: any) => {
+    socket.onmessage = (event: WebSocket.MessageEvent) => {
       // Step 2: Await response from haskell app
-      const data = event.data;
-      const parsed = JSON.parse(data);
+      try {
+``
+        const data = event.data;
+        const parsed = JSON.parse(data);
 
-      if (parsed.type === "text_update") notifier.next(parsed.data);
-      else if (parsed.type === "value") resolve(parsed.data);
-      else if (parsed.type === "error") reject(parsed.message);
-    };
+        if (parsed.type === "text_update") notifier.next(parsed.data);
+        else if (parsed.type === "error") reject(parsed.message);
+        else if (parsed.type === "value") {
+          resolve(parsed.data);
+          socket.close();
+        } 
 
-    socket.onclose = () => {};
-  });
+      } catch (err) {
+        reject(err);
+        socket.close();
+      }
+    }
+
+    socket.onerror = (_err: WebSocket.ErrorEvent) => {
+      const s = "Encountered a Websocket Error"
+      notifier.next(s);
+      reject(new Error(s))
+      socket.close()
+    }
+  })
 
 /**
  * Fetches the repository data structure from the Haskell API

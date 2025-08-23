@@ -21,9 +21,13 @@ import Control.Monad (when)
 import Control.Concurrent.STM (TBQueue)
 import Control.Exception (evaluate)
 import System.Directory (doesDirectoryExist, removePathForcibly)
-
 import System.Process
 import Control.DeepSeq (force)
+
+import qualified Data.ByteString as BS
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TEE
 
 import Threading
 
@@ -67,8 +71,6 @@ executeCommand notifier filepath f = do
   if not valid
     then pure $ CommandResult "" (Just $ "Invalid filepath: " ++ filepath) Nothing
     else do
-
-      -- Setup process
       let rawCmd = command f
           processSpec = (shell rawCmd)
             { cwd = Just filepath
@@ -76,28 +78,28 @@ executeCommand notifier filepath f = do
             , std_err = CreatePipe
             }
 
-      -- Start the process
       (_, Just hout, Just herr, phandle) <- createProcess processSpec
 
-      -- Set buffering explicitly to line buffering (not NoBuffering)
-      hSetBuffering hout LineBuffering
-      hSetBuffering herr LineBuffering
+      -- Read raw bytes
+      rawOutBS <- BS.hGetContents hout
+      rawErrBS <- BS.hGetContents herr
 
-      -- Read and fully evaluate outputs before waiting for the process
-      rawOut <- hGetContents hout
-      rawErr <- hGetContents herr
-      stdout_txt <- evaluate (force rawOut)
-      stderr_txt <- evaluate (force rawErr)
+      -- Decode as UTF-8, but replace invalid sequences with U+FFFD
+      let stdout_txt = T.unpack (TE.decodeUtf8With TEE.lenientDecode rawOutBS)
+          stderr_txt = T.unpack (TE.decodeUtf8With TEE.lenientDecode rawErrBS)
 
-      -- Now wait for the process to finish
       exitCode <- waitForProcess phandle
 
-      -- Handle results
       case exitCode of
         ExitFailure code -> do
-          let errMsg = "Process exited with code " ++ show code ++ " from path: " ++ filepath ++ ":\n" ++ onFail f rawCmd stderr_txt
-          when (shouldLog f) $ do
-            emit notifier errMsg
+          let errMsg =
+                "Process exited with code "
+                  ++ show code
+                  ++ " from path: "
+                  ++ filepath
+                  ++ ":\n"
+                  ++ onFail f rawCmd stderr_txt
+          when (shouldLog f) $ emit notifier errMsg
           pure $ CommandResult stdout_txt (Just errMsg) (if null stderr_txt then Nothing else Just stderr_txt)
 
         ExitSuccess ->
