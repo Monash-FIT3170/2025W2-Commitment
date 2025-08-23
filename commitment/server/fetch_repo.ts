@@ -122,7 +122,7 @@ const fetchDataFromHaskellAppWS = async (
     socket.onmessage = (event: WebSocket.MessageEvent) => {
       // Step 2: Await response from haskell app
       try {
-``
+        
         const data = event.data;
         const parsed = JSON.parse(data);
 
