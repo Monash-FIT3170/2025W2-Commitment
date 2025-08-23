@@ -46,7 +46,8 @@ describe("caching.ts", () => {
     Meteor.callAsync(
         "repoCollection.removeRepo",
         "http://does-not-exist"
-      ).catch((e: Meteor.Error) => expect(e.error).to.equal("not-in-database"))
-    expect(false).to.equal(true)
+      )
+      .then(_ => expect(false).to.equal(true))
+      .catch((e: Meteor.Error) => expect(e.error).to.equal("not-in-database"))
   });
 });
