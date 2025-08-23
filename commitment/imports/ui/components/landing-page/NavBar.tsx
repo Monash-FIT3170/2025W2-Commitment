@@ -53,8 +53,10 @@ function NavBar({ isLoggedIn }: NavBarProps) {
       <NavigationMenu>
         <NavigationMenuList className="flex space-x-4">
           <div className="flex items-center space-x-3">
-            <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-            <span className="text-xl"></span>
+            <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+              <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+              <span className="text-xl"></span>
+            </Link>
           </div>
 
           {isLandingPage ? (
