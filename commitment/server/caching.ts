@@ -77,7 +77,7 @@ Meteor.methods({
   /**
    * Inserts a new link into the LinksCollection.
    *
-   * @method links.insert
+   * @method repoCollection.insertOrUpdateRepoData
    * @param {string} url - The URL of the link. Must start with 'http' or 'https'.
    * @param {string} data - the repo metadata to be saved
    * @returns {Promise<string>} The ID of the newly inserted link document.
@@ -98,7 +98,7 @@ Meteor.methods({
   /**
    * Removes a repo from the RepoCollection by its URL.
    *
-   * @method links.remove
+   * @method repoCollection.removeRepo
    * @param {string} url - The URL of the link to be removed.
    * @returns {Promise<number>} The number of documents removed (should be 1 if successful).
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
@@ -122,7 +122,7 @@ Meteor.methods({
   /**
    * Checks whether a link with the given URL exists in the LinksCollection.
    *
-   * @method links.isBookmarked
+   * @method repoCollection.exists
    * @param {string} url - The URL to check.
    * @returns {Promise<boolean>} True if the URL is bookmarked, false otherwise.
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
@@ -133,9 +133,19 @@ Meteor.methods({
   },
 
   /**
+   * Checks whether a link with the given URL exists in the LinksCollection.
+   *
+   * @method repoCollection.allUrls
+   * @returns {string[]} all urls existing in the database
+   */
+  async "repoCollection.allUrls"() {
+    return RepoCollection.find().fetch().map(d => d.url)
+  },
+
+  /**
    * Updates the lastViewed parameter of the bookmark.
    *
-   * @method bookmarks.updateLastViewed
+   * @method repoCollection.updateLastViewed
    * @param {string} url - The URL of the bookmark to update.
    * @returns {Promise<number>} The number of documents updated (should be 1 if successful).
    * @throws {Meteor.Error} If the URL is invalid, bookmark not found, or not authorised.
@@ -154,9 +164,7 @@ Meteor.methods({
    * Get repository data by URL - added method by Milni in order to actually retrieve saved repo data
    *
    * @method repoCollection.getRepoData
-   *
    * @param {string} url - The URL of the repository.
-   *
    * @returns {Promise<RepositoryData>} The repository data.
    * @throws {Meteor.Error} If the repository data is not found or not authorised.
    *
