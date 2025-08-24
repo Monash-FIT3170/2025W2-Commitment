@@ -26,8 +26,9 @@ Meteor.methods({
     repoUrl: string; // pass the URl from the frontend 
   }): Promise<FilteredData> {
     // Get full repository data from db
-  const repo: SerializableRepoData = await Meteor.callAsync('repoCollection.getData');
+  const repo: SerializableRepoData = await Meteor.callAsync('repoCollection.getData', repoUrl);
   console.log("repoCollection.getData:", repo);
+  console.log("repoCollection.getData -> check a commit:", repo.allCommits[0].value);
   console.log("checking type of commits,  contributors: ", typeof repo.allCommits, typeof repo.contributors);
     // Apply filtering
   const filteredData = getFilteredRepoDataServer(
@@ -36,7 +37,7 @@ Meteor.methods({
     branch,
     contributor
   );
-    console.log("Filtered Data:", filteredData);
+    console.log("CHECKING Filtered Data!!!!:", filteredData);
     return filteredData;
   },
 });

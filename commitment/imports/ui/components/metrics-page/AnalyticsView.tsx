@@ -14,7 +14,11 @@ import { LeaderboardGraph } from "./LeaderboardGraph";
 // import { ContributionPieChart } from "./PieChartGraph";
 // import GraphCard from "./GraphCard";
 
-import { RepositoryData, ContributionEntry, FilteredData} from "/imports/api/types";
+import {
+  RepositoryData,
+  ContributionEntry,
+  FilteredData,
+} from "/imports/api/types";
 import { deserializeRepoData } from "/imports/api/serialisation";
 
 // -----------------------------
@@ -111,22 +115,26 @@ const transformToPieChartData = (data: ContributionEntry[]) => {
 // Main Component
 // -----------------------------
 export function AnalyticsView() {
-
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
 
-  // setting up filters 
+  // setting up filters
   const [repoData, setRepoData] = useState<RepositoryData | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [selectedBranch, setSelectedBranch] = useState<string>("main");
-  const [selectedContributors, setSelectedContributors] = useState<string[]>([]);
+  const [selectedContributors, setSelectedContributors] = useState<string[]>(
+    []
+  );
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const defaultDaysBack = 1000;
 
-   const fetchFilteredData = () => {
+  const fetchFilteredData = () => {
+
+    console.log("Fetching filtered data for repoUrl:", repoUrl);
+
     if (!repoUrl) return;
 
     setLoading(true);
@@ -138,15 +146,31 @@ export function AnalyticsView() {
         daysBack: defaultDaysBack,
         branch: selectedBranch,
         contributors: selectedContributors,
+        repoUrl,
       },
       (err: Error, filtered: FilteredData) => {
         if (err) {
           setError(err.message);
           setLoading(false);
         } else {
-          const repoData = deserializeRepoData(filtered.repositoryData);
-          setRepoData(repoData);
-          setDateRange({ from: filtered.dateRange.start, to: filtered.dateRange.end });
+          
+          setRepoData(deserializeRepoData(filtered.repositoryData));
+
+          const checker = deserializeRepoData(filtered.repositoryData)
+
+          console.log(
+            "AFTER DESERIALIZE - checking whole thing",
+            checker
+          );
+          console.log(
+            "AFTER DESERIALIZE - checking a commit:",
+            checker.allCommits
+          );
+
+          setDateRange({
+            from: filtered.dateRange.start,
+            to: filtered.dateRange.end,
+          });
           setLoading(false);
         }
       }
@@ -155,7 +179,7 @@ export function AnalyticsView() {
 
   // Fetch when component mounts or filters change
   useEffect(() => {
-    fetchFilteredData(); 
+    fetchFilteredData();
   }, [repoUrl, selectedBranch, selectedContributors]);
 
   // Loading & Error States
@@ -165,29 +189,30 @@ export function AnalyticsView() {
 
   // Example placeholders for UI
   const branchData = Array.from(repoData.branches.map((b) => b.branchName));
-  const contributorData = Array.from(repoData.contributors.values()).map((c) => c.name);
+  const contributorData = Array.from(repoData.contributors.values()).map(
+    (c) => c.name
+  );
   const numBranches = branchData.length;
   const numContributors = contributorData.length;
 
   const contributorCommitData = [
     {
       name: "yeetus feleetus",
-      commits: -1
-    }
-  ] //getAllContributorsCommits(repoData).data;
-  
-  const totalCommits = 
-    {
-      total: 0,
-      percentageChange: 1,
-      isPositive: false,
-      data: [
-        {
-          value: 0
-        }
-      ]
-    }
-   //calculateTotalCommits(repoData);
+      commits: -1,
+    },
+  ]; //getAllContributorsCommits(repoData).data;
+
+  const totalCommits = {
+    total: 0,
+    percentageChange: 1,
+    isPositive: false,
+    data: [
+      {
+        value: 0,
+      },
+    ],
+  };
+  //calculateTotalCommits(repoData);
 
   return (
     <div className="m-0 scroll-smooth">

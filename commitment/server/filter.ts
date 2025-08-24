@@ -16,9 +16,9 @@ import {
  */
 export const getFilteredRepoDataServer = (
   repo: SerializableRepoData,
-  daysBack: number = 7,
   filteredBranchName?: string,
-  filteredContributorName?: string
+  filteredContributorName?: string,
+  daysBack: number = 7
 ): FilteredData => {
   const end = new Date();
   const start = new Date();
