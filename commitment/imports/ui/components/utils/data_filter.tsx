@@ -1,9 +1,8 @@
 import { Meteor } from 'meteor/meteor' 
 import {
   RepositoryData,
-  CommitData,
-  SerializableRepoData,
-} from "../../../api/types";
+  CommitData
+} from "/imports/api/types";
 import { Subject } from "rxjs";
 
 // ------------ METHOD TO GET THE REPO DATA BASED OFF A URL ---------------
