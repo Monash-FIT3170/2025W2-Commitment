@@ -33,9 +33,9 @@ Meteor.methods({
     // Apply filtering
   const filteredData = getFilteredRepoDataServer(
     repo,
-    daysBack,
     branch,
-    contributor
+    contributor,
+    daysBack
   );
     console.log("CHECKING Filtered Data!!!!:", filteredData);
     return filteredData;
