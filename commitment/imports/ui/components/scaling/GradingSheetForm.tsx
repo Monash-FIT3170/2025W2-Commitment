@@ -139,7 +139,7 @@ function GradingSheetForm({
                       });
                     }}
                     src={field.value}
-                    accept={{ ".csv": [] }} // Keep CSV from your branch
+                    accept={{ "text/csv": [".csv"] }}
                     maxFiles={1}
                     className="border-2 border-dashed border-muted-foreground rounded-md transition-colors hover:border-primary focus:border-primary"
                   >
