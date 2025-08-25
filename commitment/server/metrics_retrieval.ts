@@ -5,6 +5,7 @@ import { metricsFunctions, MetricFn } from "../server/repo_metrics";
 import { getRepoData } from "../server/fetch_repo";
 
 
+
 Meteor.methods({
   /**
    * Get a single metric by name
