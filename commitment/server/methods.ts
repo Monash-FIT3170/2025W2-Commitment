@@ -16,12 +16,14 @@ Meteor.methods({
    */
   async "repo.getFilteredData"({
     repoUrl,
-    daysBack,
+    start_date,
+    end_date,
     branch,
     contributor,
   }: {
     repoUrl: string; // pass the URl from the frontend
-    daysBack: number;
+    start_date: Date;
+    end_date: Date;
     branch?: string;
     contributor?: string;
   }): Promise<FilteredData> {
@@ -34,9 +36,10 @@ Meteor.methods({
     // Apply filtering
     const filteredData = getFilteredRepoDataServer(
       repo,
+      start_date,
+      end_date,
       branch,
       contributor,
-      daysBack
     );
     return filteredData;
   },

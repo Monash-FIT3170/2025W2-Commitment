@@ -15,14 +15,12 @@ import {
  * @param filteredContributorName Contributor to filter (optional)
  */
 export const getFilteredRepoDataServer = (
+  start: Date,
+  end: Date,
   repo: SerializableRepoData,
   filteredBranchName?: string,
   filteredContributorName?: string,
-  daysBack: number = 7
 ): FilteredData => {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(end.getDate() - daysBack);
 
   // Find the branch
   const filterBranch = repo.branches.find(b => b.branchName === filteredBranchName);
