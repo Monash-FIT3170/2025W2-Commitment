@@ -5,6 +5,7 @@ import {
   FilteredData,
   AnalyticsData,
 } from "/imports/api/types";
+import { start } from "repl";
 
 Meteor.methods({
   /**
@@ -84,6 +85,18 @@ Meteor.methods({
      * 
      * Return the full AnalyticsData structure
      */
+
+    // Get project metadata
+    const metadata: AnalyticsData["metadata"] = await Meteor.callAsync(
+      "repo.getMetadata",
+      repoUrl
+    );
+
+    // Update metadata with filter date range
+    metadata.filterRange = {
+      start: startDate || metadata.dateRange.start,
+      end: endDate || metadata.dateRange.end,
+    };
 
     const filteredRepo: FilteredData = await Meteor.callAsync(
       "repo.getFilteredData", 

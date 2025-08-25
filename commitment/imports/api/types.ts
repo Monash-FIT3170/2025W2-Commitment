@@ -97,6 +97,10 @@ export interface AnalyticsData {
       start: Date;
       end: Date;
     };
+    filterRange?: {
+      start: Date;
+      end: Date;
+    };
   };
 
   highlights: {
