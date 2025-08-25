@@ -54,6 +54,8 @@ export const getFilteredRepoDataServer = (
     contributors: filteredContributors.map(({ key, value }) => ({ key, value })),
   };
 
+  console.log("Filtered Repo Data in FILTER FUNC!!!:", filteredRepo);
+
   return {
     dateRange: { start, end },
     repositoryData: filteredRepo,
