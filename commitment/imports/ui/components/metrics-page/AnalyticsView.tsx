@@ -140,41 +140,41 @@ export function AnalyticsView() {
     setLoading(true);
     setError(null);
 
-    Meteor.call(
-      "repo.getFilteredData",
-      {
-        daysBack: defaultDaysBack,
-        branch: selectedBranch,
-        contributors: selectedContributors,
-        repoUrl,
-      },
-      (err: Error, filtered: FilteredData) => {
-        if (err) {
-          setError(err.message);
-          setLoading(false);
-        } else {
+    // Meteor.call(
+    //   "repo.getFilteredData",
+    //   {
+    //     daysBack: defaultDaysBack,
+    //     branch: selectedBranch,
+    //     contributors: selectedContributors,
+    //     repoUrl,
+    //   },
+    //   (err: Error, filtered: FilteredData) => {
+    //     if (err) {
+    //       setError(err.message);
+    //       setLoading(false);
+    //     } else {
           
-          setRepoData(deserializeRepoData(filtered.repositoryData));
+    //       setRepoData(deserializeRepoData(filtered.repositoryData));
 
-          const checker = deserializeRepoData(filtered.repositoryData)
+    //       const checker = deserializeRepoData(filtered.repositoryData)
 
-          console.log(
-            "AFTER DESERIALIZE - checking whole thing",
-            checker
-          );
-          console.log(
-            "AFTER DESERIALIZE - checking a commit:",
-            checker.allCommits
-          );
+    //       console.log(
+    //         "AFTER DESERIALIZE - checking whole thing",
+    //         checker
+    //       );
+    //       console.log(
+    //         "AFTER DESERIALIZE - checking a commit:",
+    //         checker.allCommits
+    //       );
 
-          setDateRange({
-            from: filtered.dateRange.start,
-            to: filtered.dateRange.end,
-          });
-          setLoading(false);
-        }
-      }
-    );
+    //       setDateRange({
+    //         from: filtered.dateRange.start,
+    //         to: filtered.dateRange.end,
+    //       });
+    //       setLoading(false);
+    //     }
+    //   }
+    // );
   };
 
   // Fetch when component mounts or filters change
