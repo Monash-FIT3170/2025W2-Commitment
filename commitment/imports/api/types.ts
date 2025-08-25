@@ -74,7 +74,7 @@ export type UserScalingSummary = {
   name: string;
   aliases: AliasEmail[];
   finalGrade: number | null; // may be missing -> if there is a grading sheet, this must be populated
-  scale: number;  // always present
+  scale: number; // always present
 };
 
 export type ContributionEntry = {
@@ -82,3 +82,53 @@ export type ContributionEntry = {
   date: string;
   count: number;
 };
+
+/**
+ * Data Structure for Analytics View
+ */
+export interface AnalyticsData {
+  metadata: {
+    repoUrl: string;
+    branch: string;
+    repoName: string;
+    branches: string[];
+    contributors: string[];
+    dateRange: {
+      start: Date;
+      end: Date;
+    };
+  };
+
+  highlights: {
+    totalCommits: {
+      total: number;
+      percentageChange: number;
+      isPositive: boolean;
+      data: { value: number }[];
+    };
+    totalLinesOfCode: {
+      total: number;
+      percentageChange: number;
+      isPositive: boolean;
+      data: { value: number }[];
+    };
+    numContributors: number;
+    numBranches: number;
+  };
+
+  contributors: {
+    leaderboard: {
+      name: string;
+      commits: number;
+    }[];
+    lineGraph: {
+      date: string; // "YYYY-MM-DD"
+      [contributor: string]: number; // e.g. { Alice: 120, Bob: 95 }
+    }[];
+    pieChart?: {
+      user: string;
+      contributions: number;
+      fill: string; // color
+    }[];
+  };
+}
