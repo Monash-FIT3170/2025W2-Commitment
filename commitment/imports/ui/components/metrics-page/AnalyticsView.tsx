@@ -35,7 +35,7 @@ export function AnalyticsView(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAnalyticsData = () => {
+  const fetchAnalyticsData = React.useCallback(() => {
     if (!repoUrl) return;
 
     Meteor.call(
@@ -56,12 +56,12 @@ export function AnalyticsView(): React.JSX.Element {
         setLoading(false);
       }
     );
-  };
+  }, [repoUrl, selectedBranch, selectedContributors, dateRange]);
 
   // Fetch when component mounts or filters change
   useEffect(() => {
     fetchAnalyticsData();
-  }, [repoUrl, selectedBranch, selectedContributors, dateRange]);
+  }, [fetchAnalyticsData]);
 
   // Loading & Error States
   if (loading) return <div>Loading repo data...</div>;
