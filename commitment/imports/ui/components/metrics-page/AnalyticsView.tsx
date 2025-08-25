@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { format, addDays, isValid, set } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { useLocation } from "react-router-dom";
-
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
 import BranchDropdownMenu from "./BranchDropdownMenu";
@@ -103,7 +101,11 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
-              <ContributorDropdownMenu contributors={metrics.metadata.contributors} />
+              <ContributorDropdownMenu 
+              contributors={metrics.metadata.contributors} 
+              selected={selectedContributors}
+              onChange={setSelectedContributors}
+              />
             </div>
           </div>
 
