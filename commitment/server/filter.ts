@@ -19,7 +19,7 @@ export const getFilteredRepoDataServer = (
   end: Date,
   repo: SerializableRepoData,
   filteredBranchName?: string,
-  filteredContributorName?: string,
+  filteredContributorName?: string[],
 ): FilteredData => {
 
   // Find the branch
