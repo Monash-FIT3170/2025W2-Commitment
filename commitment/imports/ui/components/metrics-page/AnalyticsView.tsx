@@ -6,7 +6,6 @@ import { useLocation } from "react-router-dom";
 import InfoButton from "../ui/infoButton";
 import { DateRangePicker } from "./DatePickerButton";
 import BranchDropdownMenu from "./BranchDropdownMenu";
-import { dark2 } from "../ui/colors";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
@@ -22,6 +21,8 @@ import { AnalyticsData } from "/imports/api/types";
 export function AnalyticsView(): React.JSX.Element {
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
+  const metricsPageDescription =
+    "This page gives an overview of key metrics and performance trends.";
 
   // setting up filters
   const [metrics, setMetricsData] = useState<AnalyticsData | null>(null);
@@ -98,11 +99,11 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Branch*</label>
-              <BranchDropdownMenu branches={branchData} />
+              <BranchDropdownMenu branches={metrics.metadata.branches} />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
-              <ContributorDropdownMenu contributors={contributorData} />
+              <ContributorDropdownMenu contributors={metrics.metadata.contributors} />
             </div>
           </div>
 
@@ -110,39 +111,39 @@ export function AnalyticsView(): React.JSX.Element {
           <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
             <HighlightCardWithGraph
               title="Total Commits"
-              value={totalCommits.total}
-              percentageChange={totalCommits.percentageChange}
-              isPositive={totalCommits.isPositive}
-              data={totalCommits.data}
+              value={metrics.highlights.totalCommits.total}
+              percentageChange={metrics.highlights.totalCommits.percentageChange}
+              isPositive={metrics.highlights.totalCommits.isPositive}
+              data={metrics.highlights.totalCommits.data}
             />
             <HighlightCardWithGraph
               title="Total Lines of Code"
-              value={4567}
-              percentageChange={-12}
-              isPositive={false}
-              data={mockTotalLocData}
+              value={metrics.highlights.totalLinesOfCode.total}
+              percentageChange={metrics.highlights.totalLinesOfCode.percentageChange}
+              isPositive={metrics.highlights.totalLinesOfCode.isPositive}
+              data={metrics.highlights.totalLinesOfCode.data}
             />
             <HighlightCardWithGraph
               title="No. of Contributors"
-              value={numContributors}
+              value={metrics.highlights.numContributors}
             />
             <HighlightCardWithGraph
               title="Number of branches"
-              value={numBranches}
+              value={metrics.highlights.numBranches}
             />
           </div>
 
           {/* Graphs */}
           <div className="flex flex-wrap gap-6 mt-12 mb-12">
             <ContributorLineGraph
-              data={mockContributorDataset.data}
-              title={mockContributorDataset.title}
+              data={metrics.contributors.lineGraph}
+              title="LOC Changes Over Time"
               xAxisLabel="Date"
               yAxisLabel="Lines of Code Changed"
             />
             <div className="rounded-2xl basis-1/3 min-w-[320px]">
               <LeaderboardGraph
-                data={contributorCommitData}
+                data={metrics.contributors.leaderboard}
                 title="Top Contributors"
                 xAxisLabel="Commits"
               />
