@@ -88,7 +88,9 @@ appWS pendingConn = do
       result <- fetchDataFrom (trim repoUrl) notifier
       case result of
         Right repoData -> sendTextData conn $ BL.toStrict $ encodeValue "value" repoData
-        Left errmsg    -> sendTextData conn $ BL.toStrict $ encodeError (T.pack ("err: " ++ errmsg))
+        Left errmsg    -> do
+          safePrint $ "Encountered error: " ++ errmsg
+          sendTextData conn $ BL.toStrict $ encodeError (T.pack ("err: " ++ errmsg))
 
       sendClose conn ("Done" :: Text)
 
@@ -102,9 +104,7 @@ fallback req respond = do
     else do
       body <- strictRequestBody req
       case eitherDecode body of
-        Left err -> do
-          --safePrint $ "Invalid JSON (HTTP): " ++ err
-          respond $ responseLBS status400 [("Content-Type", "application/json")] $ encodeError "Invalid JSON format. Expected: {\"url\": \"...\"}"
+        Left err -> respond $ responseLBS status400 [("Content-Type", "application/json")] $ encodeError "Invalid JSON format. Expected: {\"url\": \"...\"}"
 
         Right (ClientMessage repoUrl) -> do
           safePrint $ "Processing URL (HTTP): " ++ repoUrl
@@ -118,7 +118,8 @@ fallback req respond = do
             Right repoData ->
               respond $ responseLBS status200 [("Content-Type", "application/json")] $
                 encodeValue "value" repoData
-            Left errmsg ->
+            Left errmsg -> do
+              safePrint $ "Encountered error: " ++ errmsg
               respond $ responseLBS status500 [("Content-Type", "application/json")] $
                 encodeError (T.pack ("err: " ++ errmsg))
 
