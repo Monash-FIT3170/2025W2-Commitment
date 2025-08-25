@@ -97,14 +97,18 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Branch*</label>
-              <BranchDropdownMenu branches={metrics.metadata.branches} />
+              <BranchDropdownMenu
+                branches={metrics.metadata.branches}
+                selected={selectedBranch}
+                onChange={setSelectedBranch}
+              />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
-              <ContributorDropdownMenu 
-              contributors={metrics.metadata.contributors} 
-              selected={selectedContributors}
-              onChange={setSelectedContributors}
+              <ContributorDropdownMenu
+                contributors={metrics.metadata.contributors}
+                selected={selectedContributors}
+                onChange={setSelectedContributors}
               />
             </div>
           </div>
@@ -114,14 +118,18 @@ export function AnalyticsView(): React.JSX.Element {
             <HighlightCardWithGraph
               title="Total Commits"
               value={metrics.highlights.totalCommits.total}
-              percentageChange={metrics.highlights.totalCommits.percentageChange}
+              percentageChange={
+                metrics.highlights.totalCommits.percentageChange
+              }
               isPositive={metrics.highlights.totalCommits.isPositive}
               data={metrics.highlights.totalCommits.data}
             />
             <HighlightCardWithGraph
               title="Total Lines of Code"
               value={metrics.highlights.totalLinesOfCode.total}
-              percentageChange={metrics.highlights.totalLinesOfCode.percentageChange}
+              percentageChange={
+                metrics.highlights.totalLinesOfCode.percentageChange
+              }
               isPositive={metrics.highlights.totalLinesOfCode.isPositive}
               data={metrics.highlights.totalLinesOfCode.data}
             />
