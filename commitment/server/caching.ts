@@ -1,22 +1,12 @@
 import { Subject } from "rxjs";
 import { Mongo } from "meteor/mongo";
 
-import { RepositoryData, BranchData, CommitData, ContributorData } from "../imports/api/types";
+import { RepositoryData, SerializableRepoData } from "../imports/api/types";
+import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation"
 
-// -------------Types -------------
-
-type SerialisableMapObject<K, V> = {
-  key: K,
-  value: V
-}
-
-export type SerializableRepoData = Readonly<{
-  name: string;
-  branches: BranchData[];
-  allCommits: SerialisableMapObject<string, CommitData>[]; // Map converted to a list of objects
-  contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
-}>;
-
+/**
+ * COLLECTION OF REPOSITORY METHODS
+ */
 export interface ServerRepoData {
   _id?: string;
   url: string;
@@ -24,71 +14,44 @@ export interface ServerRepoData {
   data: SerializableRepoData;
 }
 
-// -------------- Helper Functions ----------------
-/**
- * Convert RepositoryData's Maps into plain objects to store in DB.
- */
-function serializeRepoData(data: RepositoryData): SerializableRepoData {
-  return {
-    ...data,
-    allCommits: data.allCommits
-      ? Array.from(data.allCommits, ([key, value]) => ({ key, value }))
-      : [],
-    contributors: data.contributors
-      ? Array.from(data.contributors, ([key, value]) => ({ key, value }))
-      : [],
-  };
-}
-
-function deserializeRepoData(data: SerializableRepoData): RepositoryData {
-  return {
-    ...data,
-    allCommits: new Map(data.allCommits.map((entry) => [entry.key, entry.value])),
-    contributors: new Map(data.contributors.map((entry) => [entry.key, entry.value])),
-  };
-}
-
-/**
- * COLLECTION OF REPOSITORY METHODS
- */
 const RepoCollection = new Mongo.Collection<ServerRepoData>("repoCollection");
 
 Meteor.methods({
   /**
    * Inserts a new link into the LinksCollection.
    *
-   * @method links.insert
+   * @method repoCollection.insertOrUpdateRepoData
    * @param {string} url - The URL of the link. Must start with 'http' or 'https'.
-   * @param {string} data - the repo metadata to be saved
+   * @param {SerializableRepoData} data - the repo metadata to be saved
    * @returns {Promise<string>} The ID of the newly inserted link document.
    * @throws {Meteor.Error} If the URL is invalid or does not start with 'http', not in db or not authorised.
    */
-  async "repoCollection.insertOrUpdateRepoData"(url: string, data: RepositoryData) {
+  async "repoCollection.insertOrUpdateRepoData"(url: string, data: SerializableRepoData) {
     const s: ServerRepoData = {
       url,
       createdAt: new Date(),
-      data: serializeRepoData(data),
+      data: data,
     };
     return await RepoCollection.upsertAsync(
       { url }, // filter to find existing doc
-      s, // update operation
+      s // update operation
     );
   },
 
   /**
    * Removes a repo from the RepoCollection by its URL.
    *
-   * @method links.remove
+   * @method repoCollection.removeRepo
    * @param {string} url - The URL of the link to be removed.
    * @returns {Promise<number>} The number of documents removed (should be 1 if successful).
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
    */
   async "repoCollection.removeRepo"(url: string) {
-    if (!isInDatabase(url)) throw new Meteor.Error(
+    if (!isInDatabase(url))
+      throw new Meteor.Error(
         "not-in-database",
         "The repo must exist in the database to be removed"
       );
-    
 
     const d = await RepoCollection.findOneAsync({ url });
 
@@ -102,7 +65,7 @@ Meteor.methods({
   /**
    * Checks whether a link with the given URL exists in the LinksCollection.
    *
-   * @method links.isBookmarked
+   * @method repoCollection.exists
    * @param {string} url - The URL to check.
    * @returns {Promise<boolean>} True if the URL is bookmarked, false otherwise.
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
@@ -113,9 +76,19 @@ Meteor.methods({
   },
 
   /**
+   * Checks whether a link with the given URL exists in the LinksCollection.
+   *
+   * @method repoCollection.allUrls
+   * @returns {string[]} all urls existing in the database
+   */
+  async "repoCollection.allUrls"() {
+    return RepoCollection.find().fetch().map(d => d.url)
+  },
+
+  /**
    * Updates the lastViewed parameter of the bookmark.
    *
-   * @method bookmarks.updateLastViewed
+   * @method repoCollection.updateLastViewed
    * @param {string} url - The URL of the bookmark to update.
    * @returns {Promise<number>} The number of documents updated (should be 1 if successful).
    * @throws {Meteor.Error} If the URL is invalid, bookmark not found, or not authorised.
@@ -134,21 +107,19 @@ Meteor.methods({
    * Get repository data by URL - added method by Milni in order to actually retrieve saved repo data
    *
    * @method repoCollection.getRepoData
-   *
    * @param {string} url - The URL of the repository.
-   *
-   * @returns {Promise<RepositoryData>} The repository data.
+   * @returns {Promise<SerializableRepoData>} The repository data.
    * @throws {Meteor.Error} If the repository data is not found or not authorised.
    *
    */
-  async 'repoCollection.getData'(url: string) {
+  async "repoCollection.getData"(url: string) {
     const repoData = await RepoCollection.findOneAsync({ url });
 
     if (!repoData) {
-      throw new Meteor.Error('not-found', 'Repo data not found');
+      throw new Meteor.Error("not-found", "Repo data not found");
     }
 
-    return deserializeRepoData(repoData.data);
+    return repoData.data;
   },
 });
 
@@ -163,16 +134,16 @@ Meteor.methods({
  *                              or false otherwise.
  * @throws {Error} If there is an error during the caching process.
  */
-export const cacheIntoDatabase = async (
-  url: string,
-  data: RepositoryData,
-): Promise<boolean> => new Promise((resolve, reject) => {
-    Meteor.call('repoCollection.insertOrUpdateRepoData',
-      url, data,
-      (err: any, res: boolean | PromiseLike<boolean>) => {
-        if (err) reject(err)
-        else resolve(res)
-      },
+export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> =>
+  new Promise((resolve, _reject) => {
+    Meteor.call(
+      "repoCollection.insertOrUpdateRepoData",
+      url,
+      serializeRepoData(data),
+      (err: any, _res: any) => {
+        if (err) resolve(false);
+        else resolve(true);
+      }
     );
   });
 
@@ -184,7 +155,8 @@ export const cacheIntoDatabase = async (
  *                              or false otherwise.
  * @throws {Error} If there is an error during the check.
  */
-export const isInDatabase = async (url: string): Promise<boolean> => Meteor.call('repoCollection.exists', url);
+export const isInDatabase = async (url: string): Promise<boolean> =>
+  Meteor.call("repoCollection.exists", url);
 
 /**
  * Tries to retrieve repository data from the database.
@@ -197,22 +169,23 @@ export const isInDatabase = async (url: string): Promise<boolean> => Meteor.call
  */
 export const tryFromDatabase = async (
   url: string,
-  notifier: Subject<string>,
-): Promise<RepositoryData> => new Promise((resolve, reject) => {
-  // try and get it from database, catching an error as a failed fetch
-  notifier.next('Searching database for your repo...')
-  Meteor.call('repoCollection.getData', url, 
-    (err: Error, res: RepositoryData | PromiseLike<RepositoryData>) => {
+  notifier: Subject<string>
+): Promise<RepositoryData> =>
+  new Promise((resolve, reject) => {
+    // try and get it from database, catching an error as a failed fetch
+    notifier.next("Searching database for your repo...");
+    Meteor.call(
+      "repoCollection.getData",
+      url,
+      (err: Error, res: SerializableRepoData) => {
         if (err) {
-          const s = "Couldn't find your repo in the database"
-          notifier.next(s)
-          return reject(s)
+          const s = "Couldn't find your repo in the database";
+          notifier.next(s);
+          return reject(s);
         }
 
-        notifier.next('Found your repo in the database!')
-        return resolve(res)
+        notifier.next("Found your repo in the database!");
+        return resolve(deserializeRepoData(res));
       }
-  )
-})
-
-
+    );
+  });

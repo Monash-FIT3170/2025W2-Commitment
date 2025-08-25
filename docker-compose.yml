@@ -1,6 +1,6 @@
 services:
   dev-env:
-    build: 
+    build:
       context: ./commitment
       dockerfile: Dockerfile.MeteorDev
     image: commitment-img
@@ -39,7 +39,7 @@ services:
     volumes:
       - mongo-data:/data/db
     networks:
-      - app-network   
+      - app-network
 
 volumes:
   mongo-data:
