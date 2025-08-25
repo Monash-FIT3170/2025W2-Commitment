@@ -1,10 +1,10 @@
 import { Meteor } from "meteor/meteor";
 import { getFilteredRepoDataServer } from "./filter";
-import { SerializableRepoData, FilteredData, RepositoryData} from "/imports/api/types";
-import { tryFromDatabase } from "./caching";
-import { Subject } from "rxjs";
-import { Sub } from "@radix-ui/react-navigation-menu";
-import { getRepoData } from "./fetch_repo";
+import {
+  SerializableRepoData,
+  FilteredData,
+  AnalyticsData,
+} from "/imports/api/types";
 
 Meteor.methods({
   /**
@@ -15,29 +15,86 @@ Meteor.methods({
    * @returns FilteredData structure
    */
   async "repo.getFilteredData"({
+    repoUrl,
     daysBack,
     branch,
     contributor,
-    repoUrl,
   }: {
+    repoUrl: string; // pass the URl from the frontend
     daysBack: number;
     branch?: string;
     contributor?: string;
-    repoUrl: string; // pass the URl from the frontend 
   }): Promise<FilteredData> {
     // Get full repository data from db
-  const repo: SerializableRepoData = await Meteor.callAsync('repoCollection.getData', repoUrl);
-  console.log("repoCollection.getData:", repo);
-  console.log("repoCollection.getData -> check a commit:", repo.allCommits[0].value);
-  console.log("checking type of commits,  contributors: ", typeof repo.allCommits, typeof repo.contributors);
+    const repo: SerializableRepoData = await Meteor.callAsync(
+      "repoCollection.getData",
+      repoUrl
+    );
+
     // Apply filtering
-  const filteredData = getFilteredRepoDataServer(
-    repo,
-    branch,
-    contributor,
-    daysBack
-  );
-    console.log("CHECKING Filtered Data!!!!:", filteredData);
+    const filteredData = getFilteredRepoDataServer(
+      repo,
+      branch,
+      contributor,
+      daysBack
+    );
     return filteredData;
+  },
+
+  async "repo.getMetadata"(repoUrl: string): Promise<AnalyticsData["metadata"]> {
+    // Get full repository data from db
+    const repo: SerializableRepoData = await Meteor.callAsync(
+      "repoCollection.getData",
+      repoUrl
+    );
+
+    return {
+      repoUrl: repo.repoUrl,
+      branch: repo.defaultBranch,
+      repoName: repo.repoName,
+      branches: repo.branches.map(b => b.branchName),
+      contributors: repo.contributors.map(c => c.key),
+      dateRange: {
+        start: new Date(Math.min(...repo.allCommits.map(c => new Date(c.value.timestamp).getTime()))),
+        end: new Date(Math.max(...repo.allCommits.map(c => new Date(c.value.timestamp).getTime()))),
+      },
+    };
+  },
+
+  async "repo.getAnalyticsData"({
+    repoUrl,
+    startDate,
+    endDate,
+    branch,
+    contributors,
+  }: {
+    repoUrl: string;
+    startDate?: Date;
+    endDate?: Date;
+    branch?: string;
+    contributors?: string[];
+  }): Promise<AnalyticsData> {
+
+    /**
+     * Get Repo Metadata first (contributors, branches, date range) etc
+     * 
+     * Then get the filtered data depending on the parameters that have been passed
+     * 
+     * Run our metrics functions on the filtered data
+     * 
+     * Return the full AnalyticsData structure
+     */
+
+    const filteredRepo: FilteredData = await Meteor.callAsync(
+      "repo.getFilteredData", 
+      {
+        repoUrl,
+      }
+    );
+
+    const data: AnalyticsData;
+
+    return data;
+
   },
 });
