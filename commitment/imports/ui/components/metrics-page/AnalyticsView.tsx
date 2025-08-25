@@ -50,11 +50,10 @@ export function AnalyticsView(): React.JSX.Element {
       (err: Error, data: AnalyticsData) => {
         if (err) {
           setError(err.message);
-          setLoading(false);
         } else {
           setMetricsData(data);
-          setLoading(false);
         }
+        setLoading(false);
       }
     );
   };
