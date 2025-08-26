@@ -151,8 +151,23 @@ export async function highlightTotalLinesOfCode(data: FilteredData):Promise<High
   };
 }
 
+/**
+ * Returns the number of contributors in the repository for the highlight card.
+ * @param data Filtered Repository Data
+ * @returns Highlighted number of contributors information
+ */
+export function numContributors(data: FilteredData): number {
+  return data.repositoryData.contributors.length;
+}
 
-
+/**
+ * Returns the number of branches in the repository for the highlight card.
+ * @param data Filtered Repository Data
+ * @returns Highlighted number of branches information
+ */
+export function numBranches(data: FilteredData): number {
+  return data.repositoryData.branches.length;
+}
 
 // ------------------------- COMMENTING OUT ORIGINAL REPO_METRICS INFO ---------
 
