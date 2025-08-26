@@ -1,8 +1,11 @@
 // server/repo_metrics.ts
 
+import { get } from "http";
 import { RepositoryData, CommitData, SerializableRepoData, FilteredData } from "../imports/api/types";
 import { serializeRepoData } from "/imports/api/serialisation";
 import { Meteor } from "meteor/meteor";
+
+// ------------------ DATA STRUCTURES TO USE ------------------------
 interface HighlightStruct{
   total: number;
   percentageChange: number;
@@ -10,11 +13,26 @@ interface HighlightStruct{
   data: { value: number }[];
 }
 
+interface LeaderboardData{
+  name: string; 
+  commits: number; 
+}
+
+interface LineGraphData{
+  date: string; "YYYY-MM-DD"
+  [contributor: string]: number; // e.g. { Alice: 120, Bob: 95 }
+}
+
+interface PieChartData{
+  user: string; 
+  contributions: number; 
+  fill: string; // color
+}
 
 // storing a global access unfiltered data here
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
 
-// -------- THIS FUNCTION NEEDS TO BE CALLED FIRST
+// -------- THIS FUNCTION NEEDS TO BE CALLED FIRST ----- make it a meteor call method ? 
 export function getAllMetrics(data:FilteredData){
   // set the unfiltered data we will use for all other metrics
   setsUnfilteredData(data.repoUrl);
@@ -84,6 +102,9 @@ async function percentageCommitChange(startDate:Date, repoUrl:string, data: Seri
 
 }
 
+export function getTotalCommits(data: SerializableRepoData): number {
+  return data.allCommits.length;
+}
 
 /**
  * Returns the total commits in a repository for a highlight card. 
@@ -92,7 +113,7 @@ async function percentageCommitChange(startDate:Date, repoUrl:string, data: Seri
  */
 export async function highlightTotalCommits(data: FilteredData): Promise<HighlightStruct> {
   const repoData = data.repositoryData
-  const totalCommits = repoData.allCommits.length;
+  const totalCommits = getTotalCommits(repoData);
 
   // calculate percentage change
   const pChange = await percentageCommitChange(data.dateRange.start, data.repoUrl, repoData);
@@ -167,6 +188,26 @@ export function numContributors(data: FilteredData): number {
  */
 export function numBranches(data: FilteredData): number {
   return data.repositoryData.branches.length;
+}
+
+/**
+ * Returns the leaderboard data for contributors in the repository.
+ * @param data Filtered Repository Data
+ * @returns Leaderboard data for contributors
+ */
+export function leaderboardData(data: FilteredData): LeaderboardData[] {
+  const counts: Record<string, number> = {};
+  const repoData = data.repositoryData;
+
+  // count commits per contributor 
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    counts[user] = (counts[user] ?? 0) + 1;
+  });
+
+  const leaderboard: LeaderboardData[] = Object.entries(counts).map(([name, commits]) => ({ name, commits }));
+  
+  return leaderboard;
 }
 
 // ------------------------- COMMENTING OUT ORIGINAL REPO_METRICS INFO ---------
