@@ -1,7 +1,7 @@
 // server/repo_metrics.ts
 
 import { get } from "http";
-import { RepositoryData, CommitData, SerializableRepoData, FilteredData } from "../imports/api/types";
+import { RepositoryData, CommitData, SerializableRepoData, FilteredData, AnalyticsData } from "../imports/api/types";
 import { serializeRepoData } from "/imports/api/serialisation";
 import { Meteor } from "meteor/meteor";
 
@@ -29,13 +29,63 @@ interface PieChartData{
   // fill: string; // color
 }
 
+interface MetricsData{
+  highlights: {
+    totalCommits: {
+      total: number;
+      percentageChange: number;
+      isPositive: boolean;
+      data: { value: number }[];
+    };
+    totalLinesOfCode: {
+      total: number;
+      percentageChange: number;
+      isPositive: boolean;
+      data: { value: number }[];
+    };
+    numContributors: number;
+    numBranches: number;
+  };
+
+  contributors: {
+    leaderboard: {
+      name: string;
+      commits: number;
+    }[];
+    lineGraph: {
+      date: string; // "YYYY-MM-DD"
+      [contributor: string]: number|string; // e.g. { Alice: 120, Bob: 95 }
+    }[];
+    pieChart?: {
+      user: string;
+      contributions: number;
+      // fill: string; // color. - idk how i feel about the colours being here 
+    }[];
+  };
+}
+
 // storing a global access unfiltered data here
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
 
 // -------- THIS FUNCTION NEEDS TO BE CALLED FIRST ----- make it a meteor call method ? 
-export function getAllMetrics(data:FilteredData){
+export async function getAllMetrics(data:FilteredData):Promise<MetricsData>{
   // set the unfiltered data we will use for all other metrics
   setsUnfilteredData(data.repoUrl);
+  
+  // get all the metrics based on the AnalyticsData structure
+  return {
+    highlights: {
+      totalCommits: await highlightTotalCommits(data),
+      totalLinesOfCode: await highlightTotalLinesOfCode(data),
+      numContributors: numContributors(data),
+      numBranches: numBranches(data),
+    },
+    contributors: {
+      leaderboard: leaderboardData(data),
+      lineGraph: lineGraphData(data),
+      pieChart: pieChartData(data),
+    },
+  };
 }
 
 /**

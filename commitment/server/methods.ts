@@ -6,6 +6,7 @@ import {
   AnalyticsData,
 } from "/imports/api/types";
 import { start } from "repl";
+import { getAllMetrics } from "./repo_metrics";
 
 Meteor.methods({
   /**
@@ -130,7 +131,7 @@ Meteor.methods({
 
     // NOW WE DO STUFF WITH THE FILTERED REPO TO GET METRICS
     const data: AnalyticsData;
-
+    
     return data;
   },
 });
