@@ -128,12 +128,12 @@ export interface AnalyticsData {
     }[];
     lineGraph: {
       date: string; // "YYYY-MM-DD"
-      [contributor: string]: number; // e.g. { Alice: 120, Bob: 95 }
+      [contributor: string]: number|string; // e.g. { Alice: 120, Bob: 95 }
     }[];
     pieChart?: {
       user: string;
       contributions: number;
-      fill: string; // color
+      // fill: string; // color. - idk how i feel about the colours being here 
     }[];
   };
 }
