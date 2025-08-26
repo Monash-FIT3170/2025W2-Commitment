@@ -1,51 +1,96 @@
 // server/repo_metrics.ts
 
-import { RepositoryData, CommitData, SerializableRepoData } from "../imports/api/types";
+import { RepositoryData, CommitData, SerializableRepoData, FilteredData } from "../imports/api/types";
 import { serializeRepoData } from "/imports/api/serialisation";
-
+import { Meteor } from "meteor/meteor";
 interface HighlightTotalCommits{
   total: number;
   percentageChange: number;
   isPositive: boolean;
   data: { value: number }[];
 }
-
-
-/** Branch names */
-export function getBranches(data: SerializableRepoData): string[] {
-  return data.branches.map((b) => b.branchName);
+/**
+ * Fetch unfiltered repository data from the database.
+ * @param repoUrl The URL of the repository.
+ * @returns A promise that resolves to the unfiltered repository data.
+ */
+export function getUnfilteredData(repoUrl:string): Promise<SerializableRepoData> {
+  // implementation of fetched repo data from the database
+  return Meteor.callAsync("repoCollection.getData", repoUrl);
 }
 
-/** Contributors (from RepositoryData.contributors map) */
-export function getContributors(data: SerializableRepoData): string[] {
-  return Array.from(data.contributors.values()).map((c) => c.name);
+/** Branch names
+ * @param data Repository Data
+ * @returns Array of branch names
+ */
+export function getBranches(data: FilteredData): string[] {
+  return data.repositoryData.branches.map((b) => b.branchName);
+}
+
+/** Contributors (from RepositoryData.contributors map)
+ * @param data Repository Data
+ * @returns Array of contributor names
+ */
+export function getContributors(data: FilteredData): string[] {
+  return data.repositoryData.contributors.map((c) => c.value.name);
 }
 
 /**
- * 
+ * Get the repository name.
  * @param data Repository Data
  * @returns String of the repo name 
  */
-export function getRepoName(data: SerializableRepoData): string {
-  return data.name;
+export function getRepoName(data: FilteredData): string {
+  return data.repositoryData.name;
 }
+/**
+ * Get the percentage change of commits in a repository.
+ * @param startDate The start date for the comparison.
+ * @param repoUrl The URL of the repository.
+ * @param data The filtered repository data.
+ * @returns The percentage change of commits.
+ */
+async function percentageCommitChange(startDate:Date, repoUrl:string, data: SerializableRepoData): Promise<number> {
 
-export function highlightTotalCommits(data: SerializableRepoData): HighlightTotalCommits {
-  
-  const totalCommits = data.allCommits.length;
-  // Neeed to determine this 
-  const percentageChange = 0 ; // to change later
-  const isPositive = true; // to change later
+  // get original data
+  const unfilteredData = await getUnfilteredData(repoUrl);
 
-  const commitsData = data.allCommits.map(({ value }) => ({ value: 1 })); // each commit counts as 1
+  // get the length of commits from the beginning up until the start date
+  const prevCommits = unfilteredData.allCommits.filter((c) => new Date(c.value.timestamp).getTime() < startDate.getTime()).length;
+  // get the length of commits in the filtered data 
+  const currentCommits = data.allCommits.length;
+
+  // calculate the percentage change 
+  const pChange = ((currentCommits - prevCommits) / (prevCommits)) * 100;
+
+  return pChange;
+
+}
+/**
+ * Highlight total commits in the repository.
+ * @param data Filtered Repository Data
+ * @returns Highlighted total commits information
+ */
+export async function highlightTotalCommits(data: FilteredData): Promise<HighlightTotalCommits> {
+  const repoData = data.repositoryData
+  const totalCommits = repoData.allCommits.length;
+
+  // calculate percentage change
+  const pChange = await percentageCommitChange(data.dateRange.start, data.repoUrl, repoData);
+  const isPositive = pChange > 0;
+
+  const commitsData = repoData.allCommits.map(({ value }) => ({ value: 1 })); // each commit counts as 1
 
   return {
     total: totalCommits,
-    percentageChange,
+    percentageChange: pChange,
     isPositive,
     data: commitsData
   };
 }
+
+
+
 
 // ------------------------- COMMENTING OUT ORIGINAL REPO_METRICS INFO ---------
 
