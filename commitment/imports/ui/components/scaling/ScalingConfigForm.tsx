@@ -16,11 +16,14 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
-import { useLocation } from "react-router-dom";
-import { DateRange } from "react-day-picker";
 import { scaleUsers } from "./ScalingFunctions";
-import { RepositoryData, FilteredData } from "/imports/api/types";
+import {
+  RepositoryData,
+  FilteredData,
+  UserScalingSummary,
+} from "/imports/api/types";
 import { deserializeRepoData } from "/imports/api/serialisation";
+import { useLocation } from "react-router-dom";
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
@@ -28,20 +31,21 @@ const scalingConfigSchema = z.object({
   customScript: z.any().optional(),
 });
 
-type ScalingConfig = z.infer<typeof scalingConfigSchema>;
+export type ScalingConfig = z.infer<typeof scalingConfigSchema>;
 
-function ScalingConfigForm({
-  onSubmit,
-}: {
-  onSubmit: (config: ScalingConfig) => void;
-}) {
+interface ScalingConfigFormProps {
+  onSubmit: (
+    config: ScalingConfig,
+    scaledResults: UserScalingSummary[]
+  ) => void;
+}
+
+function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
-  const repoUrl: string | null =
-    "https://github.com/AmyTjea/test_repo_for_3170";
+  const repoUrl: string | null = location.state?.repoUrl ?? null;
 
   const [script, setScript] = useState<File[] | undefined>();
   const [metricsData, setMetricsData] = useState<RepositoryData | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [selectedBranch, setSelectedBranch] = useState<string | undefined>();
   const [selectedContributors, setSelectedContributors] = useState<string[]>(
     []
@@ -57,10 +61,7 @@ function ScalingConfigForm({
     },
   });
 
-  const handleDrop = (files: File[]) => {
-    console.log(files);
-    setScript(files);
-  };
+  const handleDrop = (files: File[]) => setScript(files);
 
   const fetchAnalyticsData = useCallback(() => {
     if (!repoUrl) return;
@@ -86,12 +87,7 @@ function ScalingConfigForm({
           filtered.repositoryData
         );
         console.log("AFTER DESERIALIZE", repoData.allCommits);
-
         setMetricsData(repoData);
-        setDateRange({
-          from: filtered.dateRange.start,
-          to: filtered.dateRange.end,
-        });
         setLoading(false);
       }
     );
@@ -102,13 +98,34 @@ function ScalingConfigForm({
   }, [fetchAnalyticsData]);
 
   const handleSubmit = (data: ScalingConfig) => {
-    if (metricsData) {
-      console.log("Scaled results:", metricsData);
-      const result = scaleUsers(metricsData, data);
-      console.log("Scaled results:", result);
+    if (!metricsData) {
+      onSubmit(data, []);
+      return;
     }
 
-    onSubmit(data);
+    const rawResults = scaleUsers(metricsData, data);
+
+    const userScalingSummaries: UserScalingSummary[] = rawResults.map(
+      (r: any) => {
+        // Look up contributor emails
+        const contributorData = metricsData.contributors.get(r.name);
+
+        const aliases = contributorData
+          ? contributorData.emails.map((email) => ({ username: r.name, email }))
+          : [];
+
+        return {
+          name: r.name,
+          aliases,
+          finalGrade: null, // initially null, will populate if grading sheet exists
+          scale: r.score ?? 0,
+        };
+      }
+    );
+
+    console.log("Scaled results mapped:", userScalingSummaries);
+
+    onSubmit(data, userScalingSummaries);
   };
 
   const metricOptions = [
@@ -126,10 +143,6 @@ function ScalingConfigForm({
 
   return (
     <div className="w-full">
-      <div className="absolute top-2 left-2 flex space-x-1">
-        <span className="w-2 h-2 rounded-full bg-[#F1502F]/50" />
-        <span className="w-2 h-2 rounded-full bg-[#F1502F]/30" />
-      </div>
       <Form {...form}>
         <div className="text-2xl font-bold mb-4 text-center">
           Generate Scaling
@@ -142,8 +155,7 @@ function ScalingConfigForm({
             render={() => (
               <FormItem>
                 <FormLabel className="font-bold justify-center">
-                  Select scaling metrics
-                  <span className="text-red-500">*</span>
+                  Select scaling metrics<span className="text-red-500">*</span>
                 </FormLabel>
                 <div className="flex flex-col gap-2">
                   {metricOptions.map((metric) => (
@@ -158,11 +170,11 @@ function ScalingConfigForm({
                               checked={field.value?.includes(metric)}
                               onCheckedChange={(checked) => {
                                 const value = field.value || [];
-                                return checked
-                                  ? field.onChange([...value, metric])
-                                  : field.onChange(
-                                      value.filter((v) => v !== metric)
-                                    );
+                                field.onChange(
+                                  checked
+                                    ? [...value, metric]
+                                    : value.filter((v) => v !== metric)
+                                );
                               }}
                             />
                           </FormControl>
@@ -186,8 +198,7 @@ function ScalingConfigForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-bold justify-center">
-                  Select a scaling method
-                  <span className="text-red-500">*</span>
+                  Select a scaling method<span className="text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
                   <RadioGroup
@@ -260,7 +271,6 @@ function ScalingConfigForm({
             )}
           />
 
-          {/* NEXT BUTTON */}
           <div className="flex justify-center">
             <Button
               type="submit"

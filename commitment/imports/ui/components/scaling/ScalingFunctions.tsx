@@ -8,7 +8,9 @@ const USER_DATA_METRICS = [
   "Commits per day",
 ];
 
-function normalizeMetric(values: number[], alpha = 0.1): number[] {
+function normalizeMetric(values: number[], alpha = 0.3): number[] {
+  //alpha determines leniancy - smooths out values
+  
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
   const rangeVal = maxVal !== minVal ? maxVal - minVal : 1;
@@ -76,8 +78,9 @@ export function scaleUsers(
 
   return users.map(([name], i) => {
     const userScores = metricsValues.map((mv) => mv[i]);
-    let score: number;
+    console.log(`User: ${name}, metric scores:`, userScores);
 
+    let score: number;
     if (method === "Percentiles") {
       score = userScores.reduce((a, b) => a + b, 0) / userScores.length;
     } else if (method === "Mean +/- Std") {
@@ -86,7 +89,7 @@ export function scaleUsers(
         userScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) /
           userScores.length
       );
-      score = Math.min(Math.max(mean + std, 0.0), 1.0);
+      score = mean + std; // do not clamp between 0-1 yet
     } else if (method === "Quartiles") {
       const sorted = [...userScores].sort((a, b) => a - b);
       const mid = Math.floor(sorted.length / 2);
@@ -97,6 +100,13 @@ export function scaleUsers(
     } else {
       score = userScores.reduce((a, b) => a + b, 0) / userScores.length;
     }
+
+    // console.log("Users:", users);
+    // console.log("Selected metric indices:", metricIndices);
+    // console.log("Normalized values:", metricsValues);
+
+    // Round to 2 decimals, but avoid rounding to 0 for small scores
+    console.log(`Final score for ${name}:`, score);
 
     return { name, score: Math.round(score * 100) / 100 };
   });
