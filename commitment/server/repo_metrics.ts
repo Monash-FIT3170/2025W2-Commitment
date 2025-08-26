@@ -19,14 +19,14 @@ interface LeaderboardData{
 }
 
 interface LineGraphData{
-  date: string; "YYYY-MM-DD"
-  [contributor: string]: number; // e.g. { Alice: 120, Bob: 95 }
+  date: string;
+  [contributor: string]: number|string; // e.g. { Alice: 120, Bob: 95 }
 }
 
 interface PieChartData{
   user: string; 
   contributions: number; 
-  fill: string; // color
+  // fill: string; // color
 }
 
 // storing a global access unfiltered data here
@@ -210,7 +210,38 @@ export function leaderboardData(data: FilteredData): LeaderboardData[] {
   return leaderboard;
 }
 
+export function lineGraphData(data: FilteredData): LineGraphData[] {
+  // check this as written with the asisstance of AI
+  const byDate = new Map<string, Record<string, number>>();
+  const repoData = data.repositoryData;
+
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+
+    if (!byDate.has(date)) byDate.set(date, {});
+    const bucket = byDate.get(date)!;
+    bucket[user] = (bucket[user] ?? 0) + 1;
+  });
+
+  const dataArray: LineGraphData[] = Array.from(byDate.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, userCommits]) => ({ date, ...userCommits }));
+
+  return dataArray;
+}
+
+export function pieChartData(data: FilteredData): PieChartData[] {
+  return leaderboardData(data).map((contributor, index) => ({
+    user: contributor.name,
+    contributions: contributor.commits,
+  }));
+}
+
+
+
 // ------------------------- COMMENTING OUT ORIGINAL REPO_METRICS INFO ---------
+
 
 // /**
 //  * Count “LOC changed” for a commit.
