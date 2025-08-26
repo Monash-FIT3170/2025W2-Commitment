@@ -3,21 +3,38 @@
 import { RepositoryData, CommitData, SerializableRepoData, FilteredData } from "../imports/api/types";
 import { serializeRepoData } from "/imports/api/serialisation";
 import { Meteor } from "meteor/meteor";
-interface HighlightTotalCommits{
+interface HighlightStruct{
   total: number;
   percentageChange: number;
   isPositive: boolean;
   data: { value: number }[];
 }
+
+
+// storing a global access unfiltered data here
+let unfilteredRepoData = {} as Promise<SerializableRepoData>;
+
+// -------- THIS FUNCTION NEEDS TO BE CALLED FIRST
+export function getAllMetrics(data:FilteredData){
+  // set the unfiltered data we will use for all other metrics
+  setsUnfilteredData(data.repoUrl);
+}
+
 /**
  * Fetch unfiltered repository data from the database.
  * @param repoUrl The URL of the repository.
  * @returns A promise that resolves to the unfiltered repository data.
  */
-export function getUnfilteredData(repoUrl:string): Promise<SerializableRepoData> {
+export function setsUnfilteredData(repoUrl:string){
   // implementation of fetched repo data from the database
-  return Meteor.callAsync("repoCollection.getData", repoUrl);
+  // set global variable: 
+  unfilteredRepoData = Meteor.callAsync("repoCollection.getData", repoUrl);
 }
+
+export function getUnfilteredData(): Promise<SerializableRepoData> {
+  return unfilteredRepoData;
+}
+
 
 /** Branch names
  * @param data Repository Data
@@ -53,7 +70,7 @@ export function getRepoName(data: FilteredData): string {
 async function percentageCommitChange(startDate:Date, repoUrl:string, data: SerializableRepoData): Promise<number> {
 
   // get original data
-  const unfilteredData = await getUnfilteredData(repoUrl);
+  const unfilteredData = await getUnfilteredData();
 
   // get the length of commits from the beginning up until the start date
   const prevCommits = unfilteredData.allCommits.filter((c) => new Date(c.value.timestamp).getTime() < startDate.getTime()).length;
@@ -66,26 +83,71 @@ async function percentageCommitChange(startDate:Date, repoUrl:string, data: Seri
   return pChange;
 
 }
+
+
 /**
- * Highlight total commits in the repository.
+ * Returns the total commits in a repository for a highlight card. 
  * @param data Filtered Repository Data
  * @returns Highlighted total commits information
  */
-export async function highlightTotalCommits(data: FilteredData): Promise<HighlightTotalCommits> {
+export async function highlightTotalCommits(data: FilteredData): Promise<HighlightStruct> {
   const repoData = data.repositoryData
   const totalCommits = repoData.allCommits.length;
 
   // calculate percentage change
   const pChange = await percentageCommitChange(data.dateRange.start, data.repoUrl, repoData);
-  const isPositive = pChange > 0;
+  
 
   const commitsData = repoData.allCommits.map(({ value }) => ({ value: 1 })); // each commit counts as 1
 
   return {
     total: totalCommits,
     percentageChange: pChange,
-    isPositive,
+    isPositive: pChange > 0,
     data: commitsData
+  };
+}
+
+/**
+ * Get the total number of files changed in a repository.
+ * @param repoData The repository data.
+ * @returns The total number of files changed.
+ */
+export function getTotalFilesChanged(repoData: SerializableRepoData):number {
+  return repoData.allCommits.reduce<number>((sum, commit) => {
+    const numFiles =commit.value.fileData.length;
+    return numFiles + sum;
+  }, 0);
+}
+
+/**
+ * Returns the total lines of code(total files changed) in the repository for the highlight card. 
+ * @param data Filtered Repository Data
+ * @returns Highlighted total lines of code information
+ */
+export async function highlightTotalLinesOfCode(data: FilteredData):Promise<HighlightStruct>{
+  const repoData = data.repositoryData;
+  
+  // number of files changed 
+  const currentFiles = getTotalFilesChanged(repoData);
+  const unfilteredData = await getUnfilteredData(); 
+
+  const prevFiles = getTotalFilesChanged({
+    ...unfilteredData, 
+    allCommits: unfilteredData.allCommits.filter(
+      (c) => new Date(c.value.timestamp).getTime() < data.dateRange.start.getTime()
+    ),
+  });
+  
+  // calculate percentage change 
+  const percentageChange =
+    prevFiles === 0 ? 100 : ((currentFiles - prevFiles) / prevFiles) * 100;
+
+  return {
+    total: currentFiles,
+    percentageChange,
+    isPositive: percentageChange > 0,
+    data: repoData.allCommits.map((c) => ({ value: c.value.fileData.length })),
   };
 }
 
