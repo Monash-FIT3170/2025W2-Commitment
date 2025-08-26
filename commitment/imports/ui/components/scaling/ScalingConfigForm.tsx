@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect, useCallback } from "react";
+import { Meteor } from "meteor/meteor";
 import {
   Form,
   FormField,
@@ -16,6 +16,11 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
+import { useLocation } from "react-router-dom";
+import { DateRange } from "react-day-picker";
+import { scaleUsers } from "./ScalingFunctions";
+import { RepositoryData, FilteredData } from "/imports/api/types";
+import { deserializeRepoData } from "/imports/api/serialisation";
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
@@ -30,7 +35,19 @@ function ScalingConfigForm({
 }: {
   onSubmit: (config: ScalingConfig) => void;
 }) {
+  const location = useLocation();
+  const repoUrl: string | null =
+    "https://github.com/AmyTjea/test_repo_for_3170";
+
   const [script, setScript] = useState<File[] | undefined>();
+  const [metricsData, setMetricsData] = useState<RepositoryData | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [selectedBranch, setSelectedBranch] = useState<string | undefined>();
+  const [selectedContributors, setSelectedContributors] = useState<string[]>(
+    []
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
@@ -40,13 +57,57 @@ function ScalingConfigForm({
     },
   });
 
-  // Handle drop of files in the dropzone
   const handleDrop = (files: File[]) => {
     console.log(files);
     setScript(files);
   };
 
+  const fetchAnalyticsData = useCallback(() => {
+    if (!repoUrl) return;
+
+    setLoading(true);
+    setError(null);
+
+    Meteor.call(
+      "repo.getFilteredData",
+      {
+        daysBack: 1000,
+        repoUrl,
+        branch: selectedBranch ?? "main",
+        contributors: selectedContributors,
+      },
+      (err: Error, filtered: FilteredData) => {
+        if (err) {
+          setError(err.message);
+          setLoading(false);
+          return;
+        }
+        const repoData: RepositoryData = deserializeRepoData(
+          filtered.repositoryData
+        );
+        console.log("AFTER DESERIALIZE", repoData.allCommits);
+
+        setMetricsData(repoData);
+        setDateRange({
+          from: filtered.dateRange.start,
+          to: filtered.dateRange.end,
+        });
+        setLoading(false);
+      }
+    );
+  }, [repoUrl, selectedBranch, selectedContributors]);
+
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [fetchAnalyticsData]);
+
   const handleSubmit = (data: ScalingConfig) => {
+    if (metricsData) {
+      console.log("Scaled results:", metricsData);
+      const result = scaleUsers(metricsData, data);
+      console.log("Scaled results:", result);
+    }
+
     onSubmit(data);
   };
 
@@ -57,8 +118,11 @@ function ScalingConfigForm({
     "LOC per commit",
     "Commits per day",
   ];
-
   const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
+
+  if (loading) return <div>Loading repo data...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!metricsData) return <div>No repo data available</div>;
 
   return (
     <div className="w-full">
@@ -88,10 +152,7 @@ function ScalingConfigForm({
                       control={form.control}
                       name="metrics"
                       render={({ field }) => (
-                        <FormItem
-                          key={metric}
-                          className="flex items-center space-x-2"
-                        >
+                        <FormItem className="flex items-center space-x-2">
                           <FormControl>
                             <Checkbox
                               checked={field.value?.includes(metric)}
@@ -127,7 +188,7 @@ function ScalingConfigForm({
                 <FormLabel className="font-bold justify-center">
                   Select a scaling method
                   <span className="text-red-500">*</span>
-                </FormLabel>{" "}
+                </FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
