@@ -15,6 +15,7 @@ import {
  * @param filteredContributorName Contributor to filter (optional)
  */
 export const getFilteredRepoDataServer = (
+  repoUrl: string,
   start: Date,
   end: Date,
   repo: SerializableRepoData,
@@ -55,6 +56,7 @@ export const getFilteredRepoDataServer = (
   console.log("Filtered Repo Data in FILTER FUNC!!!:", filteredRepo);
 
   return {
+    repoUrl: repoUrl,
     dateRange: { start, end },
     repositoryData: filteredRepo,
   };

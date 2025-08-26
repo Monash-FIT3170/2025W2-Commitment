@@ -17,6 +17,7 @@ export type SerializableRepoData = Readonly<{
   contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
 }>;
 export interface FilteredData {
+  repoUrl: string; 
   dateRange: {
     start: Date;
     end: Date;

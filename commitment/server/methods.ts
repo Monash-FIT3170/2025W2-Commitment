@@ -36,6 +36,7 @@ Meteor.methods({
 
     // Apply filtering
     const filteredData = getFilteredRepoDataServer(
+      repoUrl,
       startDate,
       endDate,
       repo,
