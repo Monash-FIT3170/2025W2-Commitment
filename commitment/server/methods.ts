@@ -5,6 +5,7 @@ import {
   FilteredData,
   AnalyticsData,
   Metadata,
+  MetricsData,
 } from "/imports/api/types";
 import { start } from "repl";
 import { getAllMetrics } from "./repo_metrics";
@@ -68,11 +69,7 @@ Meteor.methods({
             ...repo.allCommits.map((c) => new Date(c.value.timestamp).getTime())
           )
         ),
-        end: new Date(
-          Math.max(
-            ...repo.allCommits.map((c) => new Date(c.value.timestamp).getTime())
-          )
-        ),
+        end: new Date(),
       },
     };
   },
@@ -129,9 +126,11 @@ Meteor.methods({
       }
     );
 
+    const metricsData: MetricsData = getAllMetrics(filteredRepo);
+
     // NOW WE DO STUFF WITH THE FILTERED REPO TO GET METRICS
-    const data: AnalyticsData;
+    const returnData: AnalyticsData = { metadata, metrics: metricsData };
     
-    return data;
+    return returnData;
   },
 });
