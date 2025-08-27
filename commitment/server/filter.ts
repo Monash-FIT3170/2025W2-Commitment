@@ -17,12 +17,14 @@ export const getFilteredRepoDataServer = (
   start: Date,
   end: Date,
   repo: SerializableRepoData,
-  filteredBranchName?: string,
-  filteredContributorNames?: string[]
+  filteredBranchName: string,
+  filteredContributorNames: string[]
 ): FilteredData => {
   // Find the branch
 
-  console.log("Who are we meant to be filtering out?", filteredContributorNames)
+  console.log("Who are we meant to be filtering out?", filteredContributorNames, typeof filteredContributorNames)
+  console.log("Who are we meant to be filtering out?", filteredBranchName, typeof filteredBranchName)
+  console.log("Who are we meant to be filtering out?", start, end, typeof start, typeof end)
 
   const filterBranch = repo.branches.find(
     (b) => b.branchName === filteredBranchName
