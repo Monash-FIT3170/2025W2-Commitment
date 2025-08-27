@@ -35,6 +35,33 @@ export function AnalyticsView(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Initial fetch only once
+  useEffect(() => {
+    if (!repoUrl) return;
+
+    Meteor.call(
+      "repo.getAnalyticsData",
+      {
+        repoUrl,
+        startDate: dateRange?.from,
+        endDate: dateRange?.to,
+        branch: selectedBranch,
+        contributors: selectedContributors,
+      },
+      (err: Error, data: AnalyticsData) => {
+        if (err) {
+          setError(err.message);
+        } else {
+          setAnalyticsData(data);
+          setSelectedContributors(data.selections.selectedContributors);
+          setSelectedBranch(data.selections.selectedBranch);
+          setDateRange(data.selections.selectedDateRange);
+        }
+        setLoading(false);
+      }
+    );
+  }, [repoUrl]); // only runs once on mount
+
   const fetchAnalyticsData = React.useCallback(() => {
     if (!repoUrl) return;
 
@@ -131,7 +158,9 @@ export function AnalyticsView(): React.JSX.Element {
               percentageChange={
                 analytics.metrics.highlights.totalLinesOfCode.percentageChange
               }
-              isPositive={analytics.metrics.highlights.totalLinesOfCode.isPositive}
+              isPositive={
+                analytics.metrics.highlights.totalLinesOfCode.isPositive
+              }
               data={analytics.metrics.highlights.totalLinesOfCode.data}
             />
             <HighlightCardWithGraph

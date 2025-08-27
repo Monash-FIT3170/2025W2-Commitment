@@ -1,3 +1,5 @@
+import { DateRange } from "react-day-picker";
+
 export type RepositoryData = Readonly<{
   name: string;
   branches: BranchData[];
@@ -93,14 +95,7 @@ export interface Metadata {
   repoName: string;
   branches: string[];
   contributors: string[];
-  dateRange: {
-    start: Date;
-    end: Date;
-  };
-  filterRange?: {
-    start: Date;
-    end: Date;
-  };
+  dateRange: DateRange
 }
 
 export interface HighlightStruct {
@@ -144,6 +139,7 @@ export interface MetricsData {
 export interface Selections {
   selectedBranch: string;
   selectedContributors: string[];
+  selectedDateRange: DateRange;
 }
 
 export interface AnalyticsData {

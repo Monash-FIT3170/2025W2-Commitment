@@ -1,4 +1,3 @@
-import { get } from "http";
 import {
   MetricsData,
   SerializableRepoData,
@@ -9,6 +8,7 @@ import {
   PieChartData,
 } from "../imports/api/types";
 import { Meteor } from "meteor/meteor";
+import { serializeRepoData } from "/imports/api/serialisation";
 
 // storing a global access unfiltered data here
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
@@ -43,7 +43,7 @@ export async function getAllMetrics(data: FilteredData): Promise<MetricsData> {
  * @param repoUrl The URL of the repository.
  * @returns A promise that resolves to the unfiltered repository data.
  */
-export function setsUnfilteredData(repoUrl: string) {
+export function setsUnfilteredData(repoUrl: string): void {
   // implementation of fetched repo data from the database
   // set global variable:
   unfilteredRepoData = Meteor.callAsync("repoCollection.getData", repoUrl);
@@ -332,7 +332,7 @@ export function lineGraphData(data: FilteredData): LineGraphData[] {
 }
 
 /**
- *
+ * TODO: once we fix piechart
  * @param data
  * @returns
  */

@@ -24,7 +24,7 @@ Meteor.methods({
     startDate,
     endDate,
     branch,
-    contributor,
+    contributor
   }: {
     repoUrl: string; // pass the URl from the frontend
     startDate: Date;
@@ -63,12 +63,12 @@ Meteor.methods({
       branches: repo.branches.map((b) => b.branchName),
       contributors: repo.contributors.map((c) => c.key),
       dateRange: {
-        start: new Date(
+        from: new Date(
           Math.min(
             ...repo.allCommits.map((c) => new Date(c.value.timestamp).getTime())
           )
         ),
-        end: new Date(),
+        to: new Date(),
       },
     };
   },
@@ -79,6 +79,7 @@ Meteor.methods({
     endDate,
     branch,
     contributors,
+    filteredData,
   }: {
     repoUrl: string;
     startDate?: Date;
@@ -102,12 +103,6 @@ Meteor.methods({
       repoUrl
     );
 
-    // Update metadata with filter date range
-    metadata.filterRange = {
-      start: startDate || metadata.dateRange.start,
-      end: endDate || metadata.dateRange.end,
-    };
-
     const selections: Selections = {
       selectedBranch:
         branch ??
@@ -116,19 +111,30 @@ Meteor.methods({
           : metadata.branches.includes("master")
           ? "master"
           : metadata.branches[0]),
-      selectedContributors: contributors || metadata.contributors,
+      selectedContributors:
+        !contributors || contributors.length === 0
+          ? metadata.contributors
+          : contributors,
+      selectedDateRange: {
+        from: startDate || metadata.dateRange.from,
+        to: endDate || metadata.dateRange.to,
+      },
     };
 
     const filteredRepo: FilteredData = await Meteor.callAsync(
       "repo.getFilteredData",
       {
         repoUrl,
-        startDate: metadata.filterRange.start,
-        endDate: metadata.filterRange.end,
+        startDate: selections.selectedDateRange.from,
+        endDate: selections.selectedDateRange.to,
         branch: selections.selectedBranch,
         contributors: selections.selectedContributors,
       }
     );
+
+    console.log("Filtered Repo Data:", filteredRepo);
+    console.log("Contributors:", filteredRepo.repositoryData.contributors);
+    console.log("Deeper look:", filteredRepo.repositoryData.allCommits);
 
     const metricsData: MetricsData = await getAllMetrics(filteredRepo);
 

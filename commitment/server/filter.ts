@@ -26,7 +26,27 @@ export const getFilteredRepoDataServer = (
   );
   const branchCommitHashes = new Set(filterBranch?.commitHashes ?? []);
 
-  // FILTER COMMITS → use the array, not repo.allCommits directly
+  // // FILTER COMMITS → use the array, not repo.allCommits directly
+  // const filteredCommits = repo.allCommits.filter(({ key, value }) => {
+  //   const commitDate = new Date(value.timestamp);
+  //   const isInBranchAndDate =
+  //     branchCommitHashes.has(key) && commitDate >= start && commitDate <= end;
+
+  //   const isCorrectContributor =
+  //     !filteredContributorNames ||
+  //     filteredContributorNames.includes(value.contributorName);
+
+  //   return isInBranchAndDate && isCorrectContributor;
+  // });
+
+  // // FILTER CONTRIBUTORS
+  // const filteredContributors = filteredContributorNames
+  //   ? repo.contributors.filter(({ key }) =>
+  //       filteredContributorNames.includes(key)
+  //     )
+  //   : repo.contributors;
+
+  // FILTER COMMITS
   const filteredCommits = repo.allCommits.filter(({ key, value }) => {
     const commitDate = new Date(value.timestamp);
     const isInBranchAndDate =
@@ -39,12 +59,14 @@ export const getFilteredRepoDataServer = (
     return isInBranchAndDate && isCorrectContributor;
   });
 
-  // FILTER CONTRIBUTORS
-  const filteredContributors = filteredContributorNames
-    ? repo.contributors.filter(({ key }) =>
-        filteredContributorNames.includes(key)
-      )
-    : repo.contributors;
+  // FILTER CONTRIBUTORS → derive from filteredCommits
+  const contributorNames = new Set(
+    filteredCommits.map(({ value }) => value.contributorName)
+  );
+
+  const filteredContributors = repo.contributors.filter(({ value }) =>
+    contributorNames.has(value.name ?? value.name)
+  );
 
   // RETURN serializable repo
   const filteredRepo: SerializableRepoData = {
