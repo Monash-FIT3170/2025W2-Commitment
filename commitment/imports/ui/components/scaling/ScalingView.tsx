@@ -13,7 +13,8 @@ import {
 import { Button } from "../ui/button";
 import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
-import type { UserScalingSummary } from "@server/commitment_api/types";
+import type { UserScalingSummary } from "../../../api/types";
+import type { GradingSheetRow } from "../utils/GradingSheetParser";
 
 interface ScalingConfig {
   metrics: string[];
@@ -30,11 +31,10 @@ function ScalingView() {
   const [showDialog, setShowDialog] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
+  const [parsedGradingData, setParsedGradingData] = useState<GradingSheetRow[] | null>(null);
 
   // Load from localStorage on first mount
   useEffect(() => {
-
-    // Grab from local storage first
     const lsCompleted = localStorage.getItem("hasVisitedScaling") === "true";
     setCompleted(lsCompleted);
     if (!lsCompleted) setShowDialog(true);
@@ -54,8 +54,11 @@ function ScalingView() {
     setStep("sheet");
   };
 
-  const handleSheetSubmit = (sheetFile: File) => {
-    setGradingSheet(sheetFile || null);
+  const handleSheetSubmit = (sheetFile: File, parsedData?: GradingSheetRow[]) => {
+    setGradingSheet(sheetFile);
+    setParsedGradingData(parsedData || null);
+    console.log("Grading sheet submitted:", parsedData);
+
     setCompleted(true);
     setShowDialog(false);
     setStep("done");

@@ -17,7 +17,7 @@ import Parsing
 
 import Control.Concurrent.STM
 import Control.Exception (catch, SomeException (SomeException), displayException, finally)
-import Data.List (sortBy)
+import Data.List (sortBy, isPrefixOf)
 import Data.Maybe (fromMaybe)
 import Data.Map.Strict ()
 import qualified Data.Map.Strict as Map
@@ -54,47 +54,47 @@ execAndParseAll notifier cwd cmds parser msg = passAllAsync commandPool parsingP
     cmds
 
 fetchDataFrom :: String -> TBQueue String -> IO (Either String RepositoryData)
-fetchDataFrom url notifier = do
-    workingDir <- getCurrentDirectory
-    let cloneRoot = workingDir </> "cloned-repos"
+fetchDataFrom url notifier = (do
+        workingDir <- getCurrentDirectory
+        let cloneRoot = workingDir </> "cloned-repos"
 
-    createDirectoryIfMissing True cloneRoot
-    emit notifier "Validating repo exists..."
+        awaitOutsideCloneDir <- createDirectoryIfMissing True cloneRoot
+        emit notifier "Validating repo exists..."
 
-    let execCmdInWorkingDir = execAndParse notifier workingDir
-    _ <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
+        let execCmdInWorkingDir = execAndParse notifier workingDir
+        _ <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
 
-    emit notifier "Found the repo!"
-    emit notifier "Formulating parsers..."
+        emit notifier "Found the repo!"
+        emit notifier "Formulating parsers..."
 
-    let repoNameFromUrl = lastSplit '/' url
-        repoRelativePath = "cloned-repos" </> repoNameFromUrl
-        repoAbsPath = workingDir </> repoRelativePath
+        let repoNameFromUrl = lastSplit '/' url
+            repoRelativePath = "cloned-repos" </> repoNameFromUrl
+            repoAbsPath = workingDir </> repoRelativePath
 
-    deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
-    createDirectoryIfMissing True repoAbsPath
+        awaitRepoDirDeletion <- deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
+        awaitCreateRepoDir   <- createDirectoryIfMissing True repoAbsPath
 
-    emit notifier "Cloning repo..."
-    assertSuccess <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
-        (\path -> successful <$> executeCommand notifier workingDir (cloneRepo url path))
-        repoAbsPath
-        )
-    emit notifier (show assertSuccess)
-
-    emit notifier "Getting repository data..."
-    let res = (do
-            repoData <- formulateRepoData url repoAbsPath notifier
-            emit notifier "Data processed!"
-            pure (Right repoData)
+        emit notifier "Cloning repo..."
+        assertSuccess <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
+            (\path -> successful <$> executeCommand notifier workingDir (cloneRepo url path))
+            repoAbsPath
             )
-            `catch` \(e :: SomeException) -> do
-                let errMsg = displayException e
-                emit notifier ("Error occurred:\n" ++ errMsg)
-                pure (Left $ show errMsg)
-            `finally` do
-                deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
 
-    res
+        emit notifier "Getting repository data..."
+        repoData <- formulateRepoData url repoAbsPath notifier
+        emit notifier "Data processed!"
+        pure (Right repoData)
+    )
+    `catch` \(e :: SomeException) -> do
+        let errMsg = displayException e
+        emit notifier ("Error occurred:\n" ++ errMsg)
+        pure (Left errMsg)
+    `finally` do
+        -- cleanup no matter what
+        workingDir <- getCurrentDirectory
+        let repoNameFromUrl = lastSplit '/' url
+            repoAbsPath     = workingDir </> "cloned-repos" </> repoNameFromUrl
+        deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
     
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
@@ -104,7 +104,9 @@ formulateRepoData _url path notifier = do
         execAll = execAndParseAll notifier path
 
     emit notifier "Searching for branch names..."
-    branchNames <- execCmd getBranches parseRepoBranches "Failed to parse git branch names"
+    collectedBranchNames <- execCmd getBranches parseRepoBranches "Failed to parse git branch names"
+    let uniqueBranchNames = unique $ map (replace "remotes/" "" . replace "origin/" "") collectedBranchNames 
+        branchNames = map("origin/" ++ ) uniqueBranchNames
 
     emit notifier "Searching for commit hashes..."
     allCommitHashesListOfList <- execAll (map getAllCommitsFrom branchNames) parseCommitHashes "Failed to parse commit hashes from branches"
@@ -179,7 +181,7 @@ formulateRepoData _url path notifier = do
     let branchData = map (\branch -> do
             let hashes = fromMaybe [] $ Map.lookup branch branchToCommitsMap
             let sortedHashes = sortBy sortByTime hashes
-            BranchData branch sortedHashes
+            BranchData (replace "origin/" "" branch) sortedHashes
             ) branchNames
 
     emit notifier "Fetching repo name..."
@@ -197,3 +199,9 @@ lastSplit delim = reverse . takeWhile (/= delim) . reverse
 
 unique :: Ord a => [a] -> [a]
 unique = Map.keys . Map.fromList . flip zip (repeat ())
+
+replace :: String -> String -> String -> String
+replace old new str
+    | old `isPrefixOf` str = new ++ drop (length old) str
+    | null str             = ""
+    | otherwise            = head str : replace old new (tail str)
