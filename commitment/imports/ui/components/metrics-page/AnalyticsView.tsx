@@ -23,7 +23,7 @@ export function AnalyticsView(): React.JSX.Element {
     "This page gives an overview of key metrics and performance trends.";
 
   // setting up filters
-  const [metrics, setMetricsData] = useState<AnalyticsData | null>(null);
+  const [analytics, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [selectedBranch, setSelectedBranch] = useState<string | undefined>(
     undefined
@@ -51,7 +51,7 @@ export function AnalyticsView(): React.JSX.Element {
         if (err) {
           setError(err.message);
         } else {
-          setMetricsData(data);
+          setAnalyticsData(data);
         }
         setLoading(false);
       }
@@ -66,7 +66,7 @@ export function AnalyticsView(): React.JSX.Element {
   // Loading & Error States
   if (loading) return <div>Loading repo data...</div>;
   if (error) return <div>Error: {error}</div>;
-  if (!metrics) return <div>No repo data available</div>;
+  if (!analytics) return <div>No repo data available</div>;
 
   return (
     <div className="m-0 scroll-smooth">
@@ -97,7 +97,7 @@ export function AnalyticsView(): React.JSX.Element {
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Branch*</label>
               <BranchDropdownMenu
-                branches={metrics.metadata.branches}
+                branches={analytics.metadata.branches}
                 selected={selectedBranch}
                 onChange={setSelectedBranch}
               />
@@ -105,7 +105,7 @@ export function AnalyticsView(): React.JSX.Element {
             <div className="flex flex-col">
               <label className="text-sm text-gray-600">Contributors*</label>
               <ContributorDropdownMenu
-                contributors={metrics.metadata.contributors}
+                contributors={analytics.metadata.contributors}
                 selected={selectedContributors}
                 onChange={setSelectedContributors}
               />
@@ -116,43 +116,43 @@ export function AnalyticsView(): React.JSX.Element {
           <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
             <HighlightCardWithGraph
               title="Total Commits"
-              value={metrics.highlights.totalCommits.total}
+              value={analytics.metrics.highlights.totalCommits.total}
               percentageChange={
-                metrics.highlights.totalCommits.percentageChange
+                analytics.metrics.highlights.totalCommits.percentageChange
               }
-              isPositive={metrics.highlights.totalCommits.isPositive}
-              data={metrics.highlights.totalCommits.data}
+              isPositive={analytics.metrics.highlights.totalCommits.isPositive}
+              data={analytics.metrics.highlights.totalCommits.data}
             />
             <HighlightCardWithGraph
               title="Total Lines of Code"
-              value={metrics.highlights.totalLinesOfCode.total}
+              value={analytics.metrics.highlights.totalLinesOfCode.total}
               percentageChange={
-                metrics.highlights.totalLinesOfCode.percentageChange
+                analytics.metrics.highlights.totalLinesOfCode.percentageChange
               }
-              isPositive={metrics.highlights.totalLinesOfCode.isPositive}
-              data={metrics.highlights.totalLinesOfCode.data}
+              isPositive={analytics.metrics.highlights.totalLinesOfCode.isPositive}
+              data={analytics.metrics.highlights.totalLinesOfCode.data}
             />
             <HighlightCardWithGraph
               title="No. of Contributors"
-              value={metrics.highlights.numContributors}
+              value={analytics.metrics.highlights.numContributors}
             />
             <HighlightCardWithGraph
               title="Number of branches"
-              value={metrics.highlights.numBranches}
+              value={analytics.metrics.highlights.numBranches}
             />
           </div>
 
           {/* Graphs */}
           <div className="flex flex-wrap gap-6 mt-12 mb-12">
             <ContributorLineGraph
-              data={metrics.contributors.lineGraph}
+              data={analytics.metrics.contributors.lineGraph}
               title="LOC Changes Over Time"
               xAxisLabel="Date"
               yAxisLabel="Lines of Code Changed"
             />
             <div className="rounded-2xl basis-1/3 min-w-[320px]">
               <LeaderboardGraph
-                data={metrics.contributors.leaderboard}
+                data={analytics.metrics.contributors.leaderboard}
                 title="Top Contributors"
                 xAxisLabel="Commits"
               />
