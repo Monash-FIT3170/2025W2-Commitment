@@ -126,7 +126,7 @@ Meteor.methods({
       }
     );
 
-    const metricsData: MetricsData = getAllMetrics(filteredRepo);
+    const metricsData: MetricsData = await getAllMetrics(filteredRepo);
 
     // NOW WE DO STUFF WITH THE FILTERED REPO TO GET METRICS
     const returnData: AnalyticsData = { metadata, metrics: metricsData };

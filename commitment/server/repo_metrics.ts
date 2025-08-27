@@ -222,10 +222,16 @@ export function leaderboardData(data: FilteredData): LeaderboardData[] {
 }
 
 export function lineGraphData(data: FilteredData): LineGraphData[] {
-  // check this as written with the asisstance of AI
   const byDate = new Map<string, Record<string, number>>();
   const repoData = data.repositoryData;
 
+  // gather all contributors
+  const allContributors = new Set<string>();
+  repoData.allCommits.forEach((commit) => {
+    allContributors.add(commit.value.contributorName);
+  });
+
+  // collect daily commit counts
   repoData.allCommits.forEach((commit) => {
     const user = commit.value.contributorName;
     const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
@@ -235,12 +241,35 @@ export function lineGraphData(data: FilteredData): LineGraphData[] {
     bucket[user] = (bucket[user] ?? 0) + 1;
   });
 
-  const dataArray: LineGraphData[] = Array.from(byDate.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, userCommits]) => ({ date, ...userCommits }));
+  // sort dates
+  const sortedDates = Array.from(byDate.keys()).sort((a, b) => a.localeCompare(b));
+
+  // cumulative tracker
+  const cumulative: Record<string, number> = {};
+  allContributors.forEach((c) => (cumulative[c] = 0)); // everyone starts at 0
+
+  const dataArray: LineGraphData[] = [];
+
+  sortedDates.forEach((date) => {
+    const dailyCommits = byDate.get(date)!;
+
+    // update cumulative totals
+    Object.keys(dailyCommits).forEach((user) => {
+      cumulative[user] = (cumulative[user] ?? 0) + dailyCommits[user];
+    });
+
+    // include *all contributors*, even if they didn’t commit today
+    const entry: LineGraphData = { date };
+    allContributors.forEach((user) => {
+      entry[user] = cumulative[user];
+    });
+
+    dataArray.push(entry);
+  });
 
   return dataArray;
 }
+
 
 /**
  *
