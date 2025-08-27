@@ -141,8 +141,13 @@ export interface MetricsData {
   };
 }
 
+export interface Selections {
+  selectedBranch: string;
+  selectedContributors: string[];
+}
+
 export interface AnalyticsData {
   metadata: Metadata;
-
+  selections: Selections;
   metrics: MetricsData;
 }

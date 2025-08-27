@@ -6,6 +6,7 @@ import {
   AnalyticsData,
   Metadata,
   MetricsData,
+  Selections,
 } from "/imports/api/types";
 import { start } from "repl";
 import { getAllMetrics } from "./repo_metrics";
@@ -49,9 +50,7 @@ Meteor.methods({
     return filteredData;
   },
 
-  async "repo.getMetadata"(
-    repoUrl: string
-  ): Promise<Metadata> {
+  async "repo.getMetadata"(repoUrl: string): Promise<Metadata> {
     // Get full repository data from db
     const repo: SerializableRepoData = await Meteor.callAsync(
       "repoCollection.getData",
@@ -109,28 +108,37 @@ Meteor.methods({
       end: endDate || metadata.dateRange.end,
     };
 
+    const selections: Selections = {
+      selectedBranch:
+        branch ??
+        (metadata.branches.includes("main")
+          ? "main"
+          : metadata.branches.includes("master")
+          ? "master"
+          : metadata.branches[0]),
+      selectedContributors: contributors || metadata.contributors,
+    };
+
     const filteredRepo: FilteredData = await Meteor.callAsync(
       "repo.getFilteredData",
       {
         repoUrl,
         startDate: metadata.filterRange.start,
         endDate: metadata.filterRange.end,
-        branch:
-          branch ??
-          (metadata.branches.includes("main")
-            ? "main"
-            : metadata.branches.includes("master")
-            ? "master"
-            : metadata.branches[0]),
-        contributors: contributors ? contributors : metadata.contributors,
+        branch: selections.selectedBranch,
+        contributors: selections.selectedContributors,
       }
     );
 
     const metricsData: MetricsData = await getAllMetrics(filteredRepo);
 
     // NOW WE DO STUFF WITH THE FILTERED REPO TO GET METRICS
-    const returnData: AnalyticsData = { metadata, metrics: metricsData };
-    
+    const returnData: AnalyticsData = {
+      metadata,
+      selections,
+      metrics: metricsData,
+    };
+
     return returnData;
   },
 });
