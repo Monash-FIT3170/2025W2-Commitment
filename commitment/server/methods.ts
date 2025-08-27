@@ -38,6 +38,8 @@ Meteor.methods({
       repoUrl
     );
 
+    console.log("Right before we call getFilteredRepoData in .getFilteredData", contributor)
+
     // Apply filtering
     const filteredData = getFilteredRepoDataServer(
       repoUrl,
@@ -79,7 +81,6 @@ Meteor.methods({
     endDate,
     branch,
     contributors,
-    filteredData,
   }: {
     repoUrl: string;
     startDate?: Date;
@@ -121,6 +122,8 @@ Meteor.methods({
       },
     };
 
+
+    console.log("Right before we call te getFilteredData in getAnalytics data: ", selections.selectedContributors)
     const filteredRepo: FilteredData = await Meteor.callAsync(
       "repo.getFilteredData",
       {

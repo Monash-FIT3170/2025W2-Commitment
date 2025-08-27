@@ -21,6 +21,9 @@ export const getFilteredRepoDataServer = (
   filteredContributorNames?: string[]
 ): FilteredData => {
   // Find the branch
+
+  console.log("Who are we meant to be filtering out?", filteredContributorNames)
+
   const filterBranch = repo.branches.find(
     (b) => b.branchName === filteredBranchName
   );
