@@ -1,3 +1,4 @@
+import { get } from "http";
 import {
   MetricsData,
   SerializableRepoData,
@@ -120,10 +121,7 @@ export async function highlightTotalCommits(
   const totalCommits = getTotalCommits(repoData);
 
   // calculate percentage change
-  const pChange = await percentageCommitChange(
-    data.dateRange.start,
-    repoData
-  );
+  const pChange = await percentageCommitChange(data.dateRange.start, repoData);
 
   const commitsData = repoData.allCommits.map(({ value }) => ({ value: 1 })); // each commit counts as 1
 
@@ -148,6 +146,31 @@ export function getTotalFilesChanged(repoData: SerializableRepoData): number {
 }
 
 /**
+ * Count the number of lines in a file contents string.
+ * @param fileContents The file contents as a string.
+ * @returns The number of lines in the file.
+ */
+function countLines(fileContents: string): number {
+  if (!fileContents) return 0;
+  return fileContents.split("\n").length;
+}
+
+/**
+ * Get the total number of lines of code across all commits in a repository.
+ * @param repoData The repository data.
+ * @returns The total number of lines of code.
+ */
+export function getTotalLinesOfCode(repoData: SerializableRepoData): number {
+  return repoData.allCommits.reduce<number>((sum, commit) => {
+    const commitLines = commit.value.fileData.reduce<number>(
+      (fileSum, f) => fileSum + countLines(f.file.contents), // assuming `file.contents` is the raw file text
+      0
+    );
+    return sum + commitLines;
+  }, 0);
+}
+
+/**
  * Returns the total lines of code(total files changed) in the repository for the highlight card.
  * @param data Filtered Repository Data
  * @returns Highlighted total lines of code information
@@ -158,26 +181,36 @@ export async function highlightTotalLinesOfCode(
   const repoData = data.repositoryData;
 
   // number of files changed
-  const currentFiles = getTotalFilesChanged(repoData);
   const unfilteredData = await getUnfilteredData();
 
-  const prevFiles = getTotalFilesChanged({
-    ...unfilteredData,
-    allCommits: unfilteredData.allCommits.filter(
-      (c) =>
-        new Date(c.value.timestamp).getTime() < data.dateRange.start.getTime()
-    ),
-  });
+  const sortedCommits = unfilteredData.allCommits
+    .slice()
+    .sort(
+      (a, b) =>
+        new Date(a.value.timestamp).getTime() -
+        new Date(b.value.timestamp).getTime()
+    );
 
-  // calculate percentage change
-  const percentageChange =
-    prevFiles === 0 ? 100 : ((currentFiles - prevFiles) / prevFiles) * 100;
+  // Compute lines of code per commit
+  const linesOfCodeOverTime: { value: number }[] = sortedCommits.map(
+    (commit) => ({
+      value: commit.value.fileData.reduce(
+        (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+        0
+      ),
+    })
+  );
+
+  const prev = linesOfCodeOverTime[linesOfCodeOverTime.length - 1].value;
+  const curr = linesOfCodeOverTime[linesOfCodeOverTime.length - 2].value;
+
+  const percentageChange = ((curr - prev) / prev) * 100;
 
   return {
-    total: currentFiles,
+    total: getTotalLinesOfCode(unfilteredData),
     percentageChange,
     isPositive: percentageChange > 0,
-    data: repoData.allCommits.map((c) => ({ value: c.value.fileData.length })),
+    data: linesOfCodeOverTime,
   };
 }
 
@@ -242,7 +275,9 @@ export function lineGraphData(data: FilteredData): LineGraphData[] {
   });
 
   // sort dates
-  const sortedDates = Array.from(byDate.keys()).sort((a, b) => a.localeCompare(b));
+  const sortedDates = Array.from(byDate.keys()).sort((a, b) =>
+    a.localeCompare(b)
+  );
 
   // cumulative tracker
   const cumulative: Record<string, number> = {};
@@ -269,7 +304,6 @@ export function lineGraphData(data: FilteredData): LineGraphData[] {
 
   return dataArray;
 }
-
 
 /**
  *
