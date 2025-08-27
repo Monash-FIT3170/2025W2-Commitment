@@ -1,129 +1,318 @@
-// server/repo_metrics.ts
+import { get } from "http";
+import {
+  MetricsData,
+  SerializableRepoData,
+  FilteredData,
+  HighlightStruct,
+  LeaderboardData,
+  LineGraphData,
+  PieChartData,
+} from "../imports/api/types";
+import { Meteor } from "meteor/meteor";
 
-import { RepositoryData, CommitData } from "../imports/api/types";
+// storing a global access unfiltered data here
+let unfilteredRepoData = {} as Promise<SerializableRepoData>;
+
+// -------- THIS FUNCTION NEEDS TO BE CALLED FIRST -----------------------
+export async function getAllMetrics(data: FilteredData): Promise<MetricsData> {
+  // set the unfiltered data we will use for all other metrics
+  setsUnfilteredData(data.repoUrl);
+
+  // get all the metrics based on the AnalyticsData structure
+  return {
+    highlights: {
+      totalCommits: await highlightTotalCommits(data),
+      totalLinesOfCode: await highlightTotalLinesOfCode(data),
+      numContributors: numContributors(data),
+      numBranches: numBranches(data),
+    },
+    contributors: {
+      leaderboard: leaderboardData(data),
+      lineGraph: lineGraphData(data),
+      pieChart: pieChartData(data),
+    },
+  };
+}
 
 /**
- * Count “LOC changed” for a commit.
- * NOTE: This shouldn't be final implementation of this method.
- * If we later store git diffs, we need to replace this.
+ * SETTERS AND GETTERS
  */
-function getLOCFromCommit(commit: CommitData): number {
-  if (!commit.fileData) return 0;
-  return commit.fileData.reduce((acc, fileChange) => {
-    const content = fileChange.file?.contents || "";
-    return acc + content.split("\n").length;
+
+/**
+ * Fetch unfiltered repository data from the database.
+ * @param repoUrl The URL of the repository.
+ * @returns A promise that resolves to the unfiltered repository data.
+ */
+export function setsUnfilteredData(repoUrl: string) {
+  // implementation of fetched repo data from the database
+  // set global variable:
+  unfilteredRepoData = Meteor.callAsync("repoCollection.getData", repoUrl);
+}
+
+export function getUnfilteredData(): Promise<SerializableRepoData> {
+  return unfilteredRepoData;
+}
+
+/** Branch names
+ * @param data Repository Data
+ * @returns Array of branch names
+ */
+export function getBranches(data: FilteredData): string[] {
+  return data.repositoryData.branches.map((b) => b.branchName);
+}
+
+/** Contributors (from RepositoryData.contributors map)
+ * @param data Repository Data
+ * @returns Array of contributor names
+ */
+export function getContributors(data: FilteredData): string[] {
+  return data.repositoryData.contributors.map((c) => c.value.name);
+}
+
+/**
+ * Get the repository name.
+ * @param data Repository Data
+ * @returns String of the repo name
+ */
+export function getRepoName(data: FilteredData): string {
+  return data.repositoryData.name;
+}
+
+// --------------------------- ALL RELEVANT METRICS --------------------------
+/**
+ * Get the percentage change of commits in a repository.
+ * @param startDate The start date for the comparison.
+ * @param data The filtered repository data.
+ * @returns The percentage change of commits.
+ */
+async function percentageCommitChange(
+  startDate: Date,
+  data: SerializableRepoData
+): Promise<number> {
+  // get original data
+  const unfilteredData = await getUnfilteredData();
+
+  // get the length of commits from the beginning up until the start date
+  const prevCommits = unfilteredData.allCommits.filter(
+    (c) => new Date(c.value.timestamp).getTime() < startDate.getTime()
+  ).length;
+  // get the length of commits in the filtered data
+  const currentCommits = data.allCommits.length;
+
+  // calculate the percentage change
+  const pChange = ((currentCommits - prevCommits) / prevCommits) * 100;
+
+  return pChange;
+}
+
+export function getTotalCommits(data: SerializableRepoData): number {
+  return data.allCommits.length;
+}
+
+/**
+ * Returns the total commits in a repository for a highlight card.
+ * @param data Filtered Repository Data
+ * @returns Highlighted total commits information
+ */
+export async function highlightTotalCommits(
+  data: FilteredData
+): Promise<HighlightStruct> {
+  const repoData = data.repositoryData;
+  const totalCommits = getTotalCommits(repoData);
+
+  // calculate percentage change
+  const pChange = await percentageCommitChange(data.dateRange.start, repoData);
+
+  const commitsData = repoData.allCommits.map(({ value }) => ({ value: 1 })); // each commit counts as 1
+
+  return {
+    total: totalCommits,
+    percentageChange: pChange,
+    isPositive: pChange > 0,
+    data: commitsData,
+  };
+}
+
+/**
+ * Get the total number of files changed in a repository.
+ * @param repoData The repository data.
+ * @returns The total number of files changed.
+ */
+export function getTotalFilesChanged(repoData: SerializableRepoData): number {
+  return repoData.allCommits.reduce<number>((sum, commit) => {
+    const numFiles = commit.value.fileData.length;
+    return numFiles + sum;
   }, 0);
 }
 
-/** Branch names */
-export function getBranches(data: RepositoryData): string[] {
-  return data.branches.map((b) => b.branchName);
-}
-
-/** Contributors (from RepositoryData.contributors map) */
-export function getContributors(data: RepositoryData): string[] {
-  return Array.from(data.contributors.values()).map((c) => c.name);
-}
-
-/** Users who actually committed (derived from commits’ contributorName field) */
-export function getUsers(data: RepositoryData): string[] {
-  const set = new Set<string>();
-  data.allCommits.forEach((c) => set.add(c.contributorName));
-  return Array.from(set);
+/**
+ * Count the number of lines in a file contents string.
+ * @param fileContents The file contents as a string.
+ * @returns The number of lines in the file.
+ */
+function countLines(fileContents: string): number {
+  if (!fileContents) return 0;
+  return fileContents.split("\n").length;
 }
 
 /**
- * LOC line dataset (graph-ready)
- * {
- *   title: "Lines of Codes Changed Over Time",
- *   data: [
- *     { date: "YYYY-MM-DD", Alice: 120, Bob: 90, ... },
- *     ...
- *   ]
- * }
+ * Get the total number of lines of code across all commits in a repository.
+ * @param repoData The repository data.
+ * @returns The total number of lines of code.
  */
-export function getLocLineData(data: RepositoryData): {
-  title: string;
-  data: { [key: string]: number | string }[];
-} {
-  // date -> { userName -> totalLocOnThatDate }
-  const byDate = new Map<string, Record<string, number>>();
+export function getTotalLinesOfCode(repoData: SerializableRepoData): number {
+  return repoData.allCommits.reduce<number>((sum, commit) => {
+    const commitLines = commit.value.fileData.reduce<number>(
+      (fileSum, f) => fileSum + countLines(f.file.contents), // assuming `file.contents` is the raw file text
+      0
+    );
+    return sum + commitLines;
+  }, 0);
+}
 
-  data.allCommits.forEach((commit) => {
-    const user = commit.contributorName;
-    const loc = getLOCFromCommit(commit);
-    const date = commit.timestamp.toISOString().split("T")[0];
+/**
+ * Returns the total lines of code(total files changed) in the repository for the highlight card.
+ * @param data Filtered Repository Data
+ * @returns Highlighted total lines of code information
+ */
+export async function highlightTotalLinesOfCode(
+  data: FilteredData
+): Promise<HighlightStruct> {
+  const repoData = data.repositoryData;
+
+  // number of files changed
+  const unfilteredData = await getUnfilteredData();
+
+  const sortedCommits = unfilteredData.allCommits
+    .slice()
+    .sort(
+      (a, b) =>
+        new Date(a.value.timestamp).getTime() -
+        new Date(b.value.timestamp).getTime()
+    );
+
+  // Compute lines of code per commit
+  const linesOfCodeOverTime: { value: number }[] = sortedCommits.map(
+    (commit) => ({
+      value: commit.value.fileData.reduce(
+        (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+        0
+      ),
+    })
+  );
+
+  const prev = linesOfCodeOverTime[linesOfCodeOverTime.length - 1].value;
+  const curr = linesOfCodeOverTime[linesOfCodeOverTime.length - 2].value;
+
+  const percentageChange = ((curr - prev) / prev) * 100;
+
+  return {
+    total: getTotalLinesOfCode(unfilteredData),
+    percentageChange,
+    isPositive: percentageChange > 0,
+    data: linesOfCodeOverTime,
+  };
+}
+
+/**
+ * Returns the number of contributors in the repository for the highlight card.
+ * @param data Filtered Repository Data
+ * @returns Highlighted number of contributors information
+ */
+export function numContributors(data: FilteredData): number {
+  return data.repositoryData.contributors.length;
+}
+
+/**
+ * Returns the number of branches in the repository for the highlight card.
+ * @param data Filtered Repository Data
+ * @returns Highlighted number of branches information
+ */
+export function numBranches(data: FilteredData): number {
+  return data.repositoryData.branches.length;
+}
+
+/**
+ * Returns the leaderboard data for contributors in the repository.
+ * @param data Filtered Repository Data
+ * @returns Leaderboard data for contributors
+ */
+export function leaderboardData(data: FilteredData): LeaderboardData[] {
+  const counts: Record<string, number> = {};
+  const repoData = data.repositoryData;
+
+  // count commits per contributor
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    counts[user] = (counts[user] ?? 0) + 1;
+  });
+
+  const leaderboard: LeaderboardData[] = Object.entries(counts).map(
+    ([name, commits]) => ({ name, commits })
+  );
+
+  return leaderboard;
+}
+
+export function lineGraphData(data: FilteredData): LineGraphData[] {
+  const byDate = new Map<string, Record<string, number>>();
+  const repoData = data.repositoryData;
+
+  // gather all contributors
+  const allContributors = new Set<string>();
+  repoData.allCommits.forEach((commit) => {
+    allContributors.add(commit.value.contributorName);
+  });
+
+  // collect daily commit counts
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
 
     if (!byDate.has(date)) byDate.set(date, {});
     const bucket = byDate.get(date)!;
-    bucket[user] = (bucket[user] ?? 0) + loc;
+    bucket[user] = (bucket[user] ?? 0) + 1;
   });
 
-  const dataArray = Array.from(byDate.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, userLocs]) => ({ date, ...userLocs }));
+  // sort dates
+  const sortedDates = Array.from(byDate.keys()).sort((a, b) =>
+    a.localeCompare(b)
+  );
 
-  return {
-    title: "Lines of Codes Changed Over Time",
-    data: dataArray,
-  };
+  // cumulative tracker
+  const cumulative: Record<string, number> = {};
+  allContributors.forEach((c) => (cumulative[c] = 0)); // everyone starts at 0
+
+  const dataArray: LineGraphData[] = [];
+
+  sortedDates.forEach((date) => {
+    const dailyCommits = byDate.get(date)!;
+
+    // update cumulative totals
+    Object.keys(dailyCommits).forEach((user) => {
+      cumulative[user] = (cumulative[user] ?? 0) + dailyCommits[user];
+    });
+
+    // include *all contributors*, even if they didn’t commit today
+    const entry: LineGraphData = { date };
+    allContributors.forEach((user) => {
+      entry[user] = cumulative[user];
+    });
+
+    dataArray.push(entry);
+  });
+
+  return dataArray;
 }
 
 /**
- * Total commits by contributor (graph-ready)
- * {
- *   title: "All Contributor Commits",
- *   data: [{ name: "Alice", commits: 100 }, ...]
- * }
+ *
+ * @param data
+ * @returns
  */
-export function getAllContributorsCommits(data: RepositoryData): {
-  title: string;
-  data: { name: string; commits: number }[];
-} {
-  const counts = new Map<string, number>();
-
-  data.allCommits.forEach((commit) => {
-    const user = commit.contributorName;
-    counts.set(user, (counts.get(user) ?? 0) + 1);
-  });
-
-  const list = Array.from(counts.entries()).map(([name, commits]) => ({ name, commits }));
-  return { title: "All Contributor Commits", data: list };
-}
-
-/** Total LOC by contributor (graph-ready list): [{ name, value }] */
-export function getTotalLocData(data: RepositoryData): { name: string; value: number }[] {
-  const locs = new Map<string, number>();
-
-  data.allCommits.forEach((commit) => {
-    const user = commit.contributorName;
-    const loc = getLOCFromCommit(commit);
-    locs.set(user, (locs.get(user) ?? 0) + loc);
-  });
-
-  return Array.from(locs.entries()).map(([name, value]) => ({ name, value }));
-}
-
-/** Type and registry for metric-lookup by name */
-export type MetricFn = (data: RepositoryData) => any;
-
-export const metricsFunctions = new Map<string, MetricFn>([
-  ["branches", getBranches],
-  ["contributors", getContributors],
-  ["users", getUsers],
-  ["locLineData", getLocLineData],
-  ["allContributorCommits", getAllContributorsCommits],
-  ["totalLocData", getTotalLocData],
-]);
-
-/** Convenience bundle (optional) */
-export function getAllMetricsBundle(data: RepositoryData) {
-  return {
-    branches: getBranches(data),
-    contributors: getContributors(data),
-    users: getUsers(data),
-    locLineData: getLocLineData(data),
-    allContributorCommits: getAllContributorsCommits(data),
-    totalLocData: getTotalLocData(data),
-  };
+export function pieChartData(data: FilteredData): PieChartData[] {
+  return leaderboardData(data).map((contributor, index) => ({
+    user: contributor.name,
+    contributions: contributor.commits,
+  }));
 }
