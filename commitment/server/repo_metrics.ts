@@ -1,74 +1,19 @@
-// server/repo_metrics.ts
-
-import { get } from "http";
-import { RepositoryData, CommitData, SerializableRepoData, FilteredData, AnalyticsData } from "../imports/api/types";
-import { serializeRepoData } from "/imports/api/serialisation";
+import {
+  MetricsData,
+  SerializableRepoData,
+  FilteredData,
+  HighlightStruct,
+  LeaderboardData,
+  LineGraphData,
+  PieChartData,
+} from "../imports/api/types";
 import { Meteor } from "meteor/meteor";
-
-// ------------------ DATA STRUCTURES TO USE ------------------------
-interface HighlightStruct{
-  total: number;
-  percentageChange: number;
-  isPositive: boolean;
-  data: { value: number }[];
-}
-
-interface LeaderboardData{
-  name: string; 
-  commits: number; 
-}
-
-interface LineGraphData{
-  date: string;
-  [contributor: string]: number|string; // e.g. { Alice: 120, Bob: 95 }
-}
-
-interface PieChartData{
-  user: string; 
-  contributions: number; 
-  // fill: string; // color
-}
-
-interface MetricsData{
-  highlights: {
-    totalCommits: {
-      total: number;
-      percentageChange: number;
-      isPositive: boolean;
-      data: { value: number }[];
-    };
-    totalLinesOfCode: {
-      total: number;
-      percentageChange: number;
-      isPositive: boolean;
-      data: { value: number }[];
-    };
-    numContributors: number;
-    numBranches: number;
-  };
-
-  contributors: {
-    leaderboard: {
-      name: string;
-      commits: number;
-    }[];
-    lineGraph: {
-      date: string; // "YYYY-MM-DD"
-      [contributor: string]: number|string; // e.g. { Alice: 120, Bob: 95 }
-    }[];
-    pieChart?: {
-      user: string;
-      contributions: number;
-      // fill: string; // color. - idk how i feel about the colours being here 
-    }[];
-  };
-}
 
 // storing a global access unfiltered data here
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
 
 // -------- THIS FUNCTION NEEDS TO BE CALLED FIRST -----------------------
-export async function getAllMetrics(data:FilteredData):Promise<MetricsData>{
+export async function getAllMetrics(data: FilteredData): Promise<MetricsData> {
   // set the unfiltered data we will use for all other metrics
   setsUnfilteredData(data.repoUrl);
 
@@ -88,23 +33,24 @@ export async function getAllMetrics(data:FilteredData):Promise<MetricsData>{
   };
 }
 
-//------------- SETTERS AND GETTERS ---------------------------------------
+/**
+ * SETTERS AND GETTERS
+ */
 
 /**
  * Fetch unfiltered repository data from the database.
  * @param repoUrl The URL of the repository.
  * @returns A promise that resolves to the unfiltered repository data.
  */
-export function setsUnfilteredData(repoUrl:string){
+export function setsUnfilteredData(repoUrl: string) {
   // implementation of fetched repo data from the database
-  // set global variable: 
+  // set global variable:
   unfilteredRepoData = Meteor.callAsync("repoCollection.getData", repoUrl);
 }
 
 export function getUnfilteredData(): Promise<SerializableRepoData> {
   return unfilteredRepoData;
 }
-
 
 /** Branch names
  * @param data Repository Data
@@ -125,7 +71,7 @@ export function getContributors(data: FilteredData): string[] {
 /**
  * Get the repository name.
  * @param data Repository Data
- * @returns String of the repo name 
+ * @returns String of the repo name
  */
 export function getRepoName(data: FilteredData): string {
   return data.repositoryData.name;
@@ -135,25 +81,27 @@ export function getRepoName(data: FilteredData): string {
 /**
  * Get the percentage change of commits in a repository.
  * @param startDate The start date for the comparison.
- * @param repoUrl The URL of the repository.
  * @param data The filtered repository data.
  * @returns The percentage change of commits.
  */
-async function percentageCommitChange(startDate:Date, repoUrl:string, data: SerializableRepoData): Promise<number> {
-
+async function percentageCommitChange(
+  startDate: Date,
+  data: SerializableRepoData
+): Promise<number> {
   // get original data
   const unfilteredData = await getUnfilteredData();
 
   // get the length of commits from the beginning up until the start date
-  const prevCommits = unfilteredData.allCommits.filter((c) => new Date(c.value.timestamp).getTime() < startDate.getTime()).length;
-  // get the length of commits in the filtered data 
+  const prevCommits = unfilteredData.allCommits.filter(
+    (c) => new Date(c.value.timestamp).getTime() < startDate.getTime()
+  ).length;
+  // get the length of commits in the filtered data
   const currentCommits = data.allCommits.length;
 
-  // calculate the percentage change 
-  const pChange = ((currentCommits - prevCommits) / (prevCommits)) * 100;
+  // calculate the percentage change
+  const pChange = ((currentCommits - prevCommits) / prevCommits) * 100;
 
   return pChange;
-
 }
 
 export function getTotalCommits(data: SerializableRepoData): number {
@@ -161,17 +109,21 @@ export function getTotalCommits(data: SerializableRepoData): number {
 }
 
 /**
- * Returns the total commits in a repository for a highlight card. 
+ * Returns the total commits in a repository for a highlight card.
  * @param data Filtered Repository Data
  * @returns Highlighted total commits information
  */
-export async function highlightTotalCommits(data: FilteredData): Promise<HighlightStruct> {
-  const repoData = data.repositoryData
+export async function highlightTotalCommits(
+  data: FilteredData
+): Promise<HighlightStruct> {
+  const repoData = data.repositoryData;
   const totalCommits = getTotalCommits(repoData);
 
   // calculate percentage change
-  const pChange = await percentageCommitChange(data.dateRange.start, data.repoUrl, repoData);
-  
+  const pChange = await percentageCommitChange(
+    data.dateRange.start,
+    repoData
+  );
 
   const commitsData = repoData.allCommits.map(({ value }) => ({ value: 1 })); // each commit counts as 1
 
@@ -179,7 +131,7 @@ export async function highlightTotalCommits(data: FilteredData): Promise<Highlig
     total: totalCommits,
     percentageChange: pChange,
     isPositive: pChange > 0,
-    data: commitsData
+    data: commitsData,
   };
 }
 
@@ -188,33 +140,36 @@ export async function highlightTotalCommits(data: FilteredData): Promise<Highlig
  * @param repoData The repository data.
  * @returns The total number of files changed.
  */
-export function getTotalFilesChanged(repoData: SerializableRepoData):number {
+export function getTotalFilesChanged(repoData: SerializableRepoData): number {
   return repoData.allCommits.reduce<number>((sum, commit) => {
-    const numFiles =commit.value.fileData.length;
+    const numFiles = commit.value.fileData.length;
     return numFiles + sum;
   }, 0);
 }
 
 /**
- * Returns the total lines of code(total files changed) in the repository for the highlight card. 
+ * Returns the total lines of code(total files changed) in the repository for the highlight card.
  * @param data Filtered Repository Data
  * @returns Highlighted total lines of code information
  */
-export async function highlightTotalLinesOfCode(data: FilteredData):Promise<HighlightStruct>{
+export async function highlightTotalLinesOfCode(
+  data: FilteredData
+): Promise<HighlightStruct> {
   const repoData = data.repositoryData;
-  
-  // number of files changed 
+
+  // number of files changed
   const currentFiles = getTotalFilesChanged(repoData);
-  const unfilteredData = await getUnfilteredData(); 
+  const unfilteredData = await getUnfilteredData();
 
   const prevFiles = getTotalFilesChanged({
-    ...unfilteredData, 
+    ...unfilteredData,
     allCommits: unfilteredData.allCommits.filter(
-      (c) => new Date(c.value.timestamp).getTime() < data.dateRange.start.getTime()
+      (c) =>
+        new Date(c.value.timestamp).getTime() < data.dateRange.start.getTime()
     ),
   });
-  
-  // calculate percentage change 
+
+  // calculate percentage change
   const percentageChange =
     prevFiles === 0 ? 100 : ((currentFiles - prevFiles) / prevFiles) * 100;
 
@@ -253,14 +208,16 @@ export function leaderboardData(data: FilteredData): LeaderboardData[] {
   const counts: Record<string, number> = {};
   const repoData = data.repositoryData;
 
-  // count commits per contributor 
+  // count commits per contributor
   repoData.allCommits.forEach((commit) => {
     const user = commit.value.contributorName;
     counts[user] = (counts[user] ?? 0) + 1;
   });
 
-  const leaderboard: LeaderboardData[] = Object.entries(counts).map(([name, commits]) => ({ name, commits }));
-  
+  const leaderboard: LeaderboardData[] = Object.entries(counts).map(
+    ([name, commits]) => ({ name, commits })
+  );
+
   return leaderboard;
 }
 
@@ -286,9 +243,9 @@ export function lineGraphData(data: FilteredData): LineGraphData[] {
 }
 
 /**
- * 
- * @param data 
- * @returns 
+ *
+ * @param data
+ * @returns
  */
 export function pieChartData(data: FilteredData): PieChartData[] {
   return leaderboardData(data).map((contributor, index) => ({
@@ -296,5 +253,3 @@ export function pieChartData(data: FilteredData): PieChartData[] {
     contributions: contributor.commits,
   }));
 }
-
-

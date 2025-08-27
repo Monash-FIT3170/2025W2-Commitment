@@ -4,6 +4,7 @@ import {
   SerializableRepoData,
   FilteredData,
   AnalyticsData,
+  Metadata,
 } from "/imports/api/types";
 import { start } from "repl";
 import { getAllMetrics } from "./repo_metrics";
@@ -49,7 +50,7 @@ Meteor.methods({
 
   async "repo.getMetadata"(
     repoUrl: string
-  ): Promise<AnalyticsData["metadata"]> {
+  ): Promise<Metadata> {
     // Get full repository data from db
     const repo: SerializableRepoData = await Meteor.callAsync(
       "repoCollection.getData",
@@ -57,9 +58,8 @@ Meteor.methods({
     );
 
     return {
-      repoUrl: repo.repoUrl,
-      branch: repo.defaultBranch,
-      repoName: repo.repoName,
+      repoUrl,
+      repoName: repo.name,
       branches: repo.branches.map((b) => b.branchName),
       contributors: repo.contributors.map((c) => c.key),
       dateRange: {
@@ -101,7 +101,7 @@ Meteor.methods({
      */
 
     // Get project metadata
-    const metadata: AnalyticsData["metadata"] = await Meteor.callAsync(
+    const metadata: Metadata = await Meteor.callAsync(
       "repo.getMetadata",
       repoUrl
     );
