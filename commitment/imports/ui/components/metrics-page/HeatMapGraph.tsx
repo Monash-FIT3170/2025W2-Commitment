@@ -94,13 +94,7 @@ export default function HeatmapGraph({
 
     for (let i = 0; i < yAxisLength; i++) {
       const weekStarts = addDays(from, i * 7);
-      const weekEnd = addDays(weekStarts, 6);
-      yAxisLabels.push(
-        `${format(weekStarts, "MMM d")} - ${format(
-          weekEnd < to ? weekEnd : to,
-          "MMM d"
-        )}`
-      );
+      yAxisLabels.push(`${format(weekStarts, "MMM d")}`);
     }
   } else if (mode === "months") {
     // Only show last 7 months with data
@@ -253,7 +247,7 @@ export default function HeatmapGraph({
                     width: cellSize,
                     height: cellSize,
                   }}
-                  title={`${user} · ${yAxisLabels[colIdx]}: ${count} LOC (max: ${max})`}
+                  title={`${user} · ${yAxisLabels[colIdx]}: ${count} LOC`}
                 />
               );
             })
