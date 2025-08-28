@@ -21,8 +21,8 @@ import {
   RepositoryData,
   FilteredData,
   UserScalingSummary,
+  SerialisableMapObject,
 } from "/imports/api/types";
-import { deserializeRepoData } from "/imports/api/serialisation";
 import { useLocation } from "react-router-dom";
 
 const scalingConfigSchema = z.object({
@@ -40,16 +40,16 @@ interface ScalingConfigFormProps {
   ) => void;
 }
 
+function deserializeRepo(serialized: SerialisableMapObject<string, any>[]) {
+  return new Map(serialized.map((c) => [c.key, c.value]));
+}
+
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
 
   const [script, setScript] = useState<File[] | undefined>();
   const [metricsData, setMetricsData] = useState<RepositoryData | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<string | undefined>();
-  const [selectedContributors, setSelectedContributors] = useState<string[]>(
-    []
-  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,13 +69,13 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     setLoading(true);
     setError(null);
 
+    // Call the new Meteor method
     Meteor.call(
       "repo.getFilteredData",
       {
-        daysBack: 1000,
         repoUrl,
-        branch: selectedBranch ?? "main",
-        contributors: selectedContributors,
+        startDate: new Date("2000-01-01"), // find the date of the first commit in the repo?
+        endDate: new Date(),
       },
       (err: Error, filtered: FilteredData) => {
         if (err) {
@@ -83,15 +83,20 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
           setLoading(false);
           return;
         }
-        const repoData: RepositoryData = deserializeRepoData(
-          filtered.repositoryData
-        );
-        console.log("AFTER DESERIALIZE", repoData.allCommits);
+
+        const repoData: RepositoryData = {
+          //Ideally we don't deserialize the repo and we actually have a meaningful method
+          name: filtered.repositoryData.name,
+          branches: filtered.repositoryData.branches,
+          allCommits: deserializeRepo(filtered.repositoryData.allCommits),
+          contributors: deserializeRepo(filtered.repositoryData.contributors),
+        };
+
         setMetricsData(repoData);
         setLoading(false);
       }
     );
-  }, [repoUrl, selectedBranch, selectedContributors]);
+  }, [repoUrl]);
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -103,11 +108,11 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
       return;
     }
 
-    const rawResults = scaleUsers(metricsData, data);
+    const scaledResults = scaleUsers(metricsData, data);
 
-    const userScalingSummaries: UserScalingSummary[] = rawResults.map(
+    const userScalingSummaries: UserScalingSummary[] = scaledResults.map(
+      //Mapping for format suggested by UserScalingSummary
       (r: any) => {
-        // Look up contributor emails
         const contributorData = metricsData.contributors.get(r.name);
 
         const aliases = contributorData
@@ -117,13 +122,11 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         return {
           name: r.name,
           aliases,
-          finalGrade: null, // initially null, will populate if grading sheet exists
+          finalGrade: null,
           scale: r.score ?? 0,
         };
       }
     );
-
-    console.log("Scaled results mapped:", userScalingSummaries);
 
     onSubmit(data, userScalingSummaries);
   };
