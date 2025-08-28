@@ -20,8 +20,7 @@ interface HeatmapProps {
 }
 
 const heatMapDescription =
-  "Visualize contributor activity over time. Each cell shows a user's contributions for a period, with color intensity based on their personal highest activity.";
-
+  "Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period";
 const levels = [
   "bg-git-bg-primary",
   "bg-git-200",
@@ -179,6 +178,14 @@ export default function HeatmapGraph({
     return map;
   }, [table, users]);
 
+  const columnMaxMap = useMemo(() => {
+    const maxMap: number[] = Array<number>(yAxisLength).fill(0);
+    for (let col = 0; col < yAxisLength; col++) {
+      maxMap[col] = Math.max(...users.map((user) => table[user][col]));
+    }
+    return maxMap;
+  }, [table, users, yAxisLength]);
+
   // Cell styling
 
   const cellSize = 40;
@@ -233,7 +240,7 @@ export default function HeatmapGraph({
           {/* MAP USERS TO ROWS */}
           {users.map((user, rowIdx) =>
             table[user].map((count, colIdx) => {
-              const max = userMaxMap[user];
+              const max = columnMaxMap[colIdx]; // Variable to change normalization method
               const ratio = max === 0 ? 0 : count / max;
               return (
                 <div

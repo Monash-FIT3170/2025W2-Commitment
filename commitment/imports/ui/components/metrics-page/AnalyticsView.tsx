@@ -100,7 +100,7 @@ export const generateHeatmapData = (
 };
 
 const mockHeatMapData = generateHeatmapData(
-  addDays(new Date(), -5),
+  addDays(new Date(), -48),
   new Date()
 );
 
@@ -294,7 +294,7 @@ export function AnalyticsView() {
             </div>
             <HeatmapGraph
               data={mockHeatMapData}
-              title="Contributions Heatmap"
+              title="Contributor Activity Heatmap"
             />
           </div>
         </div>
