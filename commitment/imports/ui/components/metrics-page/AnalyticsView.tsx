@@ -100,7 +100,7 @@ export const generateHeatmapData = (
 };
 
 const mockHeatMapData = generateHeatmapData(
-  addDays(new Date(), -12),
+  addDays(new Date(), -5),
   new Date()
 );
 

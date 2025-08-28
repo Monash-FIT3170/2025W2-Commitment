@@ -23,20 +23,26 @@ const heatMapDescription =
   "Gain a visual insight on how contributors are performing within a certain period of time";
 
 const levels = [
-  "bg-git-200",
+  "bg-git-50",
+  "bg-git-100",
   "bg-git-300",
+  "bg-git-400",
   "bg-git-500",
-  "bg-git-600",
+  "bg-git-700",
   "bg-git-800",
+  "bg-git-900",
 ];
 
 // Applying normalisation to the data -> the gradient is represented by the value
 const getLevelClassNormalized = (ratio: number) => {
   if (ratio === 0) return levels[0];
-  if (ratio < 0.25) return levels[1];
-  if (ratio < 0.5) return levels[2];
-  if (ratio < 0.75) return levels[3];
-  return levels[4];
+  if (ratio < 0.15) return levels[1];
+  if (ratio < 0.3) return levels[2];
+  if (ratio < 0.45) return levels[3];
+  if (ratio < 0.6) return levels[4];
+  if (ratio < 0.75) return levels[5];
+  if (ratio < 0.9) return levels[6];
+  return levels[7];
 };
 
 // Main heatmap function
