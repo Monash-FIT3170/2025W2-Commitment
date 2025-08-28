@@ -13,17 +13,17 @@ interface PieProps {
 // CURRENT COLOUR PALLETTE - ASK PMs TO help
 
 const staticColorPalette = [
-  "#4E79A7",
-  "#F28E2B",
-  "#59A14F",
-  "#E15759",
-  "#76B7B2",
-  "#EDC948",
-  "#B07AA1",
-  "#FF9DA7",
-  "#9C755F",
-  "#BAB0AC",
-  "#D37295",
+  "var(--git-dv-blue)",
+  "var(--git-dv-orange)",
+  "var(--git-dv-green)",
+  "var(--git-dv-coral)",
+  "var(--git-dv-aqua)",
+  "var(--git-dv-yellow)",
+  "var(--git-dv-purple)",
+  "var(--git-dv-pink)",
+  "var(--git-dv-brown)",
+  "var(--git-dv-grey)",
+  "var(--git-dv-pink-dark)",
 ];
 
 const extendColorPalette = (index: number): string => {
@@ -37,10 +37,12 @@ export const ContributionPieChart: React.FC<PieProps> = ({ data, title }) => {
 
   const contributors: Record<string, number> = {};
 
+  // calculate all commits per contributor
   data.forEach(({ name, count }) => {
     contributors[name] = (contributors[name] || 0) + count;
   });
 
+  // calculate total commits
   const totalCommit = Object.values(contributors).reduce(
     (sum, val) => sum + val,
     0
@@ -71,10 +73,11 @@ export const ContributionPieChart: React.FC<PieProps> = ({ data, title }) => {
               data={pieData}
               dataKey="value"
               nameKey="name"
+              labelLine={false}
               cx="50%"
               cy="50%"
               outerRadius={130}
-              label={({ name, value }) => `${name}: ${value}%`}
+              label={({ name }) => `${name}`}
             >
               {pieData.map((entry, index) => {
                 const color =
@@ -83,9 +86,7 @@ export const ContributionPieChart: React.FC<PieProps> = ({ data, title }) => {
                 return <Cell key={entry.name} fill={color} />;
               })}
             </Pie>
-            <Tooltip
-              formatter={(value: number, name: string) => [`${value}%`, name]}
-            />
+            <Tooltip formatter={(value: number) => [`${value}%`]} />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>
