@@ -54,12 +54,11 @@ function NavBar({ isLoggedIn }: NavBarProps) {
         <NavigationMenuList className="flex space-x-4">
           <div className="flex items-center space-x-3">
             <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-            <span className="text-xl"></span>
           </div>
 
           {isLandingPage ? (
             // Landing page navigation items
-            <>
+            <div>
               <NavigationMenuItem>
                 <NavigationMenuLink
                   href="#about"
@@ -84,19 +83,14 @@ function NavBar({ isLoggedIn }: NavBarProps) {
                   How-To
                 </NavigationMenuLink>
               </NavigationMenuItem>
-            </>
+            </div>
           ) : (
             // App navigation items
             <>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <Link
-                    to="/dashboard"
-                    className={navigationMenuTriggerStyle()}
-                  >
-                    Dashboard
-                  </Link>{" "}
-                </NavigationMenuLink>
+                <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
+                  Dashboard
+                </Link>{" "}
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink>
@@ -125,12 +119,12 @@ function NavBar({ isLoggedIn }: NavBarProps) {
         </button>
 
         {!isLoggedIn && (
-          <>
+          <div>
             <a href="/login" className={navigationMenuTriggerStyle()}>
               Log in
             </a>
             <SignUpButton />
-          </>
+          </div>
         )}
         {isLoggedIn && <ProfileMenu onSignOut={handleSignOut} />}
       </div>
