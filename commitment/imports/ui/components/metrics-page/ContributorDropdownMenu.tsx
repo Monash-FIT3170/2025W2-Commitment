@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { Button } from '@ui/components/ui/button';
+import * as React from "react";
+import { Button } from "@ui/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -7,9 +7,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@ui/components/ui/dropdown-menu';
+} from "@ui/components/ui/dropdown-menu";
 
-import { ScrollArea } from '@ui/components/ui/scroll-area';
+import { ScrollArea } from "@ui/components/ui/scroll-area";
 
 interface DropdownMenuCheckboxesProps {
   contributors: string[];
@@ -18,27 +18,29 @@ interface DropdownMenuCheckboxesProps {
 export function ContributorDropdownMenu({
   contributors,
 }: DropdownMenuCheckboxesProps) {
-  const [selectedContributors, setContributors] = React.useState<string[]>(contributors);
+  const [selectedContributors, setContributors] =
+    React.useState<string[]>(contributors);
 
-  const allSelected = selectedContributors.length === contributors.length
-    && contributors.length > 0;
+  const allSelected =
+    selectedContributors.length === contributors.length &&
+    contributors.length > 0;
 
   const maxDisplayCount = 5;
 
   const buttonText = () => {
     if (allSelected) {
-      return 'All Contributors';
+      return "All Contributors";
     }
     if (selectedContributors.length === 0) {
-      return 'Select Contributors';
+      return "Select Contributors";
     }
     if (selectedContributors.length > maxDisplayCount) {
       const displayed = selectedContributors
         .slice(0, maxDisplayCount)
-        .join(', ');
+        .join(", ");
       return `${displayed}, ...`;
     }
-    return selectedContributors.join(', ');
+    return selectedContributors.join(", ");
   };
 
   return (
@@ -46,12 +48,14 @@ export function ContributorDropdownMenu({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-auto justify-start focus:outline-hidden focus:ring-0 border-2"
+          className="w-[280px] border-2 focus:outline-none focus:ring-0 justify-start px-3"
         >
-          {buttonText()}
+          <span className="block w-full truncate text-left">
+            {buttonText()}
+          </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[280px] focus:outline-hidden focus:ring-0">
+      <DropdownMenuContent className="w-[280px] focus:outline-none focus:ring-0">
         <DropdownMenuLabel>Select Contributors</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ScrollArea className="h-48">
@@ -64,7 +68,9 @@ export function ContributorDropdownMenu({
                 if (checked) {
                   setContributors((prev) => [...prev, contributor]);
                 } else {
-                  setContributors((prev) => prev.filter((c) => c !== contributor));
+                  setContributors((prev) =>
+                    prev.filter((c) => c !== contributor)
+                  );
                 }
               }}
             >
