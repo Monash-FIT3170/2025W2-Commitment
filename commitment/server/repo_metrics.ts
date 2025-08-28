@@ -284,42 +284,47 @@ export function lineGraphData(data: FilteredData): LineGraphData[] {
   const byDate = new Map<string, Record<string, number>>();
   const repoData = data.repositoryData;
 
-  // gather all contributors
+  // Gather all contributors
   const allContributors = new Set<string>();
   repoData.allCommits.forEach((commit) => {
     allContributors.add(commit.value.contributorName);
   });
 
-  // collect daily commit counts
+  // Collect daily LOC
   repoData.allCommits.forEach((commit) => {
     const user = commit.value.contributorName;
     const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
 
+    // LOC snapshot for this commit
+    const locThisCommit = commit.value.fileData.reduce(
+      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+      0
+    );
     if (!byDate.has(date)) byDate.set(date, {});
     const bucket = byDate.get(date)!;
-    bucket[user] = (bucket[user] ?? 0) + 1;
+    bucket[user] = (bucket[user] ?? 0) + locThisCommit;
   });
 
-  // sort dates
+  // Sort dates
   const sortedDates = Array.from(byDate.keys()).sort((a, b) =>
     a.localeCompare(b)
   );
 
-  // cumulative tracker
+  // Cumulative tracker
   const cumulative: Record<string, number> = {};
-  allContributors.forEach((c) => (cumulative[c] = 0)); // everyone starts at 0
+  allContributors.forEach((c) => (cumulative[c] = 0));
 
   const dataArray: LineGraphData[] = [];
 
   sortedDates.forEach((date) => {
-    const dailyCommits = byDate.get(date)!;
+    const dailyLOC = byDate.get(date)!;
 
     // update cumulative totals
-    Object.keys(dailyCommits).forEach((user) => {
-      cumulative[user] = (cumulative[user] ?? 0) + dailyCommits[user];
+    Object.keys(dailyLOC).forEach((user) => {
+      cumulative[user] = (cumulative[user] ?? 0) + dailyLOC[user];
     });
 
-    // include *all contributors*, even if they didn’t commit today
+    // include *all* contributors, even if they didn’t commit today
     const entry: LineGraphData = { date };
     allContributors.forEach((user) => {
       entry[user] = cumulative[user];
