@@ -13,7 +13,7 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 // import { ContributionPieChart } from "./PieChartGraph";
 // import GraphCard from "./GraphCard";
-import HeatmapGraph from "./HeatMapGraph";
+import HeatmapGraph from "./HeatmapGraph";
 
 import {
   RepositoryData,
