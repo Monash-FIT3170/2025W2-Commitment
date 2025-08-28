@@ -8,7 +8,6 @@ import {
   MetricsData,
   Selections,
 } from "/imports/api/types";
-import { start } from "repl";
 import { getAllMetrics } from "./repo_metrics";
 
 Meteor.methods({
@@ -24,7 +23,7 @@ Meteor.methods({
     startDate,
     endDate,
     branch,
-    contributor
+    contributor,
   }: {
     repoUrl: string; // pass the URl from the frontend
     startDate: Date;
@@ -37,8 +36,6 @@ Meteor.methods({
       "repoCollection.getData",
       repoUrl
     );
-
-    console.log("Right before we call getFilteredRepoData in .getFilteredData", contributor)
 
     // Apply filtering
     const filteredData = getFilteredRepoDataServer(
@@ -122,8 +119,6 @@ Meteor.methods({
       },
     };
 
-
-    console.log("Right before we call te getFilteredData in getAnalytics data: ", selections.selectedContributors)
     const filteredRepo: FilteredData = await Meteor.callAsync(
       "repo.getFilteredData",
       {
@@ -131,13 +126,9 @@ Meteor.methods({
         startDate: selections.selectedDateRange.from,
         endDate: selections.selectedDateRange.to,
         branch: selections.selectedBranch,
-        contributors: selections.selectedContributors,
+        contributor: selections.selectedContributors,
       }
     );
-
-    console.log("Filtered Repo Data:", filteredRepo);
-    console.log("Contributors:", filteredRepo.repositoryData.contributors);
-    console.log("Deeper look:", filteredRepo.repositoryData.allCommits);
 
     const metricsData: MetricsData = await getAllMetrics(filteredRepo);
 

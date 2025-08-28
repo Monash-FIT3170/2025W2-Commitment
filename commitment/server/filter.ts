@@ -17,41 +17,16 @@ export const getFilteredRepoDataServer = (
   start: Date,
   end: Date,
   repo: SerializableRepoData,
-  filteredBranchName: string,
-  filteredContributorNames: string[]
+  filteredBranchName?: string,
+  filteredContributorNames?: string[]
 ): FilteredData => {
   // Find the branch
-
-  console.log("Who are we meant to be filtering out?", filteredContributorNames, typeof filteredContributorNames)
-  console.log("Who are we meant to be filtering out?", filteredBranchName, typeof filteredBranchName)
-  console.log("Who are we meant to be filtering out?", start, end, typeof start, typeof end)
-
   const filterBranch = repo.branches.find(
     (b) => b.branchName === filteredBranchName
   );
   const branchCommitHashes = new Set(filterBranch?.commitHashes ?? []);
 
-  // // FILTER COMMITS → use the array, not repo.allCommits directly
-  // const filteredCommits = repo.allCommits.filter(({ key, value }) => {
-  //   const commitDate = new Date(value.timestamp);
-  //   const isInBranchAndDate =
-  //     branchCommitHashes.has(key) && commitDate >= start && commitDate <= end;
-
-  //   const isCorrectContributor =
-  //     !filteredContributorNames ||
-  //     filteredContributorNames.includes(value.contributorName);
-
-  //   return isInBranchAndDate && isCorrectContributor;
-  // });
-
-  // // FILTER CONTRIBUTORS
-  // const filteredContributors = filteredContributorNames
-  //   ? repo.contributors.filter(({ key }) =>
-  //       filteredContributorNames.includes(key)
-  //     )
-  //   : repo.contributors;
-
-  // FILTER COMMITS
+  // FILTER COMMITS → use the array, not repo.allCommits directly
   const filteredCommits = repo.allCommits.filter(({ key, value }) => {
     const commitDate = new Date(value.timestamp);
     const isInBranchAndDate =
@@ -64,14 +39,12 @@ export const getFilteredRepoDataServer = (
     return isInBranchAndDate && isCorrectContributor;
   });
 
-  // FILTER CONTRIBUTORS → derive from filteredCommits
-  const contributorNames = new Set(
-    filteredCommits.map(({ value }) => value.contributorName)
-  );
-
-  const filteredContributors = repo.contributors.filter(({ value }) =>
-    contributorNames.has(value.name ?? value.name)
-  );
+  // FILTER CONTRIBUTORS
+  const filteredContributors = filteredContributorNames
+    ? repo.contributors.filter(({ key }) =>
+        filteredContributorNames.includes(key)
+      )
+    : repo.contributors;
 
   // RETURN serializable repo
   const filteredRepo: SerializableRepoData = {
