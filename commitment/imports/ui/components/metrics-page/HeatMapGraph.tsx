@@ -24,10 +24,10 @@ const heatMapDescription =
 
 const levels = [
   "bg-git-bg-primary",
-  "bg-git-100",
-  "bg-git-300",
+  "bg-git-200",
   "bg-git-400",
   "bg-git-500",
+  "bg-git-800",
 ];
 
 // Applying normalisation to the data -> the gradient is represented by the value
