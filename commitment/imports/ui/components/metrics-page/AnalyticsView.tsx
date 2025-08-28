@@ -68,37 +68,6 @@ export const mockContributorDataset = {
 const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
 
-export const generateHeatmapData = (
-  startDate: Date,
-  endDate: Date,
-  users = dummyUsers
-) => {
-  if (!endDate || !isValid(endDate)) {
-    return [];
-  }
-
-  const data: ContributionEntry[] = [];
-  const totalDays = Math.floor(
-    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  users.forEach((user) => {
-    Array.from({ length: totalDays + 1 }).forEach((_, i) => {
-      const currentDate = addDays(startDate, i);
-      const contributed = Math.random() < 0.45;
-      const count = contributed ? Math.floor(Math.random() ** 2 * 150 + 5) : 0;
-
-      data.push({
-        name: user,
-        date: format(currentDate, "yyyy-MM-dd"),
-        count,
-      });
-    });
-  });
-
-  return data;
-};
-
 const transformToPieChartData = (data: ContributionEntry[]) => {
   const userTotals = data.reduce<Record<string, number>>((acc, entry) => {
     acc[entry.name] = (acc[entry.name] || 0) + entry.count;
@@ -125,11 +94,6 @@ export function AnalyticsView() {
   const [selectedBranch, setSelectedBranch] = useState<string>("main");
   const [selectedContributors, setSelectedContributors] = useState<string[]>(
     []
-  );
-
-  const mockHeatMapData = generateHeatmapData(
-    dateRange?.from ?? addDays(new Date(), -48),
-    dateRange?.to ?? new Date()
   );
 
   const [loading, setLoading] = useState(true);
@@ -293,7 +257,28 @@ export function AnalyticsView() {
               />
             </div>
             <HeatmapGraph
-              data={mockHeatMapData}
+              data={[
+                { date: "2024-01-01", name: "Alice", count: 30 },
+                { date: "2024-01-01", name: "Bob", count: 15 },
+                { date: "2024-01-01", name: "Charlie", count: 22 },
+                { date: "2024-01-01", name: "David", count: 18 },
+                { date: "2024-01-02", name: "Alice", count: 22 },
+                { date: "2024-01-02", name: "Bob", count: 18 },
+                { date: "2024-01-02", name: "Charlie", count: 25 },
+                { date: "2024-01-02", name: "David", count: 10 },
+                { date: "2024-01-03", name: "Alice", count: 10 },
+                { date: "2024-01-03", name: "Bob", count: 25 },
+                { date: "2024-01-03", name: "Charlie", count: 17 },
+                { date: "2024-01-03", name: "David", count: 20 },
+                { date: "2024-01-04", name: "Alice", count: 17 },
+                { date: "2024-01-04", name: "Bob", count: 20 },
+                { date: "2024-01-04", name: "Charlie", count: 30 },
+                { date: "2024-01-04", name: "David", count: 15 },
+                { date: "2024-01-01", name: "Eva", count: 12 },
+                { date: "2024-01-02", name: "Eva", count: 19 },
+                { date: "2024-01-03", name: "Eva", count: 23 },
+                { date: "2024-01-04", name: "Eva", count: 16 },
+              ]} // Replace with real data
               title="Contributor Activity Heatmap"
             />
           </div>
