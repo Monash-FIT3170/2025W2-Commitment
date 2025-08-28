@@ -80,12 +80,6 @@ export type UserScalingSummary = {
   scale: number; // always present
 };
 
-export type ContributionEntry = {
-  name: string;
-  date: string;
-  count: number;
-};
-
 /**
  * Data Structures for Analytics View
  */
@@ -121,6 +115,12 @@ export interface PieChartData {
   // fill: string; // color
 }
 
+export type HeatmapData = {
+  name: string;
+  date: string;
+  count: number;
+};
+
 export interface MetricsData {
   highlights: {
     totalCommits: HighlightStruct;
@@ -133,6 +133,7 @@ export interface MetricsData {
     leaderboard: LeaderboardData[];
     lineGraph: LineGraphData[];
     pieChart: PieChartData[];
+    heatMap: HeatmapData[];
   };
 }
 
