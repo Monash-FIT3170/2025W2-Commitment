@@ -147,10 +147,12 @@ export async function highlightTotalCommits(): Promise<HighlightStruct> {
   // calculate percentage change
   let percentageChange: number = 0;
   if (commitsCumulative.length >= 2) {
-    const prev = commitsCumulative[commitsCumulative.length - 1].value;
-    const curr = commitsCumulative[commitsCumulative.length - 2].value;
+    const prev = commitsCumulative[commitsCumulative.length - 2].value;
+    const curr = commitsCumulative[commitsCumulative.length - 1].value;
 
-    percentageChange = ((curr - prev) / prev) * 100;
+    if (prev !== 0) {
+      percentageChange = Math.round(((curr - prev) / prev) * 100);
+    }
   }
 
   return {
@@ -227,10 +229,12 @@ export async function highlightTotalLinesOfCode(): Promise<HighlightStruct> {
 
   let percentageChange: number = 0;
   if (linesOfCodeOverTime.length >= 2) {
-    const prev = linesOfCodeOverTime[linesOfCodeOverTime.length - 1].value;
-    const curr = linesOfCodeOverTime[linesOfCodeOverTime.length - 2].value;
+    const prev = linesOfCodeOverTime[linesOfCodeOverTime.length - 2].value;
+    const curr = linesOfCodeOverTime[linesOfCodeOverTime.length - 1].value;
 
-    percentageChange = ((curr - prev) / prev) * 100;
+    if (prev !== 0) {
+      percentageChange = Math.round(((curr - prev) / prev) * 100);
+    }
   }
 
   return {
