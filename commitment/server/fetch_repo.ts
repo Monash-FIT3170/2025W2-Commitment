@@ -1,6 +1,7 @@
 import { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
 import { WebSocket } from "ws";
+import net from "net";
 
 import { RepositoryData } from "../imports/api/types";
 import {deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
@@ -81,7 +82,7 @@ export const getRepoData = async (
         notifier.next(`Websockets failed, trying HTTP...`);
         return fetchDataFromHaskellAppHTTP(url);
       })
-      .then(serializeRepoData).then(deserializeRepoData) // enforces strong typing for the map object
+      .then(serializeRepoData).then(deserializeRepoData) // enforces strong typing for the entire data structure
       .then((data: RepositoryData) => {
         notifier.next("Consolidating new data into database...");
         cacheIntoDatabase(url, data);
@@ -95,6 +96,31 @@ export const getRepoData = async (
 
 /**
  * Fetches the repository data structure from the Haskell API
+ * Using Unix IPC mechanisms to bypass 
+ *
+ * @param url url to run the API on
+ * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
+ * @returns Promise<RepositoryData>: a promise of the API completion
+ */
+const fetchDataFromHaskellAppIPC = async (
+  url: string,
+  notifier: Subject<string>
+): Promise<RepositoryData> => 
+  new Promise<RepositoryData>((resolve, reject) => {
+    const path = "/tmp/haskell-ipc.sock"
+
+    // Connect to Unix socket
+    const socket = net.createConnection(path, () => {
+      const ws = new WebSocket(null)
+      ws.setSocket(socket, null, 100 * 1024 * 1024) // hijack underlying socket (sets max msg size to 100MB)
+      fetchDataFromHaskellAppFromSocket(url, notifier, ws)
+        .then(d => resolve(d))
+        .catch(e => reject(e))
+    })
+  })
+
+/**
+ * Fetches the repository data structure from the Haskell API
  * Uses Websockets to recieve reactive messages from the app
  *
  * @param url url to run the API on
@@ -105,9 +131,28 @@ const fetchDataFromHaskellAppWS = async (
   url: string,
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
+  fetchDataFromHaskellAppFromSocket(
+    url, 
+    notifier, 
+    new WebSocket("ws://haskell-api:8081")
+  )
+
+/**
+ * Fetches the repository data structure from the Haskell API
+ * Uses Websockets to recieve reactive messages from the app
+ *
+ * @param url url to run the API on
+ * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
+ * @param socket a WebSocket to send the messages over
+ * @returns Promise<RepositoryData>: a promise of the API completion
+ */
+const fetchDataFromHaskellAppFromSocket = async (
+  url: string,
+  notifier: Subject<string>,
+  socket: WebSocket
+): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
     notifier.next("Connecting to the API...");
-    const socket = new WebSocket("ws://haskell-api:8081");
 
     socket.onopen = () => {
       // notify that connection to the api was successful
