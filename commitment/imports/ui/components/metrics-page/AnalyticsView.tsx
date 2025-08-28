@@ -11,7 +11,7 @@ import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
-// import { ContributionPieChart } from "./PieChartGraph";
+import { ContributionPieChart } from "./PieChartGraph";
 // import GraphCard from "./GraphCard";
 
 import {
@@ -132,7 +132,6 @@ export function AnalyticsView() {
   const defaultDaysBack = 1000;
 
   const fetchFilteredData = () => {
-
     console.log("Fetching filtered data for repoUrl:", repoUrl);
 
     if (!repoUrl) return;
@@ -153,15 +152,11 @@ export function AnalyticsView() {
           setError(err.message);
           setLoading(false);
         } else {
-          
           setRepoData(deserializeRepoData(filtered.repositoryData));
 
-          const checker = deserializeRepoData(filtered.repositoryData)
+          const checker = deserializeRepoData(filtered.repositoryData);
 
-          console.log(
-            "AFTER DESERIALIZE - checking whole thing",
-            checker
-          );
+          console.log("AFTER DESERIALIZE - checking whole thing", checker);
           console.log(
             "AFTER DESERIALIZE - checking a commit:",
             checker.allCommits
@@ -288,6 +283,13 @@ export function AnalyticsView() {
               <LeaderboardGraph
                 data={contributorCommitData}
                 title="Top Contributors"
+                xAxisLabel="Commits"
+              />
+            </div>
+            <div className="rounded-2xl basis-1/3 min-w-[320px]">
+              <ContributionPieChart
+                data={contributorCommitData}
+                title="Commit Distribution"
                 xAxisLabel="Commits"
               />
             </div>
