@@ -20,18 +20,15 @@ interface HeatmapProps {
 }
 
 const heatMapDescription =
-  "Gain a visual insight on how contributors are performing within a certain period of time"; // FIX: Make a better heatmap description
+  "Gain a visual insight on how contributors are performing within a certain period of time";
 
-// FIX: When the Product Managers define the colours in the system, use those instead of cardcoding
 const levels = [
-  "bg-orange-200",
-  "bg-orange-300",
-  "bg-orange-500",
-  "bg-orange-600",
-  "bg-orange-800",
+  "bg-git-200",
+  "bg-git-300",
+  "bg-git-500",
+  "bg-git-600",
+  "bg-git-800",
 ];
-
-const graphBackgroundColour = "#E8E8DD";
 
 // Applying normalisation to the data -> the gradient is represented by the value
 const getLevelClassNormalized = (ratio: number) => {
@@ -47,24 +44,25 @@ export default function HeatmapGraph({
   data,
   maxUsersToShow,
   title,
-}: HeatmapProps & { title?: string }) {
+}: HeatmapProps): React.ReactElement {
   // Mapping on many different properties - Days/ Weeks/ Months or Years
   const users = useMemo(
     () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
     [data, maxUsersToShow]
   );
-  const to: Date = useMemo(
+
+  let from: Date = useMemo(
     () =>
       parseISO(
-        data.reduce((max, d) => (d.date > max ? d.date : max), data[0].date)
+        data.reduce((min, d) => (d.date < min ? d.date : min), data[0].date)
       ),
     [data]
   );
 
-  const from: Date = useMemo(
+  const to: Date = useMemo(
     () =>
       parseISO(
-        data.reduce((min, d) => (d.date < min ? d.date : min), data[0].date)
+        data.reduce((max, d) => (d.date > max ? d.date : max), data[0].date)
       ),
     [data]
   );
@@ -76,7 +74,7 @@ export default function HeatmapGraph({
 
   if (totalDays <= 7) {
     mode = "dayOfWeek";
-  } else if (totalDays <= 28) {
+  } else if (totalDays <= 49) {
     mode = "weeks";
   } else if (getYear(to) > getYear(from)) {
     mode = "years";
@@ -84,79 +82,100 @@ export default function HeatmapGraph({
     mode = "months";
   }
 
-  const xLabels: string[] = [];
-  let bucketsCount = 0;
+  const yAxisLabels: string[] = [];
+  let yAxisLength = 7;
 
   if (mode === "dayOfWeek") {
-    xLabels.push(...["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
-    bucketsCount = 7;
+    yAxisLabels.push(...["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
   } else if (mode === "weeks") {
-    const numWeeks = Math.min(4, Math.ceil(totalDays / 7));
-    bucketsCount = numWeeks;
-    for (let i = 0; i < numWeeks; i++) {
-      const weekStart = addDays(from, i * 7);
-      const weekEnd = addDays(weekStart, 6);
-      xLabels.push(
-        `${format(weekStart, "MMM d")} - ${format(
+    const numWeeks = Math.min(7, Math.ceil(totalDays / 7));
+
+    from = addDays(from, -7 * (7 - numWeeks));
+
+    for (let i = 0; i < yAxisLength; i++) {
+      const weekStarts = addDays(from, i * 7);
+      const weekEnd = addDays(weekStarts, 6);
+      yAxisLabels.push(
+        `${format(weekStarts, "MMM d")} - ${format(
           weekEnd < to ? weekEnd : to,
           "MMM d"
         )}`
       );
     }
   } else if (mode === "months") {
-    bucketsCount = 12;
-    xLabels.push(
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec"
-    );
+    // Only show last 7 months with data
+    const startMonth = getMonth(from);
+    const endMonth = getMonth(to);
+    const startYear = getYear(from);
+    const endYear = getYear(to);
+
+    // Collect all months between from and to
+    const months: { year: number; month: number }[] = [];
+    let y = startYear;
+    let m = startMonth;
+    while (y < endYear || (y === endYear && m <= endMonth)) {
+      months.push({ year: y, month: m });
+      m++;
+      if (m > 11) {
+        m = 0;
+        y++;
+      }
+    }
+    const lastMonths = months.slice(-7);
+    while (lastMonths.length < 7) {
+      const first = lastMonths[0];
+      let prevMonth = first.month - 1;
+      let prevYear = first.year;
+      if (prevMonth < 0) {
+        prevMonth = 11;
+        prevYear -= 1;
+      }
+      lastMonths.unshift({ year: prevYear, month: prevMonth });
+    }
+    lastMonths.forEach(({ year, month }) => {
+      yAxisLabels.push(`${format(new Date(year, month, 1), "MMM yyyy")}`);
+    });
   } else {
     const endYear = getYear(to);
-    bucketsCount = 10;
-    for (let i = 0; i < bucketsCount; i++) {
-      xLabels.unshift((endYear - i).toString());
+    for (let i = 0; i < yAxisLength; i++) {
+      yAxisLabels.unshift((endYear - i).toString());
     }
   }
 
-  const table: Record<string, number[]> = {};
-  users.forEach((user) => {
-    table[user] = Array<number>(bucketsCount).fill(0);
-  });
+  const table: Record<string, number[]> = useMemo(() => {
+    const tbl: Record<string, number[]> = {};
+    users.forEach((user) => {
+      tbl[user] = Array<number>(yAxisLength).fill(0);
+    });
 
-  const getBucketIndex = (dateStr: string): number => {
-    const date = parseISO(dateStr);
-    if (mode === "dayOfWeek") {
-      return getDay(date);
-    }
-    if (mode === "weeks") {
-      const diffDays = differenceInCalendarDays(date, from);
-      return Math.min(Math.floor(diffDays / 7), bucketsCount - 1);
-    }
-    if (mode === "months") {
-      return getMonth(date);
-    }
-    const year = getYear(date);
-    const endYear = getYear(to);
-    const idx = endYear - year;
-    return idx >= 0 && idx < bucketsCount ? bucketsCount - 1 - idx : -1;
-  };
+    const getBucketIndex = (dateStr: string): number => {
+      const date = parseISO(dateStr);
+      if (mode === "dayOfWeek") {
+        return getDay(date);
+      }
+      if (mode === "weeks") {
+        const diffDays = differenceInCalendarDays(date, from);
+        return Math.min(Math.floor(diffDays / 7), yAxisLength - 1);
+      }
+      if (mode === "months") {
+        return getMonth(date);
+      }
+      const year = getYear(date);
+      const endYear = getYear(to);
+      const idx = endYear - year;
+      return idx >= 0 && idx < yAxisLength ? yAxisLength - 1 - idx : -1;
+    };
 
-  data.forEach(({ name, date, contributions: count }) => {
-    if (!users.includes(name)) return;
-    const idx = getBucketIndex(date);
-    if (idx >= 0 && idx < bucketsCount) {
-      table[name][idx] += count;
-    }
-  });
+    data.forEach(({ name, date, count }) => {
+      if (!users.includes(name)) return;
+      const idx = getBucketIndex(date);
+      if (idx >= 0 && idx < yAxisLength) {
+        tbl[name][idx] += count;
+      }
+    });
+
+    return tbl;
+  }, [users, yAxisLength, mode, from, to, data]);
 
   const userMaxMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -171,7 +190,7 @@ export default function HeatmapGraph({
   const cellSize = 40;
   const spacing = 8;
   const labelWidth = 50;
-  const gridTemplateColumns = `${labelWidth}px repeat(${bucketsCount}, ${cellSize}px)`;
+  const gridTemplateColumns = `${labelWidth}px repeat(${yAxisLength}, ${cellSize}px)`;
   const gridTemplateRows = `repeat(${users.length}, ${cellSize}px) 1fr`;
 
   return (
@@ -224,7 +243,7 @@ export default function HeatmapGraph({
               const ratio = max === 0 ? 0 : count / max;
               return (
                 <div
-                  key={`${user}-${xLabels[colIdx]}`}
+                  key={`${user}-${yAxisLabels[colIdx]}`}
                   className={`rounded-sm cursor-default  ${getLevelClassNormalized(
                     ratio
                   )}`}
@@ -234,13 +253,13 @@ export default function HeatmapGraph({
                     width: cellSize,
                     height: cellSize,
                   }}
-                  title={`${user} · ${xLabels[colIdx]}: ${count} LOC (max: ${max})`}
+                  title={`${user} · ${yAxisLabels[colIdx]}: ${count} LOC (max: ${max})`}
                 />
               );
             })
           )}
           {/* X AXIS LABELS */}
-          {xLabels.map((label, idx) => (
+          {yAxisLabels.map((label, idx) => (
             <div
               key={`x-label-${label}`}
               style={{
