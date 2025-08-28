@@ -1,10 +1,6 @@
-import React from 'react';
-import {
-  PieChart, Pie, Cell, Tooltip,
-} from 'recharts';
-
-import { TrendingUp } from 'lucide-react';
-
+import React from "react";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,37 +8,34 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@ui/components/ui/card';
-import { stat } from 'fs';
-import InfoButton from '../ui/infoButton';
-import GraphCard from './GraphCard';
+} from "@ui/components/ui/card";
+import InfoButton from "../ui/infoButton";
+import GraphCard from "./GraphCard";
 
-export interface ChartEntry {
-  user: string;
-  contributions: number;
-  fill: string;
+interface ContributorDataPoint {
+  date: string;
+  [contributor: string]: string | number;
 }
 
-interface Props {
-  data: ChartEntry[];
+interface PieProps {
+  data: ContributorDataPoint[];
+  title: string;
 }
 
 // CURRENT COLOUR PALLETTE - ASK PMs TO help
 
-const graphBackgroundColour = '#E8E8DD';
-
 const staticColorPalette = [
-  '#4E79A7',
-  '#F28E2B',
-  '#59A14F',
-  '#E15759',
-  '#76B7B2',
-  '#EDC948',
-  '#B07AA1',
-  '#FF9DA7',
-  '#9C755F',
-  '#BAB0AC',
-  '#D37295',
+  "#4E79A7",
+  "#F28E2B",
+  "#59A14F",
+  "#E15759",
+  "#76B7B2",
+  "#EDC948",
+  "#B07AA1",
+  "#FF9DA7",
+  "#9C755F",
+  "#BAB0AC",
+  "#D37295",
 ];
 
 const extendColorPalette = (index: number): string => {
@@ -50,37 +43,34 @@ const extendColorPalette = (index: number): string => {
   return `hsl(${hue}, 70%, 55%)`;
 };
 
-const pieChartDescription = "Commit distribution by contributor — each slice shows a contributor's share of total commits.";
+// const pieChartDescription =
+//   "Commit distribution by contributor — each slice shows a contributor's share of total commits.";
 
 // For pop up
-function CustomTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: any[];
-}) {
-  if (!active || !payload || !payload.length) return null;
+// function CustomTooltip({
+//   active,
+//   payload,
+// }: {
+//   active?: boolean;
+//   payload?: any[];
+// }) {
+//   if (!active || !payload || !payload.length) return null;
 
-  const { user, contributions, fill } = payload[0].payload;
+//   const { user, contributions, fill } = payload[0].payload;
 
-  return (
-    <div className="rounded-md border-2 border-black bg-white px-3 py-2 text-sm shadow-md text-muted-foreground ">
-      <div className="flex items-center gap-2 font-semibold">
-        <span
-          className="inline-block h-3 w-3 rounded-sm"
-          style={{ backgroundColor: fill }}
-        />
-        {user}
-      </div>
-      <div>
-        {contributions}
-        {' '}
-        contributions
-      </div>
-    </div>
-  );
-}
+//   return (
+//     <div className="rounded-md border-2 border-black bg-white px-3 py-2 text-sm shadow-md text-muted-foreground ">
+//       <div className="flex items-center gap-2 font-semibold">
+//         <span
+//           className="inline-block h-3 w-3 rounded-sm"
+//           style={{ backgroundColor: fill }}
+//         />
+//         {user}
+//       </div>
+//       <div>{contributions} contributions</div>
+//     </div>
+//   );
+// }
 
 // Main Pie Chart
 export function ContributionPieChart({ data }: Props) {
@@ -107,7 +97,9 @@ export function ContributionPieChart({ data }: Props) {
       </CardHeader>
 
       {coloredData.length === 0 ? (
-        <CardContent className="p-4 text-gray-500">Please select an End Date in the Date Range</CardContent>
+        <CardContent className="p-4 text-gray-500">
+          Please select an End Date in the Date Range
+        </CardContent>
       ) : (
         <>
           <CardContent className="flex flex-col items-center gap-4">
@@ -131,7 +123,7 @@ export function ContributionPieChart({ data }: Props) {
               </Pie>
               <Tooltip
                 content={<CustomTooltip />}
-                wrapperStyle={{ outline: 'none' }}
+                wrapperStyle={{ outline: "none" }}
               />
             </PieChart>
 
