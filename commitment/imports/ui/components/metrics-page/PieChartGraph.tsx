@@ -1,6 +1,5 @@
 import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { TrendingUp } from "lucide-react";
 import { CardContent, CardHeader, CardTitle } from "@ui/components/ui/card";
 import InfoButton from "../ui/infoButton";
 import GraphCard from "./GraphCard";
@@ -31,35 +30,6 @@ const extendColorPalette = (index: number): string => {
   const hue = (index * 137.508) % 360;
   return `hsl(${hue}, 70%, 55%)`;
 };
-
-// const pieChartDescription =
-//   "Commit distribution by contributor — each slice shows a contributor's share of total commits.";
-
-// For pop up
-// function CustomTooltip({
-//   active,
-//   payload,
-// }: {
-//   active?: boolean;
-//   payload?: any[];
-// }) {
-//   if (!active || !payload || !payload.length) return null;
-
-//   const { user, contributions, fill } = payload[0].payload;
-
-//   return (
-//     <div className="rounded-md border-2 border-black bg-white px-3 py-2 text-sm shadow-md text-muted-foreground ">
-//       <div className="flex items-center gap-2 font-semibold">
-//         <span
-//           className="inline-block h-3 w-3 rounded-sm"
-//           style={{ backgroundColor: fill }}
-//         />
-//         {user}
-//       </div>
-//       <div>{contributions} contributions</div>
-//     </div>
-//   );
-// }
 
 // Main Pie Chart
 export const ContributionPieChart: React.FC<PieProps> = ({ data, title }) => {
