@@ -64,31 +64,28 @@ export const mockContributorDataset = {
   ],
 };
 
-export const pieData = {
-  title: "Meow",
-  data = [
-    { date: "2024-01-01", name: "Alice", count: 30 },
-    { date: "2024-01-01", name: "Bob", count: 15 },
-    { date: "2024-01-01", name: "Charlie", count: 22 },
-    { date: "2024-01-01", name: "David", count: 18 },
-    { date: "2024-01-02", name: "Alice", count: 22 },
-    { date: "2024-01-02", name: "Bob", count: 18 },
-    { date: "2024-01-02", name: "Charlie", count: 25 },
-    { date: "2024-01-02", name: "David", count: 10 },
-    { date: "2024-01-03", name: "Alice", count: 10 },
-    { date: "2024-01-03", name: "Bob", count: 25 },
-    { date: "2024-01-03", name: "Charlie", count: 17 },
-    { date: "2024-01-03", name: "David", count: 20 },
-    { date: "2024-01-04", name: "Alice", count: 17 },
-    { date: "2024-01-04", name: "Bob", count: 20 },
-    { date: "2024-01-04", name: "Charlie", count: 30 },
-    { date: "2024-01-04", name: "David", count: 15 },
-    { date: "2024-01-01", name: "Eva", count: 12 },
-    { date: "2024-01-02", name: "Eva", count: 19 },
-    { date: "2024-01-03", name: "Eva", count: 23 },
-    { date: "2024-01-04", name: "Eva", count: 16 },
-  ], // Replace with real data
-};
+export const pieData = [
+  { date: "2024-01-01", name: "Alice", count: 30 },
+  { date: "2024-01-01", name: "Bob", count: 15 },
+  { date: "2024-01-01", name: "Charlie", count: 22 },
+  { date: "2024-01-01", name: "David", count: 18 },
+  { date: "2024-01-02", name: "Alice", count: 22 },
+  { date: "2024-01-02", name: "Bob", count: 18 },
+  { date: "2024-01-02", name: "Charlie", count: 25 },
+  { date: "2024-01-02", name: "David", count: 10 },
+  { date: "2024-01-03", name: "Alice", count: 10 },
+  { date: "2024-01-03", name: "Bob", count: 25 },
+  { date: "2024-01-03", name: "Charlie", count: 17 },
+  { date: "2024-01-03", name: "David", count: 20 },
+  { date: "2024-01-04", name: "Alice", count: 17 },
+  { date: "2024-01-04", name: "Bob", count: 20 },
+  { date: "2024-01-04", name: "Charlie", count: 30 },
+  { date: "2024-01-04", name: "David", count: 15 },
+  { date: "2024-01-01", name: "Eva", count: 12 },
+  { date: "2024-01-02", name: "Eva", count: 19 },
+  { date: "2024-01-03", name: "Eva", count: 23 },
+  { date: "2024-01-04", name: "Eva", count: 16 },
+];
 
 const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
@@ -124,18 +121,18 @@ export const generateRandomContributions = (
   return data;
 };
 
-const transformToPieChartData = (data: ContributionEntry[]) => {
-  const userTotals = data.reduce<Record<string, number>>((acc, entry) => {
-    acc[entry.name] = (acc[entry.name] || 0) + entry.count;
-    return acc;
-  }, {});
+// const transformToPieChartData = (data: ContributionEntry[]) => {
+//   const userTotals = data.reduce<Record<string, number>>((acc, entry) => {
+//     acc[entry.name] = (acc[entry.name] || 0) + entry.count;
+//     return acc;
+//   }, {});
 
-  return Object.entries(userTotals).map(([user, contributions], i) => ({
-    user,
-    contributions,
-    fill: dark2[i % dark2.length],
-  }));
-};
+//   return Object.entries(userTotals).map(([user, contributions], i) => ({
+//     user,
+//     contributions,
+//     fill: dark2[i % dark2.length],
+//   }));
+// };
 
 // -----------------------------
 // Main Component
@@ -314,7 +311,7 @@ export function AnalyticsView() {
             </div>
             <div className="rounded-2xl basis-1/3 min-w-[320px]">
               <ContributionPieChart
-                data={PieData}
+                data={pieData}
                 title="Commit Distribution"
               />
             </div>
