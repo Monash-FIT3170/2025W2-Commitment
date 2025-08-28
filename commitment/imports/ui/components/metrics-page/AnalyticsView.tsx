@@ -263,7 +263,7 @@ export function AnalyticsView() {
                 { date: "2024-01-01", name: "Charlie", count: 22 },
                 { date: "2024-01-01", name: "David", count: 18 },
                 { date: "2024-01-02", name: "Alice", count: 22 },
-                { date: "2024-01-02", name: "Bob", count: 18 },
+                { date: "2024-02-02", name: "Bob", count: 18 },
                 { date: "2024-01-02", name: "Charlie", count: 25 },
                 { date: "2024-01-02", name: "David", count: 10 },
                 { date: "2024-01-03", name: "Alice", count: 10 },
@@ -277,7 +277,7 @@ export function AnalyticsView() {
                 { date: "2024-01-01", name: "Eva", count: 12 },
                 { date: "2024-01-02", name: "Eva", count: 19 },
                 { date: "2024-01-03", name: "Eva", count: 23 },
-                { date: "2024-01-04", name: "Eva", count: 16 },
+                { date: "2024-03-04", name: "Eva", count: 16 },
               ]} // Replace with real data
               title="Contributor Activity Heatmap"
             />

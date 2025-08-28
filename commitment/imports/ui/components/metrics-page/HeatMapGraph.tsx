@@ -75,7 +75,10 @@ export default function HeatmapGraph({
     mode = "dayOfWeek";
   } else if (totalDays <= 49) {
     mode = "weeks";
-  } else if (getYear(to) > getYear(from)) {
+  } else if (
+    (getYear(to) > getYear(from)) &&
+    (differenceInCalendarDays(to, from) > 30 * 7)
+  ) {
     mode = "years";
   } else {
     mode = "months";
@@ -84,6 +87,7 @@ export default function HeatmapGraph({
   const yAxisLabels: string[] = [];
   let yAxisLength = 7;
 
+  let monthBuckets: { year: number; month: number }[] = [];
   if (mode === "dayOfWeek") {
     yAxisLabels.push(...["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
   } else if (mode === "weeks") {
@@ -128,6 +132,7 @@ export default function HeatmapGraph({
     lastMonths.forEach(({ year, month }) => {
       yAxisLabels.push(`${format(new Date(year, month, 1), "MMM yyyy")}`);
     });
+    monthBuckets = lastMonths;
   } else {
     const endYear = getYear(to);
     for (let i = 0; i < yAxisLength; i++) {
@@ -151,7 +156,12 @@ export default function HeatmapGraph({
         return Math.min(Math.floor(diffDays / 7), yAxisLength - 1);
       }
       if (mode === "months") {
-        return getMonth(date);
+        const year = getYear(date);
+        const month = getMonth(date);
+        return monthBuckets.findIndex(
+          (b: { year: number; month: number }) =>
+            b.year === year && b.month === month
+        );
       }
       const year = getYear(date);
       const endYear = getYear(to);
