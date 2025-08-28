@@ -13,6 +13,7 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 // import { ContributionPieChart } from "./PieChartGraph";
 // import GraphCard from "./GraphCard";
+import HeatmapGraph from "./HeatMapGraph";
 
 import {
   RepositoryData,
@@ -67,7 +68,7 @@ export const mockContributorDataset = {
 const metricsPageDescription =
   "This page gives an overview of key metrics and performance trends.";
 
-export const generateRandomContributions = (
+export const generateHeatmapData = (
   startDate: Date,
   endDate: Date,
   users = dummyUsers
@@ -97,6 +98,11 @@ export const generateRandomContributions = (
 
   return data;
 };
+
+const mockHeatMapData = generateHeatmapData(
+  addDays(new Date(), -5),
+  new Date()
+);
 
 const transformToPieChartData = (data: ContributionEntry[]) => {
   const userTotals = data.reduce<Record<string, number>>((acc, entry) => {
@@ -132,7 +138,6 @@ export function AnalyticsView() {
   const defaultDaysBack = 1000;
 
   const fetchFilteredData = () => {
-
     console.log("Fetching filtered data for repoUrl:", repoUrl);
 
     if (!repoUrl) return;
@@ -153,15 +158,11 @@ export function AnalyticsView() {
           setError(err.message);
           setLoading(false);
         } else {
-          
           setRepoData(deserializeRepoData(filtered.repositoryData));
 
-          const checker = deserializeRepoData(filtered.repositoryData)
+          const checker = deserializeRepoData(filtered.repositoryData);
 
-          console.log(
-            "AFTER DESERIALIZE - checking whole thing",
-            checker
-          );
+          console.log("AFTER DESERIALIZE - checking whole thing", checker);
           console.log(
             "AFTER DESERIALIZE - checking a commit:",
             checker.allCommits
@@ -291,6 +292,10 @@ export function AnalyticsView() {
                 xAxisLabel="Commits"
               />
             </div>
+            <HeatmapGraph
+              data={mockHeatMapData}
+              title="Contributions Heatmap"
+            />
           </div>
         </div>
       </div>

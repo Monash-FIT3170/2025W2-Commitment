@@ -11,19 +11,12 @@ import {
 import InfoButton from "../ui/infoButton";
 import GraphCard from "./GraphCard";
 import { CardHeader, CardTitle, CardContent } from "../ui/card";
+import { ContributionEntry } from "/imports/api/types";
 
-type ContributionDataItem = {
-  name: string;
-  date: string; // "yyyy-MM-dd"
-  count: number;
-};
-
-interface HeatMapProps {
-  data: ContributionDataItem[];
-  startDate?: Date;
-  endDate?: Date;
+interface HeatmapProps {
+  data: ContributionEntry[];
   maxUsersToShow?: number;
-  title?: string; // This changes depending on the heatmap name - if it needs to change at all
+  title?: string;
 }
 
 const heatMapDescription =
@@ -50,60 +43,31 @@ const getLevelClassNormalized = (ratio: number) => {
 };
 
 // Main heatmap function
-export default function UserContributionHeatMap({
+export default function HeatmapGraph({
   data,
-  startDate,
-  endDate,
   maxUsersToShow,
   title,
-}: HeatMapProps & { title?: string }) {
+}: HeatmapProps & { title?: string }) {
   // Mapping on many different properties - Days/ Weeks/ Months or Years
-
   const users = useMemo(
     () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
     [data, maxUsersToShow]
   );
+  const to: Date = useMemo(
+    () =>
+      parseISO(
+        data.reduce((max, d) => (d.date > max ? d.date : max), data[0].date)
+      ),
+    [data]
+  );
 
-  const from = useMemo(() => {
-    if (startDate) return startDate;
-    return parseISO(
-      data.reduce((min, d) => (d.date < min ? d.date : min), data[0]?.date)
-    );
-  }, [data, startDate]);
-
-  const to = useMemo(() => {
-    if (endDate) return endDate;
-    return parseISO(
-      data.reduce((max, d) => (d.date > max ? d.date : max), data[0]?.date)
-    );
-  }, [data, endDate]);
-
-  // In the case where no data is given
-  if (!data || data.length === 0) {
-    return (
-      <div
-        className="rounded border p-6 overflow-x-auto font-mono "
-        style={{
-          maxWidth: "fit-content",
-          backgroundColor: graphBackgroundColour,
-        }}
-      >
-        {title && ( // could make this into a component
-          <div className="flex items-center space-x-2 w-4/5 ">
-            <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-
-            <div className="relative -mt-2 ">
-              <InfoButton description={heatMapDescription} />
-            </div>
-          </div>
-        )}
-
-        <div className="p-4 text-gray-500">
-          Please select an End Date in the Date Range
-        </div>
-      </div>
-    );
-  }
+  const from: Date = useMemo(
+    () =>
+      parseISO(
+        data.reduce((min, d) => (d.date < min ? d.date : min), data[0].date)
+      ),
+    [data]
+  );
 
   const totalDays = differenceInCalendarDays(to, from) + 1;
 
@@ -186,7 +150,7 @@ export default function UserContributionHeatMap({
     return idx >= 0 && idx < bucketsCount ? bucketsCount - 1 - idx : -1;
   };
 
-  data.forEach(({ name, date, count }) => {
+  data.forEach(({ name, date, contributions: count }) => {
     if (!users.includes(name)) return;
     const idx = getBucketIndex(date);
     if (idx >= 0 && idx < bucketsCount) {
