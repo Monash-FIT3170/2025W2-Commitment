@@ -99,11 +99,6 @@ export const generateHeatmapData = (
   return data;
 };
 
-const mockHeatMapData = generateHeatmapData(
-  addDays(new Date(), -48),
-  new Date()
-);
-
 const transformToPieChartData = (data: ContributionEntry[]) => {
   const userTotals = data.reduce<Record<string, number>>((acc, entry) => {
     acc[entry.name] = (acc[entry.name] || 0) + entry.count;
@@ -132,10 +127,15 @@ export function AnalyticsView() {
     []
   );
 
+  const mockHeatMapData = generateHeatmapData(
+    dateRange?.from ?? addDays(new Date(), -48),
+    dateRange?.to ?? new Date()
+  );
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const defaultDaysBack = 1000;
+  const defaultDaysBack = 31;
 
   const fetchFilteredData = () => {
     console.log("Fetching filtered data for repoUrl:", repoUrl);
