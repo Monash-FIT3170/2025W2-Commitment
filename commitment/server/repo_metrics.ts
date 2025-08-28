@@ -8,7 +8,6 @@ import {
   PieChartData,
 } from "../imports/api/types";
 import { Meteor } from "meteor/meteor";
-import { serializeRepoData } from "/imports/api/serialisation";
 
 // storing a global access unfiltered data here
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
@@ -23,8 +22,8 @@ export async function getAllMetrics(data: FilteredData): Promise<MetricsData> {
     highlights: {
       totalCommits: await highlightTotalCommits(),
       totalLinesOfCode: await highlightTotalLinesOfCode(),
-      numContributors: numContributors(data),
-      numBranches: numBranches(data),
+      numContributors: await numContributors(),
+      numBranches: await numBranches(),
     },
     contributors: {
       leaderboard: leaderboardData(data),
@@ -245,8 +244,9 @@ export async function highlightTotalLinesOfCode(): Promise<HighlightStruct> {
  * @param data Filtered Repository Data
  * @returns Highlighted number of contributors information
  */
-export function numContributors(data: FilteredData): number {
-  return data.repositoryData.contributors.length;
+export async function numContributors(): Promise<number> {
+  const unfilteredData = await getUnfilteredData();
+  return unfilteredData.contributors.length;
 }
 
 /**
@@ -254,8 +254,9 @@ export function numContributors(data: FilteredData): number {
  * @param data Filtered Repository Data
  * @returns Highlighted number of branches information
  */
-export function numBranches(data: FilteredData): number {
-  return data.repositoryData.branches.length;
+export async function numBranches(): Promise<number> {
+  const unfilteredData = await getUnfilteredData();
+  return unfilteredData.branches.length;
 }
 
 /**
