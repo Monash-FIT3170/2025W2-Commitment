@@ -8,9 +8,9 @@ const USER_DATA_METRICS = [
   "Commits per day",
 ];
 
-function normalizeMetric(values: number[], alpha = 0.3): number[] {
+function normalizeMetric(values: number[], alpha = 0.2): number[] {
   //alpha determines leniancy - smooths out values
-  
+
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
   const rangeVal = maxVal !== minVal ? maxVal - minVal : 1;
@@ -26,7 +26,6 @@ export function scaleUsers(
   const selectedMetrics = config.metrics ?? [];
   const method = config.method ?? "Percentiles";
 
-  // Build users array with all metric values
   const userNames = Array.from(
     new Set(
       Array.from(repoData.allCommits.values()).map((c) => c.contributorName)
@@ -63,6 +62,10 @@ export function scaleUsers(
 
     return [name, values];
   });
+  console.log(
+    "Metric values for Amy:",
+    users.map((u) => u[1])
+  );
 
   const metricIndices = selectedMetrics
     .map((m) => USER_DATA_METRICS.indexOf(m))
@@ -101,18 +104,17 @@ export function scaleUsers(
       score = userScores.reduce((a, b) => a + b, 0) / userScores.length;
     }
 
-    // console.log("Users:", users);
-    // console.log("Selected metric indices:", metricIndices);
-    // console.log("Normalized values:", metricsValues);
+    console.log("Selected metrics indices:", metricIndices);
+    console.log("Normalized metrics values:", metricsValues);
 
-    // Round to 2 decimals, but avoid rounding to 0 for small scores
+    // Round to 2 decimals -> never round down to 0
     console.log(`Final score for ${name}:`, score);
 
     return { name, score: Math.round(score * 100) / 100 };
   });
 }
 
-// Helper to calculate LOC from a commit
+// Helper to calculate LOC from a commit -> ideally we dont do this
 function getLOCFromCommit(commit: CommitData): number {
   if (!commit.fileData) return 0;
   return commit.fileData.reduce((acc, fileChange) => {

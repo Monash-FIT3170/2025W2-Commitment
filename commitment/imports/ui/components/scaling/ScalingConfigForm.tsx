@@ -40,7 +40,7 @@ interface ScalingConfigFormProps {
   ) => void;
 }
 
-function deserializeRepo(serialized: SerialisableMapObject<string, any>[]) {
+function deserializeRepo(serialized: SerialisableMapObject<string, any>[]) { //find a better way to do this
   return new Map(serialized.map((c) => [c.key, c.value]));
 }
 
@@ -50,6 +50,10 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
   const [script, setScript] = useState<File[] | undefined>();
   const [metricsData, setMetricsData] = useState<RepositoryData | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<string | undefined>();
+  const [selectedContributors, setSelectedContributors] = useState<string[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,8 +78,12 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
       "repo.getFilteredData",
       {
         repoUrl,
-        startDate: new Date("2000-01-01"), // find the date of the first commit in the repo?
+        startDate: new Date("2000-01-01"), // fallback
         endDate: new Date(),
+        branch: selectedBranch ?? "main",
+        contributor: selectedContributors.length
+          ? selectedContributors
+          : undefined,
       },
       (err: Error, filtered: FilteredData) => {
         if (err) {
@@ -85,7 +93,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         }
 
         const repoData: RepositoryData = {
-          //Ideally we don't deserialize the repo and we actually have a meaningful method
           name: filtered.repositoryData.name,
           branches: filtered.repositoryData.branches,
           allCommits: deserializeRepo(filtered.repositoryData.allCommits),
@@ -96,7 +103,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         setLoading(false);
       }
     );
-  }, [repoUrl]);
+  }, [repoUrl, selectedBranch, selectedContributors]);
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -108,10 +115,9 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
       return;
     }
 
-    const scaledResults = scaleUsers(metricsData, data);
+    const rawResults = scaleUsers(metricsData, data);
 
-    const userScalingSummaries: UserScalingSummary[] = scaledResults.map(
-      //Mapping for format suggested by UserScalingSummary
+    const userScalingSummaries: UserScalingSummary[] = rawResults.map(
       (r: any) => {
         const contributorData = metricsData.contributors.get(r.name);
 
