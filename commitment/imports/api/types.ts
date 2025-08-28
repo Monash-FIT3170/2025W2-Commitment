@@ -115,7 +115,7 @@ export interface PieChartData {
   // fill: string; // color
 }
 
-export type HeatmapData = {
+export type HeatMapData = {
   name: string;
   date: string;
   count: number;
@@ -133,7 +133,7 @@ export interface MetricsData {
     leaderboard: LeaderboardData[];
     lineGraph: LineGraphData[];
     pieChart: PieChartData[];
-    heatMap: HeatmapData[];
+    heatMap: HeatMapData[];
   };
 }
 

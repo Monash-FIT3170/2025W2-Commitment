@@ -6,6 +6,7 @@ import {
   LeaderboardData,
   LineGraphData,
   PieChartData,
+  HeatMapData,
 } from "../imports/api/types";
 import { Meteor } from "meteor/meteor";
 
@@ -29,6 +30,7 @@ export async function getAllMetrics(data: FilteredData): Promise<MetricsData> {
       leaderboard: leaderboardData(data),
       lineGraph: lineGraphData(data),
       pieChart: pieChartData(data),
+      heatMap: heatMapData(data),
     },
   };
 }
@@ -347,4 +349,36 @@ export function pieChartData(data: FilteredData): PieChartData[] {
     user: contributor.name,
     contributions: contributor.commits,
   }));
+}
+
+export function heatMapData(data: FilteredData): HeatMapData[] {
+  const repoData = data.repositoryData;
+
+  // Map of date → user → commit count
+  const byDateUser = new Map<string, Record<string, number>>();
+
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+
+    if (!byDateUser.has(date)) byDateUser.set(date, {});
+    const bucket = byDateUser.get(date)!;
+
+    bucket[user] = (bucket[user] ?? 0) + 1;
+  });
+
+  // Flatten into HeatMapData[]
+  const heatMapArray: HeatMapData[] = [];
+
+  byDateUser.forEach((userCounts, date) => {
+    Object.entries(userCounts).forEach(([user, count]) => {
+      heatMapArray.push({
+        name: user,
+        date,
+        count,
+      });
+    });
+  });
+
+  return heatMapArray;
 }
