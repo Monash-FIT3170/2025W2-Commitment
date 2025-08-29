@@ -8,7 +8,7 @@ import {
   MetricsData,
   Selections,
 } from "/imports/api/types";
-import { getAllMetrics } from "./repo_metrics";
+import { getAllMetrics, getMetricString } from "./repo_metrics";
 
 Meteor.methods({
   /**
@@ -140,6 +140,7 @@ Meteor.methods({
       metadata,
       selections,
       metrics: metricsData,
+      metricNames: getMetricString()
     };
 
     return returnData;

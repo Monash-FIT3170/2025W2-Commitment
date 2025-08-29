@@ -12,7 +12,13 @@ import { LeaderboardGraph } from "./LeaderboardGraph";
 // import GraphCard from "./GraphCard";
 
 import { AnalyticsData } from "/imports/api/types";
+import { MetricDropdownMenu } from "./MetricDropdownMenu";
 
+
+// TEST : 
+
+const selectedMetrics = ["LOC", "Commits", "LOC/Commits", "Commits per Day", "Total Commits"];
+const placeholder = 3; 
 // -----------------------------
 // Main Component
 // -----------------------------
@@ -31,6 +37,7 @@ export function AnalyticsView(): React.JSX.Element {
   const [selectedContributors, setSelectedContributors] = useState<string[]>(
     []
   );
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +62,7 @@ export function AnalyticsView(): React.JSX.Element {
           setAnalyticsData(data);
           setSelectedContributors(data.selections.selectedContributors);
           setSelectedBranch(data.selections.selectedBranch);
+          setSelectedMetrics(data.selections.)
           setDateRange(data.selections.selectedDateRange);
         }
         setLoading(false);
@@ -137,6 +145,14 @@ export function AnalyticsView(): React.JSX.Element {
                 contributors={analytics.metadata.contributors}
                 selected={selectedContributors}
                 onChange={setSelectedContributors}
+              />
+            </div>
+              <div className="flex flex-col">
+              <label className="text-sm text-gray-600">Metrics*</label>
+              <MetricDropdownMenu
+                metrics={analytics.metricNames}
+                selected={selectedMetrics}
+                onChange={setSelectedMetrics}
               />
             </div>
           </div>

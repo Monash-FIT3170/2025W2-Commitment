@@ -145,13 +145,11 @@ export interface Selections {
   selectedMetrics: string; 
   selectedDateRange: DateRange;
 }
-export interface MetricNames {
-  [key: string]: string;
-}
+
 
 export interface AnalyticsData {
   metadata: Metadata;
   selections: Selections;
   metrics: MetricsData;
-  metricNames: MetricNames; 
+  metricNames: string[]; 
 }

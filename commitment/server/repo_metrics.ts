@@ -538,11 +538,11 @@ export function heatMapCommitData(data: FilteredData): HeatMapData[] {
   return heatMapArray;
 }
 
-export function getMetricString(): MetricNames {
-  return {
-    "Total No. Commits": "Total No. Commits",
-    "LOC": "Lines of Code",
-    "LOC/Commit": "Lines of Code per Commit",
-    "Commits Per Day": "Commits Per Day",
-  };
+export function getMetricString(): string[] {
+  return [
+    "Total No. Commits",
+    "LOC",
+    "LOC/Commit",
+    "Commits Per Day",
+  ];
 }
