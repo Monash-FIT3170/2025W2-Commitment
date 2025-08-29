@@ -1,5 +1,12 @@
 import React from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
 import { CardContent, CardHeader, CardTitle } from "@ui/components/ui/card";
 import InfoButton from "../ui/infoButton";
 import GraphCard from "./GraphCard";
@@ -77,7 +84,6 @@ export const ContributionPieChart: React.FC<PieProps> = ({ data, title }) => {
               cx="50%"
               cy="50%"
               outerRadius={130}
-              label={({ name }) => `${name}`}
             >
               {pieData.map((entry, index) => {
                 const color =
@@ -86,7 +92,10 @@ export const ContributionPieChart: React.FC<PieProps> = ({ data, title }) => {
                 return <Cell key={entry.name} fill={color} />;
               })}
             </Pie>
-            <Tooltip formatter={(value: number) => [`${value}%`]} />
+            <Tooltip
+              formatter={(value: number, name: string) => [`${value}%`, name]}
+            />
+            <Legend verticalAlign="top" height={36} />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>
