@@ -51,6 +51,7 @@ export function AnalyticsView(): React.JSX.Element {
         endDate: dateRange?.to,
         branch: selectedBranch,
         contributors: selectedContributors,
+        metric: selectedMetrics
       },
       (err: Error, data: AnalyticsData) => {
         if (err) {
@@ -69,7 +70,7 @@ export function AnalyticsView(): React.JSX.Element {
 
   const fetchAnalyticsData = React.useCallback(() => {
     if (!repoUrl) return;
-
+    console.log("Metrics used to get data:", selectedMetrics); 
     Meteor.call(
       "repo.getAnalyticsData",
       {

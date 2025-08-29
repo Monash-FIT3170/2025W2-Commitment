@@ -26,7 +26,7 @@ export default function MetricDropdownMenu({
           className="w-[280px] justify-start focus:outline-hidden focus:ring-0 border-2 "
           style={{ borderColor: "#35353140" }}
         >
-          {selected ?? "Select a branch"}
+          {selected ?? "Select a metric"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
