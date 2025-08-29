@@ -4,72 +4,46 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@ui/components/ui/dropdown-menu";
 
-import { ScrollArea } from "@ui/components/ui/scroll-area";
-
 interface DropdownMenuCheckboxesProps {
   metrics: string[];
-  selected: string[];
-  onChange: (selected: string[]) => void;
+  selected: string | undefined;
+  onChange: (selected: string) => void;
 }
-const defaultMetric = "All Metrics"; 
 
-
-export function MetricDropdownMenu({
+export default function MetricDropdownMenu({
   metrics,
   selected,
   onChange,
 }: DropdownMenuCheckboxesProps): React.JSX.Element {
-  const allSelected =
-    selected.length === metrics.length && metrics.length > 0;
-
-  const maxDisplayCount = 5;
-
-  const buttonText = () => {
-    if (allSelected) return "All Metrics";
-    if (selected.length === 0) return defaultMetric;
-    if (selected.length > maxDisplayCount) {
-      const displayed = selected.slice(0, maxDisplayCount).join(", ");
-      return `${displayed}, ...`;
-    }
-    return selected.join(", ");
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-auto justify-start focus:outline-hidden focus:ring-0 border-2"
+          className="w-[280px] justify-start focus:outline-hidden focus:ring-0 border-2 "
+          style={{ borderColor: "#35353140" }}
         >
-          {buttonText()}
+          {selected ?? "Select a branch"}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[280px] focus:outline-hidden focus:ring-0">
-        <DropdownMenuLabel>Select Metrics</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <ScrollArea className="h-48">
-          {metrics.map((metrics) => (
-            <DropdownMenuCheckboxItem
-              onSelect={(event) => event.preventDefault()}
-              key={metrics}
-              checked={selected.includes(metrics)}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  onChange([...selected, metrics]);
-                } else {
-                  onChange(selected.filter((c) => c !== metrics));
-                }
-              }}
-            >
-              {metrics}
-            </DropdownMenuCheckboxItem>
-          ))}
-        </ScrollArea>
+      <DropdownMenuContent
+        className="w-[280px]  focus:ring-0 border-2"
+        style={{ borderColor: "#252522" }}
+      >
+        {/* <DropdownMenuLabel>Select Branch</DropdownMenuLabel> */}
+        {/* <DropdownMenuSeparator /> */}
+        {metrics.map((metric) => (
+          <DropdownMenuCheckboxItem
+            key={metric}
+            checked={selected === metric}
+            onCheckedChange={() => onChange(metric)}
+          >
+            {metric}
+          </DropdownMenuCheckboxItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
