@@ -58,7 +58,7 @@ function NavBar({ isLoggedIn }: NavBarProps) {
 
           {isLandingPage ? (
             // Landing page navigation items
-            <div>
+            <>
               <NavigationMenuItem>
                 <NavigationMenuLink
                   href="#about"
@@ -83,7 +83,7 @@ function NavBar({ isLoggedIn }: NavBarProps) {
                   How-To
                 </NavigationMenuLink>
               </NavigationMenuItem>
-            </div>
+            </>
           ) : (
             // App navigation items
             <>
