@@ -26,11 +26,7 @@ import Network.Socket
 main :: IO ()
 main = do
     -- Enable permessage-deflate (RSV1 frames allowed)
-    #if defined(mingw32_HOST_OS)
     let opts = defaultConnectionOptions  -- no connectionCompression
-    #else
-    let opts = defaultConnectionOptions { connectionCompression = False }
-    #endif
     let app  = websocketsOr opts appWS appHTTP
 
 #if defined(mingw32_HOST_OS)
