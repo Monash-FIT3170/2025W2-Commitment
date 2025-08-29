@@ -101,13 +101,14 @@ export interface HighlightStruct {
 
 export interface LeaderboardData {
   name: string;
-  commits: number;
+  value: number;
 }
 
 export interface LineGraphData {
   date: string;
   [contributor: string]: number | string; // e.g. { Alice: 120, Bob: 95 }
 }
+
 
 export interface PieChartData {
   user: string;
@@ -120,15 +121,16 @@ export type HeatMapData = {
   date: string;
   count: number;
 };
-
-export interface MetricsData {
+export type Highlights = {
   highlights: {
     totalCommits: HighlightStruct;
     totalLinesOfCode: HighlightStruct;
     numContributors: number;
     numBranches: number;
   };
-
+}
+export interface MetricsData {
+  highlights: Highlights;
   contributors: {
     leaderboard: LeaderboardData[];
     lineGraph: LineGraphData[];
@@ -140,6 +142,7 @@ export interface MetricsData {
 export interface Selections {
   selectedBranch: string;
   selectedContributors: string[];
+  selectedMetrics: string; 
   selectedDateRange: DateRange;
 }
 
