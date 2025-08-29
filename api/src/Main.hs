@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 module Main (main) where
 
@@ -8,30 +9,38 @@ import Control.Exception (bracket)
 
 import Network.Wai.Handler.WebSockets (websocketsOr)
 import Network.WebSockets (defaultConnectionOptions)
+import Network.Wai.Handler.Warp
+  ( runSettings, defaultSettings, setPort, setHost, Settings
+  , runSettingsSocket
+  )
 
-import Network.Wai.Handler.Warp (runSettings, defaultSettings, setPort, setHost, Settings)
-import Network.Wai.Handler.Warp (runSettingsSocket)
+#if !defined(mingw32_HOST_OS)
 import Network.Socket
   ( socket, bind, listen, Socket, SockAddr(SockAddrUnix)
   , Family(AF_UNIX), SocketType(Stream)
   , close
   )
+#endif
 
 main :: IO ()
 main = do
     let app = websocketsOr defaultConnectionOptions appWS appHTTP
 
-    -- Run TCP server on 0.0.0.0:8081
+#if defined(mingw32_HOST_OS)
+    -- On Windows: only TCP
+    runSettings tcpSettings app
+#else
+    -- On Unix: TCP + Unix socket
     _ <- forkIO $ runSettings tcpSettings app
-
-    -- Run Unix domain socket server on /tmp/haskell-ipc.sock
     bracket (setupUnixSocket "/tmp/haskell-ipc.sock") close $ \unixSock ->
         runSettingsSocket defaultSettings unixSock app
+#endif
 
 -- TCP Settings
 tcpSettings :: Settings
 tcpSettings = setPort 8081 $ setHost "0.0.0.0" defaultSettings
 
+#if !defined(mingw32_HOST_OS)
 -- Helper to create a Unix domain socket
 setupUnixSocket :: FilePath -> IO Socket
 setupUnixSocket path = do
@@ -39,3 +48,4 @@ setupUnixSocket path = do
     bind sock (SockAddrUnix path)
     listen sock 1024
     return sock
+#endif
