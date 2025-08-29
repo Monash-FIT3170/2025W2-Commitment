@@ -32,7 +32,7 @@ export type BranchData = Readonly<{
   commitHashes: string[];
 }>;
 
-// make a kind of commit where you have a snapshot of all contributors per line
+// make a kind of commit where you hazve a snapshot of all contributors per line
 export type CommitData = Readonly<{
   commitHash: string;
   commitTitle: string;
@@ -122,12 +122,11 @@ export type HeatMapData = {
   count: number;
 };
 export type Highlights = {
-  highlights: {
     totalCommits: HighlightStruct;
     totalLinesOfCode: HighlightStruct;
     numContributors: number;
     numBranches: number;
-  };
+
 }
 export interface MetricsData {
   highlights: Highlights;

@@ -132,7 +132,7 @@ Meteor.methods({
         contributor: selections.selectedContributors,
       }
     );
-
+    console.log(" this is the metric at getAllMetrics", metric)
     const metricsData: MetricsData = await getAllMetrics(filteredRepo, metric);
 
     // NOW WE DO STUFF WITH THE FILTERED REPO TO GET the specific metric!! 

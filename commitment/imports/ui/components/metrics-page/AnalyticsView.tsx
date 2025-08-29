@@ -102,6 +102,7 @@ export function AnalyticsView(): React.JSX.Element {
   if (error) return <div>Error: {error}</div>;
   if (!analytics) return <div>No repo data available</div>;
 
+  console.log(analytics.metricNames);
 
   return (
     <div className="m-0 scroll-smooth">
