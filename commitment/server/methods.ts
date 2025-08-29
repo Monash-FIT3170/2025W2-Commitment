@@ -78,12 +78,14 @@ Meteor.methods({
     endDate,
     branch,
     contributors,
+    metric = "Total Commits"
   }: {
     repoUrl: string;
     startDate?: Date;
     endDate?: Date;
     branch?: string;
     contributors?: string[];
+    metric ?: string;
   }): Promise<AnalyticsData> {
     /**
      * Get Repo Metadata first (contributors, branches, date range) etc
@@ -113,6 +115,7 @@ Meteor.methods({
         !contributors || contributors.length === 0
           ? metadata.contributors
           : contributors,
+      selectedMetrics: metric ,
       selectedDateRange: {
         from: startDate || metadata.dateRange.from,
         to: endDate || metadata.dateRange.to,
@@ -130,9 +133,9 @@ Meteor.methods({
       }
     );
 
-    const metricsData: MetricsData = await getAllMetrics(filteredRepo);
+    const metricsData: MetricsData = await getAllMetrics(filteredRepo, metric);
 
-    // NOW WE DO STUFF WITH THE FILTERED REPO TO GET METRICS
+    // NOW WE DO STUFF WITH THE FILTERED REPO TO GET the specific metric!! 
     const returnData: AnalyticsData = {
       metadata,
       selections,
