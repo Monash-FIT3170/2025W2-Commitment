@@ -1,3 +1,5 @@
+import { DateRange } from "react-day-picker";
+
 export type RepositoryData = Readonly<{
   name: string;
   branches: BranchData[];
@@ -17,6 +19,7 @@ export type SerializableRepoData = Readonly<{
   contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
 }>;
 export interface FilteredData {
+  repoUrl: string;
   dateRange: {
     start: Date;
     end: Date;
@@ -74,11 +77,74 @@ export type UserScalingSummary = {
   name: string;
   aliases: AliasEmail[];
   finalGrade: number | null; // may be missing -> if there is a grading sheet, this must be populated
-  scale: number;  // always present
+  scale: number; // always present
 };
 
-export type ContributionEntry = {
+/**
+ * Data Structures for Analytics View
+ */
+
+export interface Metadata {
+  repoUrl: string;
+  repoName: string;
+  branches: string[];
+  contributors: string[];
+  dateRange: DateRange
+}
+
+export interface HighlightStruct {
+  total: number;
+  percentageChange: number;
+  isPositive: boolean;
+  data: { value: number }[];
+}
+
+export interface LeaderboardData {
+  name: string;
+  commits: number;
+}
+
+export interface LineGraphData {
+  date: string;
+  [contributor: string]: number | string; // e.g. { Alice: 120, Bob: 95 }
+}
+
+export interface PieChartData {
+  user: string;
+  contributions: number;
+  // fill: string; // color
+}
+
+export type HeatMapData = {
   name: string;
   date: string;
   count: number;
 };
+
+export interface MetricsData {
+  highlights: {
+    totalCommits: HighlightStruct;
+    totalLinesOfCode: HighlightStruct;
+    numContributors: number;
+    numBranches: number;
+  };
+
+  contributors: {
+    leaderboard: LeaderboardData[];
+    lineGraph: LineGraphData[];
+    pieChart: PieChartData[];
+    heatMap: HeatMapData[];
+  };
+}
+
+export interface Selections {
+  selectedBranch: string;
+  selectedContributors: string[];
+  selectedDateRange: DateRange;
+}
+
+export interface AnalyticsData {
+  metadata: Metadata;
+  selections: Selections;
+  metrics: MetricsData;
+}
