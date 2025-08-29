@@ -11,10 +11,10 @@ import {
 import InfoButton from "../ui/infoButton";
 import GraphCard from "./GraphCard";
 import { CardHeader, CardTitle, CardContent } from "../ui/card";
-import { ContributionEntry } from "/imports/api/types";
+import { HeatMapData } from "/imports/api/types";
 
 interface HeatmapProps {
-  data: ContributionEntry[];
+  data: HeatMapData[];
   maxUsersToShow?: number;
   title?: string;
 }
@@ -44,6 +44,27 @@ export default function HeatmapGraph({
   maxUsersToShow,
   title,
 }: HeatmapProps): React.ReactElement {
+  if (!data || data.length === 0) {
+    return (
+      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+        <CardHeader className="pb-0">
+          <CardTitle className="flex text-lg mt-0 font-bold ">
+            {title}
+            <div className="relative -mt-3 ml-2">
+              <InfoButton description={heatMapDescription} />
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grow flex flex-col items-center justify-center pt-2">
+          <div className="text-gray-500 text-center py-8">
+            No contribution data available.
+          </div>
+        </CardContent>
+      </GraphCard>
+    );
+  }
+
+
   // Mapping on many different properties - Days/ Weeks/ Months or Years
   const users = useMemo(
     () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
@@ -76,8 +97,8 @@ export default function HeatmapGraph({
   } else if (totalDays <= 49) {
     mode = "weeks";
   } else if (
-    (getYear(to) > getYear(from)) &&
-    (differenceInCalendarDays(to, from) > 30 * 7)
+    getYear(to) > getYear(from) &&
+    differenceInCalendarDays(to, from) > 30 * 7
   ) {
     mode = "years";
   } else {
@@ -203,6 +224,8 @@ export default function HeatmapGraph({
   const labelWidth = 50;
   const gridTemplateColumns = `${labelWidth}px repeat(${yAxisLength}, ${cellSize}px)`;
   const gridTemplateRows = `repeat(${users.length}, ${cellSize}px) 1fr`;
+
+  
 
   return (
     //   The things actually in this component
