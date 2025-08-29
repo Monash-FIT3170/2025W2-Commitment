@@ -78,7 +78,7 @@ Meteor.methods({
     endDate,
     branch,
     contributors,
-    metric = "Total Commits"
+    metric = "Total No. Commits"
   }: {
     repoUrl: string;
     startDate?: Date;
