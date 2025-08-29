@@ -18,10 +18,9 @@ let unfilteredRepoData = {} as Promise<SerializableRepoData>;
 export async function getAllMetrics(data: FilteredData, selectedMetric:string): Promise<MetricsData> {
   // set the unfiltered data we will use for all other metrics
   setsUnfilteredData(data.repoUrl);
-
   // get all the metrics based on the AnalyticsData structure
   return {
-    highlights: await returnHighlightData(data),
+    highlights: await returnHighlightData(),
     contributors: {
       leaderboard: leaderboardData(data, selectedMetric),
       lineGraph: lineGraphData(data, selectedMetric),
@@ -77,14 +76,12 @@ export function getRepoName(data: FilteredData): string {
 }
 // --------------------------- FUNCTIONS THAT RELATE TO THE TYPES OF GRAPHS ----------------
 
-export async function returnHighlightData(data: FilteredData ): Promise<Highlights>{
+export async function returnHighlightData(): Promise<Highlights>{
   return {
-    highlights: {
       totalCommits: await highlightTotalCommits(),
       totalLinesOfCode: await highlightTotalLinesOfCode(),
       numContributors: await numContributors(),
       numBranches: await numBranches(),
-    }
   };
 }
 
@@ -130,6 +127,7 @@ export function leaderboardData(data: FilteredData, selectedMetric:string): Lead
     ([name, value]) => ({ name, value })
   );
 
+  console.log("At leaderboard data for metric", selectedMetric, leaderboard);
   return leaderboard;
 }
 

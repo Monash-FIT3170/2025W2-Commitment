@@ -16,7 +16,7 @@ import { CardHeader, CardContent } from '../ui/card';
 // Type for each contributor's data
 interface TopContributor {
   name: string;
-  commits: number;
+  value: number;
 }
 
 interface LeaderboardChartProps {
@@ -72,7 +72,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
           <XAxis type="number" />
           <YAxis type="category" dataKey="name" width={100} />
           <Tooltip />
-          <Bar dataKey="commits" barSize={30}>
+          <Bar dataKey="value" barSize={30}>
             {data.map((_entry, index) => {
               const color = staticColorPalette[index]
                   ?? extendColorPalette(index - staticColorPalette.length);

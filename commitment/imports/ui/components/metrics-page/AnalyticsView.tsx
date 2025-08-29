@@ -78,6 +78,7 @@ export function AnalyticsView(): React.JSX.Element {
         endDate: dateRange?.to,
         branch: selectedBranch,
         contributors: selectedContributors,
+        metrics: selectedMetrics
       },
       (err: Error, data: AnalyticsData) => {
         if (err) {
@@ -88,7 +89,7 @@ export function AnalyticsView(): React.JSX.Element {
         setLoading(false);
       }
     );
-  }, [repoUrl, selectedBranch, selectedContributors, dateRange]);
+  }, [repoUrl, selectedBranch, selectedContributors, dateRange, selectedMetrics]);
 
   // Fetch when component mounts or filters change
   useEffect(() => {
@@ -100,7 +101,6 @@ export function AnalyticsView(): React.JSX.Element {
   if (error) return <div>Error: {error}</div>;
   if (!analytics) return <div>No repo data available</div>;
 
-  console.log(analytics);
 
   return (
     <div className="m-0 scroll-smooth">
