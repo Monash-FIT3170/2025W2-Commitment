@@ -77,7 +77,7 @@ maybeToResult msg Nothing = Error msg
 successful :: CommandResult -> ParseResult String
 successful (CommandResult _   (Just err) (Just stdErr)) = Error $ err ++ ":\n" ++ stdErr
 successful (CommandResult _   (Just err) _)             = Error err
-successful (CommandResult res _ (Just stdErr))          = if null res then Result stdErr else Result res
+successful (CommandResult res _ (Just stdErr))          = if failedOutput stdErr || failedOutput res then Error stdErr else Result res
 successful (CommandResult res _ _)                      = Result res
 
 parsed :: String -> ParseResult a -> a

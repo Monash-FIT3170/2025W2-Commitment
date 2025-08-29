@@ -33,6 +33,7 @@ import Threading
 
 data Command = Command
   { command    :: String
+  , env_vars   :: Maybe [(String, String)]
   , onSuccess  :: String -> String -> String
   , onFail     :: String -> String -> String
   , onStdFail  :: String -> String -> String -> String
@@ -60,7 +61,7 @@ defaultStdFail :: String -> String -> String -> String
 defaultStdFail c _ se = "Command:\n" ++ c ++ "\nError:\n" ++ se
 
 logData :: Command
-logData = Command "" defaultSuccess defaultFail defaultStdFail True
+logData = Command "" Nothing defaultSuccess defaultFail defaultStdFail True
 
 doNotLogData :: Command
 doNotLogData = logData { shouldLog = False }
@@ -76,6 +77,7 @@ executeCommand notifier filepath f = do
             { cwd = Just filepath
             , std_out = CreatePipe
             , std_err = CreatePipe
+            , env = env_vars f  -- include environment variables if they exist
             }
 
       (_, Just hout, Just herr, phandle) <- createProcess processSpec

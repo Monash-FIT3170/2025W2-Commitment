@@ -8,7 +8,8 @@ import Control.Concurrent (forkIO)
 import Control.Exception (bracket)
 
 import Network.Wai.Handler.WebSockets (websocketsOr)
-import Network.WebSockets (defaultConnectionOptions)
+import Network.WebSockets.Connection
+  ( ConnectionOptions(..), defaultConnectionOptions )
 import Network.Wai.Handler.Warp
   ( runSettings, defaultSettings, setPort, setHost, Settings
   , runSettingsSocket
@@ -24,7 +25,13 @@ import Network.Socket
 
 main :: IO ()
 main = do
-    let app = websocketsOr defaultConnectionOptions appWS appHTTP
+    -- Enable permessage-deflate (RSV1 frames allowed)
+    #if defined(mingw32_HOST_OS)
+    let opts = defaultConnectionOptions  -- no connectionCompression
+    #else
+    let opts = defaultConnectionOptions { connectionCompression = False }
+    #endif
+    let app  = websocketsOr opts appWS appHTTP
 
 #if defined(mingw32_HOST_OS)
     -- On Windows: only TCP
@@ -32,6 +39,7 @@ main = do
 #else
     -- On Unix: TCP + Unix socket
     _ <- forkIO $ runSettings tcpSettings app
+
     bracket (setupUnixSocket "/tmp/haskell-ipc.sock") close $ \unixSock ->
         runSettingsSocket defaultSettings unixSock app
 #endif

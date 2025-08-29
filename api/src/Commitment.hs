@@ -105,8 +105,9 @@ formulateRepoData _url path notifier = do
 
     emit notifier "Searching for branch names..."
     collectedBranchNames <- execCmd getBranches parseRepoBranches "Failed to parse git branch names"
-    let uniqueBranchNames = unique $ map (replace "remotes/" "" . replace "origin/" "") collectedBranchNames 
-        branchNames = map("origin/" ++ ) uniqueBranchNames
+    let branchNameFilter = (replace "remotes/" "" . replace "origin/" "")
+        branchNames = unique collectedBranchNames
+        filteredBranchNames = map branchNameFilter branchNames 
 
     emit notifier "Searching for commit hashes..."
     allCommitHashesListOfList <- execAll (map getAllCommitsFrom branchNames) parseCommitHashes "Failed to parse commit hashes from branches"
@@ -173,7 +174,7 @@ formulateRepoData _url path notifier = do
         commitMap = Map.fromList [(commitHash c, c) | c <- allCommitData]
 
     emit notifier "Linking branches to their commits..."
-    let branchToCommitsMap = Map.fromList $ zip branchNames allCommitHashesListOfList
+    let branchToCommitsMap = Map.fromList $ zip filteredBranchNames allCommitHashesListOfList
 
     emit notifier "Formulating all branch data..."
     let sortByTime h1 h2 = sortCommitsByTimestamp (commitMap Map.! h1) (commitMap Map.! h2)
@@ -181,8 +182,8 @@ formulateRepoData _url path notifier = do
     let branchData = map (\branch -> do
             let hashes = fromMaybe [] $ Map.lookup branch branchToCommitsMap
             let sortedHashes = sortBy sortByTime hashes
-            BranchData (replace "origin/" "" branch) sortedHashes
-            ) branchNames
+            BranchData branch sortedHashes
+            ) filteredBranchNames
 
     emit notifier "Fetching repo name..."
     repoFetchedName <- execCmd getRepoName parseRepoName "Failed to retrieve repo name"

@@ -28,7 +28,8 @@ checkIfRepoExists url = doNotLogData
 
 cloneRepo :: String -> FilePath -> Command
 cloneRepo url targetDirectory = doNotLogData
-  { command = "git clone --no-checkout " ++ quote url ++ " " ++ quote targetDirectory
+  { command = "git clone --bare " ++ quote url ++ " " ++ quote targetDirectory
+  , env_vars = Just [("GIT_TERMINAL_PROMPT", "0")]
   , onSuccess = \_ _ -> url ++ " successfully cloned to " ++ targetDirectory
   , onFail = \c e -> "Error cloning repo:\nCommand:\n" ++ c ++ "\nError Message:\n" ++ e
   }
