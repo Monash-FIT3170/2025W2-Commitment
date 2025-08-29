@@ -7,8 +7,7 @@ import {
   LineGraphData,
   PieChartData,
   HeatMapData,
-  Highlights,
-  MetricNames
+  Highlights
 } from "../imports/api/types";
 import { Meteor } from "meteor/meteor";
 
