@@ -244,7 +244,11 @@ export function heatMapData(
   }
 }
 
-// --------------------------- METRIC CALCULATION FUNCTIONS --------------------------
+
+
+/**
+ * FUNCTIONS FOR HIGHLIGHTS
+ */
 
 /**
  *
