@@ -8,7 +8,7 @@ import {
   MetricsData,
   Selections,
 } from "/imports/api/types";
-import { getAllMetrics, getMetricString } from "./repo_metrics";
+import { getAllGraphData, getMetricString } from "./repo_metrics";
 
 Meteor.methods({
   /**
@@ -133,7 +133,7 @@ Meteor.methods({
       }
     );
     console.log(" this is the metric at getAllMetrics", metric)
-    const metricsData: MetricsData = await getAllMetrics(filteredRepo, metric);
+    const metricsData: MetricsData = await getAllGraphData(filteredRepo, metric);
 
     // NOW WE DO STUFF WITH THE FILTERED REPO TO GET the specific metric!! 
     const returnData: AnalyticsData = {

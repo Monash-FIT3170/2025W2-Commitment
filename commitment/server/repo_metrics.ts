@@ -15,7 +15,7 @@ import { Meteor } from "meteor/meteor";
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
 
 // -------- THIS FUNCTION NEEDS TO BE CALLED FIRST -----------------------
-export async function getAllMetrics(data: FilteredData, selectedMetric:string): Promise<MetricsData> {
+export async function getAllGraphData(data: FilteredData, selectedMetric:string): Promise<MetricsData> {
   // set the unfiltered data we will use for all other metrics
   setsUnfilteredData(data.repoUrl);
   // get all the metrics based on the AnalyticsData structure
@@ -30,6 +30,11 @@ export async function getAllMetrics(data: FilteredData, selectedMetric:string): 
   };
 }
 
+// need to add a function called
+// getAllMetrics formatted so that
+// takes all the Data 
+// for each type of metric: 
+// contributorName:name ->  ["Total lines of commit" : number, "LOC": number, "LOC/Commit": number, "Commits Per Day": number]
 
 /**
  * SETTERS AND GETTERS
