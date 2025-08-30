@@ -12,7 +12,7 @@ import { LeaderboardGraph } from "./LeaderboardGraph";
 // import GraphCard from "./GraphCard";
 import HeatmapGraph from "./HeatMapGraph";
 
-import { AnalyticsData, metricNames } from "/imports/api/types";
+import { AnalyticsData, MetricType, metricNames } from "/imports/api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
 
 // -----------------------------
@@ -33,9 +33,7 @@ export function AnalyticsView(): React.JSX.Element {
   const [selectedContributors, setSelectedContributors] = useState<string[]>(
     []
   );
-  const [selectedMetrics, setSelectedMetrics] = useState<string>(
-    metricNames[0]
-  );
+  const [selectedMetrics, setSelectedMetrics] = useState<MetricType>(MetricType.TOTAL_COMMITS);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +68,6 @@ export function AnalyticsView(): React.JSX.Element {
 
   const fetchAnalyticsData = React.useCallback(() => {
     if (!repoUrl) return;
-    console.log("Metrics used to get data:", selectedMetrics);
     Meteor.call(
       "repo.getAnalyticsData",
       {
@@ -107,8 +104,6 @@ export function AnalyticsView(): React.JSX.Element {
   if (loading) return <div>Loading repo data...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!analytics) return <div>No repo data available</div>;
-
-  console.log(analytics.metricNames);
 
   return (
     <div className="m-0 scroll-smooth">
@@ -157,7 +152,7 @@ export function AnalyticsView(): React.JSX.Element {
               <MetricDropdownMenu
                 metrics={metricNames}
                 selected={selectedMetrics}
-                onChange={setSelectedMetrics}
+                onChange={(value: string) => setSelectedMetrics(value as MetricType)}
               />
             </div>
           </div>

@@ -7,7 +7,8 @@ import {
   Metadata,
   MetricsData,
   Selections,
-  AllMetricsData
+  AllMetricsData,
+  MetricType
 } from "/imports/api/types";
 import { getAllGraphData, getMetricString, getAllMetrics } from "./repo_metrics";
 
@@ -79,14 +80,14 @@ Meteor.methods({
     endDate,
     branch,
     contributors,
-    metric = "Total No. Commits"
+    metric
   }: {
     repoUrl: string;
     startDate?: Date;
     endDate?: Date;
     branch?: string;
     contributors?: string[];
-    metric ?: string;
+    metric: MetricType;
   }): Promise<AnalyticsData> {
     /**
      * Get Repo Metadata first (contributors, branches, date range) etc
@@ -141,11 +142,16 @@ Meteor.methods({
       metadata,
       selections,
       metrics: metricsData,
-      metricNames: getMetricString()
     };
 
     return returnData;
   },
+
+  /**
+   * 
+   * @param param0 
+   * @returns 
+   */
   async "repo.getAllMetrics"({repoUrl}: {repoUrl: string}): Promise<AllMetricsData> {
     return await getAllMetrics(repoUrl);
   }

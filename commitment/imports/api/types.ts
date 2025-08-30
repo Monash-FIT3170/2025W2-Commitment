@@ -150,14 +150,13 @@ export interface AnalyticsData {
   metadata: Metadata;
   selections: Selections;
   metrics: MetricsData;
-  metricNames: string[]; 
 }
 
 export enum MetricType {
   LOC = "LOC",
-  LOC_PER_COMMIT = "LOC/Commit",
-  COMMITS_PER_DAY = "Commits/Day",
-  TOTAL_COMMITS = "Total Commits",
+  LOC_PER_COMMIT = "LOC per Commit",
+  COMMITS_PER_DAY = "Commits per Day",
+  TOTAL_COMMITS = "Total No. Commits",
 }
 
 // Helper: turn enum values into a string array

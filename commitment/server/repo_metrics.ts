@@ -7,8 +7,9 @@ import {
   LineGraphData,
   PieChartData,
   HeatMapData,
-  Highlights, 
-  AllMetricsData
+  Highlights,
+  AllMetricsData,
+  MetricType,
 } from "../imports/api/types";
 import { Meteor } from "meteor/meteor";
 
@@ -16,10 +17,16 @@ import { Meteor } from "meteor/meteor";
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
 
 // -------- THIS FUNCTION NEEDS TO BE CALLED FIRST -----------------------
-export async function getAllGraphData(data: FilteredData, selectedMetric:string): Promise<MetricsData> {
+export async function getAllGraphData(
+  data: FilteredData,
+  selectedMetric: MetricType
+): Promise<MetricsData> {
   // set the unfiltered data we will use for all other metrics
   setsUnfilteredData(data.repoUrl);
   // get all the metrics based on the AnalyticsData structure
+
+  console.log("Selected Metric in the Get All Graph Data Function", selectedMetric)
+
   return {
     highlights: await returnHighlightData(),
     contributors: {
@@ -33,26 +40,32 @@ export async function getAllGraphData(data: FilteredData, selectedMetric:string)
 
 // need to add a function called
 // getAllMetrics formatted so that
-// takes all the Data 
-// for each type of metric: 
+// takes all the Data
+// for each type of metric:
 // contributorName:name ->  ["Total lines of commit" : number, "LOC": number, "LOC/Commit": number, "Commits Per Day": number]
 
-export async function getAllMetrics(repoUrl:string): Promise<AllMetricsData> {
-  // does all of this on UNFILTERED DATA 
-  setsUnfilteredData(repoUrl); 
-  const unfilteredData = await getUnfilteredData(); 
+export async function getAllMetrics(repoUrl: string): Promise<AllMetricsData> {
+  // does all of this on UNFILTERED DATA
+  setsUnfilteredData(repoUrl);
+  const unfilteredData = await getUnfilteredData();
 
-  // for each contributor in the unfiltered data, find the metric associated to them: 
+  // for each contributor in the unfiltered data, find the metric associated to them:
   const allMetricData: AllMetricsData = {};
 
   const contributors = getContributors(unfilteredData);
-  
+
   contributors.forEach((contributor) => {
     allMetricData[contributor] = {
-      "Total lines of commit": getTotalCommitsPerContributor(unfilteredData, contributor),
-      "LOC": getLOCperContributor(unfilteredData, contributor),
+      "Total lines of commit": getTotalCommitsPerContributor(
+        unfilteredData,
+        contributor
+      ),
+      LOC: getLOCperContributor(unfilteredData, contributor),
       "LOC/Commit": getLocPerCommitPerContributor(unfilteredData, contributor),
-      "Commits Per Day": getCommitPerDayPerContributor(unfilteredData, contributor),
+      "Commits Per Day": getCommitPerDayPerContributor(
+        unfilteredData,
+        contributor
+      ),
     };
   });
 
@@ -103,12 +116,12 @@ export function getRepoName(data: FilteredData): string {
 }
 // --------------------------- FUNCTIONS THAT RELATE TO THE TYPES OF GRAPHS ----------------
 
-export async function returnHighlightData(): Promise<Highlights>{
+export async function returnHighlightData(): Promise<Highlights> {
   return {
-      totalCommits: await highlightTotalCommits(),
-      totalLinesOfCode: await highlightTotalLinesOfCode(),
-      numContributors: await numContributors(),
-      numBranches: await numBranches(),
+    totalCommits: await highlightTotalCommits(),
+    totalLinesOfCode: await highlightTotalLinesOfCode(),
+    numContributors: await numContributors(),
+    numBranches: await numBranches(),
   };
 }
 
@@ -117,21 +130,25 @@ export async function returnHighlightData(): Promise<Highlights>{
  * @param data Filtered Repository Data
  * @returns Leaderboard data for contributors
  */
-export function leaderboardData(data: FilteredData, selectedMetric:string): LeaderboardData[] {
-
+export function leaderboardData(
+  data: FilteredData,
+  selectedMetric: MetricType
+): LeaderboardData[] {
   const counts: Record<string, number> = {};
   const repoData = data.repositoryData;
 
   // depending on the selected Metric, the data is calculated accordingly:
   switch (selectedMetric) {
-    case "Total No. Commits":
-      // count commits per contributor
+    case MetricType.TOTAL_COMMITS: {
       repoData.allCommits.forEach((commit) => {
         const user = commit.value.contributorName;
         counts[user] = (counts[user] ?? 0) + 1;
       });
       break;
-    case "LOC": // TO TEST
+    }
+
+    case MetricType.LOC: {
+      // TO TEST
       const locArray = locData(data);
       if (locArray.length > 0) {
         const lastEntry = locArray[locArray.length - 1]; // final cumulative LOC
@@ -142,11 +159,23 @@ export function leaderboardData(data: FilteredData, selectedMetric:string): Lead
         });
       }
       break;
-      case "LOC/Commit": 
-      null ; 
-      break ; 
-      case "Commits Per Day": 
+    }
+
+    case MetricType.LOC_PER_COMMIT: {
+      // Not implemented yet
+      break;
+    }
+
+    case MetricType.COMMITS_PER_DAY: {
       return commitsPerDay(data);
+    }
+
+    default: {
+      // throw new Error(
+      //   "Unknown metric type in leaderboardData switch statement"
+      // );
+      break;
+    }
   }
 
   const leaderboard: LeaderboardData[] = Object.entries(counts).map(
@@ -157,75 +186,71 @@ export function leaderboardData(data: FilteredData, selectedMetric:string): Lead
   return leaderboard;
 }
 
-
- export function lineGraphData(data: FilteredData, selectedMetric:string): LineGraphData[]{
+export function lineGraphData(
+  data: FilteredData,
+  selectedMetric: MetricType
+): LineGraphData[] {
   switch (selectedMetric) {
-    case "Total No. Commits":
-      return totalCommitsPerDay(data); // to discuss and fix 
-    case "LOC":
+    case MetricType.TOTAL_COMMITS:
+      return totalCommitsPerDay(data); // to discuss and fix
+    case MetricType.LOC:
       return locData(data);
-    // case "LOC/Commit":
-      // return locPerCommit(data);
-    case "Commits Per Day":
-      return totalCommitsPerDay(data); // to discuss and fix 
+    // case MetricType.LOC_PER_COMMIT:
+    //   // return locPerCommit(data);
+    //   break;
+    case MetricType.COMMITS_PER_DAY:
+      return totalCommitsPerDay(data); // to discuss and fix
     default:
-      throw new Error("Unknown metric");
+      throw new Error("Unknown metric type in lineGraphData switch statement");
   }
 }
 
-export function pieChartData(data: FilteredData, selectedMetric:string): PieChartData[]{
+export function pieChartData(
+  data: FilteredData,
+  selectedMetric: MetricType
+): PieChartData[] {
   switch (selectedMetric) {
-    case "Total No. Commits":
+    case MetricType.TOTAL_COMMITS:
       return pieChartCommitData(data);
-    case "LOC":
+    case MetricType.LOC:
       return pieChartLocData(data);
-    // case "LOC/Commit":
-      // return pieChartLocPerCommitData(data);
+    // case MetricType.LOC_PER_COMMIT:
+    //   break;
+    // // return pieChartLocPerCommitData(data);
+    // case MetricType.COMMITS_PER_DAY:
+    //   break;
     default:
-      throw new Error("Unknown metric");
+      throw new Error("Unknown metric type in pieChartData switch statement");
   }
 }
 
-export function heatMapData(data: FilteredData, selectedMetric:string): HeatMapData[]{
+export function heatMapData(
+  data: FilteredData,
+  selectedMetric: MetricType
+): HeatMapData[] {
   switch (selectedMetric) {
-    case "Total No. Commits":
+    case MetricType.COMMITS_PER_DAY:
       return heatMapCommitData(data);
-    // case "LOC":
-      // return heatMapLocData(data);
-    // case "LOC/Commit":
-      // return heatMapLocPerCommitData(data);
+    // case MetricType.LOC:
+    //   // return heatMapLocData(data);
+    //   break;
+    // case MetricType.LOC_PER_COMMIT:
+    //   // return heatMapLocPerCommitData(data);
+    //   break;
+    // case MetricType.TOTAL_COMMITS:
+    //   break;
     default:
       throw new Error("Unknown metric");
   }
 }
 
 // --------------------------- METRIC CALCULATION FUNCTIONS --------------------------
+
 /**
- * Get the percentage change of commits in a repository.
- * @param startDate The start date for the comparison.
- * @param data The filtered repository data.
- * @returns The percentage change of commits.
+ *
+ * @param data
+ * @returns
  */
-async function percentageCommitChange(
-  startDate: Date,
-  data: SerializableRepoData
-): Promise<number> {
-  // get original data
-  const unfilteredData = await getUnfilteredData();
-
-  // get the length of commits from the beginning up until the start date
-  const prevCommits = unfilteredData.allCommits.filter(
-    (c) => new Date(c.value.timestamp).getTime() < startDate.getTime()
-  ).length;
-  // get the length of commits in the filtered data
-  const currentCommits = data.allCommits.length;
-
-  // calculate the percentage change
-  const pChange = ((currentCommits - prevCommits) / prevCommits) * 100;
-
-  return pChange;
-}
-
 export function getTotalCommits(data: SerializableRepoData): number {
   return data.allCommits.length;
 }
@@ -385,12 +410,12 @@ export async function numBranches(): Promise<number> {
   return unfilteredData.branches.length;
 }
 
-
-
 // --------------- LINE GRAPH RELATED METRICS --------------------------
-export function locData(data: FilteredData|SerializableRepoData): LineGraphData[] {
+export function locData(
+  data: FilteredData | SerializableRepoData
+): LineGraphData[] {
   const byDate = new Map<string, Record<string, number>>();
-  const repoData = 'repositoryData' in data ? data.repositoryData : data;
+  const repoData = "repositoryData" in data ? data.repositoryData : data;
 
   // Gather all contributors
   const allContributors = new Set<string>();
@@ -448,16 +473,16 @@ export function locData(data: FilteredData|SerializableRepoData): LineGraphData[
  * @param data Filtered Repository Data
  * @returns Array of LineGraphData objects
  */
-export function totalCommitsPerDay(data: FilteredData): LineGraphData[]{
+export function totalCommitsPerDay(data: FilteredData): LineGraphData[] {
   const repoData = data.repositoryData;
-  
+
   // Gather all contributors
   const allContributors = new Set<string>();
   repoData.allCommits.forEach((commit) => {
     allContributors.add(commit.value.contributorName);
   });
 
-    // Bucket commits by day per contributor
+  // Bucket commits by day per contributor
   const commitsByDay: Record<string, Record<string, number>> = {};
   repoData.allCommits.forEach((commit) => {
     const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
@@ -497,12 +522,17 @@ export function totalCommitsPerDay(data: FilteredData): LineGraphData[]{
   return dataArray;
 }
 
-export function commitsPerDay(data: FilteredData|SerializableRepoData): LeaderboardData[]{
+export function commitsPerDay(
+  data: FilteredData | SerializableRepoData
+): LeaderboardData[] {
   // finds the total number of commits per day for a contributor within the date range
   // and then finds the average of these commits to have one value for each contributor
-  const repoData = 'repositoryData' in data ? data.repositoryData : data;
+  const repoData = "repositoryData" in data ? data.repositoryData : data;
   // Track total commits and unique days for each contributor
-  const contributorStats: Record<string, { commits: number; days: Set<string> }> = {};
+  const contributorStats: Record<
+    string,
+    { commits: number; days: Set<string> }
+  > = {};
 
   repoData.allCommits.forEach((commit) => {
     const contributor = commit.value.contributorName;
@@ -531,10 +561,7 @@ export function commitsPerDay(data: FilteredData|SerializableRepoData): Leaderbo
   leaderboard.sort((a, b) => b.value - a.value);
 
   return leaderboard;
-
 }
-
-
 
 // ------------- PIE CHART RELATED METRICS ------------------------------
 /**
@@ -542,7 +569,7 @@ export function commitsPerDay(data: FilteredData|SerializableRepoData): Leaderbo
  * @param data
  * @returns
  */
-export function pieChartCommitData(data: FilteredData, selectedMetric: string): PieChartData[] {
+export function pieChartCommitData(data: FilteredData): PieChartData[] {
   return leaderboardData(data, selectedMetric).map((contributor, index) => ({
     user: contributor.name,
     contributions: contributor.value,
@@ -562,7 +589,6 @@ export function pieChartLocData(data: FilteredData): PieChartData[] {
       contributions: contributions as number,
     }));
 }
-
 
 // ------------- HEAT MAP RELATED METRICS ------------------------------
 
@@ -599,38 +625,49 @@ export function heatMapCommitData(data: FilteredData): HeatMapData[] {
 }
 
 export function getMetricString(): string[] {
-  return [
-    "Total No. Commits",
-    "LOC",
-    "LOC/Commit",
-    "Commits Per Day",
-  ];
+  return ["Total No. Commits", "LOC", "LOC/Commit", "Commits Per Day"];
 }
 
 //-------------- Metrics PER CONTRIBUTOR FUNCTIONS ----------------
 
-// Function for total lines of commit returning a string 
+// Function for total lines of commit returning a string
 
-export function getTotalCommitsPerContributor(repoData: SerializableRepoData, contributorName: string): number {
+export function getTotalCommitsPerContributor(
+  repoData: SerializableRepoData,
+  contributorName: string
+): number {
   // function that finds all the commits for a contributor and returns the total number of commits as a string
-  return repoData.allCommits.filter(commit => commit.value.contributorName === contributorName).length;
+  return repoData.allCommits.filter(
+    (commit) => commit.value.contributorName === contributorName
+  ).length;
 }
 
-export function getLOCperContributor(repoData: SerializableRepoData, contributorName:string):number{
+export function getLOCperContributor(
+  repoData: SerializableRepoData,
+  contributorName: string
+): number {
   const locArray = locData(repoData); // LineGraphData[] (cumulative LOC over time)
 
   if (locArray.length === 0) return 0;
 
   const lastEntry = locArray[locArray.length - 1]; // final cumulative snapshot
 
-  return lastEntry[contributorName] ? (lastEntry[contributorName] as number) : 0;
+  return lastEntry[contributorName]
+    ? (lastEntry[contributorName] as number)
+    : 0;
 }
 
-export function getLocPerCommitPerContributor(repoData: SerializableRepoData, contributorName:string):number{
-  return 0; // until implemented 
+export function getLocPerCommitPerContributor(
+  repoData: SerializableRepoData,
+  contributorName: string
+): number {
+  return 0; // until implemented
 }
 
-export function getCommitPerDayPerContributor(repoData: SerializableRepoData, contributorName:string):number{
+export function getCommitPerDayPerContributor(
+  repoData: SerializableRepoData,
+  contributorName: string
+): number {
   const commitsPerDayData = commitsPerDay(repoData);
-  return commitsPerDayData.find(c => c.name === contributorName)?.value ?? 0;
+  return commitsPerDayData.find((c) => c.name === contributorName)?.value ?? 0;
 }
