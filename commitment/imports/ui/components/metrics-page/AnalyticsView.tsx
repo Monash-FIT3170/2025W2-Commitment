@@ -11,7 +11,7 @@ import { LeaderboardGraph } from "./LeaderboardGraph";
 // import { ContributionPieChart } from "./PieChartGraph";
 // import GraphCard from "./GraphCard";
 
-import { AnalyticsData } from "/imports/api/types";
+import { AnalyticsData, metricNames } from "/imports/api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
 
 // -----------------------------
@@ -32,8 +32,8 @@ export function AnalyticsView(): React.JSX.Element {
   const [selectedContributors, setSelectedContributors] = useState<string[]>(
     []
   );
-  const [selectedMetrics, setSelectedMetrics] = useState<string | undefined>(
-    undefined
+  const [selectedMetrics, setSelectedMetrics] = useState<string>(
+    metricNames[0]
   );
 
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,7 @@ export function AnalyticsView(): React.JSX.Element {
         endDate: dateRange?.to,
         branch: selectedBranch,
         contributors: selectedContributors,
-        metric: selectedMetrics
+        metric: selectedMetrics,
       },
       (err: Error, data: AnalyticsData) => {
         if (err) {
@@ -60,7 +60,6 @@ export function AnalyticsView(): React.JSX.Element {
           setAnalyticsData(data);
           setSelectedContributors(data.selections.selectedContributors);
           setSelectedBranch(data.selections.selectedBranch);
-          setSelectedMetrics(data.selections.selectedMetrics);
           setDateRange(data.selections.selectedDateRange);
         }
         setLoading(false);
@@ -70,7 +69,7 @@ export function AnalyticsView(): React.JSX.Element {
 
   const fetchAnalyticsData = React.useCallback(() => {
     if (!repoUrl) return;
-    console.log("Metrics used to get data:", selectedMetrics); 
+    console.log("Metrics used to get data:", selectedMetrics);
     Meteor.call(
       "repo.getAnalyticsData",
       {
@@ -79,7 +78,7 @@ export function AnalyticsView(): React.JSX.Element {
         endDate: dateRange?.to,
         branch: selectedBranch,
         contributors: selectedContributors,
-        metrics: selectedMetrics
+        metrics: selectedMetrics,
       },
       (err: Error, data: AnalyticsData) => {
         if (err) {
@@ -90,7 +89,13 @@ export function AnalyticsView(): React.JSX.Element {
         setLoading(false);
       }
     );
-  }, [repoUrl, selectedBranch, selectedContributors, dateRange, selectedMetrics]);
+  }, [
+    repoUrl,
+    selectedBranch,
+    selectedContributors,
+    dateRange,
+    selectedMetrics,
+  ]);
 
   // Fetch when component mounts or filters change
   useEffect(() => {
@@ -146,10 +151,10 @@ export function AnalyticsView(): React.JSX.Element {
                 onChange={setSelectedContributors}
               />
             </div>
-              <div className="flex flex-col">
+            <div className="flex flex-col">
               <label className="text-sm text-gray-600">Metrics*</label>
               <MetricDropdownMenu
-                metrics={analytics.metricNames}
+                metrics={metricNames}
                 selected={selectedMetrics}
                 onChange={setSelectedMetrics}
               />

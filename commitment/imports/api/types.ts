@@ -153,6 +153,16 @@ export interface AnalyticsData {
   metricNames: string[]; 
 }
 
+export enum MetricType {
+  LOC = "LOC",
+  LOC_PER_COMMIT = "LOC/Commit",
+  COMMITS_PER_DAY = "Commits/Day",
+  TOTAL_COMMITS = "Total Commits",
+}
+
+// Helper: turn enum values into a string array
+export const metricNames: string[] = Object.values(MetricType);
+
 // add a type for getAllMetrics. 
 
 export interface AllMetricsData{
