@@ -9,6 +9,7 @@ import {
 import ProfileMenu from "@ui/components/ui/profile-menu";
 import { Moon, Sun } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
+import { Accounts } from "meteor/accounts-base";
 import SignUpButton from "./signUpButton";
 
 interface NavBarProps {
@@ -23,6 +24,10 @@ function NavBar({ isLoggedIn }: NavBarProps) {
   const handleSignOut = () => {
     // note to self: implement signing out logic here later
     console.log("Sign out clicked");
+
+    Accounts.logout(() => {
+      console.log("Signed out.")
+    });
   };
 
   const handleToggleDarkMode = () => {
