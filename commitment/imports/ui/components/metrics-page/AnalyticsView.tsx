@@ -10,6 +10,7 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 // import { ContributionPieChart } from "./PieChartGraph";
 // import GraphCard from "./GraphCard";
+import HeatmapGraph from "./HeatMapGraph";
 
 import { AnalyticsData } from "/imports/api/types";
 
@@ -188,6 +189,10 @@ export function AnalyticsView(): React.JSX.Element {
                 xAxisLabel="Commits"
               />
             </div>
+            <HeatmapGraph
+              data={analytics.metrics.contributors.heatMap} // Replace with real data
+              title="Contributor Activity Heatmap"
+            />
           </div>
         </div>
       </div>
