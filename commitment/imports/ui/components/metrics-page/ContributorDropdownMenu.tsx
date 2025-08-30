@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { Button } from "@ui/components/ui/button";
 import {
@@ -15,34 +13,28 @@ import { ScrollArea } from "@ui/components/ui/scroll-area";
 
 interface DropdownMenuCheckboxesProps {
   contributors: string[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
 }
 
-export function ContributorDropDownMenu({
+export function ContributorDropdownMenu({
   contributors,
-}: DropdownMenuCheckboxesProps) {
-  const [selectedContributors, setContributors] =
-    React.useState<string[]>(contributors);
-
+  selected,
+  onChange,
+}: DropdownMenuCheckboxesProps): React.JSX.Element {
   const allSelected =
-    selectedContributors.length === contributors.length &&
-    contributors.length > 0;
+    selected.length === contributors.length && contributors.length > 0;
 
   const maxDisplayCount = 5;
 
   const buttonText = () => {
-    if (allSelected) {
-      return "All Contributors";
-    }
-    if (selectedContributors.length === 0) {
-      return "Select Contributors";
-    }
-    if (selectedContributors.length > maxDisplayCount) {
-      const displayed = selectedContributors
-        .slice(0, maxDisplayCount)
-        .join(", ");
+    if (allSelected) return "All Contributors";
+    if (selected.length === 0) return "Select Contributors";
+    if (selected.length > maxDisplayCount) {
+      const displayed = selected.slice(0, maxDisplayCount).join(", ");
       return `${displayed}, ...`;
     }
-    return selectedContributors.join(", ");
+    return selected.join(", ");
   };
 
   return (
@@ -59,22 +51,20 @@ export function ContributorDropDownMenu({
         <DropdownMenuLabel>Select Contributors</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ScrollArea className="h-48">
-          {contributors.map((contributors) => (
+          {contributors.map((contributor) => (
             <DropdownMenuCheckboxItem
               onSelect={(event) => event.preventDefault()}
-              key={contributors}
-              checked={selectedContributors.includes(contributors)}
+              key={contributor}
+              checked={selected.includes(contributor)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setContributors((prev) => [...prev, contributors]);
+                  onChange([...selected, contributor]);
                 } else {
-                  setContributors((prev) =>
-                    prev.filter((c) => c !== contributors)
-                  );
+                  onChange(selected.filter((c) => c !== contributor));
                 }
               }}
             >
-              {contributors}
+              {contributor}
             </DropdownMenuCheckboxItem>
           ))}
         </ScrollArea>

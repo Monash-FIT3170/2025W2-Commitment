@@ -1,10 +1,11 @@
 import { Meteor } from 'meteor/meteor';
 import assert from 'assert';
+import './caching.test';
 
 describe('meteor-app', function () {
   it('package.json has correct name', async function () {
     const { name } = await import('../package.json');
-    assert.strictEqual(name, 'meteor-app');
+    assert.strictEqual(name, 'commitment');
   });
 
   if (Meteor.isClient) {

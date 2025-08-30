@@ -9,34 +9,25 @@ import {
   getYear,
 } from "date-fns";
 import InfoButton from "../ui/infoButton";
+import GraphCard from "./GraphCard";
+import { CardHeader, CardTitle, CardContent } from "../ui/card";
+import { HeatMapData } from "/imports/api/types";
 
-type ContributionDataItem = {
-  name: string;
-  date: string; // "yyyy-MM-dd"
-  count: number;
-};
-
-interface HeatMapProps {
-  data: ContributionDataItem[];
-  startDate?: Date;
-  endDate?: Date;
+interface HeatmapProps {
+  data: HeatMapData[];
   maxUsersToShow?: number;
-  title?: string; //This changes depending on the heatmap name - if it needs to change at all
+  title?: string;
 }
 
 const heatMapDescription =
-  "Gain a visual insight on how contributors are performing within a certain period of time"; //FIX: Make a better heatmap description
-
-// FIX: When the Product Managers define the colours in the system, use those instead of cardcoding
+  "Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period";
 const levels = [
-  "bg-orange-200",
-  "bg-orange-300",
-  "bg-orange-500",
-  "bg-orange-600",
-  "bg-orange-800",
+  "bg-git-bg-primary",
+  "bg-git-200",
+  "bg-git-400",
+  "bg-git-500",
+  "bg-git-800",
 ];
-
-const graphBackgroundColour = "#E8E8DD";
 
 // Applying normalisation to the data -> the gradient is represented by the value
 const getLevelClassNormalized = (ratio: number) => {
@@ -48,58 +39,53 @@ const getLevelClassNormalized = (ratio: number) => {
 };
 
 // Main heatmap function
-export default function UserContributionHeatMap({
+export default function HeatmapGraph({
   data,
-  startDate,
-  endDate,
   maxUsersToShow,
   title,
-}: HeatMapProps & { title?: string }) {
-  //Mapping on many different properties - Days/ Weeks/ Months or Years
-
-  // In the case where no data is given
+}: HeatmapProps): React.ReactElement {
   if (!data || data.length === 0) {
     return (
-      <div
-        className="rounded border p-6 overflow-x-auto font-mono " 
-        style={{
-          maxWidth: "fit-content", 
-          backgroundColor: graphBackgroundColour,
-        }}
-      >
-        {title && ( // could make this into a component
-          <div className="flex items-center space-x-2 w-4/5 ">
-            <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-
-            <div className="relative -mt-2 ">
+      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+        <CardHeader className="pb-0">
+          <CardTitle className="flex text-lg mt-0 font-bold ">
+            {title}
+            <div className="relative -mt-3 ml-2">
               <InfoButton description={heatMapDescription} />
             </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grow flex flex-col items-center justify-center pt-2">
+          <div className="text-gray-500 text-center py-8">
+            No contribution data available.
           </div>
-        )}
-
-        <div className="p-4 text-gray-500">Please select an End Date in the Date Range</div>
-      </div>
+        </CardContent>
+      </GraphCard>
     );
   }
 
+
+  // Mapping on many different properties - Days/ Weeks/ Months or Years
   const users = useMemo(
     () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
     [data, maxUsersToShow]
   );
 
-  const from = useMemo(() => {
-    if (startDate) return startDate;
-    return parseISO(
-      data.reduce((min, d) => (d.date < min ? d.date : min), data[0]?.date)
-    );
-  }, [data, startDate]);
+  let from: Date = useMemo(
+    () =>
+      parseISO(
+        data.reduce((min, d) => (d.date < min ? d.date : min), data[0].date)
+      ),
+    [data]
+  );
 
-  const to = useMemo(() => {
-    if (endDate) return endDate;
-    return parseISO(
-      data.reduce((max, d) => (d.date > max ? d.date : max), data[0]?.date)
-    );
-  }, [data, endDate]);
+  const to: Date = useMemo(
+    () =>
+      parseISO(
+        data.reduce((max, d) => (d.date > max ? d.date : max), data[0].date)
+      ),
+    [data]
+  );
 
   const totalDays = differenceInCalendarDays(to, from) + 1;
 
@@ -108,86 +94,112 @@ export default function UserContributionHeatMap({
 
   if (totalDays <= 7) {
     mode = "dayOfWeek";
-  } else if (totalDays <= 28) {
+  } else if (totalDays <= 49) {
     mode = "weeks";
-  } else if (getYear(to) > getYear(from)) {
+  } else if (
+    getYear(to) > getYear(from) &&
+    differenceInCalendarDays(to, from) > 30 * 7
+  ) {
     mode = "years";
   } else {
     mode = "months";
   }
 
-  const xLabels: string[] = [];
-  let bucketsCount = 0;
+  const yAxisLabels: string[] = [];
+  let yAxisLength = 7;
 
+  let monthBuckets: { year: number; month: number }[] = [];
   if (mode === "dayOfWeek") {
-    xLabels.push(...["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
-    bucketsCount = 7;
+    yAxisLabels.push(...["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
   } else if (mode === "weeks") {
-    const numWeeks = Math.min(4, Math.ceil(totalDays / 7));
-    bucketsCount = numWeeks;
-    for (let i = 0; i < numWeeks; i++) {
-      const weekStart = addDays(from, i * 7);
-      const weekEnd = addDays(weekStart, 6);
-      xLabels.push(
-        `${format(weekStart, "MMM d")} - ${format(
-          weekEnd < to ? weekEnd : to,
-          "MMM d"
-        )}`
-      );
+    const numWeeks = Math.min(7, Math.ceil(totalDays / 7));
+
+    from = addDays(from, -7 * (7 - numWeeks));
+
+    for (let i = 0; i < yAxisLength; i++) {
+      const weekStarts = addDays(from, i * 7);
+      yAxisLabels.push(`${format(weekStarts, "MMM d")}`);
     }
   } else if (mode === "months") {
-    bucketsCount = 12;
-    xLabels.push(
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec"
-    );
+    // Only show last 7 months with data
+    const startMonth = getMonth(from);
+    const endMonth = getMonth(to);
+    const startYear = getYear(from);
+    const endYear = getYear(to);
+
+    // Collect all months between from and to
+    const months: { year: number; month: number }[] = [];
+    let y = startYear;
+    let m = startMonth;
+    while (y < endYear || (y === endYear && m <= endMonth)) {
+      months.push({ year: y, month: m });
+      m++;
+      if (m > 11) {
+        m = 0;
+        y++;
+      }
+    }
+    const lastMonths = months.slice(-7);
+    while (lastMonths.length < 7) {
+      const first = lastMonths[0];
+      let prevMonth = first.month - 1;
+      let prevYear = first.year;
+      if (prevMonth < 0) {
+        prevMonth = 11;
+        prevYear -= 1;
+      }
+      lastMonths.unshift({ year: prevYear, month: prevMonth });
+    }
+    lastMonths.forEach(({ year, month }) => {
+      yAxisLabels.push(`${format(new Date(year, month, 1), "MMM yyyy")}`);
+    });
+    monthBuckets = lastMonths;
   } else {
     const endYear = getYear(to);
-    bucketsCount = 10;
-    for (let i = 0; i < bucketsCount; i++) {
-      xLabels.unshift((endYear - i).toString());
+    for (let i = 0; i < yAxisLength; i++) {
+      yAxisLabels.unshift((endYear - i).toString());
     }
   }
 
-  const table: Record<string, number[]> = {};
-  users.forEach((user) => {
-    table[user] = Array(bucketsCount).fill(0);
-  });
+  const table: Record<string, number[]> = useMemo(() => {
+    const tbl: Record<string, number[]> = {};
+    users.forEach((user) => {
+      tbl[user] = Array<number>(yAxisLength).fill(0);
+    });
 
-  const getBucketIndex = (dateStr: string): number => {
-    const date = parseISO(dateStr);
-    if (mode === "dayOfWeek") {
-      return getDay(date);
-    } else if (mode === "weeks") {
-      const diffDays = differenceInCalendarDays(date, from);
-      return Math.min(Math.floor(diffDays / 7), bucketsCount - 1);
-    } else if (mode === "months") {
-      return getMonth(date);
-    } else {
+    const getBucketIndex = (dateStr: string): number => {
+      const date = parseISO(dateStr);
+      if (mode === "dayOfWeek") {
+        return getDay(date);
+      }
+      if (mode === "weeks") {
+        const diffDays = differenceInCalendarDays(date, from);
+        return Math.min(Math.floor(diffDays / 7), yAxisLength - 1);
+      }
+      if (mode === "months") {
+        const year = getYear(date);
+        const month = getMonth(date);
+        return monthBuckets.findIndex(
+          (b: { year: number; month: number }) =>
+            b.year === year && b.month === month
+        );
+      }
       const year = getYear(date);
       const endYear = getYear(to);
       const idx = endYear - year;
-      return idx >= 0 && idx < bucketsCount ? bucketsCount - 1 - idx : -1;
-    }
-  };
+      return idx >= 0 && idx < yAxisLength ? yAxisLength - 1 - idx : -1;
+    };
 
-  data.forEach(({ name, date, count }) => {
-    if (!users.includes(name)) return;
-    const idx = getBucketIndex(date);
-    if (idx >= 0 && idx < bucketsCount) {
-      table[name][idx] += count;
-    }
-  });
+    data.forEach(({ name, date, count }) => {
+      if (!users.includes(name)) return;
+      const idx = getBucketIndex(date);
+      if (idx >= 0 && idx < yAxisLength) {
+        tbl[name][idx] += count;
+      }
+    });
+
+    return tbl;
+  }, [users, yAxisLength, mode, from, to, data]);
 
   const userMaxMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -197,109 +209,108 @@ export default function UserContributionHeatMap({
     return map;
   }, [table, users]);
 
+  const columnMaxMap = useMemo(() => {
+    const maxMap: number[] = Array<number>(yAxisLength).fill(0);
+    for (let col = 0; col < yAxisLength; col++) {
+      maxMap[col] = Math.max(...users.map((user) => table[user][col]));
+    }
+    return maxMap;
+  }, [table, users, yAxisLength]);
+
   // Cell styling
 
   const cellSize = 40;
   const spacing = 8;
   const labelWidth = 50;
-  const gridTemplateColumns = `${labelWidth}px repeat(${bucketsCount}, ${cellSize}px)`;
+  const gridTemplateColumns = `${labelWidth}px repeat(${yAxisLength}, ${cellSize}px)`;
   const gridTemplateRows = `repeat(${users.length}, ${cellSize}px) 1fr`;
+
+  
 
   return (
     //   The things actually in this component
-    <div
-      className="rounded border p-6 overflow-x-auto font-mono " //could be issue here with padding
-      style={{
-        maxWidth: "fit-content", // limit width to content width
-        backgroundColor: graphBackgroundColour,
-      }}
-    >
-      {title && (
-        <div className="flex items-center space-x-2 w-4/5 ">
-          <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-
-          {/* Special margin for the infoButton to get it centred */}
-          <div className="relative -mt-2 ">
+    <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+      <CardHeader className="pb-0">
+        <CardTitle className="flex text-lg mt-0 font-bold ">
+          {title}
+          <div className="relative -mt-3 ml-2">
             <InfoButton description={heatMapDescription} />
           </div>
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="grow flex flex-col items-center justify-center pt-2">
+        {/* STYLING FOR HEATMAP OVERALL */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns,
+            gridTemplateRows,
+            gap: `${spacing}px ${spacing}px`,
+            boxSizing: "border-box",
+            padding: "0",
+            width: "fit-content",
+            maxWidth: "100%",
+          }}
+        >
+          {/*  Y AXIS LABELS */}
+          {users.map((user, idx) => (
+            <div
+              key={user}
+              style={{
+                gridColumn: 1,
+                gridRow: idx + 1,
+                height: cellSize,
+                lineHeight: `${cellSize}px`,
+                overflow: "hidden",
+              }}
+              className="text-sm text-gray-700 truncate font-semibold "
+              title={user}
+            >
+              {user}
+            </div>
+          ))}
+          {/* MAP USERS TO ROWS */}
+          {users.map((user, rowIdx) =>
+            table[user].map((count, colIdx) => {
+              const max = columnMaxMap[colIdx]; // Variable to change normalization method
+              const ratio = max === 0 ? 0 : count / max;
+              return (
+                <div
+                  key={`${user}-${yAxisLabels[colIdx]}`}
+                  className={`rounded-sm cursor-default  ${getLevelClassNormalized(
+                    ratio
+                  )}`}
+                  style={{
+                    gridColumn: colIdx + 2,
+                    gridRow: rowIdx + 1,
+                    width: cellSize,
+                    height: cellSize,
+                  }}
+                  title={`${user} · ${yAxisLabels[colIdx]}: ${count} LOC`}
+                />
+              );
+            })
+          )}
+          {/* X AXIS LABELS */}
+          {yAxisLabels.map((label, idx) => (
+            <div
+              key={`x-label-${label}`}
+              style={{
+                gridColumn: idx + 2,
+                gridRow: users.length + 1,
+                width: cellSize,
+                textAlign: "center",
+                fontWeight: 600,
+                fontSize: "0.875rem",
+                color: "#4B5563",
+              }}
+            >
+              {label}
+            </div>
+          ))}
         </div>
-      )}
-
-      {/* STYLING FOR HEATMAP OVERALL */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns,
-          gridTemplateRows,
-          gap: `${spacing}px ${spacing}px`,
-          boxSizing: "border-box",
-          padding: "0",
-          border: "1px solid #e5e7eb",
-          borderRadius: "0.375rem",
-          width: "fit-content",
-          maxWidth: "100%",
-          backgroundColor: graphBackgroundColour, // keep heatmap itself white
-        }}
-      >
-        {/*  Y AXIS LABELS */}
-        {users.map((user, idx) => (
-          <div
-            key={user}
-            style={{
-              gridColumn: 1,
-              gridRow: idx + 1,
-              height: cellSize,
-              lineHeight: `${cellSize}px`,
-              overflow: "hidden",
-            }}
-            className="text-sm text-gray-700 truncate font-semibold "
-            title={user}
-          >
-            {user}
-          </div>
-        ))}
-
-        {/* MAP USERS TO ROWS */}
-        {users.map((user, rowIdx) =>
-          table[user].map((count, colIdx) => {
-            const max = userMaxMap[user];
-            const ratio = max === 0 ? 0 : count / max;
-            return (
-              <div
-                key={`${user}-${colIdx}`}
-                className={`rounded-sm cursor-default  ${getLevelClassNormalized(
-                  ratio
-                )}`}
-                style={{
-                  gridColumn: colIdx + 2,
-                  gridRow: rowIdx + 1,
-                  width: cellSize,
-                  height: cellSize,
-                }}
-                title={`${user} · ${xLabels[colIdx]}: ${count} LOC (max: ${max})`}
-              />
-            );
-          })
-        )}
-
-        {/* X AXIS LABELS */}
-        {xLabels.map((label, idx) => (
-          <div
-            key={`x-label-${idx}`}
-            style={{
-              gridColumn: idx + 2,
-              gridRow: users.length + 1,
-              width: cellSize,
-              textAlign: "center",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              color: "#4B5563",
-            }}
-          >
-            {label}
-          </div>
-        ))}
-      </div>
-    </div>
+      </CardContent>
+    </GraphCard>
   );
 }

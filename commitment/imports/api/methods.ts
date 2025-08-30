@@ -1,13 +1,11 @@
-import { Subject } from "rxjs"
-
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { LinksCollection, Link } from './links';
 
-import { repoInDatabase } from "./call_repo"
+import { repoInDatabase } from './call_repo';
 
 Meteor.methods({
-    /**
+  /**
      * Inserts a new link into the LinksCollection.
      *
      * @method links.insert
@@ -16,30 +14,30 @@ Meteor.methods({
      * @returns {Promise<string>} The ID of the newly inserted link document.
      * @throws {Meteor.Error} If the URL is invalid or does not start with 'http'.
      */
-    async 'links.insert'(title: string, url: string) {
-        check(title, String);
-        check(url, String);
+  async 'links.insert'(title: string, url: string) {
+    check(title, String);
+    check(url, String);
 
-        if (!url.startsWith('http')) {
-            throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
-        }
+    if (!url.startsWith('http')) {
+      throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
+    }
 
-        // Fix: Actually await and check the result
-        const inDatabase = await repoInDatabase(url);
-        if (!inDatabase) {
-            throw new Meteor.Error('not-in-database', `URL does not exist inside database: ${url}`);
-        }
+    // Fix: Actually await and check the result
+    const inDatabase = await repoInDatabase(url);
+    if (!inDatabase) {
+        throw new Meteor.Error('not-in-database', `URL does not exist inside database: ${url}`);
+    }
 
-        const newLink: Link = {
-            title,
-            url,
-            createdAt: new Date(),
-        };
+    const newLink: Link = {
+      title,
+      url,
+      createdAt: new Date(),
+    };
 
-        return LinksCollection.insertAsync(newLink);
-    },
+    return LinksCollection.insertAsync(newLink);
+  },
 
-    /**
+  /**
      * Removes a link from the LinksCollection by its URL.
      *
      * @method links.remove
@@ -47,20 +45,20 @@ Meteor.methods({
      * @returns {Promise<number>} The number of documents removed (should be 1 if successful).
      * @throws {Meteor.Error} If no link with the given URL is found.
      */
-    async 'links.remove'(url: string) {
-        check(url, String);
-        
-        const link = await LinksCollection.findOneAsync({ url: url });
-        
-        if (!link) {
-            throw new Meteor.Error('link-not-found', 'Link not found');
-        }
+  async 'links.remove'(url: string) {
+    check(url, String);
 
-        const result = LinksCollection.removeAsync(link._id);
-        return result;
-    },
+    const link = await LinksCollection.findOneAsync({ url })
 
-    /**
+    if (!link) {
+      throw new Meteor.Error('link-not-found', 'Link not found');
+    }
+
+    const result = LinksCollection.removeAsync({ url })
+    return result;
+  },
+
+  /**
      * Checks whether a link with the given URL exists in the LinksCollection.
      *
      * @method links.isBookmarked
