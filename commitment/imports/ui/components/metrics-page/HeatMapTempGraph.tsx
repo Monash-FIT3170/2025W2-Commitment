@@ -3,65 +3,141 @@ import Chart from "react-apexcharts";
 import GraphCard from "./GraphCard";
 import { CardHeader, CardTitle } from "../ui/card";
 import InfoButton from "../ui/infoButton";
+import { HeatMapData } from "/imports/api/types";
 
-// Generate raw data
-function generateRawData(
-  seriesCount: number,
-  pointsCount: number,
-  min: number,
-  max: number
-) {
-  return Array.from({ length: seriesCount }, (_, sIdx) => ({
-    name: `Metric${sIdx + 1}`,
-    data: Array.from({ length: pointsCount }, (_, pIdx) => ({
-      x: `W${pIdx + 1}`,
-      rawY: Math.floor(Math.random() * (max - min + 1)) + min,
-    })),
-  }));
+// Types
+interface HeatmapPoint<X extends string | number = string> {
+  x: X;
+  rawY: number;
+}
+interface HeatmapSeries<X extends string | number = string> {
+  name: string;
+  data: ReadonlyArray<HeatmapPoint<X>>;
+}
+interface NormalizedPoint<X extends string | number = string> {
+  x: X;
+  raw: number;
+  /** -1 means "none"/zero bucket; otherwise 0 < y <= 1 */
+  y: number;
+}
+interface NormalizedSeries<X extends string | number = string> {
+  name: string;
+  data: ReadonlyArray<NormalizedPoint<X>>;
+}
+interface Props {
+  data: HeatMapData[];
 }
 
-function normalizeSeriesData(rawSeries) {
-  const pointsCount = rawSeries[0].data.length;
-  const colMax = Array(pointsCount).fill(0);
-  rawSeries.forEach((series) => {
-    series.data.forEach((point, idx) => {
-      if (point.rawY > colMax[idx]) colMax[idx] = point.rawY;
-    });
+// ------- helpers -------
+function getWeekLabel(dateStr: string) {
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+  const week = Math.ceil(
+    ((date.getTime() - new Date(year, 0, 1).getTime()) / 86400000 +
+      new Date(year, 0, 1).getDay() +
+      1) /
+      7
+  );
+  return `W${week} ${year}`;
+}
+
+function processHeatMapData(data: HeatMapData[]) {
+  const users = Array.from(new Set(data.map((d) => d.name)));
+  const weekLabels = Array.from(
+    new Set(data.map((d) => getWeekLabel(d.date)))
+  ).sort();
+
+  const series: HeatmapSeries<string>[] = users.map((user) => {
+    const weekToCount: Record<string, number> = {};
+    data
+      .filter((d) => d.name === user)
+      .forEach((d) => {
+        const week = getWeekLabel(d.date);
+        weekToCount[week] = (weekToCount[week] ?? 0) + d.count;
+      });
+    return {
+      name: user,
+      data: weekLabels.map((week) => ({
+        x: week,
+        rawY: weekToCount[week] ?? 0,
+      })),
+    };
   });
-  return rawSeries.map((series) => ({
+
+  return { series, weekLabels, users };
+}
+
+/** Normalizes each column by its max; zero raw -> y = -1 */
+export function normalizeSeriesData<X extends string | number = string>(
+  rawSeries: ReadonlyArray<HeatmapSeries<X>>
+): NormalizedSeries<X>[] {
+  if (rawSeries.length === 0) return [];
+
+  const pointsCount = Math.max(...rawSeries.map((s) => s.data.length));
+
+  const xLabels: (X | number)[] = Array.from(
+    { length: pointsCount },
+    (_, idx) =>
+      rawSeries.find((s) => s.data[idx] !== undefined)?.data[idx].x ?? idx
+  );
+
+  const colMax: number[] = Array.from({ length: pointsCount }, (_unused, idx) =>
+    rawSeries.reduce<number>((max, series) => {
+      const val = series.data[idx]?.rawY ?? 0;
+      return val > max ? val : max;
+    }, 0)
+  );
+
+  return rawSeries.map<NormalizedSeries<X>>((series) => ({
     name: series.name,
-    data: series.data.map((point, idx) => {
-      const norm = colMax[idx] === 0 ? 0 : point.rawY / colMax[idx];
-      // Give Y a special value for zero to map to "none" color
+    data: Array.from({ length: pointsCount }, (_, idx) => {
+      const raw = series.data[idx]?.rawY ?? 0;
+      const maxAtIdx = colMax[idx] ?? 0;
+      const norm = maxAtIdx === 0 ? 0 : raw / maxAtIdx;
       const y = norm === 0 ? -1 : norm;
-      return { x: point.x, raw: point.rawY, y };
+      return {
+        x: series.data[idx]?.x ?? xLabels[idx],
+        raw,
+        y,
+      };
     }),
   }));
 }
 
-export default function HeatMapTempGraph(): React.ReactElement {
-  const rawSeries = useMemo(() => generateRawData(9, 12, 0, 90), []);
-  const chartSeries = useMemo(
-    () => normalizeSeriesData(rawSeries),
-    [rawSeries]
+/** Sum the raw values in each row (series). */
+function computeRowTotals<X extends string | number = string>(
+  rawSeries: ReadonlyArray<HeatmapSeries<X>>
+): number[] {
+  return rawSeries.map((s) =>
+    s.data.reduce<number>((acc, p) => acc + p.rawY, 0)
   );
+}
 
-  function getCssVarValue(varName: string) {
-    return getComputedStyle(document.documentElement)
-      .getPropertyValue(varName)
-      .trim();
-  }
-  // Use Tailwind CSS custom colors via CSS variables
-  const levels = [
-    { name: "none", color: getCssVarValue("--color-git-bg-elevated") }, // zero cells
-    { name: "s1", color: getCssVarValue("--color-git-100") },
-    { name: "s2", color: getCssVarValue("--color-git-200") },
-    { name: "s3", color: getCssVarValue("--color-git-300") },
-    { name: "s4", color: getCssVarValue("--color-git-400") },
-    { name: "s5", color: getCssVarValue("--color-git-500") },
-    { name: "s6", color: getCssVarValue("--color-git-700") },
-    { name: "s7", color: getCssVarValue("--color-git-900") },
-  ];
+function getCssVarValue(varName: string) {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(varName)
+    .trim();
+}
+
+const levels = [
+  { name: "none", color: getCssVarValue("--color-git-bg-elevated") },
+  { name: "s1", color: getCssVarValue("--color-git-100") },
+  { name: "s2", color: getCssVarValue("--color-git-200") },
+  { name: "s3", color: getCssVarValue("--color-git-300") },
+  { name: "s4", color: getCssVarValue("--color-git-400") },
+  { name: "s5", color: getCssVarValue("--color-git-500") },
+  { name: "s6", color: getCssVarValue("--color-git-700") },
+  { name: "s7", color: getCssVarValue("--color-git-900") },
+];
+
+// ------- component -------
+export default function HeatMapTempGraph({ data }: Props): React.ReactElement {
+  const { series, weekLabels, users } = useMemo(
+    () => processHeatMapData(data),
+    [data]
+  );
+  const chartSeries = useMemo(() => normalizeSeriesData(series), [series]);
+  const totals = useMemo(() => computeRowTotals(series), [series]);
 
   const chartOptions = useMemo(
     () => ({
@@ -69,17 +145,15 @@ export default function HeatMapTempGraph(): React.ReactElement {
         height: 350,
         type: "heatmap" as const,
         id: "heatmap-demo",
-        toolbar: {
-          show: false,
-        },
+        toolbar: { show: false },
         parentHeightOffset: 0,
         fontFamily:
           'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
       },
       grid: {
         padding: {
-          top: -20,
-          right: 0,
+          top: 0,
+          right: 0, // room for totals annotations
           bottom: 0,
           left: 28,
         },
@@ -129,30 +203,10 @@ export default function HeatMapTempGraph(): React.ReactElement {
         },
       },
       states: {
-        hover: {
-          filter: {
-            type: "none",
-          },
-        },
-        active: {
-          filter: {
-            type: "none",
-          },
-        },
-      },
-      dataLabels: {
-        enabled: false,
+        hover: { filter: { type: "none" } },
+        active: { filter: { type: "none" } },
       },
 
-      yaxis: {
-        labels: {
-          trim: true, // don’t cut with ellipses
-          maxWidth: 160, // increase if your names are longer
-
-          // offsetX: 0,
-          style: { fontSize: "0.875rem", fontWeight: "300" },
-        },
-      },
       xaxis: {
         type: "category" as const,
         tickPlacement: "between",
@@ -161,39 +215,58 @@ export default function HeatMapTempGraph(): React.ReactElement {
           style: { fontSize: "0.875rem", fontWeight: "300" },
         },
       },
+      dataLabels: {
+        enabled: false,
+      },
       stroke: {
         width: 6,
         colors: [getCssVarValue("--color-git-bg-bottom")],
       },
+
       tooltip: {
         y: {
-          formatter: function (
-            value,
-            { series, seriesIndex, dataPointIndex, w }
+          formatter(
+            value: number,
+            {
+              seriesIndex,
+              dataPointIndex,
+              w,
+            }: {
+              seriesIndex: number;
+              dataPointIndex: number;
+              w: {
+                config: {
+                  series: Array<{
+                    data: Array<{
+                      raw?: number;
+                    }>;
+                  }>;
+                };
+              };
+            }
           ) {
-            const rawY = w.config.series[seriesIndex].data[dataPointIndex].raw;
-            return rawY !== undefined ? rawY : value;
+            const rawY =
+              w.config.series[seriesIndex]?.data[dataPointIndex]?.raw;
+            const total = totals[seriesIndex];
+            return rawY !== undefined
+              ? `${rawY} (Total: ${total ?? 0})`
+              : String(value);
           },
         },
       },
+
       legend: {
         show: true,
-        position: "bottom", // bottom of the chart
-        horizontalAlign: "right", // align to left side
-        formatter: () => "", // hide text, show only markers
-        markers: {
-          size: 16,
-          shape: "square",
-          radius: 10,
-          strokeWidth: 0,
-        },
-        itemMargin: {
-          horizontal: 2,
-          vertical: 0,
-        },
+        position: "bottom",
+        horizontalAlign: "right",
+        floating: false,
+        clusterGroupedSeries: false,
+        formatter: () => "",
+        markers: { size: 16, shape: "square", radius: 10, strokeWidth: 0 },
+        itemMargin: { horizontal: 2, vertical: 0 },
       },
     }),
-    []
+    [users]
   );
 
   return (
@@ -212,7 +285,7 @@ export default function HeatMapTempGraph(): React.ReactElement {
         series={chartSeries}
         type="heatmap"
         width="100%"
-        height={500}
+        height={800}
       />
     </GraphCard>
   );

@@ -191,7 +191,7 @@ export function AnalyticsView(): React.JSX.Element {
               data={analytics.metrics.contributors.heatMap} // Replace with real data
               title="Contributor Activity Heatmap"
             />
-            <HeatmapTempGraph/>
+            <HeatmapTempGraph data={analytics.metrics.contributors.heatMap}/>
           </div>
         </div>
       </div>
