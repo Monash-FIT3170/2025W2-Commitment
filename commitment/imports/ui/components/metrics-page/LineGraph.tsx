@@ -87,7 +87,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   // card with the line graph
   return (
     // <Card  className="flex flex-col w-[475px] h-[400px] bg-[#f0f0e8] border-0 rounded-xl" style={{ backgroundColor: graphBackgroundColour }}>
-    <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
+    <GraphCard className="">
       {/* Title */}
       <CardHeader className="pb-0">
         <CardTitle className="flex text-lg mt-0 font-bold ">
