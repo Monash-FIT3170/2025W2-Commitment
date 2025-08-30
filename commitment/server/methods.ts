@@ -7,8 +7,9 @@ import {
   Metadata,
   MetricsData,
   Selections,
+  AllMetricsData
 } from "/imports/api/types";
-import { getAllGraphData, getMetricString } from "./repo_metrics";
+import { getAllGraphData, getMetricString, getAllMetrics } from "./repo_metrics";
 
 Meteor.methods({
   /**
@@ -145,4 +146,7 @@ Meteor.methods({
 
     return returnData;
   },
+  async "repo.getAllMetrics"({repoUrl}: {repoUrl: string}): Promise<AllMetricsData> {
+    return await getAllMetrics(repoUrl);
+  }
 });
