@@ -1,4 +1,9 @@
-import { RepositoryData, CommitData } from "/imports/api/types";
+import {
+  RepositoryData,
+  CommitData,
+  UserScalingSummary,
+} from "/imports/api/types";
+import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 
 // All possible metrics (same as Python)
 const USER_DATA_METRICS = [
@@ -19,10 +24,7 @@ function normalizeMetric(values: number[], alpha = 0.2): number[] {
   return normalized.map((n) => alpha + (1 - 2 * alpha) * n);
 }
 
-export function scaleUsers(
-  repoData: RepositoryData,
-  config: { metrics: string[]; method: string }
-) {
+function scaleUsers(repoData: RepositoryData, config: ScalingConfig) {
   const selectedMetrics = config.metrics ?? [];
   const method = config.method ?? "Percentiles";
 
@@ -78,7 +80,7 @@ export function scaleUsers(
 
   return users.map(([name], i) => {
     const userScores = metricsValues.map((mv) => mv[i]);
-    console.log(`User: ${name}, metric scores:`, userScores);
+    // console.log(`User: ${name}, metric scores:`, userScores);
 
     let score: number;
     if (method === "Percentiles") {
@@ -101,9 +103,6 @@ export function scaleUsers(
       score = userScores.reduce((a, b) => a + b, 0) / userScores.length;
     }
 
-    console.log("Selected metrics indices:", metricIndices);
-    console.log("Normalized metrics values:", metricsValues);
-
     // Round to 2 decimals -> never round down to 0
     console.log(`Final score for ${name}:`, score);
 
@@ -118,4 +117,34 @@ function getLOCFromCommit(commit: CommitData): number {
     const content = fileChange.file?.contents || "";
     return acc + content.split("\n").length;
   }, 0);
+}
+
+//Primary function to get scaled results of all users given: metrics and methods from config -> returns: a list of all users' Scalinng Summaries
+export function getScaledResults(
+  repoData: RepositoryData,
+  config: ScalingConfig
+): UserScalingSummary[] {
+  var userScalingSummaries: UserScalingSummary[] = [];
+
+  const scaledUsers = scaleUsers(repoData, config);
+
+  userScalingSummaries = scaledUsers.map((r: any) => {
+    const contributorData = repoData.contributors.get(r.name);
+
+    const aliases = contributorData
+      ? contributorData.emails.map((email) => ({
+          username: r.name,
+          email,
+        }))
+      : [];
+
+    return {
+      name: r.name,
+      aliases,
+      finalGrade: null,
+      scale: r.score ?? 0,
+    };
+  });
+
+  return userScalingSummaries;
 }

@@ -6,9 +6,15 @@ import {
   AnalyticsData,
   Metadata,
   MetricsData,
+  RepositoryData,
 } from "/imports/api/types";
 import { start } from "repl";
-import { getAllMetrics } from "./repo_metrics";
+import { getAllMetrics, getContributors, getUnfilteredData, setsUnfilteredData } from "./repo_metrics";
+import { getRepoData } from "./fetch_repo";
+import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation";
+import { getScaledResults } from "./ScalingFunctions";
+import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
+import { useLocation } from "react-router-dom";
 
 Meteor.methods({
   /**
@@ -133,4 +139,18 @@ Meteor.methods({
     
     return returnData;
   },
+
+async "getScalingResults"(data:ScalingConfig,repoUrl:string) {
+
+    setsUnfilteredData(repoUrl);
+
+    const repoData:SerializableRepoData = await getUnfilteredData();
+
+    const serializedRepoData:RepositoryData = deserializeRepoData(repoData)
+
+    const result = getScaledResults(serializedRepoData,data)
+
+    return result
+}
+ 
 });
