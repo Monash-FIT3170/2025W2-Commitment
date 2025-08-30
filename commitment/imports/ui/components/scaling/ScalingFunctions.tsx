@@ -37,6 +37,7 @@ export function scaleUsers(
       (c) => c.contributorName === name
     );
 
+    //Manually working out the metricss data
     const values = USER_DATA_METRICS.map((metric) => {
       switch (metric) {
         case "Total No. Commits":
@@ -62,10 +63,6 @@ export function scaleUsers(
 
     return [name, values];
   });
-  console.log(
-    "Metric values for Amy:",
-    users.map((u) => u[1])
-  );
 
   const metricIndices = selectedMetrics
     .map((m) => USER_DATA_METRICS.indexOf(m))
