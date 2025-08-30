@@ -32,15 +32,24 @@ export const fetchRepo = (url: string, subject: Subject<string>): Promise<boolea
 				if (err) reject(err)
 				resolve(result ?? false)
 			});
-	})
+		})
 
-export const repoInDatabase = async (url: string) => 
-    new Promise<boolean>((resolve, reject) => {
+export const repoInDatabase = async (url: string): Promise<boolean> => {
+    return new Promise<boolean>((resolve, reject) => {
+        if (!Meteor.status().connected) {
+            return reject(new Error("Server is not connected"));
+        }
+
         Meteor.call('repoInDatabase', url, (err: Error, result: boolean) => {
-					if (err) reject(err)    
-					resolve(result)
+            if (err) {
+                console.error('Error checking if repo is in database:', err);
+                reject(err);
+            } else {
+                resolve(result);
+            }
         });
-    })
+    });
+}
 
 export const getMetric = async <T>(url: string, f: string) => 
     new Promise<T>((resolve, reject) => {
@@ -49,3 +58,4 @@ export const getMetric = async <T>(url: string, f: string) =>
             resolve(result)
         });
     })
+
