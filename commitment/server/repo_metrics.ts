@@ -7,7 +7,8 @@ import {
   LineGraphData,
   PieChartData,
   HeatMapData,
-  Highlights
+  Highlights, 
+  AllMetricsData
 } from "../imports/api/types";
 import { Meteor } from "meteor/meteor";
 
@@ -36,6 +37,27 @@ export async function getAllGraphData(data: FilteredData, selectedMetric:string)
 // for each type of metric: 
 // contributorName:name ->  ["Total lines of commit" : number, "LOC": number, "LOC/Commit": number, "Commits Per Day": number]
 
+export async function getAllMetrics(repoUrl:string): Promise<AllMetricsData> {
+  // does all of this on UNFILTERED DATA 
+  setsUnfilteredData(repoUrl); 
+  const unfilteredData = await getUnfilteredData(); 
+
+  // for each contributor in the unfiltered data, find the metric associated to them: 
+  const allMetricData: AllMetricsData = {};
+
+  const contributors = getContributors(unfilteredData);
+  
+  contributors.forEach((contributor) => {
+    allMetricData[contributor] = {
+      "Total lines of commit": getTotalCommitsPerContributor(unfilteredData, contributor),
+      "LOC": 0,
+      "LOC/Commit": 0,
+      "Commits Per Day": 0,
+    };
+  });
+
+  return allMetricData;
+}
 /**
  * SETTERS AND GETTERS
  */
@@ -67,8 +89,8 @@ export function getBranches(data: FilteredData): string[] {
  * @param data Repository Data
  * @returns Array of contributor names
  */
-export function getContributors(data: FilteredData): string[] {
-  return data.repositoryData.contributors.map((c) => c.value.name);
+export function getContributors(data: SerializableRepoData): string[] {
+  return data.contributors.map((c) => c.value.name);
 }
 
 /**
@@ -583,4 +605,13 @@ export function getMetricString(): string[] {
     "LOC/Commit",
     "Commits Per Day",
   ];
+}
+
+//-------------- Metrics PER CONTRIBUTOR FUNCTIONS ----------------
+
+// Function for total lines of commit returning a string 
+
+export function getTotalCommitsPerContributor(repoData: SerializableRepoData, contributorName: string): number {
+  // function that finds all the commits for a contributor and returns the total number of commits as a string
+  return repoData.allCommits.filter(commit => commit.value.contributorName === contributorName).length;
 }

@@ -152,3 +152,14 @@ export interface AnalyticsData {
   metrics: MetricsData;
   metricNames: string[]; 
 }
+
+// add a type for getAllMetrics. 
+
+export interface AllMetricsData{
+  [contributorName: string]: {
+    "Total lines of commit": number;
+    "LOC": number;
+    "LOC/Commit": number;
+    "Commits Per Day": number;
+  };
+}
