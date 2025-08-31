@@ -556,6 +556,49 @@ export function pieChartLOCPerCommit(data: FilteredData): PieChartData[] {
 }
 
 /**
+ *
+ * @param data
+ * @returns
+ */
+export function pieChartCommitsPerDay(
+  data: FilteredData | SerializableRepoData
+): PieChartData[] {
+  // finds the total number of commits per day for a contributor within the date range
+  // and then finds the average of these commits to have one value for each contributor
+  const repoData = "repositoryData" in data ? data.repositoryData : data;
+  // Track total commits and unique days for each contributor
+  const contributorStats: Record<
+    string,
+    { commits: number; days: Set<string> }
+  > = {};
+
+  repoData.allCommits.forEach((commit) => {
+    const contributor = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+
+    if (!contributorStats[contributor]) {
+      contributorStats[contributor] = { commits: 0, days: new Set<string>() };
+    }
+
+    contributorStats[contributor].commits += 1;
+    contributorStats[contributor].days.add(date);
+  });
+
+  // Calculate average commits per day for each contributor
+  const pie: PieChartData[] = Object.entries(contributorStats).map(
+    ([contributor, stats]) => {
+      const avgCommitsPerDay = stats.commits / stats.days.size;
+      return {
+        user: contributor,
+        contributions: Math.round(avgCommitsPerDay), // rounding to 2 decimals
+      };
+    }
+  );
+
+  return pie;
+}
+
+/**
  * HEATMAP FUNCTIONS
  */
 
