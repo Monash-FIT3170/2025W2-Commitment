@@ -1,4 +1,3 @@
-import { Line } from "recharts";
 import {
   MetricsData,
   SerializableRepoData,
@@ -13,7 +12,6 @@ import {
   MetricType,
 } from "../imports/api/types";
 import { Meteor } from "meteor/meteor";
-import { ZodNumberCheck } from "zod";
 
 // storing a global access unfiltered data here
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
