@@ -7,8 +7,10 @@ import {
   Metadata,
   MetricsData,
   Selections,
+  AllMetricsData,
+  MetricType
 } from "/imports/api/types";
-import { getAllMetrics } from "./repo_metrics";
+import { getAllGraphData, getMetricString, getAllMetrics } from "./repo_metrics";
 
 Meteor.methods({
   /**
@@ -78,12 +80,14 @@ Meteor.methods({
     endDate,
     branch,
     contributors,
+    metric
   }: {
     repoUrl: string;
     startDate?: Date;
     endDate?: Date;
     branch?: string;
     contributors?: string[];
+    metric: MetricType;
   }): Promise<AnalyticsData> {
     /**
      * Get Repo Metadata first (contributors, branches, date range) etc
@@ -113,6 +117,7 @@ Meteor.methods({
         !contributors || contributors.length === 0
           ? metadata.contributors
           : contributors,
+      selectedMetrics: metric ,
       selectedDateRange: {
         from: startDate || metadata.dateRange.from,
         to: endDate || metadata.dateRange.to,
@@ -130,9 +135,9 @@ Meteor.methods({
       }
     );
 
-    const metricsData: MetricsData = await getAllMetrics(filteredRepo);
+    const metricsData: MetricsData = await getAllGraphData(filteredRepo, metric);
 
-    // NOW WE DO STUFF WITH THE FILTERED REPO TO GET METRICS
+    // NOW WE DO STUFF WITH THE FILTERED REPO TO GET the specific metric!! 
     const returnData: AnalyticsData = {
       metadata,
       selections,
@@ -141,4 +146,13 @@ Meteor.methods({
 
     return returnData;
   },
+
+  /**
+   * 
+   * @param param0 
+   * @returns 
+   */
+  async "repo.getAllMetrics"({repoUrl}: {repoUrl: string}): Promise<AllMetricsData> {
+    return await getAllMetrics(repoUrl);
+  }
 });
