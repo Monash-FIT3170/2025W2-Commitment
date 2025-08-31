@@ -25,7 +25,10 @@ export async function getAllGraphData(
   setsUnfilteredData(data.repoUrl);
   // get all the metrics based on the AnalyticsData structure
 
-  console.log("Selected Metric in the Get All Graph Data Function", selectedMetric)
+  console.log(
+    "Selected Metric in the Get All Graph Data Function",
+    selectedMetric
+  );
 
   return {
     highlights: await returnHighlightData(),
@@ -125,66 +128,66 @@ export async function returnHighlightData(): Promise<Highlights> {
   };
 }
 
-/**
- * Returns the leaderboard data for contributors in the repository.
- * @param data Filtered Repository Data
- * @returns Leaderboard data for contributors
- */
-export function leaderboardData(
-  data: FilteredData,
-  selectedMetric: MetricType
-): LeaderboardData[] {
-  const counts: Record<string, number> = {};
+export function leaderboardTotalCommits(data: FilteredData): LeaderboardData[] {
   const repoData = data.repositoryData;
+  const counts: Record<string, number> = {};
 
-  // depending on the selected Metric, the data is calculated accordingly:
-  switch (selectedMetric) {
-    case MetricType.TOTAL_COMMITS: {
-      repoData.allCommits.forEach((commit) => {
-        const user = commit.value.contributorName;
-        counts[user] = (counts[user] ?? 0) + 1;
-      });
-      break;
-    }
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    counts[user] = (counts[user] ?? 0) + 1;
+  });
 
-    case MetricType.LOC: {
-      // TO TEST
-      const locArray = locData(data);
-      if (locArray.length > 0) {
-        const lastEntry = locArray[locArray.length - 1]; // final cumulative LOC
-        Object.keys(lastEntry).forEach((key) => {
-          if (key !== "date") {
-            counts[key] = lastEntry[key] as number; // cumulative LOC for each contributor
-          }
-        });
+  const leaderboard: LeaderboardData[] = Object.entries(counts).map(
+    ([name, value]) => ({ name, value })
+  );
+
+  return leaderboard;
+}
+
+export function leaderboardLOC(data: FilteredData): LeaderboardData[] {
+  const repoData = data.repositoryData;
+  const counts: Record<string, number> = {};
+
+  const leaderboard: LeaderboardData[] = Object.entries(counts).map(
+    ([name, value]) => ({ name, value })
+  );
+
+  return leaderboard;
+}
+
+export function leaderboardLOCPerCommit(data: FilteredData): LeaderboardData[] {
+  const counts: Record<string, number> = {};
+  const locArray = locData(data);
+
+  if (locArray.length > 0) {
+    const lastEntry = locArray[locArray.length - 1]; // final cumulative LOC
+    Object.keys(lastEntry).forEach((key) => {
+      if (key !== "date") {
+        counts[key] = lastEntry[key] as number; // cumulative LOC for each contributor
       }
-      break;
-    }
-
-    case MetricType.LOC_PER_COMMIT: {
-      // Not implemented yet
-      break;
-    }
-
-    case MetricType.COMMITS_PER_DAY: {
-      return commitsPerDay(data);
-    }
-
-    default: {
-      // throw new Error(
-      //   "Unknown metric type in leaderboardData switch statement"
-      // );
-      break;
-    }
+    });
   }
 
   const leaderboard: LeaderboardData[] = Object.entries(counts).map(
     ([name, value]) => ({ name, value })
   );
 
-  console.log("At leaderboard data for metric", selectedMetric, leaderboard);
   return leaderboard;
 }
+
+export function leaderboardCommitsPerDay(
+  data: FilteredData
+): LeaderboardData[] {
+  const repoData = data.repositoryData;
+  const counts: Record<string, number> = {};
+
+  const leaderboard: LeaderboardData[] = Object.entries(counts).map(
+    ([name, value]) => ({ name, value })
+  );
+
+  return leaderboard;
+}
+
 
 export function lineGraphData(
   data: FilteredData,
@@ -243,8 +246,6 @@ export function heatMapData(
       throw new Error("Unknown metric");
   }
 }
-
-
 
 /**
  * FUNCTIONS FOR HIGHLIGHTS
