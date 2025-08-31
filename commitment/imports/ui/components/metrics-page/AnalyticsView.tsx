@@ -33,7 +33,9 @@ export function AnalyticsView(): React.JSX.Element {
   const [selectedContributors, setSelectedContributors] = useState<string[]>(
     []
   );
-  const [selectedMetrics, setSelectedMetrics] = useState<MetricType>(MetricType.TOTAL_COMMITS);
+  const [selectedMetrics, setSelectedMetrics] = useState<MetricType>(
+    MetricType.TOTAL_COMMITS
+  );
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +66,7 @@ export function AnalyticsView(): React.JSX.Element {
         setLoading(false);
       }
     );
-  }, [repoUrl]); // only runs once on mount
+  }, []); // only runs once on mount
 
   const fetchAnalyticsData = React.useCallback(() => {
     if (!repoUrl) return;
@@ -76,7 +78,7 @@ export function AnalyticsView(): React.JSX.Element {
         endDate: dateRange?.to,
         branch: selectedBranch,
         contributors: selectedContributors,
-        metrics: selectedMetrics,
+        metric: selectedMetrics,
       },
       (err: Error, data: AnalyticsData) => {
         if (err) {
@@ -152,7 +154,9 @@ export function AnalyticsView(): React.JSX.Element {
               <MetricDropdownMenu
                 metrics={metricNames}
                 selected={selectedMetrics}
-                onChange={(value: string) => setSelectedMetrics(value as MetricType)}
+                onChange={(value: string) =>
+                  setSelectedMetrics(value as MetricType)
+                }
               />
             </div>
           </div>

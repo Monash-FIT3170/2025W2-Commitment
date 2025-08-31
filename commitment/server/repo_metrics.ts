@@ -25,10 +25,6 @@ export async function getAllGraphData(
   setsUnfilteredData(data.repoUrl);
   // get all the metrics based on the AnalyticsData structure
 
-  console.log(
-    "Selected Metric in the Get All Graph Data Function",
-    selectedMetric
-  );
   let leaderboard: LeaderboardData[];
   let lineGraph: LineGraphData[];
   let pieChart: PieChartData[];
