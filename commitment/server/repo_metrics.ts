@@ -1021,7 +1021,22 @@ export function getLocPerCommitPerContributor(
   repoData: SerializableRepoData,
   contributorName: string
 ): number {
-  return 0; // until implemented
+  const commits = repoData.allCommits.filter(
+    (commit) => commit.value.contributorName === contributorName
+  );
+
+  if (commits.length === 0) return 0;
+
+  let totalLOC = 0;
+
+  commits.forEach((commit) => {
+    const locThisCommit = commit.value.fileData.reduce((sum, fileChange) => {
+      return sum + fileChange.file.contents.split("\n").length;
+    }, 0);
+    totalLOC += locThisCommit;
+  });
+
+  return totalLOC / commits.length; // average LOC per commit
 }
 
 export function getCommitPerDayPerContributor(
