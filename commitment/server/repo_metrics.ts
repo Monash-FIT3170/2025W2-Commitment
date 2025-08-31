@@ -31,35 +31,35 @@ export async function getAllGraphData(
     selectedMetric
   );
   let leaderboard: LeaderboardData[];
-  let linegraph: LineGraphData[];
+  let lineGraph: LineGraphData[];
   let pieChart: PieChartData[];
   let heatMap: HeatMapData[];
 
   switch (selectedMetric) {
     case MetricType.LOC:
       leaderboard = leaderboardLOC(data);
-      linegraph = linegraphLOC(data);
+      lineGraph = linegraphLOC(data);
       pieChart = pieChartLOC(data);
       heatMap = heatMapLOC(data);
       break;
 
     case MetricType.LOC_PER_COMMIT:
       leaderboard = leaderboardLOCPerCommit(data);
-      linegraph = linegraphLOCPerCommit(data);
+      lineGraph = linegraphLOCPerCommit(data);
       pieChart = pieChartLOCPerCommit(data);
       heatMap = heatMapLOCPerCommit(data);
       break;
 
     case MetricType.COMMITS_PER_DAY:
       leaderboard = leaderboardCommitsPerDay(data);
-      linegraph = linegraphCommitsPerDay(data);
+      lineGraph = linegraphCommitsPerDay(data);
       pieChart = pieChartCommitsPerDay(data);
       heatMap = heatMapCommitsPerDay(data);
       break;
 
     case MetricType.TOTAL_COMMITS:
       leaderboard = leaderboardTotalCommits(data);
-      linegraph = linegraphTotalCommits(data);
+      lineGraph = linegraphTotalCommits(data);
       pieChart = pieChartTotalCommits(data);
       heatMap = heatMapTotalCommits(data);
       break;
@@ -73,7 +73,7 @@ export async function getAllGraphData(
 
     contributors: {
       leaderboard,
-      linegraph,
+      lineGraph,
       pieChart,
       heatMap,
     },
