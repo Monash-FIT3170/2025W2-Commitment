@@ -10,6 +10,10 @@ import {
   Highlights,
   AllMetricsData,
   MetricType,
+  Heatmap,
+  PieChart,
+  LineGraph,
+  Leaderboard,
 } from "../imports/api/types";
 
 import {
@@ -51,38 +55,98 @@ export async function getAllGraphData(
   setsUnfilteredData(data.repoUrl);
   // get all the metrics based on the AnalyticsData structure
 
-  let leaderboard: LeaderboardData[];
-  let lineGraph: LineGraphData[];
-  let pieChart: PieChartData[];
-  let heatMap: HeatMapData[];
+  let leaderboard: Leaderboard;
+  let lineGraph: LineGraph;
+  let pieChart: PieChart;
+  let heatMap: Heatmap;
 
   switch (selectedMetric) {
     case MetricType.LOC:
-      leaderboard = leaderboardLOC(data);
-      lineGraph = linegraphLOC(data);
-      pieChart = pieChartLOC(data);
-      heatMap = heatMapLOC(data);
+      leaderboard = {
+        data: leaderboardLOC(data),
+        title: "Top Contributors by Lines of Code",
+        xAxisLabel: "Lines of Code"
+      };
+      lineGraph = {
+        data: linegraphLOC(data),
+        title: "Lines of Code Over Time",
+        xAxisLabel: "Date",
+        yAxisLabel: "Lines of Code",
+      };
+      pieChart = {
+        data: pieChartLOC(data),
+        title: "Distribution of Lines of Code",
+      };
+      heatMap = {
+        data: heatMapLOC(data),
+        title: "Commit Activity (LOC)",
+      };
       break;
 
     case MetricType.LOC_PER_COMMIT:
-      leaderboard = leaderboardLOCPerCommit(data);
-      lineGraph = linegraphLOCPerCommit(data);
-      pieChart = pieChartLOCPerCommit(data);
-      heatMap = heatMapLOCPerCommit(data);
+      leaderboard = {
+        data: leaderboardLOCPerCommit(data),
+        title: "Top Contributors by LOC per Commit",
+        xAxisLabel: "Lines of Code / Commit"
+      };
+      lineGraph = {
+        data: linegraphLOCPerCommit(data),
+        title: "LOC per Commit Over Time",
+        xAxisLabel: "Date",
+        yAxisLabel: "LOC per Commit",
+      };
+      pieChart = {
+        data: pieChartLOCPerCommit(data),
+        title: "Distribution of LOC per Commit",
+      };
+      heatMap = {
+        data: heatMapLOCPerCommit(data),
+        title: "Commit Activity (LOC per Commit)",
+      };
       break;
 
     case MetricType.COMMITS_PER_DAY:
-      leaderboard = leaderboardCommitsPerDay(data);
-      lineGraph = linegraphCommitsPerDay(data);
-      pieChart = pieChartCommitsPerDay(data);
-      heatMap = heatMapCommitsPerDay(data);
+      leaderboard = {
+        data: leaderboardCommitsPerDay(data),
+        title: "Top Contributors by Commits per Day",
+        xAxisLabel: "Commits / Day"
+      };
+      lineGraph = {
+        data: linegraphCommitsPerDay(data),
+        title: "Commits per Day Over Time",
+        xAxisLabel: "Date",
+        yAxisLabel: "Commits per Day",
+      };
+      pieChart = {
+        data: pieChartCommitsPerDay(data),
+        title: "Distribution of Commits per Day",
+      };
+      heatMap = {
+        data: heatMapCommitsPerDay(data),
+        title: "Commit Activity (Commits per Day)",
+      };
       break;
 
     case MetricType.TOTAL_COMMITS:
-      leaderboard = leaderboardTotalCommits(data);
-      lineGraph = linegraphTotalCommits(data);
-      pieChart = pieChartTotalCommits(data);
-      heatMap = heatMapTotalCommits(data);
+      leaderboard = {
+        data: leaderboardTotalCommits(data),
+        title: "Top Contributors by Total Commits",
+        xAxisLabel: "Total Commits"
+      };
+      lineGraph = {
+        data: linegraphTotalCommits(data),
+        title: "Total Commits Over Time",
+        xAxisLabel: "Date",
+        yAxisLabel: "Total Commits",
+      };
+      pieChart = {
+        data: pieChartTotalCommits(data),
+        title: "Distribution of Total Commits",
+      };
+      heatMap = {
+        data: heatMapTotalCommits(data),
+        title: "Commit Activity (Total Commits)",
+      };
       break;
 
     default:

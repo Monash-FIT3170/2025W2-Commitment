@@ -1,4 +1,5 @@
 import { DateRange } from "react-day-picker";
+import { Pie } from "recharts";
 
 export type RepositoryData = Readonly<{
   name: string;
@@ -89,7 +90,7 @@ export interface Metadata {
   repoName: string;
   branches: string[];
   contributors: string[];
-  dateRange: DateRange
+  dateRange: DateRange;
 }
 
 export interface HighlightStruct {
@@ -109,7 +110,6 @@ export interface LineGraphData {
   [contributor: string]: number | string; // e.g. { Alice: 120, Bob: 95 }
 }
 
-
 export interface PieChartData {
   user: string;
   contributions: number;
@@ -121,30 +121,53 @@ export type HeatMapData = {
   date: string;
   count: number;
 };
-export type Highlights = {
-    totalCommits: HighlightStruct;
-    totalLinesOfCode: HighlightStruct;
-    numContributors: number;
-    numBranches: number;
 
+export type Highlights = {
+  totalCommits: HighlightStruct;
+  totalLinesOfCode: HighlightStruct;
+  numContributors: number;
+  numBranches: number;
+};
+
+export interface Leaderboard {
+  data: LeaderboardData[];
+  title: string;
+  xAxisLabel: string;
 }
+
+export interface LineGraph {
+  data: LineGraphData[];
+  title: string;
+  xAxisLabel: string;
+  yAxisLabel: string;
+}
+
+export interface Heatmap {
+  data: HeatMapData[];
+  title: string;
+}
+
+export interface PieChart {
+  data: PieChartData[];
+  title: string;
+}
+
 export interface MetricsData {
   highlights: Highlights;
   contributors: {
-    leaderboard: LeaderboardData[];
-    lineGraph: LineGraphData[];
-    pieChart: PieChartData[];
-    heatMap: HeatMapData[];
+    leaderboard: Leaderboard;
+    lineGraph: LineGraph;
+    pieChart: PieChart;
+    heatMap: Heatmap;
   };
 }
 
 export interface Selections {
   selectedBranch: string;
   selectedContributors: string[];
-  selectedMetrics: string; 
+  selectedMetrics: string;
   selectedDateRange: DateRange;
 }
-
 
 export interface AnalyticsData {
   metadata: Metadata;
@@ -162,12 +185,12 @@ export enum MetricType {
 // Helper: turn enum values into a string array
 export const metricNames: string[] = Object.values(MetricType);
 
-// add a type for getAllMetrics. 
+// add a type for getAllMetrics.
 
-export interface AllMetricsData{
+export interface AllMetricsData {
   [contributorName: string]: {
     "Total lines of commit": number;
-    "LOC": number;
+    LOC: number;
     "LOC/Commit": number;
     "Commits Per Day": number;
   };

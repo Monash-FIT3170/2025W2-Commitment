@@ -196,21 +196,21 @@ export function AnalyticsView(): React.JSX.Element {
           {/* Graphs */}
           <div className="flex flex-wrap gap-6 mt-12 mb-12">
             <ContributorLineGraph
-              data={analytics.metrics.contributors.lineGraph}
-              title="LOC Changes Over Time"
-              xAxisLabel="Date"
-              yAxisLabel="Lines of Code Changed"
+              data={analytics.metrics.contributors.lineGraph.data}
+              title={analytics.metrics.contributors.lineGraph.title}
+              xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
+              yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
             />
             <div className="rounded-2xl basis-1/3 min-w-[320px]">
               <LeaderboardGraph
-                data={analytics.metrics.contributors.leaderboard}
-                title="Top Contributors"
-                xAxisLabel="Commits"
+                data={analytics.metrics.contributors.leaderboard.data}
+                title={analytics.metrics.contributors.leaderboard.title}
+                xAxisLabel={analytics.metrics.contributors.leaderboard.xAxisLabel}
               />
             </div>
             <HeatmapGraph
-              data={analytics.metrics.contributors.heatMap} // Replace with real data
-              title="Contributor Activity Heatmap"
+              data={analytics.metrics.contributors.heatMap.data}
+              title={analytics.metrics.contributors.heatMap.title}
             />
           </div>
         </div>
