@@ -32,21 +32,68 @@ interface Props {
 // ------- helpers -------
 function getWeekLabel(dateStr: string) {
   const date = new Date(dateStr);
-  const year = date.getFullYear();
-  const week = Math.ceil(
-    ((date.getTime() - new Date(year, 0, 1).getTime()) / 86400000 +
-      new Date(year, 0, 1).getDay() +
-      1) /
-      7
-  );
-  return `W${week} ${year}`;
+
+  // Align to Monday as start of week
+  const day = date.getDay(); // 0=Sun, 1=Mon
+  const diffToMonday = (day === 0 ? -6 : 1) - day;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + diffToMonday);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  // Example: "12–18 Oct"
+  const fmt = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
+
+  return `${fmt.format(monday)}-${fmt.format(sunday)}`;
 }
 
+/**
+ * Processes raw heatmap data to generate series for visualization.
+ *
+ * This function transforms an array of heat map data points into a format suitable for
+ * a heatmap visualization. It:
+ * 1. Extracts unique users from the data
+ * 2. Creates a map to track the first day (Monday) of each week for chronological sorting
+ * 3. Sorts week labels chronologically based on their first day
+ * 4. Generates series data for each user with aggregated counts per week
+ *
+ * @param data - Array of heat map data points containing name, date, and count
+ * @returns An object containing:
+ *   - series: Array of heatmap series with data points for each user
+ *   - weekLabels: Array of week labels sorted chronologically
+ *   - users: Array of unique user names
+ */
 function processHeatMapData(data: HeatMapData[]) {
   const users = Array.from(new Set(data.map((d) => d.name)));
+
+  // Create a map of week labels to their first day dates for sorting
+  const weekToFirstDay = new Map<string, Date>();
+  data.forEach((d) => {
+    const weekLabel = getWeekLabel(d.date);
+    const date = new Date(d.date);
+    // Align to Monday
+    const day = date.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1) - day;
+    const monday = new Date(date);
+    monday.setDate(date.getDate() + diffToMonday);
+
+    if (!weekToFirstDay.has(weekLabel)) {
+      weekToFirstDay.set(weekLabel, monday);
+    }
+  });
+
+  // Get unique week labels and sort them by their first day
   const weekLabels = Array.from(
     new Set(data.map((d) => getWeekLabel(d.date)))
-  ).sort();
+  ).sort((a, b) => {
+    const dateA = weekToFirstDay.get(a)?.getTime() || 0;
+    const dateB = weekToFirstDay.get(b)?.getTime() || 0;
+    return dateA - dateB;
+  });
 
   const series: HeatmapSeries<string>[] = users.map((user) => {
     const weekToCount: Record<string, number> = {};
@@ -148,7 +195,10 @@ export default function HeatMapTempGraph({
       .sort((a, b) => a.total - b.total)
       .map(({ s }) => s);
   }, [series]);
-  const chartSeries = useMemo(() => normalizeSeriesData(sortedSeries), [sortedSeries]);
+  const chartSeries = useMemo(
+    () => normalizeSeriesData(sortedSeries),
+    [sortedSeries]
+  );
   const totals = useMemo(() => computeRowTotals(sortedSeries), [sortedSeries]);
 
   const rowHeight = 50;
@@ -228,6 +278,7 @@ export default function HeatMapTempGraph({
       },
 
       xaxis: {
+        categories: weekLabels,
         type: "category" as const,
         tickPlacement: "between",
         labels: {
@@ -244,6 +295,14 @@ export default function HeatMapTempGraph({
       },
 
       tooltip: {
+        x: {
+          formatter(
+            _val: string,
+            { dataPointIndex }: { dataPointIndex: number }
+          ) {
+            return dataPointIndex >= 0 ? `Week ${dataPointIndex + 1}` : "";
+          },
+        },
         y: {
           formatter(
             value: number,
