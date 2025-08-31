@@ -33,6 +33,42 @@ interface Props {
 type Mode = "week" | "month";
 
 // ------- helpers -------
+function startOfDay(d: Date) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function alignToMonday(d: Date) {
+  const day = d.getDay(); // 0=Sun, 1=Mon
+  const diffToMonday = (day === 0 ? -6 : 1) - day;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diffToMonday);
+  return startOfDay(monday);
+}
+
+function buildContinuousWeekCategories(data: HeatMapData[]): string[] {
+  if (data.length === 0) return [];
+
+  const dates = data.map((d) => startOfDay(new Date(d.date)));
+  const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
+  const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+
+  const firstMonday = alignToMonday(minDate);
+  const lastMonday = alignToMonday(maxDate);
+
+  const categories: string[] = [];
+  for (
+    let cur = new Date(firstMonday);
+    cur <= lastMonday;
+    cur.setDate(cur.getDate() + 7)
+  ) {
+    // Reuse your existing label logic
+    categories.push(getWeekLabel(cur.toISOString()));
+  }
+  return categories;
+}
+
 function getWeekLabel(dateStr: string) {
   const date = new Date(dateStr);
 
@@ -70,11 +106,7 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
   const makeKeyAndFirstDate = (dateStr: string) => {
     const d = new Date(dateStr);
     if (mode === "week") {
-      const day = d.getDay();
-      const diffToMonday = (day === 0 ? -6 : 1) - day;
-      const monday = new Date(d);
-      monday.setDate(d.getDate() + diffToMonday);
-      monday.setHours(0, 0, 0, 0);
+      const monday = alignToMonday(d);
       return { key: getWeekLabel(dateStr), first: monday };
     } else {
       const first = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -100,6 +132,18 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
     const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
     return aT - bT;
   });
+
+  // // ---- NEW: continuous weekly categories; keep your month logic as-is
+  // const categories =
+  //   mode === "week"
+  //     ? buildContinuousWeekCategories(data)
+  //     : Array.from(new Set(data.map((d) => getMonthLabel(d.date)))).sort(
+  //         (a, b) => {
+  //           const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
+  //           const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
+  //           return aT - bT;
+  //         }
+  //       );
 
   const series: HeatmapSeries<string>[] = users.map((user) => {
     const keyToCount: Record<string, number> = {};
