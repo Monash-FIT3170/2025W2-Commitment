@@ -219,7 +219,6 @@ export default function HeatMapTempGraph({
   const chartOptions = useMemo(
     () => ({
       chart: {
-        height: 350,
         type: "heatmap" as const,
         id: "heatmap-demo",
         toolbar: { show: false },
@@ -283,7 +282,14 @@ export default function HeatMapTempGraph({
         hover: { filter: { type: "none" } },
         active: { filter: { type: "none" } },
       },
-
+      yaxis: {
+        labels: {
+          style: {
+            fontSize: "14px", 
+            fontWeight: 500, 
+          },
+        },
+      },
       xaxis: {
         categories: categories,
         type: "category" as const,
