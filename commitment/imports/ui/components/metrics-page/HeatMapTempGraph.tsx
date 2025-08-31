@@ -26,6 +26,7 @@ interface NormalizedSeries<X extends string | number = string> {
 }
 interface Props {
   data: HeatMapData[];
+  title?: string;
 }
 
 // ------- helpers -------
@@ -131,13 +132,32 @@ const levels = [
 ];
 
 // ------- component -------
-export default function HeatMapTempGraph({ data }: Props): React.ReactElement {
+export default function HeatMapTempGraph({
+  data,
+  title,
+}: Props): React.ReactElement {
   const { series, weekLabels, users } = useMemo(
     () => processHeatMapData(data),
     [data]
   );
-  const chartSeries = useMemo(() => normalizeSeriesData(series), [series]);
-  const totals = useMemo(() => computeRowTotals(series), [series]);
+  // Compute totals and sort series by total descending
+  const sortedSeries = useMemo(() => {
+    const totals = computeRowTotals(series);
+    return [...series]
+      .map((s, idx) => ({ s, total: totals[idx] }))
+      .sort((a, b) => a.total - b.total)
+      .map(({ s }) => s);
+  }, [series]);
+  const chartSeries = useMemo(() => normalizeSeriesData(sortedSeries), [sortedSeries]);
+  const totals = useMemo(() => computeRowTotals(sortedSeries), [sortedSeries]);
+
+  const rowHeight = 50;
+  const minHeight = 200;
+  const maxHeight = 800;
+  const dynamicHeight = Math.max(
+    minHeight,
+    Math.min(maxHeight, users.length * rowHeight)
+  );
 
   const chartOptions = useMemo(
     () => ({
@@ -273,9 +293,9 @@ export default function HeatMapTempGraph({ data }: Props): React.ReactElement {
     <GraphCard className="w-full max-w-[1600px] p-0">
       <CardHeader className="pb-0">
         <CardTitle className="flex text-lg mt-0 font-bold ">
-          {"Heat Map - Normalized per Column"}
+          {title ?? "Contributions Heatmap"}
           <div className="relative -mt-3 ml-2">
-            <InfoButton description={"desc"} />
+            <InfoButton description="Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -285,7 +305,7 @@ export default function HeatMapTempGraph({ data }: Props): React.ReactElement {
         series={chartSeries}
         type="heatmap"
         width="100%"
-        height={800}
+        height={dynamicHeight}
       />
     </GraphCard>
   );
