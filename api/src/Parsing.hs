@@ -76,9 +76,9 @@ maybeToResult msg Nothing = Error msg
 
 successful :: CommandResult -> ParseResult String
 successful (CommandResult _   (Just err) (Just stdErr)) = Error $ err ++ ":\n" ++ stdErr
-successful (CommandResult _   (Just err) _)             = Error err
-successful (CommandResult res _ (Just stdErr))          = if failedOutput stdErr || failedOutput res then Error stdErr else Result res
-successful (CommandResult res _ _)                      = Result res
+successful (CommandResult _   (Just err) _            ) = Error err
+successful (CommandResult res _          (Just stdErr)) = if failedOutput stdErr || failedOutput res then Error stdErr else Result res
+successful (CommandResult res _          _            ) = Result res
 
 parsed :: String -> ParseResult a -> a
 parsed _ (Result r)   = r
@@ -94,7 +94,7 @@ parsedNestedLists msg = map (parsedLists msg)
 
 -- | Returns true if the output indicates a failed command
 failedOutput :: String -> Bool
-failedOutput txt = any (`isPrefixOf` txt) ["fatal:", "error:", "could not", "not a git repository", "Process exited with code"]
+failedOutput txt = any (`isPrefixOf` txt) ["fatal:", "error:", "could not", "not a git repository", "Process exited with code", "Encountered error"]
 
 -- | Safely extract exact text from command output
 exactText :: String -> ParseResult String

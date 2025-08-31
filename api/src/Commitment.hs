@@ -25,6 +25,7 @@ import System.FilePath
 import System.IO.Unsafe (unsafePerformIO)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import Control.Concurrent (getNumCapabilities)
+import Threading (safePrint)
 
 -- Create global thread pools
 {-# NOINLINE parsingPool #-}
@@ -75,10 +76,9 @@ fetchDataFrom url notifier = (do
         awaitCreateRepoDir   <- createDirectoryIfMissing True repoAbsPath
 
         emit notifier "Cloning repo..."
-        assertSuccess <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
+        awaitCloneResult <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
             (\path -> successful <$> executeCommand notifier workingDir (cloneRepo url path))
-            repoAbsPath
-            )
+            repoAbsPath) 
 
         emit notifier "Getting repository data..."
         repoData <- formulateRepoData url repoAbsPath notifier

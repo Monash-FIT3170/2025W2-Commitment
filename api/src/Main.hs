@@ -1,11 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Main (main) where
 
 import Api
 import Control.Concurrent (forkIO)
 import Control.Exception (bracket)
+import System.Environment (getEnvironment, setEnv, unsetEnv)
 
 import Network.Wai.Handler.WebSockets (websocketsOr)
 import Network.WebSockets.Connection
@@ -23,8 +26,23 @@ import Network.Socket
   )
 #endif
 
+cleanEnvironment :: IO ()
+cleanEnvironment = do
+    -- remove problematic variables
+    unsetEnv "GIT_ASKPASS"
+    unsetEnv "GCM_INTERACTIVE"
+
+    -- inject variables to disable prompts
+    setEnv "GIT_TERMINAL_PROMPT" "0"
+    setEnv "SSH_AUTH_SOCK" "\\.\\pipe\\ssh-auth-sock"
+
+    pure ()
+
+
 main :: IO ()
 main = do
+    awaitEnvironmentClean <- cleanEnvironment
+
     -- Enable permessage-deflate (RSV1 frames allowed)
     let opts = defaultConnectionOptions  -- no connectionCompression
     let app  = websocketsOr opts appWS appHTTP
