@@ -473,11 +473,10 @@ export function linegraphLOCPerCommit(data: FilteredData): LineGraphData[] {
  * PIECHART FUNCTIONS
  */
 
-
 /**
- * 
- * @param data 
- * @returns 
+ *
+ * @param data
+ * @returns
  */
 export function pieChartTotalCommits(data: FilteredData): PieChartData[] {
   const repoData = data.repositoryData;
@@ -496,9 +495,9 @@ export function pieChartTotalCommits(data: FilteredData): PieChartData[] {
 }
 
 /**
- * 
- * @param data 
- * @returns 
+ *
+ * @param data
+ * @returns
  */
 export function pieChartLOC(data: FilteredData): PieChartData[] {
   const repoData = data.repositoryData;
@@ -517,6 +516,41 @@ export function pieChartLOC(data: FilteredData): PieChartData[] {
   const pie: PieChartData[] = Object.entries(counts).map(
     ([user, contributions]) => ({ user, contributions })
   );
+
+  return pie;
+}
+
+/**
+ *
+ * @param data
+ * @returns
+ */
+export function pieChartLOCPerCommit(data: FilteredData): PieChartData[] {
+  const repoData = data.repositoryData;
+  const locCounts: Record<string, number> = {};
+  const commitCounts: Record<string, number> = {};
+
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const locThisCommit = commit.value.fileData.reduce(
+      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+      0
+    );
+
+    locCounts[user] = (locCounts[user] || 0) + locThisCommit;
+    commitCounts[user] = (commitCounts[user] || 0) + 1;
+  });
+
+  const pie: PieChartData[] = Object.keys(locCounts).map((user) => {
+    const totalLOC = locCounts[user];
+    const totalCommits = commitCounts[user];
+    const avgLOCPerCommit = totalCommits > 0 ? totalLOC / totalCommits : 0;
+
+    return {
+      user,
+      contributions: Math.round(avgLOCPerCommit), // nearest whole number
+    };
+  });
 
   return pie;
 }
