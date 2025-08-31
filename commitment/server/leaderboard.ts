@@ -21,7 +21,7 @@ export function leaderboardTotalCommits(data: FilteredData): LeaderboardData[] {
     ([name, value]) => ({ name, value })
   );
 
-  return leaderboard;
+  return leaderboard.sort((a, b) => b.value - a.value).slice(0, 10);
 }
 
 export function leaderboardLOC(data: FilteredData): LeaderboardData[] {
@@ -42,7 +42,7 @@ export function leaderboardLOC(data: FilteredData): LeaderboardData[] {
     ([name, value]) => ({ name, value })
   );
 
-  return leaderboard;
+  return leaderboard.sort((a, b) => b.value - a.value).slice(0, 10);
 }
 
 export function leaderboardLOCPerCommit(data: FilteredData): LeaderboardData[] {
@@ -72,7 +72,7 @@ export function leaderboardLOCPerCommit(data: FilteredData): LeaderboardData[] {
     };
   });
 
-  return leaderboard;
+  return leaderboard.sort((a, b) => b.value - a.value).slice(0, 10);
 }
 
 /**
@@ -115,8 +115,5 @@ export function leaderboardCommitsPerDay(
     }
   );
 
-  // Sort descending by average commits per day
-  leaderboard.sort((a, b) => b.value - a.value);
-
-  return leaderboard;
+  return leaderboard.sort((a, b) => b.value - a.value).slice(0, 10);
 }
