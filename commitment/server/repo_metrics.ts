@@ -387,29 +387,31 @@ export function linegraphLOC(data: FilteredData): LineGraphData[] {
 }
 
 /**
- * Calculates the Commits per day and formats into a line graph strucutre. 
- * @param data The filtered Data passed. 
+ * Calculates the Commits per day and formats into a line graph strucutre.
+ * @param data The filtered Data passed.
  * @returns An array of LineGraphData objects representing commits per day.
  */
 export function linegraphCommitsPerDay(data: FilteredData): LineGraphData[] {
-
-  const {dateRange, repositoryData} = data; 
-  const {allCommits, contributors} = repositoryData; 
+  const { dateRange, repositoryData } = data;
+  const { allCommits, contributors } = repositoryData;
 
   // get contributor names
-  const contributorNames = contributors.map(c => c.value.name);
+  const contributorNames = contributors.map((c) => c.value.name);
 
   // Format date as YYYY-MM-DD
-  const formatDate = (d:Date) => d.toISOString().split("T")[0];
+  const formatDate = (d: Date) => d.toISOString().split("T")[0];
 
   // build a map: date -> {contributorName -> count}
-  const commitMap: Record<string,  Record<string, number>> = {};
+  const commitMap: Record<string, Record<string, number>> = {};
 
-  for (const commitObj of allCommits){
-    const commit = commitObj.value; 
+  for (const commitObj of allCommits) {
+    const commit = commitObj.value;
     const commitDate = formatDate(new Date(commit.timestamp));
 
-    if (new Date(commit.timestamp) < dateRange.start || new Date(commit.timestamp) > dateRange.end) {
+    if (
+      new Date(commit.timestamp) < dateRange.start ||
+      new Date(commit.timestamp) > dateRange.end
+    ) {
       continue;
     }
 
@@ -423,21 +425,19 @@ export function linegraphCommitsPerDay(data: FilteredData): LineGraphData[] {
     commitMap[commitDate][commit.contributorName]++;
   }
   const result: LineGraphData[] = [];
-  const current = new Date(dateRange.start); 
-  while (current <= dateRange.end){
-    const dateStr = formatDate(current); 
-    const entry: LineGraphData = {date: dateStr}; 
+  const current = new Date(dateRange.start);
+  while (current <= dateRange.end) {
+    const dateStr = formatDate(current);
+    const entry: LineGraphData = { date: dateStr };
 
-    for (const name of contributorNames){
+    for (const name of contributorNames) {
       entry[name] = commitMap[dateStr]?.[name] || 0;
     }
     result.push(entry);
     current.setDate(current.getDate() + 1);
-
   }
 
   return result;
-
 }
 
 /**
@@ -647,8 +647,7 @@ export function pieChartCommitsPerDay(
  * HEATMAP FUNCTIONS
  */
 
-
-export function heatMapLOC(data:FilteredData):HeatMapData[] {
+export function heatMapLOC(data: FilteredData): HeatMapData[] {
   const repoData = data.repositoryData;
   // Map of date → user → LOC count
   const byDateUser = new Map<string, Record<string, number>>();
@@ -659,11 +658,12 @@ export function heatMapLOC(data:FilteredData):HeatMapData[] {
 
     // calculate LOC for this commit
     const locthisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length, 0 
-    ); 
+      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+      0
+    );
 
-    if(!byDateUser.has(date)) byDateUser.set(date, {}); 
-    const bucket = byDateUser.get(date)!; 
+    if (!byDateUser.has(date)) byDateUser.set(date, {});
+    const bucket = byDateUser.get(date)!;
     bucket[user] = (bucket[user] ?? 0) + locthisCommit;
   });
 
@@ -687,7 +687,10 @@ export function heatMapLOCPerCommit(data: FilteredData): HeatMapData[] {
   const repoData = data.repositoryData;
 
   // Map of date → user → { totalLOC, commitCount }
-  const byDateUser = new Map<string, Record<string, { totalLOC: number; commitCount: number }>>();
+  const byDateUser = new Map<
+    string,
+    Record<string, { totalLOC: number; commitCount: number }>
+  >();
 
   repoData.allCommits.forEach((commit) => {
     const user = commit.value.contributorName;
@@ -711,7 +714,9 @@ export function heatMapLOCPerCommit(data: FilteredData): HeatMapData[] {
   // Convert to HeatMapData[] with LOC per commit
   const heatMapArray: HeatMapData[] = [];
   byDateUser.forEach((userCounts, date) => {
-    for (const [user, { totalLOC, commitCount }] of Object.entries(userCounts)) {
+    for (const [user, { totalLOC, commitCount }] of Object.entries(
+      userCounts
+    )) {
       heatMapArray.push({
         name: user,
         date,
@@ -726,10 +731,10 @@ export function heatMapLOCPerCommit(data: FilteredData): HeatMapData[] {
 /**
  * Calculates the average number of commits per day for each contributor.
  * @param data The filtered repository data
- * @returns A heat map data structure containing name, date and count for each contributors average number of commits per day. 
+ * @returns A heat map data structure containing name, date and count for each contributors average number of commits per day.
  */
 export function heatMapCommitsPerDay(data: FilteredData): HeatMapData[] {
-    const repoData = data.repositoryData;
+  const repoData = data.repositoryData;
   const { start, end } = data.dateRange;
 
   // Calculate number of days in range (inclusive)
@@ -765,7 +770,6 @@ export function heatMapCommitsPerDay(data: FilteredData): HeatMapData[] {
 
   return heatMapArray;
 }
-
 
 export function heatMapTotalCommits(data: FilteredData): HeatMapData[] {
   const repoData = data.repositoryData;
@@ -975,9 +979,6 @@ export async function numBranches(): Promise<number> {
   return unfilteredData.branches.length;
 }
 
-
-
-
 export function getMetricString(): string[] {
   return ["Total No. Commits", "LOC", "LOC/Commit", "Commits Per Day"];
 }
@@ -1042,17 +1043,18 @@ export function getCommitPerDayPerContributor(
   contributorName: string
 ): number {
   // get commits filtered according to contributors
-  const commits = repoData.allCommits.filter((commit) => commit.value.contributorName === contributorName);
+  const commits = repoData.allCommits.filter(
+    (commit) => commit.value.contributorName === contributorName
+  );
   if (commits.length === 0) return 0;
 
   // extract commit dates as (YYYY-MM-DD)
-  const dates = commits.map((commit)=> {
-    const date = new Date(commit.value.timestamp); 
+  const dates = commits.map((commit) => {
+    const date = new Date(commit.value.timestamp);
     return date.toISOString().split("T")[0];
-  }); 
+  });
 
   // count unique days
   const uniqueDays = new Set(dates);
   return commits.length / uniqueDays.size;
-
 }
