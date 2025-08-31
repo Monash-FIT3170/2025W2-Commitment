@@ -48,7 +48,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
   data,
   title,
 }) => (
-  <GraphCard className="h-[500px]">
+  <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
     <CardHeader className="pb-0">
       <div className="pb-2 items-center flex ">
         <h2 className="text-lg font-bold">{title}</h2>

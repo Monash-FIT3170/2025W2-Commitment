@@ -51,7 +51,7 @@ function getWeekLabel(dateStr: string) {
     month: "short",
   });
 
-  return `${fmt.format(monday)}-${fmt.format(sunday)}`;
+  return `${fmt.format(monday)} - ${fmt.format(sunday)}`;
 }
 
 function getMonthLabel(dateStr: string) {
@@ -285,8 +285,8 @@ export default function HeatMapGraph({
       yaxis: {
         labels: {
           style: {
-            fontSize: "14px", 
-            fontWeight: 500, 
+            fontSize: "14px",
+            fontWeight: 500,
           },
         },
       },
@@ -297,6 +297,11 @@ export default function HeatMapGraph({
         labels: {
           trim: false,
           style: { fontSize: "0.875rem", fontWeight: "300" },
+          formatter: (label: string) => {
+            // If label has a dash, only keep the part before it
+            const dashIndex = label.indexOf(" -");
+            return dashIndex !== -1 ? label.substring(0, dashIndex) : label;
+          },
         },
       },
       dataLabels: {
