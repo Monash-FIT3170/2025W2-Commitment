@@ -1002,15 +1002,19 @@ export function getLOCperContributor(
   repoData: SerializableRepoData,
   contributorName: string
 ): number {
-  const locArray = locData(repoData); // LineGraphData[] (cumulative LOC over time)
+  let totalLOC = 0;
 
-  if (locArray.length === 0) return 0;
+  repoData.allCommits.forEach((commit) => {
+    if (commit.value.contributorName === contributorName) {
+      const locThisCommit = commit.value.fileData.reduce(
+        (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+        0
+      );
+      totalLOC += locThisCommit;
+    }
+  });
 
-  const lastEntry = locArray[locArray.length - 1]; // final cumulative snapshot
-
-  return lastEntry[contributorName]
-    ? (lastEntry[contributorName] as number)
-    : 0;
+  return totalLOC;
 }
 
 export function getLocPerCommitPerContributor(
