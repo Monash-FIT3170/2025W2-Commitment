@@ -473,23 +473,52 @@ export function linegraphLOCPerCommit(data: FilteredData): LineGraphData[] {
  * PIECHART FUNCTIONS
  */
 
-export function pieChartData(
-  data: FilteredData,
-  selectedMetric: MetricType
-): PieChartData[] {
-  switch (selectedMetric) {
-    case MetricType.TOTAL_COMMITS:
-      return pieChartCommitData(data);
-    case MetricType.LOC:
-      return pieChartLocData(data);
-    // case MetricType.LOC_PER_COMMIT:
-    //   break;
-    // // return pieChartLocPerCommitData(data);
-    // case MetricType.COMMITS_PER_DAY:
-    //   break;
-    default:
-      throw new Error("Unknown metric type in pieChartData switch statement");
-  }
+
+/**
+ * 
+ * @param data 
+ * @returns 
+ */
+export function pieChartTotalCommits(data: FilteredData): PieChartData[] {
+  const repoData = data.repositoryData;
+  const counts: Record<string, number> = {};
+
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    counts[user] = (counts[user] ?? 0) + 1;
+  });
+
+  const pie: PieChartData[] = Object.entries(counts).map(
+    ([user, contributions]) => ({ user, contributions })
+  );
+
+  return pie;
+}
+
+/**
+ * 
+ * @param data 
+ * @returns 
+ */
+export function pieChartLOC(data: FilteredData): PieChartData[] {
+  const repoData = data.repositoryData;
+  const counts: Record<string, number> = {};
+
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const locThisCommit = commit.value.fileData.reduce(
+      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+      0
+    );
+
+    counts[user] = (counts[user] || 0) + locThisCommit;
+  });
+
+  const pie: PieChartData[] = Object.entries(counts).map(
+    ([user, contributions]) => ({ user, contributions })
+  );
+
+  return pie;
 }
 
 /**
@@ -691,33 +720,6 @@ export async function numContributors(): Promise<number> {
 export async function numBranches(): Promise<number> {
   const unfilteredData = await getUnfilteredData();
   return unfilteredData.branches.length;
-}
-
-// ------------- PIE CHART RELATED METRICS ------------------------------
-/**
- * TODO: once we fix piechart
- * @param data
- * @returns
- */
-export function pieChartCommitData(data: FilteredData): PieChartData[] {
-  return leaderboardData(data, selectedMetric).map((contributor, index) => ({
-    user: contributor.name,
-    contributions: contributor.value,
-  }));
-}
-export function pieChartLocData(data: FilteredData): PieChartData[] {
-  const lineData = locData(data); // returns LineGraphData[]
-
-  // Get the last entry (most recent cumulative LOC per contributor)
-  const lastEntry = lineData[lineData.length - 1] || { date: "" };
-
-  // Remove the 'date' key and map into PieChartData[]
-  return Object.entries(lastEntry)
-    .filter(([key]) => key !== "date")
-    .map(([user, contributions]) => ({
-      user,
-      contributions: contributions as number,
-    }));
 }
 
 // ------------- HEAT MAP RELATED METRICS ------------------------------
