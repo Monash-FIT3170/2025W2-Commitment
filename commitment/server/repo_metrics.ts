@@ -117,16 +117,10 @@ export function getContributors(data: SerializableRepoData): string[] {
 export function getRepoName(data: FilteredData): string {
   return data.repositoryData.name;
 }
-// --------------------------- FUNCTIONS THAT RELATE TO THE TYPES OF GRAPHS ----------------
 
-export async function returnHighlightData(): Promise<Highlights> {
-  return {
-    totalCommits: await highlightTotalCommits(),
-    totalLinesOfCode: await highlightTotalLinesOfCode(),
-    numContributors: await numContributors(),
-    numBranches: await numBranches(),
-  };
-}
+/**
+ * LEADERBOARD FUNCTIONS
+ */
 
 export function leaderboardTotalCommits(data: FilteredData): LeaderboardData[] {
   const repoData = data.repositoryData;
@@ -188,25 +182,184 @@ export function leaderboardCommitsPerDay(
   return leaderboard;
 }
 
+/**
+ * LINEGRAPH FUNCTIONS
+ */
 
-export function lineGraphData(
-  data: FilteredData,
-  selectedMetric: MetricType
-): LineGraphData[] {
-  switch (selectedMetric) {
-    case MetricType.TOTAL_COMMITS:
-      return totalCommitsPerDay(data); // to discuss and fix
-    case MetricType.LOC:
-      return locData(data);
-    // case MetricType.LOC_PER_COMMIT:
-    //   // return locPerCommit(data);
-    //   break;
-    case MetricType.COMMITS_PER_DAY:
-      return totalCommitsPerDay(data); // to discuss and fix
-    default:
-      throw new Error("Unknown metric type in lineGraphData switch statement");
-  }
+/**
+ * Returns the total number of commits per day for the line graph.
+ * @param data Filtered Repository Data
+ * @returns Array of LineGraphData objects
+ */
+export function linegraphTotalCommits(data: FilteredData): LineGraphData[] {
+  const repoData = data.repositoryData;
+
+  // Gather all contributors
+  const allContributors = new Set<string>();
+  repoData.allCommits.forEach((commit) => {
+    allContributors.add(commit.value.contributorName);
+  });
+
+  // Bucket commits by day per contributor
+  const commitsByDay: Record<string, Record<string, number>> = {};
+  repoData.allCommits.forEach((commit) => {
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+    const contributor = commit.value.contributorName;
+
+    if (!commitsByDay[date]) commitsByDay[date] = {};
+    commitsByDay[date][contributor] =
+      (commitsByDay[date][contributor] || 0) + 1;
+  });
+
+  // Sort dates
+  const sortedDates = Object.keys(commitsByDay).sort();
+
+  // Prepare cumulative counts per contributor
+  const cumulative: Record<string, number> = {};
+  allContributors.forEach((c) => (cumulative[c] = 0));
+
+  // Build LineGraphData array
+  const dataArray: LineGraphData[] = [];
+  sortedDates.forEach((date) => {
+    const dailyCommits = commitsByDay[date];
+
+    // Update cumulative totals
+    Object.keys(dailyCommits).forEach((user) => {
+      cumulative[user] = (cumulative[user] ?? 0) + dailyCommits[user];
+    });
+
+    // Create entry for this date
+    const entry: LineGraphData = { date };
+    allContributors.forEach((user) => {
+      entry[user] = cumulative[user];
+    });
+
+    dataArray.push(entry);
+  });
+
+  return dataArray;
 }
+
+/**
+ *
+ * @param data
+ * @returns
+ */
+export function linegraphLOC(
+  data: FilteredData | SerializableRepoData
+): LineGraphData[] {
+  const byDate = new Map<string, Record<string, number>>();
+  const repoData = "repositoryData" in data ? data.repositoryData : data;
+
+  // Gather all contributors
+  const allContributors = new Set<string>();
+  repoData.allCommits.forEach((commit) => {
+    allContributors.add(commit.value.contributorName);
+  });
+
+  // Collect daily LOC
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+
+    // LOC snapshot for this commit
+    const locThisCommit = commit.value.fileData.reduce(
+      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+      0
+    );
+    if (!byDate.has(date)) byDate.set(date, {});
+    const bucket = byDate.get(date)!;
+    bucket[user] = (bucket[user] ?? 0) + locThisCommit;
+  });
+
+  // Sort dates
+  const sortedDates = Array.from(byDate.keys()).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  // Cumulative tracker
+  const cumulative: Record<string, number> = {};
+  allContributors.forEach((c) => (cumulative[c] = 0));
+
+  const dataArray: LineGraphData[] = [];
+
+  sortedDates.forEach((date) => {
+    const dailyLOC = byDate.get(date)!;
+
+    // update cumulative totals
+    Object.keys(dailyLOC).forEach((user) => {
+      cumulative[user] = (cumulative[user] ?? 0) + dailyLOC[user];
+    });
+
+    // include *all* contributors, even if they didn’t commit today
+    const entry: LineGraphData = { date };
+    allContributors.forEach((user) => {
+      entry[user] = cumulative[user];
+    });
+
+    dataArray.push(entry);
+  });
+
+  return dataArray;
+}
+
+/**
+ *
+ * @param data
+ * @returns
+ */
+export function linegraphCommitsPerDay(
+  data: FilteredData | SerializableRepoData
+): LeaderboardData[] {
+  // finds the total number of commits per day for a contributor within the date range
+  // and then finds the average of these commits to have one value for each contributor
+  const repoData = "repositoryData" in data ? data.repositoryData : data;
+  // Track total commits and unique days for each contributor
+  const contributorStats: Record<
+    string,
+    { commits: number; days: Set<string> }
+  > = {};
+
+  repoData.allCommits.forEach((commit) => {
+    const contributor = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+
+    if (!contributorStats[contributor]) {
+      contributorStats[contributor] = { commits: 0, days: new Set<string>() };
+    }
+
+    contributorStats[contributor].commits += 1;
+    contributorStats[contributor].days.add(date);
+  });
+
+  // Calculate average commits per day for each contributor
+  const leaderboard: LeaderboardData[] = Object.entries(contributorStats).map(
+    ([contributor, stats]) => {
+      const avgCommitsPerDay = stats.commits / stats.days.size;
+      return {
+        name: contributor,
+        value: parseFloat(avgCommitsPerDay.toFixed(2)), // rounding to 2 decimals
+      };
+    }
+  );
+
+  // Sort descending by average commits per day
+  leaderboard.sort((a, b) => b.value - a.value);
+
+  return leaderboard;
+}
+
+/**
+ *
+ * @param data
+ */
+export function linegraphLOCPerCommit(
+  data: FilteredData | SerializableRepoData
+): LeaderboardData[] {}
+
+/**
+ * PIECHART FUNCTIONS
+ */
 
 export function pieChartData(
   data: FilteredData,
@@ -250,6 +403,15 @@ export function heatMapData(
 /**
  * FUNCTIONS FOR HIGHLIGHTS
  */
+
+export async function returnHighlightData(): Promise<Highlights> {
+  return {
+    totalCommits: await highlightTotalCommits(),
+    totalLinesOfCode: await highlightTotalLinesOfCode(),
+    numContributors: await numContributors(),
+    numBranches: await numBranches(),
+  };
+}
 
 /**
  *
@@ -413,159 +575,6 @@ export async function numContributors(): Promise<number> {
 export async function numBranches(): Promise<number> {
   const unfilteredData = await getUnfilteredData();
   return unfilteredData.branches.length;
-}
-
-// --------------- LINE GRAPH RELATED METRICS --------------------------
-export function locData(
-  data: FilteredData | SerializableRepoData
-): LineGraphData[] {
-  const byDate = new Map<string, Record<string, number>>();
-  const repoData = "repositoryData" in data ? data.repositoryData : data;
-
-  // Gather all contributors
-  const allContributors = new Set<string>();
-  repoData.allCommits.forEach((commit) => {
-    allContributors.add(commit.value.contributorName);
-  });
-
-  // Collect daily LOC
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
-
-    // LOC snapshot for this commit
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
-    if (!byDate.has(date)) byDate.set(date, {});
-    const bucket = byDate.get(date)!;
-    bucket[user] = (bucket[user] ?? 0) + locThisCommit;
-  });
-
-  // Sort dates
-  const sortedDates = Array.from(byDate.keys()).sort((a, b) =>
-    a.localeCompare(b)
-  );
-
-  // Cumulative tracker
-  const cumulative: Record<string, number> = {};
-  allContributors.forEach((c) => (cumulative[c] = 0));
-
-  const dataArray: LineGraphData[] = [];
-
-  sortedDates.forEach((date) => {
-    const dailyLOC = byDate.get(date)!;
-
-    // update cumulative totals
-    Object.keys(dailyLOC).forEach((user) => {
-      cumulative[user] = (cumulative[user] ?? 0) + dailyLOC[user];
-    });
-
-    // include *all* contributors, even if they didn’t commit today
-    const entry: LineGraphData = { date };
-    allContributors.forEach((user) => {
-      entry[user] = cumulative[user];
-    });
-
-    dataArray.push(entry);
-  });
-
-  return dataArray;
-}
-/**
- * Returns the total number of commits per day for the line graph.
- * @param data Filtered Repository Data
- * @returns Array of LineGraphData objects
- */
-export function totalCommitsPerDay(data: FilteredData): LineGraphData[] {
-  const repoData = data.repositoryData;
-
-  // Gather all contributors
-  const allContributors = new Set<string>();
-  repoData.allCommits.forEach((commit) => {
-    allContributors.add(commit.value.contributorName);
-  });
-
-  // Bucket commits by day per contributor
-  const commitsByDay: Record<string, Record<string, number>> = {};
-  repoData.allCommits.forEach((commit) => {
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
-    const contributor = commit.value.contributorName;
-
-    if (!commitsByDay[date]) commitsByDay[date] = {};
-    commitsByDay[date][contributor] =
-      (commitsByDay[date][contributor] || 0) + 1;
-  });
-
-  // Sort dates
-  const sortedDates = Object.keys(commitsByDay).sort();
-
-  // Prepare cumulative counts per contributor
-  const cumulative: Record<string, number> = {};
-  allContributors.forEach((c) => (cumulative[c] = 0));
-
-  // Build LineGraphData array
-  const dataArray: LineGraphData[] = [];
-  sortedDates.forEach((date) => {
-    const dailyCommits = commitsByDay[date];
-
-    // Update cumulative totals
-    Object.keys(dailyCommits).forEach((user) => {
-      cumulative[user] = (cumulative[user] ?? 0) + dailyCommits[user];
-    });
-
-    // Create entry for this date
-    const entry: LineGraphData = { date };
-    allContributors.forEach((user) => {
-      entry[user] = cumulative[user];
-    });
-
-    dataArray.push(entry);
-  });
-
-  return dataArray;
-}
-
-export function commitsPerDay(
-  data: FilteredData | SerializableRepoData
-): LeaderboardData[] {
-  // finds the total number of commits per day for a contributor within the date range
-  // and then finds the average of these commits to have one value for each contributor
-  const repoData = "repositoryData" in data ? data.repositoryData : data;
-  // Track total commits and unique days for each contributor
-  const contributorStats: Record<
-    string,
-    { commits: number; days: Set<string> }
-  > = {};
-
-  repoData.allCommits.forEach((commit) => {
-    const contributor = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
-
-    if (!contributorStats[contributor]) {
-      contributorStats[contributor] = { commits: 0, days: new Set<string>() };
-    }
-
-    contributorStats[contributor].commits += 1;
-    contributorStats[contributor].days.add(date);
-  });
-
-  // Calculate average commits per day for each contributor
-  const leaderboard: LeaderboardData[] = Object.entries(contributorStats).map(
-    ([contributor, stats]) => {
-      const avgCommitsPerDay = stats.commits / stats.days.size;
-      return {
-        name: contributor,
-        value: parseFloat(avgCommitsPerDay.toFixed(2)), // rounding to 2 decimals
-      };
-    }
-  );
-
-  // Sort descending by average commits per day
-  leaderboard.sort((a, b) => b.value - a.value);
-
-  return leaderboard;
 }
 
 // ------------- PIE CHART RELATED METRICS ------------------------------
