@@ -337,11 +337,9 @@ export function linegraphTotalCommits(data: FilteredData): LineGraphData[] {
  * @param data
  * @returns
  */
-export function linegraphLOC(
-  data: FilteredData | SerializableRepoData
-): LineGraphData[] {
+export function linegraphLOC(data: FilteredData): LineGraphData[] {
   const byDate = new Map<string, Record<string, number>>();
-  const repoData = "repositoryData" in data ? data.repositoryData : data;
+  const repoData = data.repositoryData;
 
   // Gather all contributors
   const allContributors = new Set<string>();
@@ -395,17 +393,81 @@ export function linegraphLOC(
   return dataArray;
 }
 
-export function linegraphCommitsPerDay(
-  data: FilteredData | SerializableRepoData
-): LineGraphData[] {}
+export function linegraphCommitsPerDay(data: FilteredData): LineGraphData[] {}
 
 /**
  *
  * @param data
  */
-export function linegraphLOCPerCommit(
-  data: FilteredData | SerializableRepoData
-): LineGraphData[] {}
+export function linegraphLOCPerCommit(data: FilteredData): LineGraphData[] {
+  const byDate = new Map<
+    string,
+    { loc: Record<string, number>; commits: Record<string, number> }
+  >();
+  const repoData = data.repositoryData;
+
+  // Gather all contributors
+  const allContributors = new Set<string>();
+  repoData.allCommits.forEach((commit) => {
+    allContributors.add(commit.value.contributorName);
+  });
+
+  // Collect daily LOC + commit counts
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+
+    // LOC snapshot for this commit
+    const locThisCommit = commit.value.fileData.reduce(
+      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+      0
+    );
+
+    if (!byDate.has(date)) {
+      byDate.set(date, { loc: {}, commits: {} });
+    }
+    const bucket = byDate.get(date)!;
+
+    bucket.loc[user] = (bucket.loc[user] ?? 0) + locThisCommit;
+    bucket.commits[user] = (bucket.commits[user] ?? 0) + 1;
+  });
+
+  // Sort dates
+  const sortedDates = Array.from(byDate.keys()).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  // Cumulative trackers
+  const cumulativeLOC: Record<string, number> = {};
+  const cumulativeCommits: Record<string, number> = {};
+  allContributors.forEach((c) => {
+    cumulativeLOC[c] = 0;
+    cumulativeCommits[c] = 0;
+  });
+
+  const dataArray: LineGraphData[] = [];
+
+  sortedDates.forEach((date) => {
+    const daily = byDate.get(date)!;
+
+    // update cumulative totals
+    Object.keys(daily.loc).forEach((user) => {
+      cumulativeLOC[user] += daily.loc[user];
+      cumulativeCommits[user] += daily.commits[user];
+    });
+
+    // entry for this date = avg LOC per commit
+    const entry: LineGraphData = { date };
+    allContributors.forEach((user) => {
+      const commits = cumulativeCommits[user];
+      entry[user] = commits > 0 ? Math.round(cumulativeLOC[user] / commits) : 0;
+    });
+
+    dataArray.push(entry);
+  });
+
+  return dataArray;
+}
 
 /**
  * PIECHART FUNCTIONS
