@@ -208,15 +208,48 @@ export function leaderboardLOCPerCommit(data: FilteredData): LeaderboardData[] {
   return leaderboard;
 }
 
+/**
+ *
+ * @param data
+ * @returns
+ */
 export function leaderboardCommitsPerDay(
-  data: FilteredData
+  data: FilteredData | SerializableRepoData
 ): LeaderboardData[] {
-  const repoData = data.repositoryData;
-  const counts: Record<string, number> = {};
+  // finds the total number of commits per day for a contributor within the date range
+  // and then finds the average of these commits to have one value for each contributor
+  const repoData = "repositoryData" in data ? data.repositoryData : data;
+  // Track total commits and unique days for each contributor
+  const contributorStats: Record<
+    string,
+    { commits: number; days: Set<string> }
+  > = {};
 
-  const leaderboard: LeaderboardData[] = Object.entries(counts).map(
-    ([name, value]) => ({ name, value })
+  repoData.allCommits.forEach((commit) => {
+    const contributor = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+
+    if (!contributorStats[contributor]) {
+      contributorStats[contributor] = { commits: 0, days: new Set<string>() };
+    }
+
+    contributorStats[contributor].commits += 1;
+    contributorStats[contributor].days.add(date);
+  });
+
+  // Calculate average commits per day for each contributor
+  const leaderboard: LeaderboardData[] = Object.entries(contributorStats).map(
+    ([contributor, stats]) => {
+      const avgCommitsPerDay = stats.commits / stats.days.size;
+      return {
+        name: contributor,
+        value: parseFloat(avgCommitsPerDay.toFixed(2)), // rounding to 2 decimals
+      };
+    }
   );
+
+  // Sort descending by average commits per day
+  leaderboard.sort((a, b) => b.value - a.value);
 
   return leaderboard;
 }
@@ -342,51 +375,9 @@ export function linegraphLOC(
   return dataArray;
 }
 
-/**
- *
- * @param data
- * @returns
- */
 export function linegraphCommitsPerDay(
   data: FilteredData | SerializableRepoData
-): LeaderboardData[] {
-  // finds the total number of commits per day for a contributor within the date range
-  // and then finds the average of these commits to have one value for each contributor
-  const repoData = "repositoryData" in data ? data.repositoryData : data;
-  // Track total commits and unique days for each contributor
-  const contributorStats: Record<
-    string,
-    { commits: number; days: Set<string> }
-  > = {};
-
-  repoData.allCommits.forEach((commit) => {
-    const contributor = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
-
-    if (!contributorStats[contributor]) {
-      contributorStats[contributor] = { commits: 0, days: new Set<string>() };
-    }
-
-    contributorStats[contributor].commits += 1;
-    contributorStats[contributor].days.add(date);
-  });
-
-  // Calculate average commits per day for each contributor
-  const leaderboard: LeaderboardData[] = Object.entries(contributorStats).map(
-    ([contributor, stats]) => {
-      const avgCommitsPerDay = stats.commits / stats.days.size;
-      return {
-        name: contributor,
-        value: parseFloat(avgCommitsPerDay.toFixed(2)), // rounding to 2 decimals
-      };
-    }
-  );
-
-  // Sort descending by average commits per day
-  leaderboard.sort((a, b) => b.value - a.value);
-
-  return leaderboard;
-}
+): LineGraphData[] {}
 
 /**
  *
@@ -418,6 +409,10 @@ export function pieChartData(
       throw new Error("Unknown metric type in pieChartData switch statement");
   }
 }
+
+/**
+ * HEATMAP FUNCTIONS
+ */
 
 export function heatMapData(
   data: FilteredData,
