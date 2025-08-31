@@ -30,7 +30,7 @@ interface Props {
   title?: string;
 }
 
-type Mode = "week" | "month";
+type Mode = "week" | "week-fill" | "month";
 
 // ------- helpers -------
 function startOfDay(d: Date) {
@@ -101,11 +101,11 @@ function getMonthLabel(dateStr: string) {
 function processHeatMapData(data: HeatMapData[], mode: Mode) {
   const users = Array.from(new Set(data.map((d) => d.name)));
 
-  // build key -> firstDate for sorting (week Monday or month 1st)
+  // key -> firstDate for sorting (month 1st; week uses label's Monday)
   const keyToFirstDay = new Map<string, Date>();
   const makeKeyAndFirstDate = (dateStr: string) => {
     const d = new Date(dateStr);
-    if (mode === "week") {
+    if (mode === "week" || mode === "week-fill") {
       const monday = alignToMonday(d);
       return { key: getWeekLabel(dateStr), first: monday };
     } else {
@@ -120,40 +120,38 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
     if (!keyToFirstDay.has(key)) keyToFirstDay.set(key, first);
   }
 
-  // categories sorted chronologically
-  const categories = Array.from(
-    new Set(
-      data.map((d) =>
-        mode === "week" ? getWeekLabel(d.date) : getMonthLabel(d.date)
-      )
-    )
-  ).sort((a, b) => {
-    const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
-    const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
-    return aT - bT;
-  });
+  // ---- categories per mode ----
+  const categories =
+    mode === "week-fill"
+      ? buildContinuousWeekCategories(data) // padded, continuous weeks
+      : mode === "week"
+      ? Array.from(new Set(data.map((d) => getWeekLabel(d.date)))).sort(
+          (a, b) => {
+            const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
+            const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
+            return aT - bT;
+          }
+        ) // sparse weeks as-is
+      : Array.from(new Set(data.map((d) => getMonthLabel(d.date)))).sort(
+          (a, b) => {
+            const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
+            const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
+            return aT - bT;
+          }
+        );
 
-  // // ---- NEW: continuous weekly categories; keep your month logic as-is
-  // const categories =
-  //   mode === "week"
-  //     ? buildContinuousWeekCategories(data)
-  //     : Array.from(new Set(data.map((d) => getMonthLabel(d.date)))).sort(
-  //         (a, b) => {
-  //           const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
-  //           const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
-  //           return aT - bT;
-  //         }
-  //       );
-
+  // aggregate counts per (user, category)
   const series: HeatmapSeries<string>[] = users.map((user) => {
     const keyToCount: Record<string, number> = {};
     data
       .filter((d) => d.name === user)
       .forEach((d) => {
         const key =
-          mode === "week" ? getWeekLabel(d.date) : getMonthLabel(d.date);
+          mode === "month" ? getMonthLabel(d.date) : getWeekLabel(d.date);
         keyToCount[key] = (keyToCount[key] ?? 0) + d.count;
       });
+
+    // project onto chosen categories; missing weeks => 0 (pads in week-fill)
     return {
       name: user,
       data: categories.map((k) => ({ x: k, rawY: keyToCount[k] ?? 0 })),

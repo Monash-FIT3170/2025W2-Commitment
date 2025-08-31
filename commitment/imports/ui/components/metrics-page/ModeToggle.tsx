@@ -4,7 +4,8 @@ import * as React from "react";
 import { CalendarDays, Calendar } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 
-type Mode = "week" | "month";
+type Mode = "week" | "week-fill" | "month";
+
 export function ModeToggle({
   value,
   onChange,
@@ -24,6 +25,12 @@ export function ModeToggle({
         className="flex items-center gap-2 px-3 py-2"
       >
         <CalendarDays className="h-4 w-4" /> Week
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value="week-fill"
+        className="flex items-center gap-2 px-3 py-2"
+      >
+        <CalendarDays className="h-4 w-4" /> Week-fill
       </ToggleGroupItem>
       <ToggleGroupItem
         value="month"
