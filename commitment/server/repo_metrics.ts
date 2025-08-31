@@ -13,6 +13,7 @@ import {
   MetricType,
 } from "../imports/api/types";
 import { Meteor } from "meteor/meteor";
+import { ZodNumberCheck } from "zod";
 
 // storing a global access unfiltered data here
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
@@ -648,26 +649,88 @@ export function pieChartCommitsPerDay(
  * HEATMAP FUNCTIONS
  */
 
-export function heatMapData(
-  data: FilteredData,
-  selectedMetric: MetricType
-): HeatMapData[] {
-  switch (selectedMetric) {
-    case MetricType.COMMITS_PER_DAY:
-      return heatMapCommitData(data);
-    // case MetricType.LOC:
-    //   // return heatMapLocData(data);
-    //   break;
-    // case MetricType.LOC_PER_COMMIT:
-    //   // return heatMapLocPerCommitData(data);
-    //   break;
-    // case MetricType.TOTAL_COMMITS:
-    //   break;
-    default:
-      throw new Error("Unknown metric");
-  }
+
+export function heatMapLOC(data:FilteredData):HeatMapData[] {
 }
 
+export function heatMapLOCPerCommit(data: FilteredData): HeatMapData[] {
+}
+
+/**
+ * Calculates the average number of commits per day for each contributor.
+ * @param data The filtered repository data
+ * @returns A heat map data structure containing name, date and count for each contributors average number of commits per day. 
+ */
+export function heatMapCommitsPerDay(data: FilteredData): HeatMapData[] {
+    const repoData = data.repositoryData;
+  const { start, end } = data.dateRange;
+
+  // Calculate number of days in range (inclusive)
+  const daysInRange =
+    Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+  // Map of date → user → commit count
+  const byDateUser = new Map<string, Record<string, number>>();
+
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+
+    if (!byDateUser.has(date)) byDateUser.set(date, {});
+    const bucket = byDateUser.get(date)!;
+
+    bucket[user] = (bucket[user] ?? 0) + 1;
+  });
+
+  // Flatten into HeatMapData[] with average per day
+  const heatMapArray: HeatMapData[] = [];
+
+  byDateUser.forEach((userCounts, date) => {
+    Object.entries(userCounts).forEach(([user, count]) => {
+      const avgCount = count / daysInRange; // normalize per day
+      heatMapArray.push({
+        name: user,
+        date,
+        count: avgCount,
+      });
+    });
+  });
+
+  return heatMapArray;
+}
+
+
+export function heatMapTotalCommits(data: FilteredData): HeatMapData[] {
+  const repoData = data.repositoryData;
+
+  // Map of date → user → commit count
+  const byDateUser = new Map<string, Record<string, number>>();
+
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+
+    if (!byDateUser.has(date)) byDateUser.set(date, {});
+    const bucket = byDateUser.get(date)!;
+
+    bucket[user] = (bucket[user] ?? 0) + 1;
+  });
+
+  // Flatten into HeatMapData[]
+  const heatMapArray: HeatMapData[] = [];
+
+  byDateUser.forEach((userCounts, date) => {
+    Object.entries(userCounts).forEach(([user, count]) => {
+      heatMapArray.push({
+        name: user,
+        date,
+        count,
+      });
+    });
+  });
+
+  return heatMapArray;
+}
 /**
  * FUNCTIONS FOR HIGHLIGHTS
  */
@@ -845,39 +908,8 @@ export async function numBranches(): Promise<number> {
   return unfilteredData.branches.length;
 }
 
-// ------------- HEAT MAP RELATED METRICS ------------------------------
 
-export function heatMapCommitData(data: FilteredData): HeatMapData[] {
-  const repoData = data.repositoryData;
 
-  // Map of date → user → commit count
-  const byDateUser = new Map<string, Record<string, number>>();
-
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
-
-    if (!byDateUser.has(date)) byDateUser.set(date, {});
-    const bucket = byDateUser.get(date)!;
-
-    bucket[user] = (bucket[user] ?? 0) + 1;
-  });
-
-  // Flatten into HeatMapData[]
-  const heatMapArray: HeatMapData[] = [];
-
-  byDateUser.forEach((userCounts, date) => {
-    Object.entries(userCounts).forEach(([user, count]) => {
-      heatMapArray.push({
-        name: user,
-        date,
-        count,
-      });
-    });
-  });
-
-  return heatMapArray;
-}
 
 export function getMetricString(): string[] {
   return ["Total No. Commits", "LOC", "LOC/Commit", "Commits Per Day"];
