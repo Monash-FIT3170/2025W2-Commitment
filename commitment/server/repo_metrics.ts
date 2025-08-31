@@ -189,21 +189,31 @@ export function leaderboardLOC(data: FilteredData): LeaderboardData[] {
 }
 
 export function leaderboardLOCPerCommit(data: FilteredData): LeaderboardData[] {
-  const counts: Record<string, number> = {};
-  const locArray = locData(data);
+  const repoData = data.repositoryData;
+  const locCounts: Record<string, number> = {};
+  const commitCounts: Record<string, number> = {};
 
-  if (locArray.length > 0) {
-    const lastEntry = locArray[locArray.length - 1]; // final cumulative LOC
-    Object.keys(lastEntry).forEach((key) => {
-      if (key !== "date") {
-        counts[key] = lastEntry[key] as number; // cumulative LOC for each contributor
-      }
-    });
-  }
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const locThisCommit = commit.value.fileData.reduce(
+      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+      0
+    );
 
-  const leaderboard: LeaderboardData[] = Object.entries(counts).map(
-    ([name, value]) => ({ name, value })
-  );
+    locCounts[user] = (locCounts[user] || 0) + locThisCommit;
+    commitCounts[user] = (commitCounts[user] || 0) + 1;
+  });
+
+  const leaderboard: LeaderboardData[] = Object.keys(locCounts).map((user) => {
+    const totalLOC = locCounts[user];
+    const totalCommits = commitCounts[user];
+    const avgLOCPerCommit = totalCommits > 0 ? totalLOC / totalCommits : 0;
+
+    return {
+      name: user,
+      value: Math.round(avgLOCPerCommit), // nearest whole number
+    };
+  });
 
   return leaderboard;
 }
