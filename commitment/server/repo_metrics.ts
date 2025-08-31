@@ -80,12 +80,6 @@ export async function getAllGraphData(
   };
 }
 
-// need to add a function called
-// getAllMetrics formatted so that
-// takes all the Data
-// for each type of metric:
-// contributorName:name ->  ["Total lines of commit" : number, "LOC": number, "LOC/Commit": number, "Commits Per Day": number]
-
 export async function getAllMetrics(repoUrl: string): Promise<AllMetricsData> {
   // does all of this on UNFILTERED DATA
   setsUnfilteredData(repoUrl);
@@ -393,7 +387,59 @@ export function linegraphLOC(data: FilteredData): LineGraphData[] {
   return dataArray;
 }
 
-export function linegraphCommitsPerDay(data: FilteredData): LineGraphData[] {}
+/**
+ * Calculates the Commits per day and formats into a line graph strucutre. 
+ * @param data The filtered Data passed. 
+ * @returns An array of LineGraphData objects representing commits per day.
+ */
+export function linegraphCommitsPerDay(data: FilteredData): LineGraphData[] {
+
+  const {dateRange, repositoryData} = data; 
+  const {allCommits, contributors} = repositoryData; 
+
+  // get contributor names
+  const contributorNames = contributors.map(c => c.value.name);
+
+  // Format date as YYYY-MM-DD
+  const formatDate = (d:Date) => d.toISOString().split("T")[0];
+
+  // build a map: date -> {contributorName -> count}
+  const commitMap: Record<string,  Record<string, number>> = {};
+
+  for (const commitObj of allCommits){
+    const commit = commitObj.value; 
+    const commitDate = formatDate(new Date(commit.timestamp));
+
+    if (new Date(commit.timestamp) < dateRange.start || new Date(commit.timestamp) > dateRange.end) {
+      continue;
+    }
+
+    // Initialize commitMap for this date
+    if (!commitMap[commitDate]) {
+      commitMap[commitDate] = {};
+    }
+    if (!commitMap[commitDate][commit.contributorName]) {
+      commitMap[commitDate][commit.contributorName] = 0;
+    }
+    commitMap[commitDate][commit.contributorName]++;
+  }
+  const result: LineGraphData[] = [];
+  const current = new Date(dateRange.start); 
+  while (current <= dateRange.end){
+    const dateStr = formatDate(current); 
+    const entry: LineGraphData = {date: dateStr}; 
+
+    for (const name of contributorNames){
+      entry[name] = commitMap[dateStr]?.[name] || 0;
+    }
+    result.push(entry);
+    current.setDate(current.getDate() + 1);
+
+  }
+
+  return result;
+
+}
 
 /**
  *
