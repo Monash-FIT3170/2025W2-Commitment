@@ -181,6 +181,16 @@ export function leaderboardLOC(data: FilteredData): LeaderboardData[] {
   const repoData = data.repositoryData;
   const counts: Record<string, number> = {};
 
+  repoData.allCommits.forEach((commit) => {
+    const user = commit.value.contributorName;
+    const locThisCommit = commit.value.fileData.reduce(
+      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+      0
+    );
+
+    counts[user] = (counts[user] || 0) + locThisCommit;
+  });
+
   const leaderboard: LeaderboardData[] = Object.entries(counts).map(
     ([name, value]) => ({ name, value })
   );
