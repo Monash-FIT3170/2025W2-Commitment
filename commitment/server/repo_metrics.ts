@@ -1,3 +1,4 @@
+import { Line } from "recharts";
 import {
   MetricsData,
   SerializableRepoData,
@@ -29,14 +30,52 @@ export async function getAllGraphData(
     "Selected Metric in the Get All Graph Data Function",
     selectedMetric
   );
+  let leaderboard: LeaderboardData[];
+  let linegraph: LineGraphData[];
+  let pieChart: PieChartData[];
+  let heatMap: HeatMapData[];
+
+  switch (selectedMetric) {
+    case MetricType.LOC:
+      leaderboard = leaderboardLOC(data);
+      linegraph = linegraphLOC(data);
+      pieChart = pieChartLOC(data);
+      heatMap = heatMapLOC(data);
+      break;
+
+    case MetricType.LOC_PER_COMMIT:
+      leaderboard = leaderboardLOCPerCommit(data);
+      linegraph = linegraphLOCPerCommit(data);
+      pieChart = pieChartLOCPerCommit(data);
+      heatMap = heatMapLOCPerCommit(data);
+      break;
+
+    case MetricType.COMMITS_PER_DAY:
+      leaderboard = leaderboardCommitsPerDay(data);
+      linegraph = linegraphCommitsPerDay(data);
+      pieChart = pieChartCommitsPerDay(data);
+      heatMap = heatMapCommitsPerDay(data);
+      break;
+
+    case MetricType.TOTAL_COMMITS:
+      leaderboard = leaderboardTotalCommits(data);
+      linegraph = linegraphTotalCommits(data);
+      pieChart = pieChartTotalCommits(data);
+      heatMap = heatMapTotalCommits(data);
+      break;
+
+    default:
+      throw new Error(`Unsupported metric: ${String(selectedMetric)}`);
+  }
 
   return {
     highlights: await returnHighlightData(),
+
     contributors: {
-      leaderboard: leaderboardData(data, selectedMetric),
-      lineGraph: lineGraphData(data, selectedMetric),
-      pieChart: pieChartData(data, selectedMetric),
-      heatMap: heatMapData(data, selectedMetric),
+      leaderboard,
+      linegraph,
+      pieChart,
+      heatMap,
     },
   };
 }
@@ -355,7 +394,7 @@ export function linegraphCommitsPerDay(
  */
 export function linegraphLOCPerCommit(
   data: FilteredData | SerializableRepoData
-): LeaderboardData[] {}
+): LineGraphData[] {}
 
 /**
  * PIECHART FUNCTIONS
