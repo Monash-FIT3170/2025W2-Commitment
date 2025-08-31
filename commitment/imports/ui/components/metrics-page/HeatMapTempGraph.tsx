@@ -4,6 +4,7 @@ import GraphCard from "./GraphCard";
 import { CardHeader, CardTitle } from "../ui/card";
 import InfoButton from "../ui/infoButton";
 import { HeatMapData } from "/imports/api/types";
+import { ModeToggle } from "./ModeToggle";
 
 // Types
 interface HeatmapPoint<X extends string | number = string> {
@@ -29,6 +30,8 @@ interface Props {
   title?: string;
 }
 
+type Mode = "week" | "month";
+
 // ------- helpers -------
 function getWeekLabel(dateStr: string) {
   const date = new Date(dateStr);
@@ -51,68 +54,69 @@ function getWeekLabel(dateStr: string) {
   return `${fmt.format(monday)}-${fmt.format(sunday)}`;
 }
 
-/**
- * Processes raw heatmap data to generate series for visualization.
- *
- * This function transforms an array of heat map data points into a format suitable for
- * a heatmap visualization. It:
- * 1. Extracts unique users from the data
- * 2. Creates a map to track the first day (Monday) of each week for chronological sorting
- * 3. Sorts week labels chronologically based on their first day
- * 4. Generates series data for each user with aggregated counts per week
- *
- * @param data - Array of heat map data points containing name, date, and count
- * @returns An object containing:
- *   - series: Array of heatmap series with data points for each user
- *   - weekLabels: Array of week labels sorted chronologically
- *   - users: Array of unique user names
- */
-function processHeatMapData(data: HeatMapData[]) {
+function getMonthLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  return new Intl.DateTimeFormat("en-GB", {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(d.getFullYear(), d.getMonth(), 1)); // e.g., "Aug 2025"
+}
+
+function processHeatMapData(data: HeatMapData[], mode: Mode) {
   const users = Array.from(new Set(data.map((d) => d.name)));
 
-  // Create a map of week labels to their first day dates for sorting
-  const weekToFirstDay = new Map<string, Date>();
-  data.forEach((d) => {
-    const weekLabel = getWeekLabel(d.date);
-    const date = new Date(d.date);
-    // Align to Monday
-    const day = date.getDay();
-    const diffToMonday = (day === 0 ? -6 : 1) - day;
-    const monday = new Date(date);
-    monday.setDate(date.getDate() + diffToMonday);
-
-    if (!weekToFirstDay.has(weekLabel)) {
-      weekToFirstDay.set(weekLabel, monday);
+  // build key -> firstDate for sorting (week Monday or month 1st)
+  const keyToFirstDay = new Map<string, Date>();
+  const makeKeyAndFirstDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    if (mode === "week") {
+      const day = d.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() + diffToMonday);
+      monday.setHours(0, 0, 0, 0);
+      return { key: getWeekLabel(dateStr), first: monday };
+    } else {
+      const first = new Date(d.getFullYear(), d.getMonth(), 1);
+      first.setHours(0, 0, 0, 0);
+      return { key: getMonthLabel(dateStr), first };
     }
-  });
+  };
 
-  // Get unique week labels and sort them by their first day
-  const weekLabels = Array.from(
-    new Set(data.map((d) => getWeekLabel(d.date)))
+  for (const r of data) {
+    const { key, first } = makeKeyAndFirstDate(r.date);
+    if (!keyToFirstDay.has(key)) keyToFirstDay.set(key, first);
+  }
+
+  // categories sorted chronologically
+  const categories = Array.from(
+    new Set(
+      data.map((d) =>
+        mode === "week" ? getWeekLabel(d.date) : getMonthLabel(d.date)
+      )
+    )
   ).sort((a, b) => {
-    const dateA = weekToFirstDay.get(a)?.getTime() || 0;
-    const dateB = weekToFirstDay.get(b)?.getTime() || 0;
-    return dateA - dateB;
+    const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
+    const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
+    return aT - bT;
   });
 
   const series: HeatmapSeries<string>[] = users.map((user) => {
-    const weekToCount: Record<string, number> = {};
+    const keyToCount: Record<string, number> = {};
     data
       .filter((d) => d.name === user)
       .forEach((d) => {
-        const week = getWeekLabel(d.date);
-        weekToCount[week] = (weekToCount[week] ?? 0) + d.count;
+        const key =
+          mode === "week" ? getWeekLabel(d.date) : getMonthLabel(d.date);
+        keyToCount[key] = (keyToCount[key] ?? 0) + d.count;
       });
     return {
       name: user,
-      data: weekLabels.map((week) => ({
-        x: week,
-        rawY: weekToCount[week] ?? 0,
-      })),
+      data: categories.map((k) => ({ x: k, rawY: keyToCount[k] ?? 0 })),
     };
   });
 
-  return { series, weekLabels, users };
+  return { series, categories, users };
 }
 
 /** Normalizes each column by its max; zero raw -> y = -1 */
@@ -183,10 +187,12 @@ export default function HeatMapTempGraph({
   data,
   title,
 }: Props): React.ReactElement {
-  const { series, weekLabels, users } = useMemo(
-    () => processHeatMapData(data),
-    [data]
+  const [mode, setMode] = React.useState<Mode>("week");
+  const { series, categories, users } = useMemo(
+    () => processHeatMapData(data, mode),
+    [data, mode]
   );
+
   // Compute totals and sort series by total descending
   const sortedSeries = useMemo(() => {
     const totals = computeRowTotals(series);
@@ -195,6 +201,7 @@ export default function HeatMapTempGraph({
       .sort((a, b) => a.total - b.total)
       .map(({ s }) => s);
   }, [series]);
+
   const chartSeries = useMemo(
     () => normalizeSeriesData(sortedSeries),
     [sortedSeries]
@@ -278,7 +285,7 @@ export default function HeatMapTempGraph({
       },
 
       xaxis: {
-        categories: weekLabels,
+        categories: categories,
         type: "category" as const,
         tickPlacement: "between",
         labels: {
@@ -296,12 +303,7 @@ export default function HeatMapTempGraph({
 
       tooltip: {
         x: {
-          formatter(
-            _val: string,
-            { dataPointIndex }: { dataPointIndex: number }
-          ) {
-            return dataPointIndex >= 0 ? `Week ${dataPointIndex + 1}` : "";
-          },
+          formatter: (label: string) => label,
         },
         y: {
           formatter(
@@ -345,17 +347,20 @@ export default function HeatMapTempGraph({
         itemMargin: { horizontal: 2, vertical: 0 },
       },
     }),
-    [users]
+    [categories, users, mode, totals]
   );
 
   return (
     <GraphCard className="w-full max-w-[1600px] p-0">
       <CardHeader className="pb-0">
-        <CardTitle className="flex text-lg mt-0 font-bold ">
-          {title ?? "Contributions Heatmap"}
-          <div className="relative -mt-3 ml-2">
-            <InfoButton description="Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period" />
+        <CardTitle className="flex justify-between text-lg mt-0 font-bold ">
+          <div className="flex ">
+            {title ?? "Contributions Heatmap"}
+            <div className="relative -mt-3 ml-2">
+              <InfoButton description="Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period" />
+            </div>
           </div>
+          <ModeToggle value={mode} onChange={(v: Mode) => setMode(v)} />
         </CardTitle>
       </CardHeader>
 
