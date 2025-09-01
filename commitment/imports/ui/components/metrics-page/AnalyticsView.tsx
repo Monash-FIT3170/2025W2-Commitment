@@ -14,6 +14,7 @@ import HeatmapGraph from "./HeatMapGraph";
 
 import { AnalyticsData, MetricType, metricNames } from "/imports/api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
+import { PieChart } from "lucide-react";
 
 // -----------------------------
 // Main Component
@@ -213,6 +214,10 @@ export function AnalyticsView(): React.JSX.Element {
             <HeatmapGraph
               data={analytics.metrics.contributors.heatMap.data}
               title={analytics.metrics.contributors.heatMap.title}
+            />
+            <ContributionPieChart
+              data={analytics.metrics.contributors.pieChart.data}
+              title={analytics.metrics.contributors.pieChart.title}
             />
           </div>
         </div>

@@ -1,33 +1,33 @@
 import React from "react";
-import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
 import { TrendingUp } from "lucide-react";
 
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@ui/components/ui/card";
-import { stat } from "fs";
+// import { stat } from "fs";
 import InfoButton from "../ui/infoButton";
 import GraphCard from "./GraphCard";
+import { title } from "process";
 
 export interface ChartEntry {
   user: string;
   contributions: number;
-  fill: string;
+  // fill: string;
 }
 
 interface Props {
   data: ChartEntry[];
+  title: string;
 }
 
 // CURRENT COLOUR PALLETTE - ASK PMs TO help
 
-const graphBackgroundColour = "#E8E8DD";
+// const graphBackgroundColour = "#E8E8DD";
 
 const staticColorPalette = [
   "#4E79A7",
@@ -81,10 +81,7 @@ function CustomTooltip({
 export function ContributionPieChart({ data }: Props) {
   const coloredData = data.map((entry, index) => ({
     ...entry,
-    fill:
-      index < staticColorPalette.length
-        ? staticColorPalette[index]
-        : extendColorPalette(index - staticColorPalette.length),
+    fill: staticColorPalette[index] ?? extendColorPalette(index),
   }));
   if (!data || data.length === 0) {
     return (
@@ -109,7 +106,7 @@ export function ContributionPieChart({ data }: Props) {
     <GraphCard className="w-full max-w-[800px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
-          <h2 className="text-lg font-bold text-gray-800">Pie Chart</h2>
+          <h2 className="text-lg font-bold text-gray-800">{title}</h2>
 
           {/* Special margin for the infoButton to get it centred */}
           <div className="relative -mt-2">
@@ -152,30 +149,18 @@ export function ContributionPieChart({ data }: Props) {
             </PieChart>
 
             {/* Legend */}
-            <div className="w-full flex justify-center">
-              <ul className="inline-flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
-                {data.map((entry) => (
-                  <li key={entry.user} className="flex items-center gap-1">
-                    <span
-                      className="inline-block h-3 w-3 rounded-sm"
-                      style={{ backgroundColor: entry.fill }}
-                    />
-                    <span className="truncate">{entry.user}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul className="inline-flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
+              {coloredData.map((entry) => (
+                <li key={entry.user} className="flex items-center gap-1">
+                  <span
+                    className="inline-block h-3 w-3 rounded-sm"
+                    style={{ backgroundColor: entry.fill }}
+                  />
+                  <span className="truncate max-w-[100px]">{entry.user}</span>
+                </li>
+              ))}
+            </ul>
           </CardContent>
-
-          <CardFooter className="flex flex-col gap-1 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2 font-medium leading-none">
-              Trending up by 5.2% this month
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            </div>
-            <p className="leading-none">
-              Showing total contributions for the last 6 months
-            </p>
-          </CardFooter>
         </>
       )}
     </GraphCard>
