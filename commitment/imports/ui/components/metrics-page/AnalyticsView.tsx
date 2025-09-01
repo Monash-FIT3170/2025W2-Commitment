@@ -110,7 +110,7 @@ export function AnalyticsView(): React.JSX.Element {
   return (
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
-        <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
+        <div className="max-w-full mx-20 my-10 rounded-sm bg-white p-8  outline-2 outline-git-bg-secondary">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-4">
@@ -121,7 +121,6 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
             <div className="h-[2px] bg-black w-1/4 mt-2" />
           </div>
-
           {/* Filters */}
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
@@ -134,7 +133,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Branch*</label>
+              <div className="text-sm text-gray-600">Branch*</div>
               <BranchDropdownMenu
                 branches={analytics.metadata.branches}
                 selected={selectedBranch}
@@ -142,7 +141,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Contributors*</label>
+              <div className="text-sm text-gray-600">Contributors*</div>
               <ContributorDropdownMenu
                 contributors={analytics.metadata.contributors}
                 selected={selectedContributors}
@@ -160,9 +159,8 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
           </div>
-
           {/* Highlight Cards */}
-          <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
+          <div className="flex flex-wrap gap-6  min-w-0">
             <HighlightCardWithGraph
               title="Total Commits"
               value={analytics.metrics.highlights.totalCommits.total}
@@ -192,16 +190,15 @@ export function AnalyticsView(): React.JSX.Element {
               value={analytics.metrics.highlights.numBranches}
             />
           </div>
-
           {/* Graphs */}
-          <div className="flex flex-wrap gap-6 mt-12 mb-12">
+          <div className="flex flex-wrap gap-6 mt-12 mb-12 min-w-0">
             <ContributorLineGraph
               data={analytics.metrics.contributors.lineGraph.data}
               title={analytics.metrics.contributors.lineGraph.title}
               xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
               yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
             />
-            <div className="rounded-2xl basis-1/3 min-w-[320px]">
+            <div className="">
               <LeaderboardGraph
                 data={analytics.metrics.contributors.leaderboard.data}
                 title={analytics.metrics.contributors.leaderboard.title}
@@ -212,6 +209,7 @@ export function AnalyticsView(): React.JSX.Element {
               data={analytics.metrics.contributors.heatMap.data}
               title={analytics.metrics.contributors.heatMap.title}
             />
+            
           </div>
         </div>
       </div>
