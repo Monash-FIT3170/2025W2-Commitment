@@ -122,7 +122,7 @@ export async function getAllGraphData(
         title: "Distribution of Commits per Day",
       };
       heatMap = {
-        data: heatMapCommitsPerDay(data),
+        data: heatMapTotalCommits(data), 
         title: "Commit Activity (Commits per Day)",
       };
       break;
