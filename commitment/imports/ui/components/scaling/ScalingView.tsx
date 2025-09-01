@@ -31,7 +31,11 @@ function ScalingView() {
   const [showDialog, setShowDialog] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
-  const [parsedGradingData, setParsedGradingData] = useState<GradingSheetRow[] | null>(null);
+  const [parsedGradingData, setParsedGradingData] = useState<
+    GradingSheetRow[] | null
+  >(null);
+
+  const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
 
   // Load from localStorage on first mount
   useEffect(() => {
@@ -59,7 +63,10 @@ function ScalingView() {
     setStep("sheet");
   };
 
-  const handleSheetSubmit = (sheetFile: File, parsedData?: GradingSheetRow[]) => {
+  const handleSheetSubmit = (
+    sheetFile: File,
+    parsedData?: GradingSheetRow[]
+  ) => {
     setGradingSheet(sheetFile);
     setParsedGradingData(parsedData || null);
     console.log("Grading sheet submitted:", parsedData);
@@ -70,9 +77,6 @@ function ScalingView() {
   };
 
   // This is the variable that must store the final grades, scalings, aliases and name of contributors
-  const userScalingSummaries: UserScalingSummary[] = [];
-
-  const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
 
   return (
     <div className="m-0 scroll-smooth">

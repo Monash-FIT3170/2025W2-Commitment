@@ -170,8 +170,8 @@ async "getScalingResults"(data:ScalingConfig,repoUrl:string) {
 
     const serializedRepoData:RepositoryData = deserializeRepoData(repoData)
 
-    const result = getScaledResults(serializedRepoData,data)
-
+    const result = getScaledResults(serializedRepoData,data,repoUrl)
+    
     return result
 }
  

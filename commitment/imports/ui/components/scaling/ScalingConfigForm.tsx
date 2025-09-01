@@ -42,7 +42,7 @@ interface ScalingConfigFormProps {
 
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
-  const repoUrl: string | null = location.state?.repoUrl ?? null;
+  const repoUrl: string = location.state?.repoUrl ?? null;
 
   const [script, setScript] = useState<File[] | undefined>();
   const [selectedBranch, setSelectedBranch] = useState<string | undefined>();
@@ -63,18 +63,20 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   });
 
   const handleDrop = (files: File[]) => setScript(files);
-
   const handleSubmit = async (data: ScalingConfig) => {
     try {
       const result = await Meteor.callAsync("getScalingResults", data, repoUrl);
 
       // Update state for later renders
       setScaledResults(result);
+
+      console.log("radssadesult", result);
+
+      // Pass the actual result, not the outdated state
+      onSubmit(data, result);
     } catch (err) {
       console.error("Error:", err);
     }
-
-    onSubmit(data, scaledResults);
   };
 
   const metricOptions = [
