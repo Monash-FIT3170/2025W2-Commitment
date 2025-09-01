@@ -19,6 +19,6 @@ echo "Stopping and removing existing containers..."
 sudo docker compose -f $COMPOSE_FILE down --volumes --rmi all
 
 echo "Building containers and running fresh!"
-sudo docker compose -f $COMPOSE_FILE up -d --build
+sudo docker compose -f $COMPOSE_FILE up -d --build --no-cache
 
 echo "Deployment complete!"
