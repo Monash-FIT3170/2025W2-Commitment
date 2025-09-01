@@ -16,7 +16,10 @@ fi
 cd "$APP_DIR"
 
 echo "Stopping and removing existing containers..."
-sudo docker compose -f $COMPOSE_FILE down --volumes --rmi all
+sudo docker compose -f $COMPOSE_FILE down --volumes --rmi all --remove-orphans
+
+echo "Cleaning up Docker system..."
+sudo docker system prune -af --volumes
 
 echo "Building containers and running fresh!"
 sudo docker compose -f $COMPOSE_FILE build --no-cache
