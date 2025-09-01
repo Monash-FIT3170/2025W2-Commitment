@@ -17,6 +17,6 @@ cd "$APP_DIR"
 
 # Build and run with prod config
 echo "Building containers and running!"
-docker-compose -f docker-compose.prod.yml up -d --build
+sudo docker-compose -f docker-compose.prod.yml up -d --build
 
 echo "Deployment complete!"
