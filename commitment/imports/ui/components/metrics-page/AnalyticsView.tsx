@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { DateRange } from "react-day-picker";
 import { useLocation } from "react-router-dom";
 import InfoButton from "../ui/infoButton";
-import { DatePicker } from "./DateRangePicker";
+import { DatePicker } from "./date-range-picker";
 import BranchDropdownMenu from "./BranchDropdownMenu";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";

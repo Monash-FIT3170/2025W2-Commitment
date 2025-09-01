@@ -15,15 +15,12 @@ import {
 } from "@ui/components/ui/popover";
 import "react-day-picker/dist/style.css";
 
-type Props = Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  "onChange" | "defaultValue"
-> & {
+type Props = {
   onChange?: (range: DateRange | undefined) => void;
   defaultValue?: DateRange;
 };
 
-export function DatePicker({ className, onChange, defaultValue }: Props) {
+export function DatePicker({ onChange, defaultValue }: Props) {
   const [date, setDate] = React.useState<DateRange | undefined>(
     defaultValue ?? {
       from: addDays(new Date(), -20),
@@ -65,7 +62,7 @@ export function DatePicker({ className, onChange, defaultValue }: Props) {
   };
 
   return (
-    <div className={cn("grid gap-2", className)}>
+    <div className={cn("grid gap-2")}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
