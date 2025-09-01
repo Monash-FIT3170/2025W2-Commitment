@@ -141,5 +141,6 @@ function ScalingView() {
       </div>
     </div>
   );
+}
 
 export default ScalingView;
