@@ -4,17 +4,11 @@ FROM geoffreybooth/meteor-base:latest AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy only the essentials
-COPY package*.json ./
-COPY .meteor .meteor
-# Install NPM deps
-RUN meteor npm install
-
 # Copy source code
 COPY . .
 
-# Clean up local junk
-RUN rm -rf node_modules .meteor/local
+# Install NPM deps
+RUN meteor npm install
 
 # Build Meteor bundle for Linux x86_64
 RUN METEOR_ALLOW_SUPERUSER=true meteor build --directory /build --architecture os.linux.x86_64 --server-only
