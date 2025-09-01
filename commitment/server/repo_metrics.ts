@@ -181,7 +181,7 @@ export async function getAllMetrics(repoUrl: string): Promise<AllMetricsData> {
         unfilteredData,
         contributor
       ),
-      LOC: getLOCperContributor(unfilteredData, contributor),
+      "LOC": getLOCperContributor(unfilteredData, contributor),
       "LOC/Commit": getLocPerCommitPerContributor(unfilteredData, contributor),
       "Commits Per Day": getCommitPerDayPerContributor(
         unfilteredData,
