@@ -7,9 +7,6 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
-# Ensure we have latest npm
-RUN npm install -g npm@10.9.2
-
 # Install Meteor dependencies and rebuild native modules
 RUN meteor npm install --legacy-peer-deps
 
