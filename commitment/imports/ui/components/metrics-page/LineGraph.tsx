@@ -65,6 +65,26 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   xAxisLabel,
   yAxisLabel,
 }) => {
+
+  if (!data || data.length === 0) {
+    return (
+      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+        <CardHeader className="pb-0">
+          <CardTitle className="flex text-lg mt-0 font-bold ">
+            {title}
+            <div className="relative -mt-3 ml-2">
+              <InfoButton description={"Shows contributor performance over time." } />
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grow flex flex-col items-center justify-center pt-2">
+          <div className="text-gray-500 text-center py-8">
+            No contribution data available.
+          </div>
+        </CardContent>
+      </GraphCard>
+    );
+  }
   // gets the contributors from the data, assuming data is formatted: {date="2023-01-01", contributor1: 1, contributor2: 2}
   const contributors = Object.keys(data[0] || {}).filter(
     (key) => key !== 'date',

@@ -59,7 +59,29 @@ export const ContributionPieChart: React.FC<PieProps> = ({ data, title }) => {
     name,
     value: parseFloat(((value / totalCommit) * 100).toFixed(2)),
   }));
+<<<<<<< HEAD
 
+=======
+    if (!data || data.length === 0) {
+    return (
+      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+        <CardHeader className="pb-0">
+          <CardTitle className="flex text-lg mt-0 font-bold ">
+            {"Pie Chart"} 
+            <div className="relative -mt-3 ml-2">
+              <InfoButton description={pieChartDescription} />
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grow flex flex-col items-center justify-center pt-2">
+          <div className="text-gray-500 text-center py-8">
+            No contribution data available.
+          </div>
+        </CardContent>
+      </GraphCard>
+    );
+  }
+>>>>>>> main
   return (
     <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
       {/* Title */}
