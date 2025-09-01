@@ -2,19 +2,17 @@ import React, { useState, useEffect } from "react";
 import { DateRange } from "react-day-picker";
 import { useLocation } from "react-router-dom";
 import InfoButton from "../ui/infoButton";
-import { DateRangePicker } from "./DatePickerButton";
+import { DatePicker } from "./DateRangePicker";
 import BranchDropdownMenu from "./BranchDropdownMenu";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
-// import GraphCard from "./GraphCard";
 import HeatmapGraph from "./HeatMapGraph";
 
 import { AnalyticsData, MetricType, metricNames } from "/imports/api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
-import { PieChart } from "lucide-react";
 
 // -----------------------------
 // Main Component
@@ -127,9 +125,9 @@ export function AnalyticsView(): React.JSX.Element {
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
               <p className="text-sm text-gray-600">Date Range*</p>
-              <DateRangePicker
+              <DatePicker
                 defaultValue={dateRange}
-                onChange={(range) => {
+                onChange={(range: DateRange | undefined) => {
                   if (range) setDateRange(range);
                 }}
               />
