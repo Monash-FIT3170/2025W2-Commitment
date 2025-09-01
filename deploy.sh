@@ -2,8 +2,8 @@
 set -e
 
 APP_DIR=/home/ubuntu/app
+COMPOSE_FILE=docker-compose.prod.yml
 
-# Pull latest code
 echo "Pulling latest commits!"
 if [ ! -d "$APP_DIR" ]; then
   git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git "$APP_DIR"
@@ -15,8 +15,10 @@ fi
 
 cd "$APP_DIR"
 
-# Build and run with prod config
-echo "Building containers and running!"
-sudo docker compose -f docker-compose.prod.yml up -d --build
+echo "Stopping and removing existing containers..."
+sudo docker compose -f $COMPOSE_FILE down --volumes --rmi all
+
+echo "Building containers and running fresh!"
+sudo docker compose -f $COMPOSE_FILE up -d --build
 
 echo "Deployment complete!"
