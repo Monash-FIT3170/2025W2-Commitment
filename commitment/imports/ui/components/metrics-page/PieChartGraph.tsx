@@ -78,9 +78,10 @@ function CustomTooltip({
 }
 
 // Main Pie Chart
-export function ContributionPieChart({ data }: Props) {
+export function ContributionPieChart({ data, title }: Props) {
   const coloredData = data.map((entry, index) => ({
     ...entry,
+    title,
     fill: staticColorPalette[index] ?? extendColorPalette(index),
   }));
   if (!data || data.length === 0) {
@@ -88,7 +89,7 @@ export function ContributionPieChart({ data }: Props) {
       <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
         <CardHeader className="pb-0">
           <CardTitle className="flex text-lg mt-0 font-bold ">
-            {"Pie Chart"}
+            {title}
             <div className="relative -mt-3 ml-2">
               <InfoButton description={pieChartDescription} />
             </div>
@@ -106,7 +107,7 @@ export function ContributionPieChart({ data }: Props) {
     <GraphCard className="w-full max-w-[800px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
-          <h2 className="text-lg font-bold text-gray-800">{title}</h2>
+          <h2 className="text-lg font-bold"> {title}</h2>
 
           {/* Special margin for the infoButton to get it centred */}
           <div className="relative -mt-2">
