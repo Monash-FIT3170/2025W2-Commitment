@@ -159,6 +159,7 @@ Meteor.methods({
    * @returns 
    */
   async "repo.getAllMetrics"({repoUrl}: {repoUrl: string}): Promise<AllMetricsData> {
+    console.log("in repo.getAllMetrics, repoUrl: ", repoUrl); 
     return await getAllMetrics(repoUrl);
   },
 
@@ -168,10 +169,11 @@ async "getScalingResults"(data:ScalingConfig,repoUrl:string) {
 
     const repoData:SerializableRepoData = await getUnfilteredData();
 
-    const serializedRepoData:RepositoryData = deserializeRepoData(repoData)
+    console.log("repoData get", repoData); 
 
-    const result = getScaledResults(serializedRepoData,data,repoUrl)
-    
+    const result = await getScaledResults(repoData,data,repoUrl)
+    console.log("At meteor method: getScalingResults", result); 
+
     return result
 }
  

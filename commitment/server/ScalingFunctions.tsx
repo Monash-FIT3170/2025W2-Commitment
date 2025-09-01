@@ -5,6 +5,7 @@ import {
   AllMetricsData,
   SerialisableMapObject,
   ContributorData,
+  SerializableRepoData,
 } from "/imports/api/types";
 import { getContributors } from "./repo_metrics";
 import {
@@ -64,10 +65,11 @@ function buildUsers(
 
 // Scale users based on selected metrics and method
 async function scaleUsers(repoUrl: string, config: ScalingConfig) {
-  const allMetrics: AllMetricsData = await Meteor.callAsync(
-    "repo.getAllMetrics",
+  const allMetrics = await Meteor.callAsync("repo.getAllMetrics", {
     repoUrl
-  );
+  });
+
+  console.log("All metrics at scaleUsers:", allMetrics);
 
   const selectedMetrics = config.metrics?.length
     ? config.metrics
@@ -121,16 +123,18 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
 }
 
 export async function getScaledResults(
-  repoData: RepositoryData,
+  repoData: SerializableRepoData,
   config: ScalingConfig,
   repoUrl: string
 ): Promise<UserScalingSummary[]> {
+  console.log("RepoURl: ", repoUrl); 
   const scaledUsers = await scaleUsers(repoUrl, config);
 
   // contributors is an array of { key, value: { name, emails } }
-  const contributors: SerialisableMapObject<string, ContributorData>[] =
-    serializeRepoData(repoData).contributors;
-  console.log(contributors);
+  const contributors = repoData.contributors; 
+
+    // serializeRepoData(repoData).contributors;
+  console.log("here: ", contributors);
   return scaledUsers.map(({ name, score }) => {
     // find contributor by matching value.name
     const contributor = contributors.find((c) => c.value.name === name);
