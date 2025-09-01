@@ -7,17 +7,24 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
-# Clean old node_modules (if any copied from host)
-RUN rm -rf node_modules
+# Ensure we have latest npm
+RUN npm install -g npm@10.9.2
 
-# Install Meteor dependencies inside container
+# Install Meteor dependencies and rebuild native modules
 RUN meteor npm install --legacy-peer-deps
 
-# Rebuild native modules (especially LightningCSS)
+# Ensure babel/runtime is installed
+RUN meteor npm install --save @babel/runtime
+
+# Rebuild all native modules for Linux
 RUN meteor npm rebuild
 
+# Disable CSS minification temporarily to avoid LightningCSS errors
+ENV METEOR_DISABLE_CSS_MINIFY=1
+ENV METEOR_ALLOW_SUPERUSER=true
+
 # Build Meteor bundle for Linux x86_64
-RUN METEOR_ALLOW_SUPERUSER=true meteor build --directory /build --architecture os.linux.x86_64 --server-only
+RUN meteor build --directory /build --architecture os.linux.x86_64 --server-only
 
 # Stage 2: Runtime image
 FROM node:20-slim
