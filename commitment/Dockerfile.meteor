@@ -11,8 +11,11 @@ WORKDIR /app
 COPY package*.json ./
 COPY .meteor/ .meteor/
 
+# Allow running as root inside Docker
+ENV METEOR_ALLOW_SUPERUSER=true
+
 # Install dependencies
-RUN meteor npm install
+RUN meteor npm install --allow-superuser
 
 # Copy rest of the app
 COPY . .
