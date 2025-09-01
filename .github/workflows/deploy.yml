@@ -21,7 +21,7 @@ jobs:
       - name: Run deploy script on EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'bash -s' << 'EOF'
-            cd /home/ubuntu/app || exit 1
+            cd /home/ubuntu/ || exit 1
             chmod +x deploy.sh
             ./deploy.sh
           EOF
