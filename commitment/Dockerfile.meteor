@@ -7,8 +7,14 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
-# Install NPM deps
-RUN meteor npm install
+# Clean old node_modules (if any copied from host)
+RUN rm -rf node_modules
+
+# Install Meteor dependencies inside container
+RUN meteor npm install --legacy-peer-deps
+
+# Rebuild native modules (especially LightningCSS)
+RUN meteor npm rebuild
 
 # Build Meteor bundle for Linux x86_64
 RUN METEOR_ALLOW_SUPERUSER=true meteor build --directory /build --architecture os.linux.x86_64 --server-only
