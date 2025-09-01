@@ -15,7 +15,10 @@ import {
 } from "@ui/components/ui/popover";
 import "react-day-picker/dist/style.css";
 
-type Props = React.HTMLAttributes<HTMLDivElement> & {
+type Props = Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "onChange" | "defaultValue"
+> & {
   onChange?: (range: DateRange | undefined) => void;
   defaultValue?: DateRange;
 };
