@@ -4,18 +4,22 @@ FROM geoffreybooth/meteor-base:latest AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy source code
-COPY . .
-
+# Copy only the essentials
+COPY package*.json ./
+COPY .meteor .meteor
 # Install NPM deps
 RUN meteor npm install
 
+# Copy source code
+COPY . .
+
+# Clean up local junk
+RUN rm -rf node_modules .meteor/local
+
 # Build Meteor bundle for Linux x86_64
-RUN meteor build --directory /build --architecture os.linux.x86_64 --server-only
+RUN METEOR_ALLOW_SUPERUSER=true meteor build --directory /build --architecture os.linux.x86_64 --server-only
 
 # Stage 2: Runtime image
-# ⚠️ Make sure Node version matches your Meteor version!
-# For Meteor 3.0+, Node 20 is correct. For Meteor 2.x use node:14-slim or node:16-slim.
 FROM node:20-slim
 
 # Install needed OS dependencies (e.g. if bcrypt or sharp needed)
