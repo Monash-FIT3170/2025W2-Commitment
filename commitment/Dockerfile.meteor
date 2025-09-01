@@ -1,63 +1,43 @@
-# Stage 1: Build the Meteor app
-FROM geoffreybooth/meteor-base:latest AS builder
+# Stage 1: Build Meteor bundle
+FROM node:18-bullseye as builder
+
+# Install Meteor
+RUN curl https://install.meteor.com/ | sh
 
 # Set working directory
 WORKDIR /app
 
-# Copy source code
+# Copy package definitions first (better layer caching)
+COPY package*.json ./
+COPY .meteor/ .meteor/
+
+# Install dependencies
+RUN meteor npm install
+
+# Copy rest of the app
 COPY . .
 
-# Install Meteor dependencies and rebuild native modules
-RUN meteor npm install --legacy-peer-deps
-
-# Ensure babel/runtime is installed
-RUN meteor npm install --save @babel/runtime
-
-# Rebuild all native modules for Linux
-RUN meteor npm rebuild
-
-# Disable CSS minification temporarily to avoid LightningCSS errors
-ENV METEOR_DISABLE_CSS_MINIFY=1
-ENV METEOR_ALLOW_SUPERUSER=true
+# Fix lightningcss / native modules by forcing a rebuild
+RUN meteor npm rebuild lightningcss --update-binary
 
 # Build Meteor bundle for Linux x86_64
-RUN meteor build --directory /build --architecture os.linux.x86_64 --server-only
+RUN METEOR_ALLOW_SUPERUSER=true meteor build --directory /build \
+    --architecture os.linux.x86_64 --server-only
+
 
 # Stage 2: Runtime image
-FROM node:20-slim
+FROM node:18-bullseye
 
-# Install needed OS dependencies (e.g. if bcrypt or sharp needed)
-RUN apt-get update && apt-get install -y \
-    python3 make g++ \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create app directory
 WORKDIR /app
 
-# Copy built Meteor bundle
-COPY --from=builder /build/bundle ./bundle
+# Copy built bundle from builder
+COPY --from=builder /build/bundle /app
 
-# Install server dependencies
-WORKDIR /app/bundle/programs/server
-RUN npm install --production --legacy-peer-deps
+# Install production dependencies
+WORKDIR /app/programs/server
+RUN npm install --production
 
-# Create non-root user
-RUN useradd -m -s /bin/bash appuser
-USER appuser    
-
-WORKDIR /app/bundle
-
-# Env vars
-ENV NODE_ENV=production
-ENV PORT=3000 
-
-# Point ROOT_URL to your domain in docker-compose or runtime
-ENV ROOT_URL=http://localhost:3000
-
-# Configure Mongo URL at runtime
-ENV MONGO_URL=mongodb://mongo:27017/meteor
-
+WORKDIR /app
 EXPOSE 3000
 
-# Start Meteor (via Node)
 CMD ["node", "main.js"]
