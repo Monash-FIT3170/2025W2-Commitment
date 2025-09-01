@@ -10,8 +10,10 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 // import { ContributionPieChart } from "./PieChartGraph";
 // import GraphCard from "./GraphCard";
+import HeatmapGraph from "./HeatMapGraph";
 
-import { AnalyticsData } from "/imports/api/types";
+import { AnalyticsData, MetricType, metricNames } from "/imports/api/types";
+import MetricDropdownMenu from "./MetricDropdownMenu";
 
 // -----------------------------
 // Main Component
@@ -31,11 +33,15 @@ export function AnalyticsView(): React.JSX.Element {
   const [selectedContributors, setSelectedContributors] = useState<string[]>(
     []
   );
+  const [selectedMetrics, setSelectedMetrics] = useState<MetricType>(
+    MetricType.TOTAL_COMMITS
+  );
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAnalyticsData = React.useCallback(() => {
+  // Initial fetch only once
+  useEffect(() => {
     if (!repoUrl) return;
 
     Meteor.call(
@@ -46,6 +52,33 @@ export function AnalyticsView(): React.JSX.Element {
         endDate: dateRange?.to,
         branch: selectedBranch,
         contributors: selectedContributors,
+        metric: selectedMetrics,
+      },
+      (err: Error, data: AnalyticsData) => {
+        if (err) {
+          setError(err.message);
+        } else {
+          setAnalyticsData(data);
+          setSelectedContributors(data.selections.selectedContributors);
+          setSelectedBranch(data.selections.selectedBranch);
+          setDateRange(data.selections.selectedDateRange);
+        }
+        setLoading(false);
+      }
+    );
+  }, []); // only runs once on mount
+
+  const fetchAnalyticsData = React.useCallback(() => {
+    if (!repoUrl) return;
+    Meteor.call(
+      "repo.getAnalyticsData",
+      {
+        repoUrl,
+        startDate: dateRange?.from,
+        endDate: dateRange?.to,
+        branch: selectedBranch,
+        contributors: selectedContributors,
+        metric: selectedMetrics,
       },
       (err: Error, data: AnalyticsData) => {
         if (err) {
@@ -56,7 +89,13 @@ export function AnalyticsView(): React.JSX.Element {
         setLoading(false);
       }
     );
-  }, [repoUrl, selectedBranch, selectedContributors, dateRange]);
+  }, [
+    repoUrl,
+    selectedBranch,
+    selectedContributors,
+    dateRange,
+    selectedMetrics,
+  ]);
 
   // Fetch when component mounts or filters change
   useEffect(() => {
@@ -67,8 +106,6 @@ export function AnalyticsView(): React.JSX.Element {
   if (loading) return <div>Loading repo data...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!analytics) return <div>No repo data available</div>;
-
-  console.log(analytics);
 
   return (
     <div className="m-0 scroll-smooth">
@@ -112,6 +149,16 @@ export function AnalyticsView(): React.JSX.Element {
                 onChange={setSelectedContributors}
               />
             </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-gray-600">Metrics*</label>
+              <MetricDropdownMenu
+                metrics={metricNames}
+                selected={selectedMetrics}
+                onChange={(value: string) =>
+                  setSelectedMetrics(value as MetricType)
+                }
+              />
+            </div>
           </div>
 
           {/* Highlight Cards */}
@@ -131,7 +178,9 @@ export function AnalyticsView(): React.JSX.Element {
               percentageChange={
                 analytics.metrics.highlights.totalLinesOfCode.percentageChange
               }
-              isPositive={analytics.metrics.highlights.totalLinesOfCode.isPositive}
+              isPositive={
+                analytics.metrics.highlights.totalLinesOfCode.isPositive
+              }
               data={analytics.metrics.highlights.totalLinesOfCode.data}
             />
             <HighlightCardWithGraph
@@ -147,18 +196,22 @@ export function AnalyticsView(): React.JSX.Element {
           {/* Graphs */}
           <div className="flex flex-wrap gap-6 mt-12 mb-12">
             <ContributorLineGraph
-              data={analytics.metrics.contributors.lineGraph}
-              title="LOC Changes Over Time"
-              xAxisLabel="Date"
-              yAxisLabel="Lines of Code Changed"
+              data={analytics.metrics.contributors.lineGraph.data}
+              title={analytics.metrics.contributors.lineGraph.title}
+              xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
+              yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
             />
             <div className="rounded-2xl basis-1/3 min-w-[320px]">
               <LeaderboardGraph
-                data={analytics.metrics.contributors.leaderboard}
-                title="Top Contributors"
-                xAxisLabel="Commits"
+                data={analytics.metrics.contributors.leaderboard.data}
+                title={analytics.metrics.contributors.leaderboard.title}
+                xAxisLabel={analytics.metrics.contributors.leaderboard.xAxisLabel}
               />
             </div>
+            <HeatmapGraph
+              data={analytics.metrics.contributors.heatMap.data}
+              title={analytics.metrics.contributors.heatMap.title}
+            />
           </div>
         </div>
       </div>

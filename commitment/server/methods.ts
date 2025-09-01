@@ -6,10 +6,12 @@ import {
   AnalyticsData,
   Metadata,
   MetricsData,
+  Selections,
+  AllMetricsData,
+  MetricType
   RepositoryData,
 } from "/imports/api/types";
-import { start } from "repl";
-import { getAllMetrics, getContributors, getUnfilteredData, setsUnfilteredData } from "./repo_metrics";
+import { getAllGraphData, getMetricString, getAllMetrics, getContributors, getUnfilteredData, setsUnfilteredData } from "./repo_metrics";
 import { getRepoData } from "./fetch_repo";
 import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation";
 import { getScaledResults } from "./ScalingFunctions";
@@ -55,9 +57,7 @@ Meteor.methods({
     return filteredData;
   },
 
-  async "repo.getMetadata"(
-    repoUrl: string
-  ): Promise<Metadata> {
+  async "repo.getMetadata"(repoUrl: string): Promise<Metadata> {
     // Get full repository data from db
     const repo: SerializableRepoData = await Meteor.callAsync(
       "repoCollection.getData",
@@ -70,12 +70,12 @@ Meteor.methods({
       branches: repo.branches.map((b) => b.branchName),
       contributors: repo.contributors.map((c) => c.key),
       dateRange: {
-        start: new Date(
+        from: new Date(
           Math.min(
             ...repo.allCommits.map((c) => new Date(c.value.timestamp).getTime())
           )
         ),
-        end: new Date(),
+        to: new Date(),
       },
     };
   },
@@ -86,12 +86,14 @@ Meteor.methods({
     endDate,
     branch,
     contributors,
+    metric
   }: {
     repoUrl: string;
     startDate?: Date;
     endDate?: Date;
     branch?: string;
     contributors?: string[];
+    metric: MetricType;
   }): Promise<AnalyticsData> {
     /**
      * Get Repo Metadata first (contributors, branches, date range) etc
@@ -109,35 +111,55 @@ Meteor.methods({
       repoUrl
     );
 
-    // Update metadata with filter date range
-    metadata.filterRange = {
-      start: startDate || metadata.dateRange.start,
-      end: endDate || metadata.dateRange.end,
+    const selections: Selections = {
+      selectedBranch:
+        branch ??
+        (metadata.branches.includes("main")
+          ? "main"
+          : metadata.branches.includes("master")
+          ? "master"
+          : metadata.branches[0]),
+      selectedContributors:
+        !contributors || contributors.length === 0
+          ? metadata.contributors
+          : contributors,
+      selectedMetrics: metric ,
+      selectedDateRange: {
+        from: startDate || metadata.dateRange.from,
+        to: endDate || metadata.dateRange.to,
+      },
     };
 
     const filteredRepo: FilteredData = await Meteor.callAsync(
       "repo.getFilteredData",
       {
         repoUrl,
-        startDate: metadata.filterRange.start,
-        endDate: metadata.filterRange.end,
-        branch:
-          branch ??
-          (metadata.branches.includes("main")
-            ? "main"
-            : metadata.branches.includes("master")
-            ? "master"
-            : metadata.branches[0]),
-        contributors: contributors ? contributors : metadata.contributors,
+        startDate: selections.selectedDateRange.from,
+        endDate: selections.selectedDateRange.to,
+        branch: selections.selectedBranch,
+        contributor: selections.selectedContributors,
       }
     );
 
-    const metricsData: MetricsData = await getAllMetrics(filteredRepo);
+    const metricsData: MetricsData = await getAllGraphData(filteredRepo, metric);
 
-    // NOW WE DO STUFF WITH THE FILTERED REPO TO GET METRICS
-    const returnData: AnalyticsData = { metadata, metrics: metricsData };
-    
+    // NOW WE DO STUFF WITH THE FILTERED REPO TO GET the specific metric!! 
+    const returnData: AnalyticsData = {
+      metadata,
+      selections,
+      metrics: metricsData,
+    };
+
     return returnData;
+  },
+
+  /**
+   * 
+   * @param param0 
+   * @returns 
+   */
+  async "repo.getAllMetrics"({repoUrl}: {repoUrl: string}): Promise<AllMetricsData> {
+    return await getAllMetrics(repoUrl);
   },
 
 async "getScalingResults"(data:ScalingConfig,repoUrl:string) {
