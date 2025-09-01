@@ -9,8 +9,8 @@ services:
       - "3000:3000"
     volumes:
       - ./commitment:/projects/commitment
-    environment:
-      - MONGO_URL=mongodb://mongo:27017/commitmentdb
+    env_file:
+      - ./commitment/server/.env
     depends_on:
       - mongo
     tty: true

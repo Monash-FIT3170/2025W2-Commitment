@@ -8,6 +8,7 @@ function GitRepoInputSection() {
   const navigate = useNavigate();
   const [repoUrl, setRepoUrl] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const validateRepoUrl = (url: string): string | null => {
     const trimmedUrl = url.trim();
@@ -29,14 +30,73 @@ function GitRepoInputSection() {
                    + '- SSH: git@github.com:username/repo.git';
   };
 
-  const handleAnalyseClick = () => {
+  const extractRepoInfo = (url: string): { name: string; owner: string } | null => {
+    // Handle HTTPS URLs
+    if (url.startsWith('https://github.com/')) {
+      const parts = url.replace('https://github.com/', '').replace('.git', '').split('/');
+      if (parts.length === 2) {
+        return { owner: parts[0], name: parts[1] };
+      }
+    }
+    
+    // Handle SSH URLs
+    if (url.startsWith('git@github.com:')) {
+      const parts = url.replace('git@github.com:', '').replace('.git', '').split('/');
+      if (parts.length === 2) {
+        return { owner: parts[0], name: parts[1] };
+      }
+    }
+    
+    return null;
+  };
+
+  const handleAnalyseClick = async () => {
     const error = validateRepoUrl(repoUrl);
     setValidationError(error);
 
     if (!error) {
-      // TODO: Implement repository analysis logic here
-      console.log('Valid repo URL:', repoUrl);
-      navigate('/loading', { state: { repoUrl } });
+      setIsProcessing(true);
+      
+      try {
+        // Extract repository information from URL
+        const repoInfo = extractRepoInfo(repoUrl);
+        if (!repoInfo) {
+          setValidationError('Could not extract repository information from URL');
+          setIsProcessing(false);
+          return;
+        }
+
+        // Store repository in database
+        Meteor.call(
+          'repositories.storeUrl',
+          repoUrl,
+          repoInfo.name,
+          repoInfo.owner,
+          `Repository: ${repoInfo.owner}/${repoInfo.name}`,
+          (err: any, result: string) => {
+            if (err) {
+              console.error('Error storing repository:', err);
+              setValidationError('Failed to store repository. Please try again.');
+              setIsProcessing(false);
+            } else {
+              console.log('Repository stored successfully:', result);
+              // Navigate to loading page with repository info
+              navigate('/loading', { 
+                state: { 
+                  repoUrl,
+                  repoId: result,
+                  repoName: repoInfo.name,
+                  repoOwner: repoInfo.owner
+                } 
+              });
+            }
+          }
+        );
+      } catch (error) {
+        console.error('Error processing repository:', error);
+        setValidationError('An unexpected error occurred. Please try again.');
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -59,6 +119,7 @@ function GitRepoInputSection() {
         value={repoUrl}
         onChange={(e) => setRepoUrl(e.target.value)}
         onKeyPress={handleInputKeyPress}
+        disabled={isProcessing}
       />
       {validationError && (
         <p className="text-red-500 text-sm mt-1">{validationError}</p>
@@ -68,8 +129,9 @@ function GitRepoInputSection() {
           'w-[341px] h-auto text-white font-mono text-2xl rounded-full text-center bg-git-int-primary hover:bg-git-int-primary-hover mt-4',
         )}
         onClick={handleAnalyseClick}
+        disabled={isProcessing}
       >
-        Analyse Repository
+        {isProcessing ? 'Processing...' : 'Analyse Repository'}
       </Button>
     </>
   );
