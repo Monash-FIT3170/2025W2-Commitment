@@ -22,20 +22,20 @@ jobs:
       # Meteor build
       - name: Build Meteor app image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/commitment-meteor:latest -f dockerfile.meteor .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest -f dockerfile.meteor .
 
       - name: Push Meteor app image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/commitment-meteor:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest
 
       # Haskell API build
       - name: Build Haskell API image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/haskell-api:latest -f dockerfile.haskell .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest -f dockerfile.haskell .
 
       - name: Push Haskell API image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/haskell-api:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest
 
 # jobs:
 #   deploy:
