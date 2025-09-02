@@ -8,9 +8,6 @@ module GitCommands (
   getContributorEmails,
   getCommitDetails,
   getCommitDiff,
-  getFileContents,
-  getFileDataFromCommit,
-  getOldFileDataFromCommit,
   getRepoName
 ) where
 
@@ -60,7 +57,7 @@ getCommitDetails hash = doNotLogData
 
 getCommitDiff :: String -> Command
 getCommitDiff hash = doNotLogData
-  { command = "git --no-pager diff " ++ hash 
+  { command = "git --no-pager diff-tree -p" ++ hash 
   }
 
 getRepoName :: Command

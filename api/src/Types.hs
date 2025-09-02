@@ -8,7 +8,6 @@ module Types (
   CommitData(..),
   ContributorData(..),
   FileChanges(..),
-  FileContents(..),
   ChangeType(..),
   getChangeType,
   sortCommitsByTimestamp

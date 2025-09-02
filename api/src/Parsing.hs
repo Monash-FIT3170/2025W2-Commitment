@@ -18,8 +18,10 @@ module Parsing (
   MetaFileChanges(..),
   parseCommitData,
   parseFileDataFromCommit,
+  MetaFileChangesDiff(..),
   parseFileDataFromDiff,
   pairByFilePath,
+  mergeFileMetaData,
   lastElem
 ) where
 
@@ -30,12 +32,13 @@ import Data.Time (UTCTime)
 import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Control.Applicative (Alternative, empty, (<|>))
 import Text.Regex.Posix ((=~))
+import qualified Data.Map.Strict as Map
+import Data.Maybe (mapMaybe)
 
-import Threading
 import Types
 import Command
 
--- define a type for the parsing result for each of the parsers
+-- ParseResult
 data ParseResult a = Result a | Error String
   deriving (Show)
 
@@ -67,7 +70,6 @@ instance MonadFail ParseResult where
 instance Alternative ParseResult where
   empty :: ParseResult a
   empty = Error ""
-
   (<|>) :: ParseResult a -> ParseResult a -> ParseResult a
   (<|>) (Result a) _ = Result a
   (<|>) _ (Result b) = Result b
@@ -80,7 +82,8 @@ maybeToResult msg Nothing = Error msg
 successful :: CommandResult -> ParseResult String
 successful (CommandResult _   (Just err) (Just stdErr)) = Error $ err ++ ":\n" ++ stdErr
 successful (CommandResult _   (Just err) _            ) = Error err
-successful (CommandResult res _          (Just stdErr)) = if failedOutput stdErr || failedOutput res then Error stdErr else Result res
+successful (CommandResult res _          (Just stdErr)) =
+  if failedOutput stdErr || failedOutput res then Error stdErr else Result res
 successful (CommandResult res _          _            ) = Result res
 
 parsed :: String -> ParseResult a -> a
@@ -88,6 +91,7 @@ parsed _ (Result r)   = r
 parsed "" (Error "")  = error "Got blank string"
 parsed "" (Error msg) = error msg
 parsed msg (Error e)  = error $ msg ++ ":\n" ++ e
+--                    = error $ msg ++ ":\n" ++ e
 
 parsedLists :: String -> [ParseResult a] -> [a]
 parsedLists msg = map (parsed msg)
@@ -95,61 +99,68 @@ parsedLists msg = map (parsed msg)
 parsedNestedLists :: String -> [[ParseResult a]] -> [[a]]
 parsedNestedLists msg = map (parsedLists msg)
 
--- | Returns true if the output indicates a failed command
+-- Failure detector
 failedOutput :: String -> Bool
-failedOutput txt = any (`isPrefixOf` txt) [
-    "fatal:" 
-    , "error:" 
-    , "could not" 
-    , "not a git repository" 
-    , "Process exited with code" 
-    , "Encountered error"
-    , "Process timed out"
+failedOutput txt = any (`isPrefixOf` txt)
+  [ "fatal:"
+  , "error:"
+  , "could not"
+  , "not a git repository"
+  , "Process exited with code"
+  , "Encountered error"
+  , "Process timed out"
   ]
 
--- | Safely extract exact text from command output
 exactText :: String -> ParseResult String
 exactText txt = if failedOutput txt then Error txt else Result txt
 
 parseRepoExists :: String -> ParseResult String
 parseRepoExists txt = if failedOutput txt then Error txt else Result "repo exists"
 
--- | Parses the remote URL into the repo name
+-- Repo name from URL
 parseRepoName :: String -> ParseResult String
 parseRepoName txt
   | failedOutput txt = Error txt
-  | otherwise = maybeToResult "Inside parseRepoName failed to get lastElem" . lastElem . split '/' . clean . trim $ txt
+  | otherwise        = maybeToResult "Inside parseRepoName failed to get lastElem"
+                    . lastElem
+                    . split '/'
+                    . clean
+                    . trim
+                    $ txt
   where
     trim = dropWhileEnd isSpace . dropWhile isSpace
     clean t = if ".git" `isSuffixOf` t then take (length t - 4) t else t
 
--- | Remove duplicates from contributor emails
+-- Emails
 parseContributorEmails :: String -> ParseResult [String]
 parseContributorEmails txt
   | failedOutput txt = Error txt
-  | otherwise = Result . nub . lines $ txt
+  | otherwise        = Result . nub . lines $ txt
 
+-- Branches
 parseRepoBranches :: String -> ParseResult [String]
 parseRepoBranches txt
   | failedOutput txt = Error txt
-  | otherwise = Result . filter (not . null)
-                    . map (stripPrefixStar . trim)
-                    . filter (not . ("->" `isInfixOf`))
-                    . lines $ txt
+  | otherwise        = Result
+    . filter (not . null)
+    . map (stripPrefixStar . trim)
+    . filter (not . ("->" `isInfixOf`))
+    . lines
+    $ txt
   where
     trim = dropWhileEnd isSpace . dropWhile isSpace
     stripPrefixStar ('*':' ':rest) = rest
-    stripPrefixStar x = x
+    stripPrefixStar x              = x
 
+-- Commit hashes
 parseCommitHashes :: String -> ParseResult [String]
 parseCommitHashes txt
   | failedOutput txt = Error txt
-  | otherwise = Result . filter (not . null) . filter validLine . lines $ txt
+  | otherwise        = Result . filter (not . null) . filter validLine . lines $ txt
   where
     validLine l = not ("The system cannot find the path specified." `isPrefixOf` l)
 
--- | Commit metadata parsed from stdout
-
+-- Commit metadata
 data InbetweenCommitData = InbetweenCommitData
   { ibCommitHash      :: String
   , ibCommitTitle     :: String
@@ -161,7 +172,7 @@ data InbetweenCommitData = InbetweenCommitData
 
 parseCommitData :: String -> ParseResult InbetweenCommitData
 parseCommitData txt
-  | failedOutput txt = Error txt
+  | failedOutput txt  = Error txt
   | length blocks < 6 = Error ("has less than 6 blocks: \"" ++ show blocks ++ "\" | txt: \"" ++ txt ++ "\"")
   | otherwise = do
       ts <- parseTimeM True defaultTimeLocale "%a %b %-d %T %Y %z" (trim $ blocks !! 2)
@@ -174,96 +185,127 @@ parseCommitData txt
         , involvedFiles     = parseFileLines (drop 5 blocks)
         }
   where
-    delim = "\\n|||END|||"
+    delim  = "\\n|||END|||"
     blocks = splitOn delim txt
-    trim = intercalate "\n" . map (dropWhile isSpace) . lines
+    trim   = intercalate "\n" . map (dropWhile isSpace) . lines
 
 parseFileLines :: [String] -> [[String]]
 parseFileLines = map words . filter (not . null) . lines . unlines
 
+-- Name-status record
 data MetaFileChanges = MetaFileChanges
   { filepathM    :: String
   , oldFilePathM :: String
   , charM        :: ChangeType
   , likenessM    :: Int
-  }
+  } deriving (Show, Eq)
 
+-- Parse a single name-status line (split into words)
 parseFileDataFromCommit :: [String] -> ParseResult MetaFileChanges
-parseFileDataFromCommit dataList = do
+parseFileDataFromCommit dataList =
   case dataList of
     (changeStr:rest) -> do
+      -- first char is status (A,M,D,R,C), remainder may be percentage for R/C (e.g. "R100")
       let (changeChar:likenessStr) = changeStr
+      changeTy <- maybeToResult ("Invalid change type: " ++ [changeChar]) (getChangeType changeChar)
 
       newFilePathTxt <- maybeToResult "Missing new file path" (lastElem rest)
-      changeType <- maybeToResult ("Invalid change type: " ++ [changeChar]) (getChangeType changeChar)
-      oldFilePathT <- case rest of 
-        (oldFilePathTxt:_) | changeChar `elem` ['R', 'C', 'M'] -> pure oldFilePathTxt
-        _                                                     -> newFilePath
-      likenessInt <- case rest of 
-        (oldFilePathTxt:_) | changeChar `elem` ['R', 'C'] -> do
-          let cleanedLikeliness = filter (/= ',') likenessStr
-          case readMaybe cleanLikeness of 
-            Just likelinessInt -> pure likelinessInt
-            Nothing            -> pure -1
 
-      pure $ MetaFileChanges (
-          filepathM    newFilePathT
-          oldFilePathM oldFilePathT
-          charM        changeChar 
-          likenessM    likenessInt
-        )
+      let oldFilePathTxt =
+            case rest of
+              (oldFP:_) | changeChar `elem` ['R','C','M'] -> oldFP
+              _                                            -> newFilePathTxt
 
+          likenessInt =
+            case rest of
+              (_:_) | changeChar `elem` ['R','C'] ->
+                let cleaned = filter (/= ',') likenessStr
+                in maybe (-1) id (readMaybe cleaned :: Maybe Int)
+              _ -> -1
+
+      pure MetaFileChanges
+        { filepathM    = newFilePathTxt
+        , oldFilePathM = oldFilePathTxt
+        , charM        = changeTy
+        , likenessM    = likenessInt
+        }
     _ -> Error $ "Malformed dataList: " ++ show dataList
 
+-- Diff record
 data MetaFileChangesDiff = MetaFileChangesDiff
   { filepathMD     :: String
   , diffMD         :: [String]
   , newLinesMD     :: Int
   , deletedLinesMD :: Int
-  }
+  } deriving (Show, Eq)
 
+-- Parse a full `git show -p` (or `git diff`) text into per-file diffs
 parseFileDataFromDiff :: String -> ParseResult [MetaFileChangesDiff]
 parseFileDataFromDiff txt
   | failedOutput txt = Error txt
-  | length blocks < 5 = Error ("has less than 5 blocks: \"" ++ show blocks ++ "\" | txt: \"" ++ txt ++ "\"")
-  | otherwise = do
-      let (header, fileTxt) = splitAt 5 blocks 
-      return MetaFileChangesDiff
-        { filepathMD   = extractFilePath blocks !! 0
-        , newLines     = countLinesWithPrefix "+" fileTxt
-        , deletedLines = countLinesWithPrefix "-" fileTxt
-        , diffMD       = fileTxt
-        }
+  | otherwise        = Result (finalize (reverse acc))
   where
-    delim = "\n"
-    blocks = splitOn delim txt
-    trim = intercalate "\n" . map (dropWhile isSpace) . lines
-    extractFilePath line =
-      case line =~ "^diff --git a/.+ b/(.+)$" :: [[String]] of
+    ls = lines txt
+
+    -- group into file blocks starting at "diff --git ..."
+    (acc, curHdr, curBody) = foldl step ([], Nothing, []) ls
+
+    step :: ([ (String,[String]) ], Maybe String, [String]) -> String -> ([ (String,[String]) ], Maybe String, [String])
+    step (blocks, mHdr, body) line
+      | "diff --git " `isPrefixOf` line =
+          let blocks' = case mHdr of
+                          Just h  -> (h, reverse body) : blocks
+                          Nothing -> blocks
+          in (blocks', Just line, [])
+      | otherwise = (blocks, mHdr, line:body)
+
+    finalize :: [ (String,[String]) ] -> [MetaFileChangesDiff]
+    finalize blocks =
+      [ let fp = maybe "<unknown>" id (extractFilePath hdr)
+            adds = countAdds body
+            dels = countDels body
+        in MetaFileChangesDiff
+              { filepathMD     = fp
+              , diffMD         = body
+              , newLinesMD     = adds
+              , deletedLinesMD = dels
+              }
+      | (hdr, body) <- blocks
+      ]
+
+    -- Extract b/<path> from the diff header
+    extractFilePath :: String -> Maybe String
+    extractFilePath header =
+      case header =~ "^diff --git a/.+ b/(.+)$" :: [[String]] of
         [[_, path]] -> Just path
         _           -> Nothing
-    countLinesWithPrefix delim lines =
-      length $ filter (isPrefixOf delim) lines
 
+    -- count + / - lines but ignore file headers like "+++" and "---"
+    countAdds :: [String] -> Int
+    countAdds = length . filter (\l -> "+"  `isPrefixOf` l && not ("+++" `isPrefixOf` l))
+
+    countDels :: [String] -> Int
+    countDels = length . filter (\l -> "-"  `isPrefixOf` l && not ("---" `isPrefixOf` l))
+
+-- Pair by new file path
 pairByFilePath :: [MetaFileChanges] -> [MetaFileChangesDiff] -> [(MetaFileChanges, MetaFileChangesDiff)]
 pairByFilePath infos diffs =
   let diffMap = Map.fromList [(filepathMD d, d) | d <- diffs]
   in mapMaybe (\i -> fmap (\d -> (i, d)) (Map.lookup (filepathM i) diffMap)) infos
 
-mergeFileMetaData :: [(MetaFileChanges, MetaFileChangesDiff)] -> FileChanges
+mergeFileMetaData :: [(MetaFileChanges, MetaFileChangesDiff)] -> [FileChanges]
 mergeFileMetaData = map (
-    \(changes, diffTxt) -> FileChanges (
-        filepathM       changes
-        oldFilePathM    changes  
-        charM           changes         
-        likenessM       changes     
-        newLinesMD      diffTxt
-        deletedLinesMD  diffTxt
-        diffMD          diffTxt
-    )
-  ) 
+    \(changes, diffTxt) -> FileChanges 
+        (filepathM       changes)
+        (oldFilePathM    changes)  
+        (charM           changes)         
+        (likenessM       changes)     
+        (newLinesMD      diffTxt)
+        (deletedLinesMD  diffTxt)
+        (diffMD          diffTxt)
+    ) 
 
--- Helper functions
+-- Helpers
 splitOn :: Eq a => [a] -> [a] -> [[a]]
 splitOn delim = go
   where
@@ -271,18 +313,16 @@ splitOn delim = go
       Just (before, after) -> before : go after
       Nothing              -> [s]
 
--- Breaks list on the first occurrence of a delimiter
 breakList :: Eq a => [a] -> [a] -> Maybe ([a], [a])
 breakList pat xs = case breakOn pat xs of
   Nothing -> Nothing
   Just (a, b) -> Just (a, drop (length pat) b)
 
--- Breaks list at first occurrence of a pattern
 breakOn :: Eq a => [a] -> [a] -> Maybe ([a], [a])
 breakOn _ [] = Nothing
 breakOn pat l@(x:xs)
   | pat `isPrefixOf` l = Just ([], l)
-  | otherwise = fmap (first (x:)) (breakOn pat xs)
+  | otherwise          = fmap (first (x:)) (breakOn pat xs)
 
 first :: (a -> b) -> (a, c) -> (b, c)
 first f (x, y) = (f x, y)
@@ -292,17 +332,15 @@ split delim = foldr f [[]]
   where
     f c acc@(x:xs)
       | c == delim = []:acc
-      | otherwise = (c:x):xs
+      | otherwise  = (c:x):xs
 
 isInfixOf :: Eq a => [a] -> [a] -> Bool
 isInfixOf needle haystack = any (needle `isPrefixOf`) (tails haystack)
 
--- | tails :: [a] -> [[a]]
 tails :: [a] -> [[a]]
-tails [] = [[]]
+tails []       = [[]]
 tails x@(_:xs) = x : tails xs
 
--- Simpler alternative to Data.List.last that returns Maybe
 lastElem :: [a] -> Maybe a
 lastElem [] = Nothing
 lastElem xs = Just (last xs)

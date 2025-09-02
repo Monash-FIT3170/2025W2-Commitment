@@ -45,7 +45,8 @@ executable commitment-api
       filepath,
       unix-compat,
       deepseq,
-      network
+      network,
+      regex-posix
   ghc-options:
       -Wall
       -Wcompat

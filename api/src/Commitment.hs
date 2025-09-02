@@ -75,7 +75,7 @@ fetchDataFrom url notifier = (do
 
         emit notifier "Cloning repo..."
         awaitCloneResult <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
-            (\path -> successful <$> executeCommandTimedOut 10 notifier workingDir (cloneRepo url path))
+            (\path -> successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url path))
             repoAbsPath) 
 
         emit notifier "Getting repository data..."
@@ -117,38 +117,37 @@ formulateRepoData _url path notifier = do
     emit notifier "Formulating all commit data..."
     allCommitData <- passAllAsync commandPool parsingPool
         (\(c1, c2) -> do
-            let __execute = executeCommand notifier path
-            r1 <- __execute c1
-            r2 <- __execute c2
+            let doCommitCommand = executeCommand notifier path
+            r1 <- doCommitCommand c1
+            r2 <- doCommitCommand c2
             pure (r1, r2)
-            )
+        )
         (\(r1, r2) -> do
             let msg              = "Failed to formulate all commit data" 
-                checkPass        = parsed msg . parseCommitData . parsed msg . successful
+                checkPass        = parsed msg . successful
                 raw1             = checkPass r1
                 raw2             = checkPass r2
                 -- parsing information
-                ibCommitData     = parseCommitData raw1
+                ibCommitData     = parsed msg $ parseCommitData raw1
                 metaFileInfoList = map (parsed msg . parseFileDataFromCommit) $ involvedFiles ibCommitData
                 metaFileDiffChanges = parsed msg $ parseFileDataFromDiff raw2
                 -- link file data together
-                fileData = mergeFileMetaData . pairByFilePath metaFileInfoList metaFileDiffChanges
+                fileData = mergeFileMetaData $ pairByFilePath metaFileInfoList metaFileDiffChanges
 
             count <- atomically $ do
                 modifyTVar' commitCounter (+1)
                 readTVar commitCounter
             emit notifier $ "Formulating all commit data (" ++ show count ++ "/" ++ show commitsFound ++ ")..."
             
-            pure CommitData (
-                ibCommitHash ibCommitData      --commitHash        
-                ibCommitTitle ibCommitData     --commitTitle     
-                ibContributorName ibCommitData --contributorName 
-                ibDescription ibCommitData     --description     
-                ibTimestamp ibCommitData       --timestamp       
-                fileData                       --fileData           
-                )
+            pure $ CommitData 
+                (ibCommitHash      ibCommitData ) --commitHash        
+                (ibCommitTitle     ibCommitData ) --commitTitle     
+                (ibContributorName ibCommitData ) --contributorName 
+                (ibDescription     ibCommitData ) --description     
+                (ibTimestamp       ibCommitData ) --timestamp       
+                (fileData                       ) --fileData
             )
-        (map getCommitDetails allCommitHashes, map getCommitDiff allCommitHashes)    
+        (map (\h -> (getCommitDetails h, getCommitDiff h)) allCommitHashes)    
 
     emit notifier "Formulating all contributors..."
     let uniqueNames = unique $ map contributorName allCommitData

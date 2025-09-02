@@ -24,7 +24,14 @@ module Threading (
   passNestedAsync
 ) where
 
-import Control.Concurrent.STM (atomically, newTQueueIO, readTQueue, writeTQueue, TQueue, writeTBQueue, TBQueue)
+import Control.Concurrent.STM (
+  atomically, 
+  newTQueueIO, 
+  readTQueue, 
+  writeTQueue, 
+  TQueue, 
+  writeTBQueue, 
+  TBQueue )
 import Control.Concurrent
     ( forkIO,
       MVar,
@@ -34,11 +41,12 @@ import Control.Concurrent
       newEmptyMVar,
       putMVar,
       takeMVar )
-import Control.Monad (forever, replicateM_, join)
+import Control.Monad (forever, replicateM_, join, void)
 import System.IO.Unsafe (unsafePerformIO)
 import System.IO (hFlush, stdout)
 import Control.DeepSeq (force)
-import Control.Exception (evaluate)
+import Control.Exception
+    (SomeException, evaluate, handle, try, throwIO) 
 
 -- ThreadPool abstraction
 data WorkerPool = WorkerPool
@@ -70,11 +78,13 @@ createThreadPool numWorkers name = do
   let pool = WorkerPool numWorkers name queue
   replicateM_ numWorkers $ forkIO $ workerLoop queue
   return pool
-  where
-    workerLoop :: TQueue (IO ()) -> IO ()
-    workerLoop q = forever $ do
-      task <- atomically $ readTQueue q
-      task
+
+-- Worker loop that never dies: catches exceptions from tasks and ignores them,
+-- then continues looping.
+workerLoop :: TQueue (IO ()) -> IO ()
+workerLoop q = forever $ do
+  task <- atomically $ readTQueue q
+  handle (\(_ :: SomeException) -> pure ()) (void task)
 
 await :: IO (IO a) -> IO a
 await = join
@@ -82,14 +92,23 @@ await = join
 wrapped :: a -> IO a
 wrapped = pure 
 
--- Submit a task to the pool, returning an IO that produces the result
+-- Submit a task to the pool, returning an IO that produces the result.
+-- The returned IO, when executed (takeMVar), will re-throw the exception
+-- if the task failed, or return the successful value.
 submit :: WorkerPool -> IO a -> IO (IO a)
 submit (WorkerPool _ _ queue) action = do
-  resultVar <- newEmptyMVar
-  atomically $ writeTQueue queue $ do
-    result <- action
-    putMVar resultVar result
-  return (takeMVar resultVar)
+  resultVar <- newEmptyMVar :: IO (MVar (Either SomeException a))
+  -- Wrap the action with 'catch' to always put something in resultVar
+  let wrappedAction = do
+        r <- try (action >>= evaluate)  -- :: IO (Either SomeException a)
+        putMVar resultVar r
+  atomically $ writeTQueue queue wrappedAction
+  -- Return an IO that will either rethrow the exception or return the value
+  return $ do
+    e <- takeMVar resultVar
+    case e of
+      Left ex -> throwIO ex
+      Right v -> return v
 
 -- Submit a pure function to run in the pool (returns future)
 submitTask :: WorkerPool -> (a -> b) -> a -> IO (IO b)
