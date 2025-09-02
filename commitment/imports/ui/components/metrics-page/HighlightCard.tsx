@@ -1,13 +1,13 @@
-import React from 'react';
-import { ArrowUpRight } from 'lucide-react';
-import { AreaChart, Area } from 'recharts';
+import React from "react";
+import { ArrowUpRight } from "lucide-react";
+import { AreaChart, Area } from "recharts";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '../ui/card';
+} from "../ui/card";
 
 interface HighlightCardWithGraphProps {
   title: string;
@@ -16,7 +16,7 @@ interface HighlightCardWithGraphProps {
   isPositive?: boolean; // determine arrows direction
   data?: { value: number }[]; // line data for the graph
 }
-const graphBackgroundColour = '#E8E8DD';
+const graphBackgroundColour = "#E8E8DD";
 
 export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
   title,
@@ -25,14 +25,14 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
   isPositive = true,
   data = [],
 }) => {
-  const fillColor = isPositive ? '#59A14F' : '#E15759';
+  const fillColor = isPositive ? "#59A14F" : "#E15759";
   return (
     <Card
       className={`font-mono flex flex-col w-[220px] h-[220px] rounded-xl border-[#35353140] border-2 ${
-        percentageChange ? 'justify-between' : 'justify-center'
+        percentageChange ? "justify-between" : "justify-center"
       }`}
       style={{
-        outlineColor: '#35353140',
+        outlineColor: "#35353140",
         backgroundColor: graphBackgroundColour,
       }}
     >
@@ -58,7 +58,7 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
               {/* Show arrow pointing up or down */}
               <ArrowUpRight
                 size={16}
-                style={{ transform: isPositive ? 'none' : 'rotate(90deg)' }}
+                style={{ transform: isPositive ? "none" : "rotate(90deg)" }}
               />
 
               {/* Show the percentage text */}

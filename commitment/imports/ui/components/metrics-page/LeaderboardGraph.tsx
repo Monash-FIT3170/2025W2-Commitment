@@ -61,7 +61,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
     return (
       <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
         <CardHeader className="pb-0">
-          <CardTitle className="flex text-lg mt-0 font-bold ">
+          <CardTitle className="flex text-xl mt-0 font-bold ">
             {title}
             <div className="relative -mt-3 ml-2">
               <InfoButton
@@ -85,7 +85,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
     <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="pb-2 items-center flex ">
-          <h2 className="text-lg font-bold">{title}</h2>
+          <h2 className="text-xl font-bold">{title}</h2>
           <div className="-mt-2 ml-2">
             <InfoButton description="Shows top 5 contributors based on a given metric" />
           </div>

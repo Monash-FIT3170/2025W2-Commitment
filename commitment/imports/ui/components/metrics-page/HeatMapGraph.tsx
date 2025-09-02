@@ -227,7 +227,7 @@ export default function HeatmapGraph({
     //   The things actually in this component
     <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
-        <CardTitle className="flex text-lg mt-0 font-bold ">
+        <CardTitle className="flex text-xl mt-0 font-bold ">
           {title}
           <div className="relative -mt-3 ml-2">
             <InfoButton description={heatMapDescription} />

@@ -88,7 +88,7 @@ export function ContributionPieChart({ data, title }: Props) {
     return (
       <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
         <CardHeader className="pb-0">
-          <CardTitle className="flex text-lg mt-0 font-bold ">
+          <CardTitle className="flex text-xl mt-0 font-bold ">
             {title}
             <div className="relative -mt-3 ml-2">
               <InfoButton description={pieChartDescription} />
@@ -107,7 +107,7 @@ export function ContributionPieChart({ data, title }: Props) {
     <GraphCard className="w-full max-w-[800px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
-          <h2 className="text-lg font-bold"> {title}</h2>
+          <h2 className="text-xl font-bold"> {title}</h2>
 
           {/* Special margin for the infoButton to get it centred */}
           <div className="relative -mt-2">
