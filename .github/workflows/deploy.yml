@@ -6,18 +6,50 @@ on:
       - "cd/deploy"
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo (for logs only, optional)
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Add SSH key
-        uses: webfactory/ssh-agent@v0.9.0
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
         with:
-          ssh-private-key: ${{ secrets.EC2_KEY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Run deploy.sh on EC2
+      # Meteor build
+      - name: Build Meteor app image
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'bash -s' < deploy.sh
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/commitment-meteor:latest -f dockerfile.meteor .
+
+      - name: Push Meteor app image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/commitment-meteor:latest
+
+      # Haskell API build
+      - name: Build Haskell API image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/haskell-api:latest -f dockerfile.haskell .
+
+      - name: Push Haskell API image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/haskell-api:latest
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repo (for logs only, optional)
+#         uses: actions/checkout@v4
+
+#       - name: Add SSH key
+#         uses: webfactory/ssh-agent@v0.9.0
+#         with:
+#           ssh-private-key: ${{ secrets.EC2_KEY }}
+
+#       - name: Run deploy.sh on EC2
+#         run: |
+#           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'bash -s' < deploy.sh
