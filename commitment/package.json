@@ -59,7 +59,6 @@
   },
   "devDependencies": {
     "@meteorjs/eslint-config-meteor": "^1.0.5",
-    "@tailwindcss/postcss": "^4.1.11",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
     "@types/meteor": "^2.9.9",
@@ -69,6 +68,7 @@
     "@types/react-dom": "^18.3.7",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
+    "autoprefixer": "^10.4.21",
     "babel-eslint": "^10.1.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "chai": "^5.3.1",
@@ -87,7 +87,7 @@
     "postcss": "^8.5.3",
     "postcss-load-config": "^6.0.1",
     "sinon": "^21.0.0",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5.9.2"
   },
   "meteor": {
