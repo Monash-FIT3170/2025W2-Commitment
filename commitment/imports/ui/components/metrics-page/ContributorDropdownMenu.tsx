@@ -37,6 +37,14 @@ export function ContributorDropdownMenu({
     return selected.join(", ");
   };
 
+  const handleToggleAll = () => {
+    if (allSelected) {
+      onChange([]);
+    } else {
+      onChange([...contributors]);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -52,6 +60,17 @@ export function ContributorDropdownMenu({
       <DropdownMenuContent className="w-[280px] focus:outline-none focus:ring-0">
         <DropdownMenuLabel>Select Contributors</DropdownMenuLabel>
         <DropdownMenuSeparator />
+
+        <DropdownMenuCheckboxItem
+          checked={allSelected}
+          onSelect={(e) => e.preventDefault()}
+          onCheckedChange={handleToggleAll}
+        >
+          {allSelected ? "Unselect All" : "Select All"}
+        </DropdownMenuCheckboxItem>
+
+        <DropdownMenuSeparator />
+
         <ScrollArea className="h-48">
           {contributors.map((contributor) => (
             <DropdownMenuCheckboxItem
