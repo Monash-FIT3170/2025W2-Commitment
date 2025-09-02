@@ -125,6 +125,20 @@ export function ContributionPieChart({ data, title }: Props) {
       ) : (
         <>
           <CardContent className="flex flex-col items-center gap-4">
+            {/* Legend */}
+            <div className="w-full overflow-hidden">
+              <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs max-w-full">
+                {coloredData.map((entry) => (
+                  <li key={entry.user} className="flex items-center gap-1">
+                    <span
+                      className="inline-block h-3 w-3 rounded-sm"
+                      style={{ backgroundColor: entry.fill }}
+                    />
+                    <span className="whitespace-nowrap">{entry.user}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
             {/* Pie */}
             <PieChart width={300} height={300}>
               <Pie
@@ -148,19 +162,6 @@ export function ContributionPieChart({ data, title }: Props) {
                 wrapperStyle={{ outline: "none" }}
               />
             </PieChart>
-
-            {/* Legend */}
-            <ul className="inline-flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs -mt-2">
-              {coloredData.map((entry) => (
-                <li key={entry.user} className="flex items-center gap-1">
-                  <span
-                    className="inline-block h-3 w-3 rounded-sm"
-                    style={{ backgroundColor: entry.fill }}
-                  />
-                  <span className="whitespace-nowrap">{entry.user}</span>
-                </li>
-              ))}
-            </ul>
           </CardContent>
         </>
       )}
