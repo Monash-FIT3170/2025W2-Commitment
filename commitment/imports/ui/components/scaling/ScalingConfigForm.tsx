@@ -40,8 +40,14 @@ interface ScalingConfigFormProps {
   ) => void;
 }
 
-function deserializeRepo(serialized: SerialisableMapObject<string, any>[]) { //find a better way to do this
-  return new Map(serialized.map((c) => [c.key, c.value]));
+function deserializeRepo(serialized: SerialisableMapObject<string, any>[]): Map<string, any> {
+  return new Map(serialized.map((c) => {
+    const commit = { ...c.value };
+    if (commit.timestamp && typeof commit.timestamp === 'string') {
+      commit.timestamp = new Date(commit.timestamp);
+    }
+    return [c.key, commit];
+  }));
 }
 
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {

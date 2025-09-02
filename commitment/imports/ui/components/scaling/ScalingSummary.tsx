@@ -37,7 +37,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
         header: "Final Grade",
         cell: ({ row }) => {
           const grade = row.getValue("finalGrade") as number | null;
-          return grade ?? 0;
+          return grade === null ? "Not found in grading sheet" : grade;
         },
       });
     }

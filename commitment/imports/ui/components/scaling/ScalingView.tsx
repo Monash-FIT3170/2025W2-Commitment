@@ -33,11 +33,19 @@ function ScalingView(): JSX.Element {
   // Function to calculate final grades by matching contributors with grading sheet data
   const calculateFinalGrades = (scalingResults: UserScalingSummary[], gradingData: GradingSheetRow[]): UserScalingSummary[] => 
     scalingResults.map(contributor => {
-      // Try to find matching student in grading sheet by name
+      // Try to find matching student in grading sheet by name or email
       const matchingStudent = gradingData.find(student => {
         const studentName = student.fullName.toLowerCase().trim();
         const contributorName = contributor.name.toLowerCase().trim();
-        return studentName === contributorName;
+        const studentEmail = student.emailAddress.toLowerCase().trim();
+        
+        if (studentName === contributorName) {
+          return true;
+        }
+        
+        return contributor.aliases.some(alias => 
+          alias.email.toLowerCase().trim() === studentEmail
+        );
       });
 
       if (matchingStudent) {
@@ -95,6 +103,7 @@ function ScalingView(): JSX.Element {
   };
 
   const handleSkipSheet = () => {
+    setGradingSheet(null);
     setCompleted(true);
     setShowDialog(false);
     setStep("done");
@@ -119,6 +128,7 @@ function ScalingView(): JSX.Element {
             <Button
               className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
               onClick={() => {
+                setGradingSheet(null); // Reset grading sheet when creating new scaling
                 setStep("config");
                 setShowDialog(true);
               }}
