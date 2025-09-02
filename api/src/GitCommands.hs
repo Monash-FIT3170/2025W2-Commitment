@@ -35,12 +35,12 @@ cloneRepo url targetDirectory = doNotLogData
 
 getBranches :: Command
 getBranches = doNotLogData
-  { command = "git branch --format=" ++ quote "%(refname:short)"
+  { command = "git branch -a --format=" ++ quote "%(refname:short)"
   }
 
 getAllCommitsFrom :: String -> Command
 getAllCommitsFrom branch = doNotLogData
-  { command = "git --no-pager log " ++ branch ++ " --format=%H"
+  { command = "git --no-pager log " ++ quote branch ++ " --format=%H"
   }
 
 getContributorEmails :: String -> Command

@@ -29,6 +29,7 @@ import Network.HTTP.Types
 import Data.Aeson
 import qualified Data.Text as T
 import Data.Text (Text)
+import Data.Char (isSpace)
 import GHC.Generics
 import qualified Data.ByteString.Lazy as BL
 import Data.ByteString.Lazy.Char8() 
@@ -53,6 +54,10 @@ encodeValue label val = encode $ object ["type" .= label, "data" .= val]
 
 encodeError :: Text -> BL.ByteString
 encodeError msg = encode $ object ["type" .= ("error" :: Text), "message" .= msg]
+
+trim :: String -> String
+trim = f . f
+  where f = reverse . dropWhile isSpace
 
 ------------------------------------------------------------
 -- 📡 WebSocket Handler
@@ -80,10 +85,12 @@ appWS pendingConn = do
         sendTextData conn $ BL.toStrict $ encodeValue "text_update" update
 
       -- Run the actual job
-      result <- fetchDataFrom repoUrl notifier
+      result <- fetchDataFrom (trim repoUrl) notifier
       case result of
         Right repoData -> sendTextData conn $ BL.toStrict $ encodeValue "value" repoData
-        Left errmsg    -> sendTextData conn $ BL.toStrict $ encodeError (T.pack ("err: " ++ errmsg))
+        Left errmsg    -> do
+          safePrint $ "Encountered error: " ++ errmsg
+          sendTextData conn $ BL.toStrict $ encodeError (T.pack ("err: " ++ errmsg))
 
       sendClose conn ("Done" :: Text)
 
@@ -97,9 +104,7 @@ fallback req respond = do
     else do
       body <- strictRequestBody req
       case eitherDecode body of
-        Left err -> do
-          --safePrint $ "Invalid JSON (HTTP): " ++ err
-          respond $ responseLBS status400 [("Content-Type", "application/json")] $ encodeError "Invalid JSON format. Expected: {\"url\": \"...\"}"
+        Left err -> respond $ responseLBS status400 [("Content-Type", "application/json")] $ encodeError "Invalid JSON format. Expected: {\"url\": \"...\"}"
 
         Right (ClientMessage repoUrl) -> do
           safePrint $ "Processing URL (HTTP): " ++ repoUrl
@@ -108,12 +113,13 @@ fallback req respond = do
           -- We discard updates for HTTP; could log or save
           _ <- forkIO $ forever $ void (atomically (readTBQueue notifier))
 
-          result <- fetchDataFrom repoUrl notifier
+          result <- fetchDataFrom (trim repoUrl) notifier
           case result of
             Right repoData ->
               respond $ responseLBS status200 [("Content-Type", "application/json")] $
                 encodeValue "value" repoData
-            Left errmsg ->
+            Left errmsg -> do
+              safePrint $ "Encountered error: " ++ errmsg
               respond $ responseLBS status500 [("Content-Type", "application/json")] $
                 encodeError (T.pack ("err: " ++ errmsg))
 

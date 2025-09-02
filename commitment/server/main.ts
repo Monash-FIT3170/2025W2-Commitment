@@ -11,6 +11,7 @@ import "./fetch_repo";
 import "./caching";
 
 import "../server/fetch_repo";
+import "../server/methods";
 
 Meteor.startup(async () => {
   const userCount = await Meteor.users.find().countAsync();
