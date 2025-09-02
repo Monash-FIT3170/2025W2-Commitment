@@ -47,6 +47,7 @@ jobs:
             set -e
             cd ~/app || git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git ~/app && cd ~/app
             git fetch origin cd/deploy
+            git reset --hard origin/cd/deploy
             git checkout cd/deploy
             git pull origin cd/deploy
             export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
