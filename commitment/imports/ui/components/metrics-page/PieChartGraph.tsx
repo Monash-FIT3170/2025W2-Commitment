@@ -157,7 +157,7 @@ export function ContributionPieChart({ data, title }: Props) {
                     className="inline-block h-3 w-3 rounded-sm"
                     style={{ backgroundColor: entry.fill }}
                   />
-                  <span className="truncate max-w-[100px]">{entry.user}</span>
+                  <span className="whitespace-nowrap">{entry.user}</span>
                 </li>
               ))}
             </ul>
