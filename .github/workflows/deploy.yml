@@ -37,19 +37,19 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest
 
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout repo (for logs only, optional)
-#         uses: actions/checkout@v4
-
-#       - name: Add SSH key
-#         uses: webfactory/ssh-agent@v0.9.0
-#         with:
-#           ssh-private-key: ${{ secrets.EC2_KEY }}
-
-#       - name: Run deploy.sh on EC2
-#         run: |
-#           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'bash -s' < deploy.sh
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+            cd ~/app || git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git ~/app && cd ~/app
+            git fetch origin cd/deploy
+            git checkout cd/deploy
+            git pull origin cd/deploy
+            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+            export DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
+            chmod +x deploy.sh
+            ./deploy.sh
