@@ -115,53 +115,37 @@ formulateRepoData _url path notifier = do
 
     commitCounter <- newTVarIO 0
     emit notifier "Formulating all commit data..."
+    allCommitData <- passAllAsync commandPool parsingPool
+        (\(c1, c2) -> do
+            let __execute = executeCommand notifier path
+            r1 <- __execute c1
+            r2 <- __execute c2
+            pure (r1, r2)
+            )
+        (\(r1, r2) -> do
+            let msg    = "Failed to formulate all commit data" 
+                checkPass = parsed msg . parseCommitData . parsed msg . successful
+                raw1   = checkPass r1
+                raw2   = checkPass r2
+                ibCommitData = parseCommitData raw1
+                nestedFileInfo = map parseFileDataFromCommit $ involvedFiles ibCommitData
 
-    commitMetaData <- passAllAsync commandPool parsingPool
-        (executeCommand notifier path)
-        (\cr -> do
-            let msg = "Failed to formulate all commit data" 
-                res = parsed msg . parseCommitData . parsed msg . successful $ cr
+
             count <- atomically $ do
                 modifyTVar' commitCounter (+1)
                 readTVar commitCounter
             emit notifier $ "Formulating all commit data (" ++ show count ++ "/" ++ show commitsFound ++ ")..."
-            pure res
+            pure CommitData (
+                ibCommitHash ibCommitData   --commitHash        
+                ibCommitTitle ibCommitData   --commitTitle     
+                ibContributorName ibCommitData   --contributorName 
+                ibCommitHash ibCommitData   --description     
+                ibCommitHash ibCommitData   --timestamp       
+                ibCommitHash ibCommitData   --fileData        
+                ibCommitHash ibCommitData   --diff            
+                )
             )
-        (map getCommitDetails allCommitHashes)    
-
-    let filesFound = sum (map (length . involvedFiles) commitMetaData)
-    fileCounter <- newTVarIO 0
-    emit notifier $ "Found " ++ show filesFound ++ " distinct file versions across all commits"
-
-    let commitMetaDataParsingPrimer = map (\commitData -> do -- [([String] -> IO (Maybe(String, String, [String])))]
-            let hash = ibCommitHash commitData
-                getNew = getFileContents notifier path hash getFileDataFromCommit
-                getOld = getFileContents notifier path hash getOldFileDataFromCommit
-            extractCommitData getNew getOld  -- [String] -> IO (Maybe(String, String, [String]))
-            ) commitMetaData
-
-    allFileData <- parsedNestedLists "Failed to formulate all file data" <$> passNestedAsync commandPool parsingPool
-        (\(filedata, extractFrom) -> extractFrom filedata)
-        (\case
-            Error msg -> pure $ Error msg
-            Result (n, o, fd) -> do
-                let res = parseFileDataFromCommit n o fd
-                count <- atomically $ do
-                    modifyTVar' fileCounter (+1)    
-                    readTVar fileCounter
-                emit notifier $ "Formulating all file data (" ++ show count ++ "/" ++ show filesFound ++ ")..."
-                pure res
-        )
-        (zipWithFunctions (map involvedFiles commitMetaData) commitMetaDataParsingPrimer)
-
-    emit notifier "Joining found files with commit data..."
-    let allCommitData = zipWith (\meta files -> CommitData
-            (ibCommitHash meta)
-            (ibCommitTitle meta)
-            (ibContributorName meta)
-            (ibDescription meta)
-            (ibTimestamp meta)
-            files) commitMetaData allFileData
+        (map getCommitDetails allCommitHashes, map getCommitDiff allCommitHashes)    
 
     emit notifier "Formulating all contributors..."
     let uniqueNames = unique $ map contributorName allCommitData

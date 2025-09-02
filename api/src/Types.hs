@@ -47,7 +47,7 @@ data CommitData = CommitData
   , fileData        :: [FileChanges]
   , diff            :: String
   } deriving (Show, Eq, Generic, ToJSON, FromJSON)
-  
+
 data ContributorData = ContributorData
   { name :: String
   , emails           :: [String]
@@ -55,11 +55,11 @@ data ContributorData = ContributorData
 
 data FileChanges = FileChanges
   { filepath     :: String
+  , oldFilePath  :: String
+  , char         :: ChangeType
+  , likeness     :: Int
   , newLines     :: Int
   , deletedLines :: Int
-  , char         :: ChangeType
-  , oldFilePath  :: String
-  , likeness     :: Int
   } deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 -- | Change types: A = Added, M = Modified, D = Deleted, R = Renamed, C = Copied

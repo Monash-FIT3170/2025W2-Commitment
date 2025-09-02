@@ -15,8 +15,8 @@ module Parsing (
   parseRepoBranches,
   parseCommitHashes,
   InbetweenCommitData(..),
+  MetaFileChanges(..),
   parseCommitData,
-  extractCommitData,
   parseFileDataFromCommit,
   lastElem
 ) where
@@ -178,55 +178,37 @@ parseCommitData txt
     parseFileLines :: [String] -> [[String]]
     parseFileLines = map words . filter (not . null) . lines . unlines
 
-extractCommitData :: (String -> IO String) -- getFileContents
-  -> (String -> IO String)  -- getOldFileContents
-  -> [String]
-  -> IO (ParseResult(String, String, [String]))
-extractCommitData getNew getOld filedata = do
-    case filedata of
-      ("M":newFile:_) -> do
-        newContents <- getNew newFile
-        oldContents <- getOld newFile
-        return $ Result ("", "", filedata)
+data MetaFileChanges = MetaFileChanges
+  { filepathM    :: String
+  , oldFilePathM :: String
+  , charM        :: ChangeType
+  , likenessM    :: Int
+  }
 
-      ("D":oldFile:_) -> do
-        oldContents <- getOld oldFile
-        return $ Result ("", "", filedata)
-      
-      (_:newFile:_) -> do
-        newContents <- getNew newFile
-        return $ Result ("", "", filedata)
-
-      _ -> return $ Error $ "filedata not shaped correctly: " ++ show filedata
-
-
-parseFileDataFromCommit :: String -> String -> [String] -> ParseResult FileChanges
-parseFileDataFromCommit newContents oldContents dataList = do
+parseFileDataFromCommit :: [String] -> ParseResult MetaFileChanges
+parseFileDataFromCommit dataList = do
   case dataList of
     (changeStr:rest) -> do
       let (changeChar:likenessStr) = changeStr
 
-      newFile <- maybeToResult "Missing new file path" (lastElem rest)
+      newFilePathTxt <- maybeToResult "Missing new file path" (lastElem rest)
       changeType <- maybeToResult ("Invalid change type: " ++ [changeChar]) (getChangeType changeChar)
-
-      extraChange <- case rest of
+      oldFilePathT <- case rest of 
+        (oldFilePathTxt:_) | changeChar `elem` ['R', 'C', 'M'] -> pure oldFilePathTxt
+        _                                                     -> newFilePath
+      likenessInt <- case rest of 
         (oldFilePathTxt:_) | changeChar `elem` ['R', 'C'] -> do
-          let cleanLikeness = filter (/= ',') likenessStr
-          case readMaybe cleanLikeness of
-            Just likenessInt ->
-              case changeChar of 
-                'R' -> pure $ Just $ Rename $ RenameData oldFilePathTxt likenessInt
-                'C' -> pure $ Just $ Copy $ CopyData oldFilePathTxt likenessInt
-                _   -> Error "argument failed for some strange reason inside changeChar"
-            Nothing ->
-              Error $ "Failed to parse likeness int: " ++ cleanLikeness
+          let cleanedLikeliness = filter (/= ',') likenessStr
+          case readMaybe cleanLikeness of 
+            Just likelinessInt -> pure likelinessInt
+            Nothing            -> pure -1
 
-        (oldFilePathTxt:_) | changeChar == 'M' ->
-          pure $ Just $ Modify $ ModifyData (FileContents oldFilePathTxt oldContents)
-
-        _ -> pure Nothing
-
-      pure $ FileChanges (FileContents newFile newContents) (ChangeData changeType extraChange)
+      pure $ MetaFileChanges (
+          filepathM    newFilePathT
+          oldFilePathM oldFilePathT
+          charM        changeChar 
+          likenessM    likenessInt
+        )
 
     _ -> Error $ "Malformed dataList: " ++ show dataList
 

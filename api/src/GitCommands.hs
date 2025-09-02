@@ -7,6 +7,7 @@ module GitCommands (
   getAllCommitsFrom,
   getContributorEmails,
   getCommitDetails,
+  getCommitDiff,
   getFileContents,
   getFileDataFromCommit,
   getOldFileDataFromCommit,
@@ -57,18 +58,9 @@ getCommitDetails hash = doNotLogData
   { command = "git show \"--pretty=format:%H\\n|||END|||%an\\n|||END|||%ad\\n|||END|||%s\\n|||END|||%b\\n|||END|||\" \"--name-status\" " ++ hash 
   }
 
-getFileContents :: TBQueue String -> FilePath -> String -> (String -> String -> Command) -> String -> IO String
-getFileContents notifier path hash cmd_f file =
-  getParsableStringFromCmd <$> executeCommand notifier path (cmd_f hash file)
-
-getFileDataFromCommit :: String -> FilePath -> Command
-getFileDataFromCommit hash path = doNotLogData
-  { command = "git show " ++ hash ++ ":" ++ path
-  }
-
-getOldFileDataFromCommit :: String -> FilePath -> Command
-getOldFileDataFromCommit hash path = doNotLogData
-  { command = "git show " ++ hash ++ "~1:" ++ path
+getCommitDiff :: String -> Command
+getCommitDiff hash = doNotLogData
+  { command = "git --no-pager diff " ++ hash 
   }
 
 getRepoName :: Command
