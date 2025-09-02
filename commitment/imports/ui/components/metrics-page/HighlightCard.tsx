@@ -31,10 +31,6 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
       className={`font-mono flex flex-col w-[220px] h-[220px] rounded-xl border-[#35353140] border-2 ${
         percentageChange ? "justify-between" : "justify-center"
       }`}
-      style={{
-        outlineColor: "#35353140",
-        backgroundColor: graphBackgroundColour,
-      }}
     >
       {/* Title & Menu Icon */}
       <CardHeader className="h-[100px]">

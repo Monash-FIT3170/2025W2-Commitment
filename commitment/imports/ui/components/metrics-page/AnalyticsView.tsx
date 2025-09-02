@@ -120,7 +120,6 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
             <div className="h-[2px] bg-black w-1/4 mt-2" />
           </div>
-
           {/* Filters */}
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
@@ -133,7 +132,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Branch*</label>
+              <div className="text-sm text-gray-600">Branch*</div>
               <BranchDropdownMenu
                 branches={analytics.metadata.branches}
                 selected={selectedBranch}
@@ -141,7 +140,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Contributors*</label>
+              <div className="text-sm text-gray-600">Contributors*</div>
               <ContributorDropdownMenu
                 contributors={analytics.metadata.contributors}
                 selected={selectedContributors}
@@ -159,9 +158,8 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
           </div>
-
           {/* Highlight Cards */}
-          <div className="flex flex-wrap gap-6 flex-1 min-w-[320px]">
+          <div className="flex flex-wrap gap-6  min-w-0">
             <HighlightCardWithGraph
               title="Total Commits"
               value={analytics.metrics.highlights.totalCommits.total}
@@ -191,7 +189,6 @@ export function AnalyticsView(): React.JSX.Element {
               value={analytics.metrics.highlights.numBranches}
             />
           </div>
-
           {/* Graphs */}
           <div className="flex flex-col xl:flex-row gap-6 mt-12 mb-12 w-full">
             <div className="flex-grow w-full">
