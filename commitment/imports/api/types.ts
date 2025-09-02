@@ -45,25 +45,16 @@ export type ContributorData = Readonly<{
 }>;
 
 export type FileChanges = Readonly<{
-  file: FileContents;
-  changes: ChangeData;
-}>;
-
-export type FileContents = Readonly<{
-  contents: string;
-  filepath: string;
-}>;
-
-export type ChangeData = Readonly<{
-  char: ChangeType;
-  extra: null | ModifyData | RenameData | CopyData;
+  filepath: string    
+  oldFilePath: string 
+  char: ChangeType        
+  likeness: number    
+  newLines: number    
+  deletedLines: number
+  diff: [string]        
 }>;
 
 export type ChangeType = "A" | "M" | "D" | "R" | "C";
-// create diff section and greatly improve efficiency of storage by hashing FileContents so no repeated information is stashed in the DB
-export type ModifyData = Readonly<{ previousFile: FileContents }>;
-export type RenameData = Readonly<{ oldFilePath: string; likeness: number }>;
-export type CopyData = Readonly<{ oldFilePath: string; copyLikeness: number }>;
 
 export type AliasEmail = {
   username: string;
