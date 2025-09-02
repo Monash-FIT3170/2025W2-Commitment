@@ -104,7 +104,7 @@ export function ContributionPieChart({ data, title }: Props) {
     );
   }
   return (
-    <GraphCard className="w-full max-w-[800px] flex flex-col basis-1/3">
+    <GraphCard className="w-full max-w-[800px] h-[500px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
           <h2 className="text-xl font-bold"> {title}</h2>
@@ -150,7 +150,7 @@ export function ContributionPieChart({ data, title }: Props) {
             </PieChart>
 
             {/* Legend */}
-            <ul className="inline-flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
+            <ul className="inline-flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs -mt-2">
               {coloredData.map((entry) => (
                 <li key={entry.user} className="flex items-center gap-1">
                   <span

@@ -159,7 +159,7 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
           </div>
           {/* Highlight Cards */}
-          <div className="flex flex-wrap gap-6  min-w-0">
+          <div className="flex flex-wrap gap-6 min-w-0 mb-12">
             <HighlightCardWithGraph
               title="Total Commits"
               value={analytics.metrics.highlights.totalCommits.total}
@@ -190,40 +190,31 @@ export function AnalyticsView(): React.JSX.Element {
             />
           </div>
           {/* Graphs */}
-          <div className="flex flex-col xl:flex-row gap-6 mt-12 mb-12 w-full">
-            <div className="flex-grow w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-                <div className="w-full">
-                  <ContributorLineGraph
-                    data={analytics.metrics.contributors.lineGraph.data}
-                    title={analytics.metrics.contributors.lineGraph.title}
-                    xAxisLabel={
-                      analytics.metrics.contributors.lineGraph.xAxisLabel
-                    }
-                    yAxisLabel={
-                      analytics.metrics.contributors.lineGraph.yAxisLabel
-                    }
-                  />
-                </div>
-                <div className="w-full">
-                  <LeaderboardGraph
-                    data={analytics.metrics.contributors.leaderboard.data}
-                    title={analytics.metrics.contributors.leaderboard.title}
-                    xAxisLabel={
-                      analytics.metrics.contributors.leaderboard.xAxisLabel
-                    }
-                  />
-                </div>
-                <div className="w-full sm:col-span-2">
-                  <ContributionPieChart
-                    data={analytics.metrics.contributors.pieChart.data}
-                    title={analytics.metrics.contributors.pieChart.title}
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+            <div className="w-full min-h-[300px] h-full">
+              <ContributorLineGraph
+                data={analytics.metrics.contributors.lineGraph.data}
+                title={analytics.metrics.contributors.lineGraph.title}
+                xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
+                yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
+              />
             </div>
-
-            <div className="flex-grow w-full xl:max-w-[33%]">
+            <div className="w-full min-h-[300px] h-full">
+              <LeaderboardGraph
+                data={analytics.metrics.contributors.leaderboard.data}
+                title={analytics.metrics.contributors.leaderboard.title}
+                xAxisLabel={
+                  analytics.metrics.contributors.leaderboard.xAxisLabel
+                }
+              />
+            </div>
+            <div className="w-full min-h-[300px] h-full">
+              <ContributionPieChart
+                data={analytics.metrics.contributors.pieChart.data}
+                title={analytics.metrics.contributors.pieChart.title}
+              />
+            </div>
+            <div className="w-full col-span-1 md:col-span-3">
               <HeatmapGraph
                 data={analytics.metrics.contributors.heatMap.data}
                 title={analytics.metrics.contributors.heatMap.title}
