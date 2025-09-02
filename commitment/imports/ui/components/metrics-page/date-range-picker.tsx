@@ -28,12 +28,21 @@ export function DatePicker({ onChange, defaultValue }: Props) {
     }
   );
 
+  // constant to set 'from' date
   const [fromInput, setFromInput] = React.useState<string>(
     date?.from ? format(date.from, "yyyy-MM-dd") : ""
   );
+
+  // constant to set 'to' date
   const [toInput, setToInput] = React.useState<string>(
     date?.to ? format(date.to, "yyyy-MM-dd") : ""
   );
+
+  // constant to ensure 12 week selection
+  const is12Weeks = (from: Date, to: Date) => {
+    const maxTo = addDays(from, 84);
+    return to <= maxTo;
+  };
 
   // update state change
   React.useEffect(() => {
@@ -44,10 +53,15 @@ export function DatePicker({ onChange, defaultValue }: Props) {
       !isNaN(parsedFrom.getTime()) &&
       (!toInput || !isNaN(parsedTo.getTime()))
     ) {
+      if (parsedTo && parsedFrom && !is12Weeks(parsedFrom, parsedTo)) {
+        return;
+      }
+
       const newRange: DateRange = {
         from: parsedFrom,
         to: toInput ? parsedTo : undefined,
       };
+
       setDate(newRange);
       onChange?.(newRange);
     }
@@ -55,6 +69,9 @@ export function DatePicker({ onChange, defaultValue }: Props) {
 
   // Update inputs
   const handleCalendarSelect = (range: DateRange | undefined) => {
+    if (range?.from && range?.to && !is12Weeks(range.from, range.to)) {
+      return;
+    }
     setDate(range);
     setFromInput(range?.from ? format(range.from, "yyyy-MM-dd") : "");
     setToInput(range?.to ? format(range.to, "yyyy-MM-dd") : "");
@@ -123,7 +140,17 @@ export function DatePicker({ onChange, defaultValue }: Props) {
             selected={date}
             onSelect={handleCalendarSelect}
             numberOfMonths={2}
-            disabled={(date) => date > new Date()}
+            disabled={(day) => {
+              const today = new Date();
+              if (day > today) return true;
+
+              if (date?.from) {
+                const maxTo = addDays(date.from, 84);
+                return day > maxTo;
+              }
+
+              return false;
+            }}
             captionLayout="dropdown"
             fromYear={2015}
             toYear={new Date().getFullYear()}
