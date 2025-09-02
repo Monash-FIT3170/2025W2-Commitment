@@ -28,8 +28,10 @@ type GradingSheetSchema = z.infer<typeof gradingSheetSchema>;
 
 function GradingSheetForm({
   onSubmit,
+  onSkip,
 }: {
   onSubmit: (gradingSheet: File, parsedData?: GradingSheetRow[]) => void;
+  onSkip?: () => void;
 }): JSX.Element {
   // CSV parsing state management
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
@@ -189,7 +191,7 @@ function GradingSheetForm({
             </Alert>
           )}
 
-          <div className="flex justify-center mt-6">
+          <div className="flex justify-center mt-6 gap-4">
             <Button
               type="submit"
               disabled={!form.watch('sheet')?.length || isLoading}
@@ -197,6 +199,17 @@ function GradingSheetForm({
             >
               {isLoading ? 'Processing...' : 'Generate'}
             </Button>
+            
+            {onSkip && (
+              <Button
+                type="button"
+                onClick={onSkip}
+                variant="outline"
+                className="rounded-full px-8"
+              >
+                Skip
+              </Button>
+            )}
           </div>
         </form>
       </Form>

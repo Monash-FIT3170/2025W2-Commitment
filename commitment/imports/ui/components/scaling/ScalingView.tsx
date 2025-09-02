@@ -5,9 +5,6 @@ import ScalingConfigForm from "./ScalingConfigForm";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "../ui/dialog";
 
 import { Button } from "../ui/button";
@@ -22,7 +19,7 @@ interface ScalingConfig {
   customScript?: File[];
 }
 
-function ScalingView() {
+function ScalingView(): JSX.Element {
   const [completed, setCompleted] = useState(false);
 
   // Step of scaling config wizard
@@ -31,7 +28,33 @@ function ScalingView() {
   const [showDialog, setShowDialog] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
-  const [parsedGradingData, setParsedGradingData] = useState<GradingSheetRow[] | null>(null);
+  const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
+
+  // Function to calculate final grades by matching contributors with grading sheet data
+  const calculateFinalGrades = (scalingResults: UserScalingSummary[], gradingData: GradingSheetRow[]): UserScalingSummary[] => 
+    scalingResults.map(contributor => {
+      // Try to find matching student in grading sheet by name
+      const matchingStudent = gradingData.find(student => {
+        const studentName = student.fullName.toLowerCase().trim();
+        const contributorName = contributor.name.toLowerCase().trim();
+        return studentName === contributorName;
+      });
+
+      if (matchingStudent) {
+        const percentageGrade = (matchingStudent.grade / matchingStudent.maximumGrade) * 100;
+        const finalGrade = percentageGrade * contributor.scale;        
+        return {
+          ...contributor,
+          finalGrade: Math.round(finalGrade * 100) / 100
+        };
+      }
+      
+      // No matching student found
+      return {
+        ...contributor,
+        finalGrade: null
+      };
+    });
 
   // Load from localStorage on first mount
   useEffect(() => {
@@ -54,25 +77,28 @@ function ScalingView() {
   ) => {
     setConfig(configData);
     setScaledResults(results);
-    console.log("Config submitted:", configData);
-    console.log("Scaled results:", results);
     setStep("sheet");
   };
 
   const handleSheetSubmit = (sheetFile: File, parsedData?: GradingSheetRow[]) => {
     setGradingSheet(sheetFile);
-    setParsedGradingData(parsedData || null);
-    console.log("Grading sheet submitted:", parsedData);
+    
+    // Calculate final grades when grading sheet is provided
+    if (parsedData && scaledResults.length > 0) {
+      const updatedResults = calculateFinalGrades(scaledResults, parsedData);
+      setScaledResults(updatedResults);
+    }
 
     setCompleted(true);
     setShowDialog(false);
     setStep("done");
   };
 
-  // This is the variable that must store the final grades, scalings, aliases and name of contributors
-  const userScalingSummaries: UserScalingSummary[] = [];
-
-  const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
+  const handleSkipSheet = () => {
+    setCompleted(true);
+    setShowDialog(false);
+    setStep("done");
+  };
 
   return (
     <div className="m-0 scroll-smooth">
@@ -87,8 +113,6 @@ function ScalingView() {
               />
             </div>
           )}
-
-          {/* Show "Create New Scaling" button if no completed config */}
 
           {/* Buttons for grading sheet or regenerate */}
           <div className="flex justify-center gap-6 p-4">
@@ -129,7 +153,10 @@ function ScalingView() {
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
               {step === "sheet" && (
-                <GradingSheetForm onSubmit={handleSheetSubmit} />
+                <GradingSheetForm 
+                  onSubmit={handleSheetSubmit} 
+                  onSkip={handleSkipSheet}
+                />
               )}
             </DialogContent>
           </Dialog>
