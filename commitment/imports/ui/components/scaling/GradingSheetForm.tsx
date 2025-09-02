@@ -30,7 +30,7 @@ function GradingSheetForm({
   onSubmit,
   onSkip,
 }: {
-  onSubmit: (gradingSheet: File, parsedData?: GradingSheetRow[]) => void;
+  onSubmit: (gradingSheet: File, parsedData?: GradingSheetRow[], parseResult?: ParseResult) => void;
   onSkip?: () => void;
 }): JSX.Element {
   // CSV parsing state management
@@ -85,7 +85,7 @@ function GradingSheetForm({
     const file = data.sheet?.[0];
     if (file) {
       try {
-        onSubmit(file, parseResult?.data);
+        onSubmit(file, parseResult?.data, parseResult ?? undefined);
       } catch {
         setParseResult({
           success: false,

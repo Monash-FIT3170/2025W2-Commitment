@@ -1,4 +1,5 @@
-import { RepositoryData, CommitData } from "/imports/api/types";
+import { RepositoryData, CommitData, UserScalingSummary } from "/imports/api/types";
+import { GradingSheetParserService, type ParseResult, type GradingSheetRow } from "../utils/GradingSheetParser";
 
 // All possible metrics (same as Python)
 const USER_DATA_METRICS = [
@@ -121,4 +122,43 @@ function getLOCFromCommit(commit: CommitData): number {
     const content = fileChange.file?.contents || "";
     return acc + content.split("\n").length;
   }, 0);
+}
+
+// Function to calculate final grades by matching contributors with grading sheet data
+export function calculateFinalGrades(scalingResults: UserScalingSummary[], gradingData: GradingSheetRow[]): UserScalingSummary[] {
+  return scalingResults.map(contributor => {
+    const matchingStudent = gradingData.find(student => {
+      const studentName = student.fullName.toLowerCase().trim();
+      const contributorName = contributor.name.toLowerCase().trim();
+      const studentEmail = student.emailAddress.toLowerCase().trim();
+      if (studentName === contributorName) {
+        return true;
+      }
+      return contributor.aliases.some(alias => 
+        alias.email.toLowerCase().trim() === studentEmail
+      );
+    });
+
+    if (matchingStudent) {
+      const percentageGrade = (matchingStudent.grade / matchingStudent.maximumGrade) * 100;
+      const finalGrade = percentageGrade * contributor.scale;        
+      return {
+        ...contributor,
+        finalGrade: Math.round(finalGrade * 100) / 100
+      };
+    }
+    
+    return {
+      ...contributor,
+      finalGrade: null
+    };
+  });
+}
+
+// Helper function to generate updated grading sheet CSV with scaled grades
+export async function generateScaledGradingSheet(
+  originalParseResult: ParseResult,
+  scalingResults: UserScalingSummary[]
+): Promise<File> {
+  return GradingSheetParserService.unParseGradingSheet(originalParseResult, scalingResults);
 }

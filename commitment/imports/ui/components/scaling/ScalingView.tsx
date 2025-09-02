@@ -1,17 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Upload, Download } from "lucide-react";
 import ScalingConfigForm from "./ScalingConfigForm";
 import {
   Dialog,
   DialogContent,
 } from "../ui/dialog";
+import { calculateFinalGrades, generateScaledGradingSheet } from "./ScalingFunctions";
 
 import { Button } from "../ui/button";
 import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
 import type { UserScalingSummary } from "../../../api/types";
-import type { GradingSheetRow } from "../utils/GradingSheetParser";
+import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 
 interface ScalingConfig {
   metrics: string[];
@@ -28,41 +30,8 @@ function ScalingView(): JSX.Element {
   const [showDialog, setShowDialog] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
+  const [gradingSheetParseResult, setGradingSheetParseResult] = useState<ParseResult | null>(null);
   const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
-
-  // Function to calculate final grades by matching contributors with grading sheet data
-  const calculateFinalGrades = (scalingResults: UserScalingSummary[], gradingData: GradingSheetRow[]): UserScalingSummary[] => 
-    scalingResults.map(contributor => {
-      // Try to find matching student in grading sheet by name or email
-      const matchingStudent = gradingData.find(student => {
-        const studentName = student.fullName.toLowerCase().trim();
-        const contributorName = contributor.name.toLowerCase().trim();
-        const studentEmail = student.emailAddress.toLowerCase().trim();
-        
-        if (studentName === contributorName) {
-          return true;
-        }
-        
-        return contributor.aliases.some(alias => 
-          alias.email.toLowerCase().trim() === studentEmail
-        );
-      });
-
-      if (matchingStudent) {
-        const percentageGrade = (matchingStudent.grade / matchingStudent.maximumGrade) * 100;
-        const finalGrade = percentageGrade * contributor.scale;        
-        return {
-          ...contributor,
-          finalGrade: Math.round(finalGrade * 100) / 100
-        };
-      }
-      
-      // No matching student found
-      return {
-        ...contributor,
-        finalGrade: null
-      };
-    });
 
   // Load from localStorage on first mount
   useEffect(() => {
@@ -88,8 +57,13 @@ function ScalingView(): JSX.Element {
     setStep("sheet");
   };
 
-  const handleSheetSubmit = (sheetFile: File, parsedData?: GradingSheetRow[]) => {
+  const handleSheetSubmit = (sheetFile: File, parsedData?: GradingSheetRow[], parseResult?: ParseResult) => {
     setGradingSheet(sheetFile);
+    
+    // Store the parse result for later use in generating scaled CSV
+    if (parseResult) {
+      setGradingSheetParseResult(parseResult);
+    }
     
     // Calculate final grades when grading sheet is provided
     if (parsedData && scaledResults.length > 0) {
@@ -103,10 +77,43 @@ function ScalingView(): JSX.Element {
   };
 
   const handleSkipSheet = () => {
-    setGradingSheet(null);
+    if (!gradingSheet) {
+      setGradingSheet(null);
+      setGradingSheetParseResult(null);
+    }
     setCompleted(true);
     setShowDialog(false);
     setStep("done");
+  };
+
+  const handleDownloadScaledSheet = async () => {
+    if (!gradingSheetParseResult || !gradingSheet) return;
+    
+    try {
+      // Generate the scaled grading sheet
+      const scaledFile = await generateScaledGradingSheet(gradingSheetParseResult, scaledResults);
+      
+      // Create a filename with "scaled_" prefix
+      const originalName = gradingSheet.name;
+      const fileExtension = originalName.substring(originalName.lastIndexOf('.'));
+      const nameWithoutExtension = originalName.substring(0, originalName.lastIndexOf('.'));
+      const scaledFileName = `scaled_${nameWithoutExtension}${fileExtension}`;
+      
+      // Create a new file with the custom name
+      const renamedFile = new File([scaledFile], scaledFileName, { type: scaledFile.type });
+      
+      // Trigger download
+      const url = URL.createObjectURL(renamedFile);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = scaledFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating scaled grading sheet:', error);
+    }
   };
 
   return (
@@ -129,6 +136,7 @@ function ScalingView(): JSX.Element {
               className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
               onClick={() => {
                 setGradingSheet(null); // Reset grading sheet when creating new scaling
+                setGradingSheetParseResult(null); // Reset parse result
                 setStep("config");
                 setShowDialog(true);
               }}
@@ -143,8 +151,22 @@ function ScalingView(): JSX.Element {
                 setShowDialog(true);
               }}
             >
-              Upload Grading Sheet
+              <Upload className="h-4 w-4"/>
+              {gradingSheet ? 'Replace Grading Sheet' : 'Upload Grading Sheet'}
             </Button>
+
+            {/* Download button - only visible when grading sheet is uploaded */}
+            {gradingSheet && gradingSheetParseResult && (
+              <Button
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                onClick={() => {
+                  handleDownloadScaledSheet().catch(console.error);
+                }}
+              >
+                <Download className="h-4 w-4"/>
+                Download Scaled Grading Sheet
+              </Button>
+            )}
           </div>
 
           {/* Multi-Step Dialog */}
