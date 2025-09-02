@@ -9,12 +9,6 @@ module Commitment (
     fetchDataFrom
 ) where
 
-import Types
-import Threading
-import Command
-import GitCommands
-import Parsing
-
 import Control.Concurrent.STM
 import Control.Exception (catch, SomeException (SomeException), displayException, finally)
 import Data.List (sortBy, isPrefixOf)
@@ -25,7 +19,12 @@ import System.FilePath
 import System.IO.Unsafe (unsafePerformIO)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import Control.Concurrent (getNumCapabilities)
-import Threading (safePrint)
+
+import Types
+import Threading
+import Command
+import GitCommands
+import Parsing
 
 -- Create global thread pools
 {-# NOINLINE parsingPool #-}
@@ -66,7 +65,6 @@ fetchDataFrom url notifier = (do
         _ <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
 
         emit notifier "Found the repo!"
-        emit notifier "Formulating parsers..."
 
         let repoNameFromUrl = lastSplit '/' url
             repoRelativePath = "cloned-repos" </> repoNameFromUrl
@@ -77,7 +75,7 @@ fetchDataFrom url notifier = (do
 
         emit notifier "Cloning repo..."
         awaitCloneResult <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
-            (\path -> successful <$> executeCommand notifier workingDir (cloneRepo url path))
+            (\path -> successful <$> executeCommandTimedOut 10 notifier workingDir (cloneRepo url path))
             repoAbsPath) 
 
         emit notifier "Getting repository data..."
@@ -105,7 +103,7 @@ formulateRepoData _url path notifier = do
 
     emit notifier "Searching for branch names..."
     collectedBranchNames <- execCmd getBranches parseRepoBranches "Failed to parse git branch names"
-    let branchNameFilter = (replace "remotes/" "" . replace "origin/" "")
+    let branchNameFilter = replace "remotes/" "" . replace "origin/" ""
         branchNames = unique collectedBranchNames
         filteredBranchNames = map branchNameFilter branchNames 
 

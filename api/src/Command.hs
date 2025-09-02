@@ -12,11 +12,13 @@ module Command (
   logData,
   doNotLogData,
   executeCommand,
+  executeCommandTimedOut,
   deleteDirectoryIfExists
 ) where
 
 import System.Exit (ExitCode(..))
 import System.Environment (getEnvironment)
+import System.Timeout (timeout)
 import System.IO
 import Control.Monad (when)
 import Control.Concurrent.STM (TBQueue)
@@ -126,6 +128,21 @@ executeCommand notifier filepath f = do
                 emit notifier stdErrMsg
               pure $ CommandResult stdout_txt Nothing (Just stderr_txt)
 
+executeCommandTimedOut :: Int -> TBQueue String -> FilePath -> Command -> IO CommandResult
+executeCommandTimedOut seconds notifier filepath cmd = do
+  let micros = seconds * (10^6)
+  mres <- timeout micros (executeCommand notifier filepath cmd)
+  case mres of
+    Just res -> pure res
+    Nothing  -> do
+      let errMsg =
+            "Process timed out after "
+              ++ show micros ++ "μs "
+              ++ "for command: " ++ command cmd
+              ++ " in path: " ++ filepath
+      when (shouldLog cmd) $
+        emit notifier errMsg
+      pure $ CommandResult "" (Just errMsg) Nothing
 
 -- | Filesystem helpers
 -- Deletes directory if it exists (raises errors when it fails)

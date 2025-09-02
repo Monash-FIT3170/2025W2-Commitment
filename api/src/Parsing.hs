@@ -94,7 +94,15 @@ parsedNestedLists msg = map (parsedLists msg)
 
 -- | Returns true if the output indicates a failed command
 failedOutput :: String -> Bool
-failedOutput txt = any (`isPrefixOf` txt) ["fatal:", "error:", "could not", "not a git repository", "Process exited with code", "Encountered error"]
+failedOutput txt = any (`isPrefixOf` txt) [
+    "fatal:" 
+    , "error:" 
+    , "could not" 
+    , "not a git repository" 
+    , "Process exited with code" 
+    , "Encountered error"
+    , "Process timed out"
+  ]
 
 -- | Safely extract exact text from command output
 exactText :: String -> ParseResult String
@@ -179,15 +187,15 @@ extractCommitData getNew getOld filedata = do
       ("M":newFile:_) -> do
         newContents <- getNew newFile
         oldContents <- getOld newFile
-        return $ Result (newContents, oldContents, filedata)
+        return $ Result ("", "", filedata)
 
       ("D":oldFile:_) -> do
         oldContents <- getOld oldFile
-        return $ Result ("", oldContents, filedata)
+        return $ Result ("", "", filedata)
       
       (_:newFile:_) -> do
         newContents <- getNew newFile
-        return $ Result (newContents, "", filedata)
+        return $ Result ("", "", filedata)
 
       _ -> return $ Error $ "filedata not shaped correctly: " ++ show filedata
 

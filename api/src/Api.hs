@@ -89,6 +89,7 @@ appWS pendingConn = do
           Right repoData -> sendTextData conn (BL.toStrict $ encodeValue "value" repoData)
           Left errmsg    -> do
             safePrint $ "Encountered error: " ++ errmsg
+            sendTextData conn (BL.toStrict $ encodeValue "text_update" errmsg)
             sendTextData conn (BL.toStrict $ encodeError (T.pack ("err: " ++ errmsg)))
 
       sendClose conn ("Done" :: Text)
@@ -119,7 +120,7 @@ fallback req respond =
                 respond $ responseLBS status200 [("Content-Type", "application/json")]
                           $ encodeValue "value" repoData
               Left errmsg -> do
-                safePrint $ "Encountered error: " ++ errmsg
+                safePrint $ "Encountered error:\n" ++ errmsg
                 respond $ responseLBS status500 [("Content-Type", "application/json")]
                           $ encodeError (T.pack ("err: " ++ errmsg))
 

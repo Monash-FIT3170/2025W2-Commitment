@@ -39,7 +39,7 @@ cloneRepo url targetDirectory = doNotLogData
 
 getBranches :: Command
 getBranches = doNotLogData
-  { command = "git branch -a --format=" ++ quote "%(refname:short)"
+  { command = "git --no-pager branch -a --format=" ++ quote "%(refname:short)"
   }
 
 getAllCommitsFrom :: String -> Command
