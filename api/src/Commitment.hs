@@ -123,26 +123,29 @@ formulateRepoData _url path notifier = do
             pure (r1, r2)
             )
         (\(r1, r2) -> do
-            let msg    = "Failed to formulate all commit data" 
-                checkPass = parsed msg . parseCommitData . parsed msg . successful
-                raw1   = checkPass r1
-                raw2   = checkPass r2
-                ibCommitData = parseCommitData raw1
-                nestedFileInfo = map parseFileDataFromCommit $ involvedFiles ibCommitData
-
+            let msg              = "Failed to formulate all commit data" 
+                checkPass        = parsed msg . parseCommitData . parsed msg . successful
+                raw1             = checkPass r1
+                raw2             = checkPass r2
+                -- parsing information
+                ibCommitData     = parseCommitData raw1
+                metaFileInfoList = map (parsed msg . parseFileDataFromCommit) $ involvedFiles ibCommitData
+                metaFileDiffChanges = parsed msg $ parseFileDataFromDiff raw2
+                -- link file data together
+                fileData = mergeFileMetaData . pairByFilePath metaFileInfoList metaFileDiffChanges
 
             count <- atomically $ do
                 modifyTVar' commitCounter (+1)
                 readTVar commitCounter
             emit notifier $ "Formulating all commit data (" ++ show count ++ "/" ++ show commitsFound ++ ")..."
+            
             pure CommitData (
-                ibCommitHash ibCommitData   --commitHash        
-                ibCommitTitle ibCommitData   --commitTitle     
-                ibContributorName ibCommitData   --contributorName 
-                ibCommitHash ibCommitData   --description     
-                ibCommitHash ibCommitData   --timestamp       
-                ibCommitHash ibCommitData   --fileData        
-                ibCommitHash ibCommitData   --diff            
+                ibCommitHash ibCommitData      --commitHash        
+                ibCommitTitle ibCommitData     --commitTitle     
+                ibContributorName ibCommitData --contributorName 
+                ibDescription ibCommitData     --description     
+                ibTimestamp ibCommitData       --timestamp       
+                fileData                       --fileData           
                 )
             )
         (map getCommitDetails allCommitHashes, map getCommitDiff allCommitHashes)    

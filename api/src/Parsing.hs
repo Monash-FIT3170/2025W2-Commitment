@@ -18,6 +18,8 @@ module Parsing (
   MetaFileChanges(..),
   parseCommitData,
   parseFileDataFromCommit,
+  parseFileDataFromDiff,
+  pairByFilePath,
   lastElem
 ) where
 
@@ -27,6 +29,7 @@ import Data.Char (isSpace)
 import Data.Time (UTCTime)
 import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Control.Applicative (Alternative, empty, (<|>))
+import Text.Regex.Posix ((=~))
 
 import Threading
 import Types
@@ -175,8 +178,8 @@ parseCommitData txt
     blocks = splitOn delim txt
     trim = intercalate "\n" . map (dropWhile isSpace) . lines
 
-    parseFileLines :: [String] -> [[String]]
-    parseFileLines = map words . filter (not . null) . lines . unlines
+parseFileLines :: [String] -> [[String]]
+parseFileLines = map words . filter (not . null) . lines . unlines
 
 data MetaFileChanges = MetaFileChanges
   { filepathM    :: String
@@ -211,6 +214,54 @@ parseFileDataFromCommit dataList = do
         )
 
     _ -> Error $ "Malformed dataList: " ++ show dataList
+
+data MetaFileChangesDiff = MetaFileChangesDiff
+  { filepathMD     :: String
+  , diffMD         :: [String]
+  , newLinesMD     :: Int
+  , deletedLinesMD :: Int
+  }
+
+parseFileDataFromDiff :: String -> ParseResult [MetaFileChangesDiff]
+parseFileDataFromDiff txt
+  | failedOutput txt = Error txt
+  | length blocks < 5 = Error ("has less than 5 blocks: \"" ++ show blocks ++ "\" | txt: \"" ++ txt ++ "\"")
+  | otherwise = do
+      let (header, fileTxt) = splitAt 5 blocks 
+      return MetaFileChangesDiff
+        { filepathMD   = extractFilePath blocks !! 0
+        , newLines     = countLinesWithPrefix "+" fileTxt
+        , deletedLines = countLinesWithPrefix "-" fileTxt
+        , diffMD       = fileTxt
+        }
+  where
+    delim = "\n"
+    blocks = splitOn delim txt
+    trim = intercalate "\n" . map (dropWhile isSpace) . lines
+    extractFilePath line =
+      case line =~ "^diff --git a/.+ b/(.+)$" :: [[String]] of
+        [[_, path]] -> Just path
+        _           -> Nothing
+    countLinesWithPrefix delim lines =
+      length $ filter (isPrefixOf delim) lines
+
+pairByFilePath :: [MetaFileChanges] -> [MetaFileChangesDiff] -> [(MetaFileChanges, MetaFileChangesDiff)]
+pairByFilePath infos diffs =
+  let diffMap = Map.fromList [(filepathMD d, d) | d <- diffs]
+  in mapMaybe (\i -> fmap (\d -> (i, d)) (Map.lookup (filepathM i) diffMap)) infos
+
+mergeFileMetaData :: [(MetaFileChanges, MetaFileChangesDiff)] -> FileChanges
+mergeFileMetaData = map (
+    \(changes, diffTxt) -> FileChanges (
+        filepathM       changes
+        oldFilePathM    changes  
+        charM           changes         
+        likenessM       changes     
+        newLinesMD      diffTxt
+        deletedLinesMD  diffTxt
+        diffMD          diffTxt
+    )
+  ) 
 
 -- Helper functions
 splitOn :: Eq a => [a] -> [a] -> [[a]]

@@ -11,11 +11,6 @@ module Types (
   FileContents(..),
   ChangeType(..),
   getChangeType,
-  ChangeData(..),
-  ExtraData(..),
-  ModifyData(..),
-  RenameData(..),
-  CopyData(..),
   sortCommitsByTimestamp
 ) where
 
@@ -45,7 +40,6 @@ data CommitData = CommitData
   , description     :: String
   , timestamp       :: UTCTime
   , fileData        :: [FileChanges]
-  , diff            :: String
   } deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 data ContributorData = ContributorData
@@ -60,6 +54,7 @@ data FileChanges = FileChanges
   , likeness     :: Int
   , newLines     :: Int
   , deletedLines :: Int
+  , diff         :: [String]
   } deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 -- | Change types: A = Added, M = Modified, D = Deleted, R = Renamed, C = Copied
