@@ -57,7 +57,7 @@ getCommitDetails hash = doNotLogData
 
 getCommitDiff :: String -> Command
 getCommitDiff hash = doNotLogData
-  { command = "git --no-pager diff-tree -p" ++ hash 
+  { command = "git --no-pager diff-tree -p " ++ hash 
   }
 
 getRepoName :: Command
