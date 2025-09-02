@@ -64,7 +64,6 @@ export default function HeatmapGraph({
     );
   }
 
-
   // Mapping on many different properties - Days/ Weeks/ Months or Years
   const users = useMemo(
     () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
@@ -221,11 +220,8 @@ export default function HeatmapGraph({
 
   const cellSize = 40;
   const spacing = 8;
-  const labelWidth = 50;
-  const gridTemplateColumns = `${labelWidth}px repeat(${yAxisLength}, ${cellSize}px)`;
+  const gridTemplateColumns = `max-content repeat(${yAxisLength}, ${cellSize}px)`;
   const gridTemplateRows = `repeat(${users.length}, ${cellSize}px) 1fr`;
-
-  
 
   return (
     //   The things actually in this component
@@ -262,9 +258,10 @@ export default function HeatmapGraph({
                 gridRow: idx + 1,
                 height: cellSize,
                 lineHeight: `${cellSize}px`,
-                overflow: "hidden",
+                textAlign: "right",
+                paddingRight: "8px",
               }}
-              className="text-sm text-gray-700 truncate font-semibold "
+              className="text-sm text-gray-700 font-semibold "
               title={user}
             >
               {user}
