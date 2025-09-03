@@ -7,7 +7,7 @@ import {
   Dialog,
   DialogContent,
 } from "../ui/dialog";
-import { calculateFinalGrades, generateScaledGradingSheet } from "./ScalingFunctions";
+import { calculateFinalGrades, generateScaledGradingSheet } from "./ScalingUtils";
 
 import { Button } from "../ui/button";
 import GradingSheetForm from "./GradingSheetForm";
@@ -154,7 +154,7 @@ function ScalingView(): JSX.Element {
     
     try {
       // Generate the scaled grading sheet
-      const scaledFile = await generateScaledGradingSheet(gradingSheetParseResult, scaledResults);
+      const scaledFile = generateScaledGradingSheet(gradingSheetParseResult, scaledResults);
       
       // Create a filename with "scaled_" prefix
       const originalName = gradingSheet.name;
