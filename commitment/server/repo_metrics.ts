@@ -324,16 +324,6 @@ export function getTotalFilesChanged(repoData: SerializableRepoData): number {
 }
 
 /**
- * Count the number of lines in a file contents string.
- * @param fileContents The file contents as a string.
- * @returns The number of lines in the file.
- */
-function countLines(fileContents: string): number {
-  if (!fileContents) return 0;
-  return fileContents.split("\n").length;
-}
-
-/**
  * Get the total number of lines of code across all commits in a repository.
  * @param repoData The repository data.
  * @returns The total number of lines of code.
@@ -341,7 +331,7 @@ function countLines(fileContents: string): number {
 export function getTotalLinesOfCode(repoData: SerializableRepoData): number {
   return repoData.allCommits.reduce<number>((sum, commit) => {
     const commitLines = commit.value.fileData.reduce<number>(
-      (fileSum, f) => fileSum + countLines(f.file.contents), // assuming `file.contents` is the raw file text
+      (fileSum, f) => fileSum + f.newLines - f.deletedLines, // assuming `file.contents` is the raw file text
       0
     );
     return sum + commitLines;
@@ -369,7 +359,7 @@ export async function highlightTotalLinesOfCode(): Promise<HighlightStruct> {
   const linesOfCodeOverTime: { value: number }[] = sortedCommits.map(
     (commit) => ({
       value: commit.value.fileData.reduce(
-        (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+        (sum, fileChange) => sum + fileChange.newLines - fileChange.deletedLines,
         0
       ),
     })
