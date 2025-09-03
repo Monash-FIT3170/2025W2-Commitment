@@ -8,10 +8,18 @@ import {
   MetricsData,
   Selections,
   AllMetricsData,
-  MetricType
+  MetricType,
+  RepositoryData,
 } from "/imports/api/types";
-import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
+import { getAllGraphData, getAllMetricsFromData, getContributors, getUnfilteredData, setsUnfilteredData } from "./repo_metrics";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
+import { getRepoData } from "./fetch_repo";
+import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation";
+import { getScaledResults } from "./ScalingFunctions";
+import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
+import { useLocation } from "react-router-dom";
+import { serialize } from "v8";
+import { createDropdownMenuScope } from "@radix-ui/react-dropdown-menu";
 
 Meteor.methods({
   /**
@@ -170,5 +178,15 @@ Meteor.methods({
     
     // Use the mapped data for metrics calculation
     return await getAllMetricsFromData(mappedRepo);
+  },
+
+  async "getScalingResults"(data: ScalingConfig, repoUrl: string) {
+    setsUnfilteredData(repoUrl);
+
+    const repoData: SerializableRepoData = await getUnfilteredData();
+
+    const result = await getScaledResults(repoData, data, repoUrl);
+
+    return result;
   }
 });

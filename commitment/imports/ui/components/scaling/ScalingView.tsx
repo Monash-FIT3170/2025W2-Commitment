@@ -13,7 +13,7 @@ import {
 import { Button } from "../ui/button";
 import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
-import type { UserScalingSummary } from "../../../api/types";
+import { UserScalingSummary } from "/imports/api/types";
 import type { GradingSheetRow } from "../utils/GradingSheetParser";
 
 interface ScalingConfig {
@@ -31,7 +31,11 @@ function ScalingView() {
   const [showDialog, setShowDialog] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
-  const [parsedGradingData, setParsedGradingData] = useState<GradingSheetRow[] | null>(null);
+  const [parsedGradingData, setParsedGradingData] = useState<
+    GradingSheetRow[] | null
+  >(null);
+
+  const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
 
   // Load from localStorage on first mount
   useEffect(() => {
@@ -48,16 +52,22 @@ function ScalingView() {
     }
   }, [completed, hasLoaded]);
 
-  const handleConfigSubmit = (configData: ScalingConfig) => {
+  const handleConfigSubmit = (
+    configData: ScalingConfig,
+    results: UserScalingSummary[]
+  ) => {
     setConfig(configData);
-    console.log("Config submitted:", configData);
+    setScaledResults(results);
     setStep("sheet");
   };
 
-  const handleSheetSubmit = (sheetFile: File, parsedData?: GradingSheetRow[]) => {
+  const handleSheetSubmit = (
+    sheetFile: File,
+    parsedData?: GradingSheetRow[]
+  ) => {
     setGradingSheet(sheetFile);
     setParsedGradingData(parsedData || null);
-    console.log("Grading sheet submitted:", parsedData);
+    // console.log("Grading sheet submitted:", parsedData);
 
     setCompleted(true);
     setShowDialog(false);
@@ -65,71 +75,58 @@ function ScalingView() {
   };
 
   // This is the variable that must store the final grades, scalings, aliases and name of contributors
-  const userScalingSummaries: UserScalingSummary[] = [];
 
-return (
-  <div className="m-0 scroll-smooth">
-    <div className="flex flex-col gap-32">
-      <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-        {/* Show "Create New Scaling" button if no completed config */}
-        {!(completed && config) && (
-          <Button
-            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-            onClick={() => {
-              setStep("config");
-              setShowDialog(true);
-            }}
-          >
-            Create New Scaling
-          </Button>
-        )}
-
-        {/* Show summary and options if completed */}
-        {completed && step === "done" && config && (
-          <div>
-            {completed && config && (
+  return (
+    <div className="m-0 scroll-smooth">
+      <div className="flex flex-col gap-32">
+        <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
+          {/* Always render the scaling summary in the background */}
+          {config && scaledResults.length > 0 && (
+            <div className="mb-6">
               <ScalingSummary
-                userScalingSummaries={userScalingSummaries}
+                userScalingSummaries={scaledResults}
                 hasGradingSheet={!!gradingSheet}
               />
-            )}
-
-            <div className="flex justify-center gap-6 p-4">
-              <Button
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                onClick={() => {
-                  setStep("sheet");
-                  setShowDialog(true);
-                }}
-              >
-                Upload Grading Sheet
-              </Button>
-              <Button
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                onClick={() => {
-                  setStep("config");
-                  setShowDialog(true);
-                }}
-              >
-                Generate New Scaling
-              </Button>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Multi-Step Dialog */}
-        <Dialog
-          open={showDialog}
-          onOpenChange={(open) => {
-            if (!open && step === "sheet") {
-              // if user closed grading sheet with cross button
-              setCompleted(true);
-              setStep("done");
-            }
-            setShowDialog(open);
-          }}
-        >
-          <DialogContent className="max-w-2xl">
+          {/* Show "Create New Scaling" button if no completed config */}
+
+          {/* Buttons for grading sheet or regenerate */}
+          <div className="flex justify-center gap-6 p-4">
+            <Button
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+              onClick={() => {
+                setStep("config");
+                setShowDialog(true);
+              }}
+            >
+              Create New Scaling
+            </Button>
+
+            <Button
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+              onClick={() => {
+                setStep("sheet");
+                setShowDialog(true);
+              }}
+            >
+              Upload Grading Sheet
+            </Button>
+          </div>
+
+          {/* Multi-Step Dialog */}
+          <Dialog
+            open={showDialog}
+            onOpenChange={(open) => {
+              if (!open && step === "sheet") {
+                setCompleted(true);
+                setStep("done");
+              }
+              setShowDialog(open);
+            }}
+          >
+            <DialogContent className="max-w-2xl">
               {step === "config" && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
