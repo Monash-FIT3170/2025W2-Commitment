@@ -10,7 +10,8 @@ import {
   AllMetricsData,
   MetricType
 } from "/imports/api/types";
-import { getAllGraphData, getMetricString, getAllMetrics } from "./repo_metrics";
+import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
+import { applyAliasMappingIfNeeded } from "./alias_mapping";
 
 Meteor.methods({
   /**
@@ -39,12 +40,15 @@ Meteor.methods({
       repoUrl
     );
 
+    // Apply alias mapping if user has config
+    const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
+
     // Apply filtering
     const filteredData = getFilteredRepoDataServer(
       repoUrl,
       startDate,
       endDate,
-      repo,
+      mappedRepo,
       branch,
       contributor
     );
@@ -58,15 +62,18 @@ Meteor.methods({
       repoUrl
     );
 
+    // Apply alias mapping if user has config
+    const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
+
     return {
       repoUrl,
-      repoName: repo.name,
-      branches: repo.branches.map((b) => b.branchName),
-      contributors: repo.contributors.map((c) => c.key),
+      repoName: mappedRepo.name,
+      branches: mappedRepo.branches.map((b) => b.branchName),
+      contributors: mappedRepo.contributors.map((c) => c.key),
       dateRange: {
         from: new Date(
           Math.min(
-            ...repo.allCommits.map((c) => new Date(c.value.timestamp).getTime())
+            ...mappedRepo.allCommits.map((c) => new Date(c.value.timestamp).getTime())
           )
         ),
         to: new Date(),
@@ -148,11 +155,20 @@ Meteor.methods({
   },
 
   /**
-   * 
+   * Get all metrics for a repository with alias mapping applied
    * @param param0 
    * @returns 
    */
   async "repo.getAllMetrics"({repoUrl}: {repoUrl: string}): Promise<AllMetricsData> {
-    return await getAllMetrics(repoUrl);
+    // Get repository data and apply alias mapping
+    const repo: SerializableRepoData = await Meteor.callAsync(
+      "repoCollection.getData",
+      repoUrl
+    );
+    
+    const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
+    
+    // Use the mapped data for metrics calculation
+    return await getAllMetricsFromData(mappedRepo);
   }
 });

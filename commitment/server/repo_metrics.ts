@@ -192,6 +192,36 @@ export async function getAllMetrics(repoUrl: string): Promise<AllMetricsData> {
 
   return allMetricData;
 }
+
+/**
+ * Get all metrics from provided repository data (useful for alias-mapped data)
+ * @param repoData Repository data to calculate metrics from
+ * @returns AllMetricsData object with metrics for each contributor
+ */
+export async function getAllMetricsFromData(repoData: SerializableRepoData): Promise<AllMetricsData> {
+  // for each contributor in the provided data, find the metric associated to them:
+  const allMetricData: AllMetricsData = {};
+
+  const contributors = getContributors(repoData);
+
+  contributors.forEach((contributor) => {
+    allMetricData[contributor] = {
+      "Total lines of commit": getTotalCommitsPerContributor(
+        repoData,
+        contributor
+      ),
+      LOC: getLOCperContributor(repoData, contributor),
+      "LOC/Commit": getLocPerCommitPerContributor(repoData, contributor),
+      "Commits Per Day": getCommitPerDayPerContributor(
+        repoData,
+        contributor
+      ),
+    };
+  });
+
+  return allMetricData;
+}
+
 /**
  * SETTERS AND GETTERS
  */
