@@ -446,7 +446,7 @@ export function getLOCperContributor(
 
   commits.reduce((acc, commit) => {
     return acc + commit.value.fileData.reduce((acc, fileChange) => {
-      return acc + fileChange.newLines
+      return acc + fileChange.newLines - fileChange.deletedLines
     }, 0);
   }, 0);
 
