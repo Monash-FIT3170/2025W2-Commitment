@@ -11,7 +11,8 @@ import {
   MetricType,
   RepositoryData,
 } from "/imports/api/types";
-import { getAllGraphData, getMetricString, getAllMetrics, getContributors, getUnfilteredData, setsUnfilteredData } from "./repo_metrics";
+import { getAllGraphData, getAllMetricsFromData, getContributors, getUnfilteredData, setsUnfilteredData } from "./repo_metrics";
+import { applyAliasMappingIfNeeded } from "./alias_mapping";
 import { getRepoData } from "./fetch_repo";
 import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation";
 import { getScaledResults } from "./ScalingFunctions";
@@ -47,12 +48,15 @@ Meteor.methods({
       repoUrl
     );
 
+    // Apply alias mapping if user has config
+    const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
+
     // Apply filtering
     const filteredData = getFilteredRepoDataServer(
       repoUrl,
       startDate,
       endDate,
-      repo,
+      mappedRepo,
       branch,
       contributor
     );
@@ -66,15 +70,18 @@ Meteor.methods({
       repoUrl
     );
 
+    // Apply alias mapping if user has config
+    const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
+
     return {
       repoUrl,
-      repoName: repo.name,
-      branches: repo.branches.map((b) => b.branchName),
-      contributors: repo.contributors.map((c) => c.key),
+      repoName: mappedRepo.name,
+      branches: mappedRepo.branches.map((b) => b.branchName),
+      contributors: mappedRepo.contributors.map((c) => c.key),
       dateRange: {
         from: new Date(
           Math.min(
-            ...repo.allCommits.map((c) => new Date(c.value.timestamp).getTime())
+            ...mappedRepo.allCommits.map((c) => new Date(c.value.timestamp).getTime())
           )
         ),
         to: new Date(),
@@ -156,48 +163,30 @@ Meteor.methods({
   },
 
   /**
-   * 
+   * Get all metrics for a repository with alias mapping applied
    * @param param0 
    * @returns 
    */
   async "repo.getAllMetrics"({repoUrl}: {repoUrl: string}): Promise<AllMetricsData> {
-    const metadata: Metadata = await Meteor.callAsync(
-      "repo.getMetadata",
+    // Get repository data and apply alias mapping
+    const repo: SerializableRepoData = await Meteor.callAsync(
+      "repoCollection.getData",
       repoUrl
     );
-    // set the branch to filteredBranch to "main " or "master"
-
-    const filteredBranch = metadata.branches.includes("main")
-      ? "main"
-      : metadata.branches.includes("master")
-      ? "master"
-      : metadata.branches[0];
-
-    // get all the filteredRepo Data - all the data from Main or Master Branch
-    const filteredRepo: FilteredData = await Meteor.callAsync(
-      "repo.getFilteredData",
-      {
-        repoUrl,
-        startDate: metadata.dateRange.from,
-        endDate: metadata.dateRange.to,
-        branch: filteredBranch,
-        contributor: metadata.contributors,
-      }
-    );
-
-    const serializedFilteredData = filteredRepo.repositoryData; 
-    return await getAllMetrics(serializedFilteredData);
+    
+    const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
+    
+    // Use the mapped data for metrics calculation
+    return await getAllMetricsFromData(mappedRepo);
   },
 
-async "getScalingResults"(data:ScalingConfig,repoUrl:string) {
-
+  async "getScalingResults"(data: ScalingConfig, repoUrl: string) {
     setsUnfilteredData(repoUrl);
 
-    const repoData:SerializableRepoData = await getUnfilteredData();
+    const repoData: SerializableRepoData = await getUnfilteredData();
 
-    const result = await getScaledResults(repoData,data,repoUrl)
+    const result = await getScaledResults(repoData, data, repoUrl);
 
-    return result
-}
- 
+    return result;
+  }
 });

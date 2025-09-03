@@ -1,10 +1,9 @@
 import React from 'react';
-import { Settings } from 'lucide-react';
 import { Meteor } from 'meteor/meteor';
 import {  useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { AnalyticsData, Metadata } from '/imports/api/types';
+
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL
@@ -57,7 +56,6 @@ export default function TopBar() {
         <div className="w-6 h-6 bg-gray-300 rounded" />
         {' '}
       </div>
-      <Settings className="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
     </div>
   );
 }
