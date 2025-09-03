@@ -67,7 +67,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
 }) => {
   if (!data || data.length === 0) {
     return (
-      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+      <GraphCard className="w-full max-w-full 3xl:max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
         <CardHeader className="pb-0">
           <CardTitle className="flex text-xl mt-0 font-bold ">
             {title}
@@ -109,7 +109,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   // card with the line graph
   return (
     // <Card  className="flex flex-col w-[475px] h-[400px] bg-[#f0f0e8] border-0 rounded-xl" style={{ backgroundColor: graphBackgroundColour }}>
-    <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
+    <GraphCard className="w-full  max-w-full lg:max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
       {/* Title */}
       <CardHeader className="pb-0">
         <CardTitle className="flex text-xl mt-0 font-bold ">

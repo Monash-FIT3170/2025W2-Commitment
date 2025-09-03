@@ -195,17 +195,10 @@ export function AnalyticsView(): React.JSX.Element {
               value={analytics.metrics.highlights.numBranches}
             />
           </div>
+          
           {/* Graphs */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-            <div className="w-full min-h-[300px] h-full">
-              <ContributorLineGraph
-                data={analytics.metrics.contributors.lineGraph.data}
-                title={analytics.metrics.contributors.lineGraph.title}
-                xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
-                yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
-              />
-            </div>
-            <div className="w-full min-h-[300px] h-full">
+          <div className="grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 gap-6 w-full">
+            <div className="w-full min-h-[300px] h-full xl:max-3xl:col-span-2" >
               <LeaderboardGraph
                 data={analytics.metrics.contributors.leaderboard.data}
                 title={analytics.metrics.contributors.leaderboard.title}
@@ -214,13 +207,21 @@ export function AnalyticsView(): React.JSX.Element {
                 }
               />
             </div>
+            <div className="w-full min-h-[300px] h-full ">
+              <ContributorLineGraph
+                data={analytics.metrics.contributors.lineGraph.data}
+                title={analytics.metrics.contributors.lineGraph.title}
+                xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
+                yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
+              />
+            </div>
             <div className="w-full min-h-[300px] h-full">
               <ContributionPieChart
                 data={analytics.metrics.contributors.pieChart.data}
                 title={analytics.metrics.contributors.pieChart.title}
               />
             </div>
-            <div className="w-full col-span-1 md:col-span-3">
+            <div className="w-full col-span-full">
               <HeatmapGraph
                 data={analytics.metrics.contributors.heatMap.data}
                 title={analytics.metrics.contributors.heatMap.title}

@@ -86,7 +86,7 @@ export function ContributionPieChart({ data, title }: Props) {
   }));
   if (!data || data.length === 0) {
     return (
-      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+      <GraphCard className="w-full  max-w-full 3xl:max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
         <CardHeader className="pb-0">
           <CardTitle className="flex text-xl mt-0 font-bold ">
             {title}
@@ -104,7 +104,7 @@ export function ContributionPieChart({ data, title }: Props) {
     );
   }
   return (
-    <GraphCard className="w-full max-w-[800px] h-[500px] flex flex-col basis-1/3">
+    <GraphCard className="w-full  max-w-full xl:max-w-[800px] h-[500px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
           <h2 className="text-xl font-bold"> {title}</h2>
