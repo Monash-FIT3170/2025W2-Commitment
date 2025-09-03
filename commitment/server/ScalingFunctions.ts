@@ -13,21 +13,24 @@ const DEFAULT_METRICS = [
   "Commits Per Day",
 ];
 
-// Scaling Functions
+// The order these functions work in are as such:
+// getScaledResults() calls scaleUsers() which will buildUsers() and normaliseMetric() to get name, emails, and associated scales
 
 
 
 /**
- * 
- * @param values 
- * @param alpha 
- * @returns 
+ * this method takes in raw metric data and applies an alpha value to it. In essence, it scales an array of numbers to a bounded 
+ range [alpha, 1-alpha], mapping the smallest value to alpha, the largest to 1-alpha, and proportionally adjusting all intermediate values. 
+
+ * @param values the metric data
+ * @param alpha controls the minimum and maximum range
+ * @returns the normalised set of values
  */
-function normalizeMetric(values: Array<number | null>, alpha = 0.2): number[] {
+function normaliseMetric(values: Array<number | null>, alpha = 0.2): number[] {
   const present = values.filter(
     (v): v is number => v !== null && Number.isFinite(v)
   );
-  if (!present.length) return values.map(() => 0.5); // all missing → neutral
+  if (!present.length) return values.map(() => 0.5); // a fallback to 0.5 if for some reason the metric cannot be found
 
   const min = Math.min(...present);
   const max = Math.max(...present);
@@ -39,6 +42,20 @@ function normalizeMetric(values: Array<number | null>, alpha = 0.2): number[] {
       : alpha
   );
 }
+
+
+/**
+ * Builds an array of user data objects containing selected metric values.
+ *
+ * For each user in 'allMetrics', it extracts the values of 'selectedMetrics',
+ * converting invalid or non-numeric values to 'null'.
+ *
+ * @param allMetrics - An object mapping user names to their metrics.
+ * @param selectedMetrics - An array of metric names to extract for each user.
+ * @returns An array of objects, each with:
+ *   - name: the user’s name
+ *   - values: an array of numbers or null corresponding to the selected metrics
+ */
 
 function buildUsers(
   allMetrics: AllMetricsData,
@@ -54,7 +71,16 @@ function buildUsers(
   });
 }
 
-// Compute percentile rank of a value within an array
+/**
+ * Computes the percentile rank of a value within an array of numbers.
+ *
+ * The percentile rank is the position of value in the sorted array,
+ * scaled to the range [0, 1]. If the value is not found, returns 0.5 as a neutral fallback.
+ *
+ * @param values - Array of numbers to rank within.
+ * @param value - The number whose percentile rank is computed.
+ * @returns A number between 0 and 1 representing the percentile rank.
+ */
 function percentileRank(values: number[], value: number): number {
   const sorted = [...values].sort((a, b) => a - b);
   const index = sorted.findIndex((v) => v === value);
@@ -63,7 +89,25 @@ function percentileRank(values: number[], value: number): number {
   return index / (sorted.length - 1 || 1); // scale to [0,1]
 }
 
-// Scale users based on selected metrics and method
+/**
+ * Computes scaled scales for users based on selected metrics from a repository.
+ *
+ * Steps:
+ * 1. Fetches all metrics for the given repository via a Meteor call.
+ * 2. Builds user data objects containing only the selected metrics.
+ * 3. Normalizes each metric column using `normaliseMetric`.
+ * 4. Computes a score per user based on the specified method:
+ *    - "Percentiles": averages percentile ranks of each metric.
+ *    - "Mean +/- Std": mean plus standard deviation of the normalized metrics.
+ *    - "Quartiles": median of the normalized metrics.
+ *    - Default: simple mean of normalized metrics.
+ *
+ * @param repoUrl - The repository URL to fetch metrics from.
+ * @param config - Configuration object specifying metrics to use and the scoring method.
+ * @returns A promise resolving to an array of objects with:
+ *   - name: the user’s name
+ *   - score: the user’s scaled score rounded to two decimal places.
+ */
 async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl });
 
@@ -75,16 +119,16 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   // Use helper to build users
   const users = buildUsers(allMetrics, selectedMetrics);
 
-  if (!users.length) return [];
+  if (!users.length) return []; //if there's no users then immediately return
 
-  // Normalize metrics column-wise
+  // Normalize metrics
   const metricsValues = selectedMetrics.map((_, i) =>
-    normalizeMetric(users.map((u) => u.values[i]))
+    normaliseMetric(users.map((u) => u.values[i]))
   );
 
-  // Calculate score per user
+  // Calculate score (scale) per user
   return users.map((user, idx) => {
-    const scores = metricsValues.map((col) => col[idx]);
+    const scales = metricsValues.map((col) => col[idx]);
 
     let score: number;
     switch (method) {
@@ -110,16 +154,16 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
       }
 
       case "Mean +/- Std":
-        const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+        const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
         const std = Math.sqrt(
-          scores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scores.length
+          scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length
         );
-        score = mean + std;
+        score = mean + std; 
         break;
 
       case "Quartiles":
-        const sorted = [...scores].sort((a, b) => a - b);
-        const mid = Math.floor(sorted.length / 2);
+        const sorted = [...scales].sort((a, b) => a - b); //sort first
+        const mid = Math.floor(sorted.length / 2); //2nd quartile
         score =
           sorted.length % 2 === 0
             ? (sorted[mid - 1] + sorted[mid]) / 2
@@ -127,7 +171,7 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
         break;
 
       default:
-        score = scores.reduce((a, b) => a + b, 0) / scores.length;
+        score = scales.reduce((a, b) => a + b, 0) / scales.length;
         break;
     }
 
@@ -135,13 +179,33 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   });
 }
 
+/**
+ * Generates a detailed scaled results summary for each contributor in a repository.
+ *
+ * 1. Uses 'scaleUsers' to compute normalized scales for all users based on the provided config.
+ * 2. Matches each user to their contributor data from 'repoData'.
+ * 3. Constructs a list of aliases for each contributor based on their emails.
+ * 4. Returns an array of user summaries including name, aliases, finalGrade (initially null), and scaled score.
+ *
+ * @param repoData - Serializable repository data containing contributor information.
+ * @param config - Configuration specifying which metrics to scale and the scaling method.
+ * @param repoUrl - URL of the repository to fetch metrics from.
+ * @returns A promise resolving to an array of 'UserScalingSummary' objects with:
+ *   - name: contributor's name
+ *   - aliases: list of objects mapping username to email
+ *   - finalGrade: initially null
+ *   - scale: the computed scaled score
+ */
 export async function getScaledResults(
   repoData: SerializableRepoData,
   config: ScalingConfig,
   repoUrl: string
 ): Promise<UserScalingSummary[]> {
+
+//first we scale the users
   const scaledUsers = await scaleUsers(repoUrl, config);
 
+  //then we fetch contributors here -> mainly to get access to their emails
   const contributors = repoData.contributors;
 
   return scaledUsers.map(({ name, score }) => {
@@ -151,7 +215,7 @@ export async function getScaledResults(
       ? contributor.value.emails.map((email) => ({ username: name, email }))
       : [];
 
-    return {
+    return { //now that we have the emails, we have all our information and return it in a format suitable for the scaling output page to render
       name,
       aliases,
       finalGrade: null,

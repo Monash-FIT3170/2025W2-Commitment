@@ -58,8 +58,6 @@ function ScalingView() {
   ) => {
     setConfig(configData);
     setScaledResults(results);
-    // console.log("Config submitted:", configData);
-    // console.log("Scaled results:", results);
     setStep("sheet");
   };
 
