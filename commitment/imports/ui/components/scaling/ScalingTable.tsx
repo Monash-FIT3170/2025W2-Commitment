@@ -69,18 +69,17 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
               {/* Unexpanded Rows */}
               <TableRow
                 onClick={() => row.toggleExpanded()}
-                className="cursor-pointer"
+                className="cursor-pointer bg-git-int-primary hover:bg-git-int-primary-hover"
               >
                 {row.getVisibleCells().map((cell, idx) => (
                   <TableCell
                     key={cell.id}
                     className={
                       (idx === 0
-                        ? "rounded-l-md bg-git-int-primary hover:bg-git-int-primary text-git-int-text text-1xl"
+                        ? "rounded-l-md text-git-int-text text-1xl"
                         : idx === row.getVisibleCells().length - 1
-                        ? "rounded-r-md bg-git-int-primary hover:bg-git-int-primary text-git-int-text"
-                        : "bg-git-int-primary hover:bg-git-int-primary text-git-int-text text-2xl font-bold") +
-                      " py-0"
+                        ? "rounded-r-md text-git-int-text"
+                        : "text-git-int-text text-2xl font-bold") + " py-0"
                     }
                   >
                     {idx === 0 ? (
