@@ -46,7 +46,10 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
     //const $sout = notifier.subscribe(console.log) // for debugging purposes
 
     fetchRepo(repoUrl, notifier)
-      .then(() => {
+      .then((value: boolean) => {
+        
+        if (value == false) throw Error("fetchRepo Failed")
+
         notifier.next("Repository data loaded!");
         setProgress(100);
 
