@@ -8,12 +8,11 @@ import {
 import { navigationMenuTriggerStyle } from "../ui/navigation-menu";
 import SignUpButton from "./signUpButton";
 import ProfileMenu from "../ui/profile-menu";
-import {  Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
 import { useTheme } from "@ui/hooks/useTheme";
 import { useAuth } from "../../hooks/useAuth";
-
 
 export const NavBar: React.FC = () => {
   const { isDark, toggle } = useTheme();
@@ -21,12 +20,11 @@ export const NavBar: React.FC = () => {
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
 
-  const isLoggedIn = useAuth()
-
+  const isLoggedIn = useAuth();
 
   const handleSignOut = () => {
     Accounts.logout(() => {
-      console.log("Signed out.")
+      console.log("Signed out.");
     });
   };
 
@@ -35,14 +33,17 @@ export const NavBar: React.FC = () => {
   };
 
   return (
-    <div
-      className="z-50 flex items-center justify-between py-2 border-b bg-git-bg-elevated  sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32"
-
-    >
+    <div className="z-50 flex items-center justify-between py-2 border-b bg-git-bg-elevated  sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32">
       <NavigationMenu>
         <NavigationMenuList className="flex space-x-4">
           <div className="flex items-center space-x-3">
-            <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+            <NavigationMenuItem>
+              <NavigationMenuLink>
+                <Link to={isLandingPage?"/":"/home"} >
+                  <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
           </div>
 
           {isLandingPage ? (
@@ -91,16 +92,13 @@ export const NavBar: React.FC = () => {
         </NavigationMenuList>
       </NavigationMenu>
 
-
       {/* Right hand side nav */}
       <div className="flex items-center space-x-4 ">
         <button
           type="button"
           onClick={handleToggleDarkMode}
           className="p-2 rounded-full hover:bg-git-bg-bottom/30 transition-colors"
-          aria-label={
-            isDark ? "Switch to light mode" : "Switch to dark mode"
-          }
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
           {isDark ? (
             <Sun className="h-6 w-6 text-yellow-400" />
@@ -111,7 +109,7 @@ export const NavBar: React.FC = () => {
 
         {!isLoggedIn && (
           <div>
-            <a href="/login" className={navigationMenuTriggerStyle()+ "mr-10"}>
+            <a href="/login" className={navigationMenuTriggerStyle() + "mr-10"}>
               Log in
             </a>
             <SignUpButton />
@@ -120,8 +118,7 @@ export const NavBar: React.FC = () => {
         {isLoggedIn && <ProfileMenu onSignOut={handleSignOut} />}
       </div>
     </div>
-
   );
-}
+};
 
 export default NavBar;
