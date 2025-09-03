@@ -5,11 +5,8 @@ import AboutUs from "@ui/components/landing-page/AboutUs";
 import Footer from "@ui/components/landing-page/Footer";
 import NavBar from "@ui/components/landing-page/NavBar";
 import Features from "@ui/components/landing-page/Features";
-import { Meteor } from "meteor/meteor";
-import { useTracker } from "meteor/react-meteor-data";
 
 export default function LandingPage() {
-  const user = useTracker(() => Meteor.user());
 
   return (
     <div className="m-0 scroll-smooth">
