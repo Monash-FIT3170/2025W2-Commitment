@@ -18,7 +18,8 @@ import {
 
 import { ChevronRight } from "lucide-react";
 
-import type { AliasEmail } from "@server/commitment_api/types";
+import InfoButton from "../ui/infoButton";
+import { AliasEmail } from "/imports/api/types";
 
 interface DataTableProps<TData extends { aliases?: AliasEmail[] }, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -34,7 +35,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: () => true,
+    getRowCanExpand: (row) => (row.original.aliases?.length ?? 0) > 0,
   });
 
   return (
@@ -82,19 +83,47 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                       " py-0"
                     }
                   >
-                    {idx === 0 && (
-                      <ChevronRight
-                        className={`inline-block mr-2 transition-transform duration-200 ${
-                          row.getIsExpanded() ? "rotate-90" : ""
-                        }`}
-                        size={16}
-                      />
-                    )}
+                    {idx === 0 ? (
+                      <div className="flex items-center gap-1">
+                        {/* Chevron or placeholder */}
+                        {row.getCanExpand() ? (
+                          <ChevronRight
+                            className={`transition-transform duration-200 ${
+                              row.getIsExpanded() ? "rotate-90" : ""
+                            }`}
+                            size={16}
+                          />
+                        ) : (
+                          <span className="w-4" />
+                        )}
 
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    {idx === row.getVisibleCells().length - 2 &&
-                      typeof cell.getValue() === "number" &&
-                      "%"}
+                        {/* Name */}
+                        <span className="leading-none">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </span>
+
+                        {/* InfoButton if no aliases */}
+                        {(!row.original.aliases ||
+                          row.original.aliases.length === 0) && (
+                          <div className="flex items-center -translate-y-2 pl-0.5">
+                            <InfoButton description="This contributor has not contributed to the Main/Master branch!" />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                        {idx === row.getVisibleCells().length - 2 &&
+                          typeof cell.getValue() === "number" &&
+                          "%"}
+                      </>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>

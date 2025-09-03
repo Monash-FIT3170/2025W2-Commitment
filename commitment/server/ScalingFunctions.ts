@@ -201,25 +201,38 @@ export async function getScaledResults(
   config: ScalingConfig,
   repoUrl: string
 ): Promise<UserScalingSummary[]> {
+// Identify users who contributed to main (have aliases) -> this thought process will need to be updated later on, but for now this functions
+const contributors = repoData.contributors;
+const validUserNames = new Set(
+  contributors
+    .filter((c) => c.value.emails.length > 0)
+    .map((c) => c.value.name)
+);
 
-//first we scale the users
-  const scaledUsers = await scaleUsers(repoUrl, config);
+// Scale only the valid users
+const scaledUsers = await scaleUsers(repoUrl, config);
+const scaledValidUsers = scaledUsers.filter(({ name }) =>
+  validUserNames.has(name)
+);
 
-  //then we fetch contributors here -> mainly to get access to their emails
-  const contributors = repoData.contributors;
+// Map scaled scores back to all contributors
+return scaledUsers.map(({ name }) => {
+  const contributor = contributors.find((c) => c.value.name === name);
 
-  return scaledUsers.map(({ name, score }) => {
-    const contributor = contributors.find((c) => c.value.name === name);
+  const aliases = contributor
+    ? contributor.value.emails.map((email) => ({ username: name, email }))
+    : [];
 
-    const aliases = contributor
-      ? contributor.value.emails.map((email) => ({ username: name, email }))
-      : [];
+  const scale = aliases.length > 0
+    ? scaledValidUsers.find((u) => u.name === name)?.score ?? 0
+    : 0;
 
-    return { //now that we have the emails, we have all our information and return it in a format suitable for the scaling output page to render
-      name,
-      aliases,
-      finalGrade: null,
-      scale: score,
-    };
-  });
+  return {
+    name,
+    aliases,
+    finalGrade: null,
+    scale, // 0 if no aliases, otherwise valid scaled score
+  };
+});
+
 }
