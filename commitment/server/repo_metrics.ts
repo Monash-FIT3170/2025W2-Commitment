@@ -442,15 +442,11 @@ export function getLOCperContributor(
 
   if (commits.length === 0) return 0;
 
-  let totalLOC = 0;
-
-  commits.reduce((acc, commit) => {
+  return commits.reduce((acc, commit) => {
     return acc + commit.value.fileData.reduce((acc, fileChange) => {
       return acc + fileChange.newLines - fileChange.deletedLines
     }, 0);
   }, 0);
-
-  return totalLOC
 }
 
 export function getLocPerCommitPerContributor(
