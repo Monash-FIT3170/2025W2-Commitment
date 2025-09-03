@@ -45,14 +45,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const repoUrl: string = location.state?.repoUrl ?? null;
 
   const [script, setScript] = useState<File[] | undefined>();
-  const [selectedBranch, setSelectedBranch] = useState<string | undefined>();
-  const [selectedContributors, setSelectedContributors] = useState<string[]>(
-    []
-  );
-
-  const [scaledResults, setScaledResults] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
@@ -67,13 +59,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     try {
       const result = await Meteor.callAsync("getScalingResults", data, repoUrl);
 
-      // Update state for later renders
-      setScaledResults(result);
-
-      //   console.log("radssadesult", result);
-
-      // Pass the actual result, not the outdated state
-      onSubmit(data, result);
+      onSubmit(data, result); //this is where all the scaling starts from
     } catch (err) {
       console.error("Error:", err);
     }
