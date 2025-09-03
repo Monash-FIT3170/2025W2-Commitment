@@ -3,10 +3,23 @@ import { Subject } from "rxjs";
 import { WebSocket } from "ws";
 
 import { RepositoryData } from "../imports/api/types";
-import {deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
-import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
+import {
+  deserializeRepoData,
+  serializeRepoData,
+} from "../imports/api/serialisation";
+import {
+  cacheIntoDatabase,
+  tryFromDatabase,
+  isInDatabase,
+} from "../server/caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
+const haskellIP = "172.31.21.164";
+const haskellPort = 8081;
+const haskellHTTP = `http://${haskellIP}:${haskellPort}`;
+const haskellWS = `ws://${haskellIP}:${haskellPort}`;
+
+const haskell_host = "http://haskell-api:8081";
 
 Meteor.publish("fetchRepoMessages", function () {
   const connectionId = this.connection.id;
@@ -76,12 +89,13 @@ export const getRepoData = async (
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
   tryFromDatabase(url, notifier).catch((_e) =>
-    fetchDataFromHaskellAppWS(url, notifier)  
+    fetchDataFromHaskellAppWS(url, notifier)
       .catch((_e) => {
         notifier.next(`Websockets failed, trying HTTP...`);
         return fetchDataFromHaskellAppHTTP(url);
       })
-      .then(serializeRepoData).then(deserializeRepoData) // enforces strong typing for the map object
+      .then(serializeRepoData)
+      .then(deserializeRepoData) // enforces strong typing for the map object
       .then((data: RepositoryData) => {
         notifier.next("Consolidating new data into database...");
         cacheIntoDatabase(url, data);
@@ -107,7 +121,7 @@ const fetchDataFromHaskellAppWS = async (
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
     notifier.next("Connecting to the API...");
-    const socket = new WebSocket("ws://haskell-api:8081");
+    const socket = new WebSocket(haskellWS);
 
     socket.onopen = () => {
       // notify that connection to the api was successful
@@ -123,7 +137,6 @@ const fetchDataFromHaskellAppWS = async (
     socket.onmessage = (event: WebSocket.MessageEvent) => {
       // Step 2: Await response from haskell app
       try {
-        
         const data = event.data;
         const parsed = JSON.parse(data);
 
@@ -132,21 +145,20 @@ const fetchDataFromHaskellAppWS = async (
         else if (parsed.type === "value") {
           resolve(parsed.data);
           socket.close();
-        } 
-
+        }
       } catch (err) {
         reject(err);
         socket.close();
       }
-    }
+    };
 
     socket.onerror = (_err: WebSocket.ErrorEvent) => {
-      const s = "Encountered a Websocket Error"
+      const s = "Encountered a Websocket Error";
       notifier.next(s);
-      reject(new Error(s))
-      socket.close()
-    }
-  })
+      reject(new Error(s));
+      socket.close();
+    };
+  });
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -155,14 +167,17 @@ const fetchDataFromHaskellAppWS = async (
  * @param url url to run the API on
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppHTTP = async (url: string): Promise<RepositoryData> =>
+const fetchDataFromHaskellAppHTTP = async (
+  url: string
+): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) =>
-    fetch("http://haskell-api:8081", {
+    fetch(`${haskellHTTP}/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: url }),
     }).then((response) => {
-      if (!response.ok) reject(`Haskell API returned status ${response.status}`);
+      if (!response.ok)
+        reject(`Haskell API returned status ${response.status}`);
       response.json().then((d) => resolve(d.data));
     })
   );
