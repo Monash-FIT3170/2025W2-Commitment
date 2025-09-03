@@ -4,11 +4,11 @@ import { AliasConfigsCollection, StudentAlias } from './alias_configs';
 
 Meteor.methods({
     /**
-     * Creates and stores new alias configuration
+     * Creates or replaces alias configuration (only one config per user)
      *
      * @param {string} name - User's name for this config.
      * @param {StudentAlias[]} aliases - Array of studentAlias objects.
-     * @returns {Promise<string>} ID of the newly inserted string (generated automatically)
+     * @returns {Promise<string>} ID of the config (new or updated)
      * @throws {Meteor.Error} If user is not logged in/not a teacher or admin/or for duplicates or incorrect config file structure
      */
     async 'aliasConfigs.create'(name: string, aliases: StudentAlias[]) {
@@ -34,7 +34,14 @@ Meteor.methods({
             }
         }
         
-        // passed checks, can add into database
+        // Check if user already has a config and remove it
+        const existingConfigs = await AliasConfigsCollection.find({ ownerId: this.userId }).fetchAsync();
+        if (existingConfigs.length > 0) {
+            // Remove all existing configs for this user (should only be one, but just in case)
+            await AliasConfigsCollection.removeAsync({ ownerId: this.userId });
+        }
+        
+        // Create new config
         const newConfig = {
             name,
             aliases,

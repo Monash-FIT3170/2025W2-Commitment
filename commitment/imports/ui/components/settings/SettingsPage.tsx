@@ -25,8 +25,45 @@ export const SettingsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   
+  // Current config state
+  const [currentConfigs, setCurrentConfigs] = useState<any[]>([]);
+  const [isLoadingConfigs, setIsLoadingConfigs] = useState(false);
+  
   // Reference to the hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load current configs
+  const loadCurrentConfigs = async () => {
+    if (!isLoggedIn) return;
+    
+    setIsLoadingConfigs(true);
+    try {
+      const configs = await Meteor.callAsync('aliasConfigs.getAllForOwner');
+      setCurrentConfigs(configs);
+    } catch (error) {
+      console.error('Error loading configs:', error);
+    } finally {
+      setIsLoadingConfigs(false);
+    }
+  };
+
+  // Remove a config
+  const removeConfig = async (configId: string) => {
+    if (!isLoggedIn) return;
+    
+    try {
+      await Meteor.callAsync('aliasConfigs.remove', configId);
+      setSuccessMessage('Config removed successfully!');
+      loadCurrentConfigs(); // Reload the list
+    } catch (error) {
+      setError('Failed to remove config: ' + (error as any).message);
+    }
+  };
+
+  // Load configs when component mounts
+  React.useEffect(() => {
+    loadCurrentConfigs();
+  }, [isLoggedIn]);
 
   // Handle file selection from button click
   const handleFileSelect = () => {
@@ -217,6 +254,7 @@ export const SettingsPage: React.FC = () => {
       // Success!
       setSuccessMessage('Configuration saved successfully!');
       setShowConfirmation(false);
+      loadCurrentConfigs(); // Reload the config list
       
       // Reset form after a delay
       setTimeout(() => {
@@ -338,13 +376,126 @@ export const SettingsPage: React.FC = () => {
 
           {/* This is the content for the Alias Configuration tab */}
           <TabsContent value="alias-config" className="mt-6">
+            {/* Current Config Section */}
+            <div className="p-6 bg-git-bg-elevated border border-git-stroke-primary rounded-lg mb-6">
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-2xl font-semibold text-git-text-primary">Your Alias Configuration</h2>
+                  <Info className="h-5 w-5 text-git-text-secondary" />
+                </div>
+                <p className="text-git-text-secondary">
+                  You can have one universal config file that applies to all repositories you analyze.
+                </p>
+              </div>
+
+              {isLoadingConfigs ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-git-accent-primary mx-auto mb-4"></div>
+                  <p className="text-git-text-secondary">Loading your configuration...</p>
+                </div>
+              ) : currentConfigs.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-git-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="h-8 w-8 text-git-text-secondary" />
+                  </div>
+                  <h3 className="text-lg font-medium text-git-text-primary mb-2">No Configuration Set</h3>
+                  <p className="text-git-text-secondary mb-4">
+                    Upload a config file to map multiple Git accounts to single students.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {currentConfigs.map((config) => (
+                    <div key={config._id} className="p-6 bg-git-bg-primary border-2 border-git-accent-primary rounded-lg">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                            <h3 className="text-lg font-semibold text-git-text-primary">{config.name}</h3>
+                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                              Active
+                            </span>
+                          </div>
+                          <p className="text-sm text-git-text-secondary">
+                            Created: {new Date(config.createdAt).toLocaleDateString()} • {config.aliases.length} students mapped
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeConfig(config._id)}
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Remove
+                        </Button>
+                      </div>
+                      
+                      <div className="bg-git-bg-secondary rounded-lg p-4">
+                        <details className="group">
+                          <summary className="cursor-pointer text-sm font-medium text-git-text-primary hover:text-git-accent-primary flex items-center gap-2">
+                            <span>View Student Mappings</span>
+                            <span className="group-open:rotate-180 transition-transform">▼</span>
+                          </summary>
+                          <div className="mt-4 space-y-3">
+                            {config.aliases.map((alias: any, index: number) => (
+                              <div key={index} className="p-3 bg-git-bg-primary rounded border border-git-stroke-secondary">
+                                <p className="font-medium text-git-text-primary mb-2">{alias.officialName}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                  <div>
+                                    <span className="text-git-text-secondary">Git Usernames:</span>
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {alias.gitUsernames.map((username: string, i: number) => (
+                                        <span key={i} className="px-2 py-1 bg-git-accent-secondary text-git-text-primary rounded">
+                                          {username}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-git-text-secondary">Emails:</span>
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {alias.emails.map((email: string, i: number) => (
+                                        <span key={i} className="px-2 py-1 bg-git-bg-elevated text-git-text-secondary rounded">
+                                          {email}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </details>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Upload/Replace Section */}
             <div className="p-6 bg-git-bg-elevated border border-git-stroke-primary rounded-lg">
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-2xl font-semibold text-git-text-primary">Upload config file</h2>
+                  <h2 className="text-2xl font-semibold text-git-text-primary">
+                    {currentConfigs.length > 0 ? 'Replace Configuration' : 'Upload Configuration'}
+                  </h2>
                   <Info className="h-5 w-5 text-git-text-secondary" />
                 </div>
-                <p className="text-git-text-secondary">Map multiple accounts to a single user.</p>
+                <p className="text-git-text-secondary">
+                  {currentConfigs.length > 0 
+                    ? 'Upload a new config file to replace your current configuration.'
+                    : 'Upload a config file to map multiple Git accounts to single students.'
+                  }
+                </p>
+                {currentConfigs.length > 0 && (
+                  <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Note:</strong> Replacing your config will immediately apply the new mappings to all repositories you analyze.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Template Download */}
@@ -402,7 +553,7 @@ export const SettingsPage: React.FC = () => {
                       disabled={isLoading}
                     >
                       <Upload className="h-4 w-4" />
-                      {isLoading ? 'Processing...' : 'Upload files'}
+                      {isLoading ? 'Processing...' : (currentConfigs.length > 0 ? 'Replace Configuration' : 'Upload Configuration')}
                     </Button>
                   </>
                 ) : (
@@ -462,7 +613,9 @@ export const SettingsPage: React.FC = () => {
               {/* Confirmation Dialog */}
               {showConfirmation && (
                 <div className="mt-6 p-4 bg-git-bg-secondary border border-git-stroke-primary rounded-lg">
-                  <h3 className="text-lg font-semibold text-git-text-primary mb-3">Confirm Configuration</h3>
+                  <h3 className="text-lg font-semibold text-git-text-primary mb-3">
+                    {currentConfigs.length > 0 ? 'Confirm Configuration Replacement' : 'Confirm Configuration'}
+                  </h3>
                   <div className="mb-4">
                     <p className="text-git-text-secondary mb-2">
                       <strong>Name:</strong> {parsedAliases?.name}
@@ -482,7 +635,7 @@ export const SettingsPage: React.FC = () => {
                       disabled={isSaving}
                       className="bg-git-int-primary hover:bg-git-int-primary-hover text-git-int-text"
                     >
-                      {isSaving ? 'Saving...' : 'Save Configuration'}
+                      {isSaving ? 'Saving...' : (currentConfigs.length > 0 ? 'Replace Configuration' : 'Save Configuration')}
                     </Button>
                     <Button 
                       variant="outline"
@@ -504,7 +657,7 @@ export const SettingsPage: React.FC = () => {
                   disabled={!selectedFile || !!error || !parsedAliases}
                   onClick={handleApply}
                 >
-                  Apply
+                  {currentConfigs.length > 0 ? 'Replace Configuration' : 'Apply Configuration'}
                 </Button>
               </div>
             </div>

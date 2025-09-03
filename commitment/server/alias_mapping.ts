@@ -145,12 +145,14 @@ export async function applyAliasMappingIfNeeded(
 ): Promise<SerializableRepoData> {
   // Quick check if user has any config
   const hasConfig = await userHasAliasConfig(userId);
+  
   if (!hasConfig) {
     return data;
   }
   
   // Get the actual config
   const config = await getUserAliasConfig(userId);
+  
   if (!config) {
     return data;
   }
@@ -172,7 +174,9 @@ export async function applyAliasMappingIfNeeded(
   
   // Apply the mapping
   const mapping = createAliasMapping(config.aliases);
-  return applyAliasMapping(data, mapping);
+  const mappedData = applyAliasMapping(data, mapping);
+  
+  return mappedData;
 }
 
 /**
