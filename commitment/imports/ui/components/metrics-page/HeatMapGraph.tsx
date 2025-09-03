@@ -404,9 +404,9 @@ export default function HeatMapGraph({
   );
 
   return (
-    <GraphCard className="w-full max-w-[1600px] p-0">
+    <GraphCard className="w-full p-0">
       <CardHeader className="pb-0">
-        <CardTitle className="flex justify-between text-lg mt-0 font-bold ">
+        <CardTitle className="flex justify-between text-xl mt-0 font-bold ">
           <div className="flex ">
             {title ?? "Contributions Heatmap"}
             <div className="relative -mt-3 ml-2">

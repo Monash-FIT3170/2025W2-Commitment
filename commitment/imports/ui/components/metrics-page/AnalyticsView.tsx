@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import { DateRange } from "react-day-picker";
 import { useLocation } from "react-router-dom";
 import InfoButton from "../ui/infoButton";
-import { DateRangePicker } from "./DatePickerButton";
+import { DatePicker } from "./date-range-picker";
 import BranchDropdownMenu from "./BranchDropdownMenu";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
-// import { ContributionPieChart } from "./PieChartGraph";
-// import GraphCard from "./GraphCard";
+import { ContributionPieChart } from "./PieChartGraph";
 import HeatmapGraph from "./HeatMapGraph";
 
 import { AnalyticsData, MetricType, metricNames } from "/imports/api/types";
@@ -108,9 +107,9 @@ export function AnalyticsView(): React.JSX.Element {
   if (!analytics) return <div>No repo data available</div>;
 
   return (
-    <div className="m-0 scroll-smooth">
+    <div className="w-screen m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
-        <div className="max-w-full mx-20 my-10 rounded-sm bg-white p-8  outline-2 outline-git-bg-secondary">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-white">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-4">
@@ -125,9 +124,9 @@ export function AnalyticsView(): React.JSX.Element {
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
               <p className="text-sm text-gray-600">Date Range*</p>
-              <DateRangePicker
+              <DatePicker
                 defaultValue={dateRange}
-                onChange={(range) => {
+                onChange={(range: DateRange | undefined) => {
                   if (range) setDateRange(range);
                 }}
               />
@@ -160,7 +159,7 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
           </div>
           {/* Highlight Cards */}
-          <div className="flex flex-wrap gap-6  min-w-0">
+          <div className="flex flex-wrap gap-6 min-w-0 mb-12">
             <HighlightCardWithGraph
               title="Total Commits"
               value={analytics.metrics.highlights.totalCommits.total}
@@ -191,25 +190,36 @@ export function AnalyticsView(): React.JSX.Element {
             />
           </div>
           {/* Graphs */}
-          <div className="flex flex-wrap gap-6 mt-12 mb-12 min-w-0">
-            <ContributorLineGraph
-              data={analytics.metrics.contributors.lineGraph.data}
-              title={analytics.metrics.contributors.lineGraph.title}
-              xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
-              yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
-            />
-            <div className="">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+            <div className="w-full min-h-[300px] h-full">
+              <ContributorLineGraph
+                data={analytics.metrics.contributors.lineGraph.data}
+                title={analytics.metrics.contributors.lineGraph.title}
+                xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
+                yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
+              />
+            </div>
+            <div className="w-full min-h-[300px] h-full">
               <LeaderboardGraph
                 data={analytics.metrics.contributors.leaderboard.data}
                 title={analytics.metrics.contributors.leaderboard.title}
-                xAxisLabel={analytics.metrics.contributors.leaderboard.xAxisLabel}
+                xAxisLabel={
+                  analytics.metrics.contributors.leaderboard.xAxisLabel
+                }
               />
             </div>
-            <HeatmapGraph
-              data={analytics.metrics.contributors.heatMap.data}
-              title={analytics.metrics.contributors.heatMap.title}
-            />
-            
+            <div className="w-full min-h-[300px] h-full">
+              <ContributionPieChart
+                data={analytics.metrics.contributors.pieChart.data}
+                title={analytics.metrics.contributors.pieChart.title}
+              />
+            </div>
+            <div className="w-full col-span-1 md:col-span-3">
+              <HeatmapGraph
+                data={analytics.metrics.contributors.heatMap.data}
+                title={analytics.metrics.contributors.heatMap.title}
+              />
+            </div>
           </div>
         </div>
       </div>
