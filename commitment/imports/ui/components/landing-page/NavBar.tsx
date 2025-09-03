@@ -6,27 +6,25 @@ import {
   NavigationMenuList,
 } from "../ui/navigation-menu";
 import { navigationMenuTriggerStyle } from "../ui/navigation-menu";
-import SignUpButton from "./SignUpButton";
+import SignUpButton from "./signUpButton";
 import ProfileMenu from "../ui/profile-menu";
 import {  Moon, Sun } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
 import { useTheme } from "@ui/hooks/useTheme";
-interface NavBarProps {
-  isLoggedIn: boolean;
-}
+import { useAuth } from "../../hooks/useAuth";
 
-export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
+
+export const NavBar: React.FC = () => {
   const { isDark, toggle } = useTheme();
 
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
 
+  const isLoggedIn = useAuth()
+
 
   const handleSignOut = () => {
-    // TODO: implement signing out logic here later
-    console.log("Sign out clicked");
-
     Accounts.logout(() => {
       console.log("Signed out.")
     });
@@ -34,8 +32,6 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
 
   const handleToggleDarkMode = () => {
     toggle();
-    // note to self: implement dark mode logic here later
-    console.log("Dark mode toggled:", !isDark);
   };
 
   return (
@@ -115,7 +111,7 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
 
         {!isLoggedIn && (
           <div>
-            <a href="/login" className={navigationMenuTriggerStyle()}>
+            <a href="/login" className={navigationMenuTriggerStyle()+ "mr-10"}>
               Log in
             </a>
             <SignUpButton />

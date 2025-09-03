@@ -1,17 +1,14 @@
 import React from "react";
 import NavBar from "@ui/components/landing-page/NavBar";
-import {Button} from "@ui/components/ui/button";
-
+import { Button } from "@ui/components/ui/button";
 
 export default function NotAuthorizedView() {
-
   return (
     <div className="w-screen h-screen bg-secondary flex flex-col">
-      <NavBar isLoggedIn />
+      <NavBar />
 
       <div className="flex-grow flex flex-row w-full h-full justify-center p-3">
         <div className="flex flex-col gap-3 justify-center">
-
           <div className="text-2xl pb-3">Something went wrong...</div>
           <div className="">You need to log in to access this page.</div>
 
@@ -23,7 +20,6 @@ export default function NotAuthorizedView() {
               <a href="/Sign up">Sign up</a>
             </Button>
           </div>
-
         </div>
       </div>
     </div>

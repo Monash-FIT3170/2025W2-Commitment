@@ -84,7 +84,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
   return (
     <div className={containerClasses}>
       <div className="fixed top-0 w-full z-10">
-        <NavBar isLoggedIn={!!Meteor.userId && !!Meteor.userId()} />
+        <NavBar  />
       </div>
       <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
         {/* Live notifier message */}

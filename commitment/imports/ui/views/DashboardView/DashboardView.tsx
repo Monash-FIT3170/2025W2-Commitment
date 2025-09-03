@@ -149,7 +149,8 @@ const DashboardView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F0F0E8]">
-      <NavBar isLoggedIn />
+      <NavBar  />
+      
       <h1 className="pt-12 pl-[12%] text-4xl font-bold">
         {userName}
         &apos;s Dashboard

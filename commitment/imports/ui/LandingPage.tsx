@@ -15,7 +15,7 @@ export default function LandingPage() {
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
         {/* Put components here */}
-        <NavBar isLoggedIn={!!user} />
+        <NavBar  />
         <MainPage />
         <div id="about" className="scroll-mt-24">
           <AboutUs />
