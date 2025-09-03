@@ -34,12 +34,12 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
     >
       {/* Title & Menu Icon */}
       <CardHeader className="pb-0">
-        <CardTitle className="flex justify-between items-start md:text-4xl xl:text-4xl text-3xl mt-0 font-normal ">
+        <CardTitle className="flex justify-between items-start md:text-3xl lg:text-3xl xl:text-3xl text-2xl mt-0 font-normal ">
           {title}
         </CardTitle>
       </CardHeader>
       {/* Value */}
-      <CardContent className="font-bold md:text-5xl xl:text-5xl text-4xl ">
+      <CardContent className="font-bold md:text-4xl xl:text-4xl text-3xl ">
         {value.toLocaleString()}
       </CardContent>
       {/* Footer: Change + Graph */}
