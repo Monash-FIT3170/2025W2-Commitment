@@ -10,6 +10,7 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import HeatmapGraph from "./HeatMapGraph";
+import { subWeeks } from "date-fns";
 
 import { AnalyticsData, MetricType, metricNames } from "/imports/api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
@@ -25,7 +26,12 @@ export function AnalyticsView(): React.JSX.Element {
 
   // setting up filters
   const [analytics, setAnalyticsData] = useState<AnalyticsData | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  // set default date range to last 12 weeks
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const to = new Date();
+    const from = subWeeks(to, 12);
+    return { from, to };
+  });
   const [selectedBranch, setSelectedBranch] = useState<string | undefined>(
     undefined
   );
@@ -159,7 +165,7 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
           </div>
           {/* Highlight Cards */}
-          <div className="flex flex-wrap gap-6 min-w-0 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <HighlightCardWithGraph
               title="Total Commits"
               value={analytics.metrics.highlights.totalCommits.total}
