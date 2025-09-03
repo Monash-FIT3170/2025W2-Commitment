@@ -108,7 +108,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                         {(!row.original.aliases ||
                           row.original.aliases.length === 0) && (
                           <div className="flex items-center -translate-y-2 pl-0.5">
-                            <InfoButton description="This contributor has not contributed to the Main/Master branch!" />
+                            <InfoButton description="This user has not contributed to the default branch!" />
                           </div>
                         )}
                       </div>
