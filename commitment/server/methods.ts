@@ -17,6 +17,8 @@ import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisati
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 import { useLocation } from "react-router-dom";
+import { serialize } from "v8";
+import { createDropdownMenuScope } from "@radix-ui/react-dropdown-menu";
 
 Meteor.methods({
   /**
@@ -159,7 +161,42 @@ Meteor.methods({
    * @returns 
    */
   async "repo.getAllMetrics"({repoUrl}: {repoUrl: string}): Promise<AllMetricsData> {
-    return await getAllMetrics(repoUrl);
+    const repo: SerializableRepoData = await Meteor.callAsync(
+      "repoCollection.getData",
+      repoUrl
+    );
+    console.log("repo data: ", repo); 
+
+    console.log("commithash for main in repoData: ", repo.branches.find(b => b.branchName === "main")?.commitHashes);
+    const metadata: Metadata = await Meteor.callAsync(
+      "repo.getMetadata",
+      repoUrl
+    );
+    console.log("meta data: ", metadata)
+    // set the branch to filteredBranch to "main " or "master"
+
+    const filteredBranch = metadata.branches.includes("main")
+      ? "main"
+      : metadata.branches.includes("master")
+      ? "master"
+      : metadata.branches[0];
+
+    console.log("Filtered branches: ", filteredBranch);
+    // get all the filteredRepo Data - all the data from Main or Master Branch
+    const filteredRepo: FilteredData = await Meteor.callAsync(
+      "repo.getFilteredData",
+      {
+        repoUrl,
+        startDate: metadata.dateRange.from,
+        endDate: metadata.dateRange.to,
+        branch: filteredBranch,
+        contributor: metadata.contributors,
+      }
+    );
+
+    const serializedFilteredData = filteredRepo.repositoryData; 
+    console.log("filtered data: ", serializedFilteredData); 
+    return await getAllMetrics(serializedFilteredData);
   },
 
 async "getScalingResults"(data:ScalingConfig,repoUrl:string) {
