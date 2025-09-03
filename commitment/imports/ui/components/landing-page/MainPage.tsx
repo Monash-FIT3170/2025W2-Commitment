@@ -23,7 +23,7 @@ function Description() {
 
 function MainPage() {
   return (
-    <div className="flex flex-col gap-6 mb-32 ">
+    <div className="flex flex-col gap-6 mb-32 mt-20 ">
       <div className="flex justify-center items-center mb-4">
         <Logo />
       </div>

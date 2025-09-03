@@ -12,8 +12,6 @@ import { Button } from "@ui/components/ui/button";
 import { Bookmark } from "/imports/api/bookmarks";
 import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
-import { DateRange } from "react-day-picker";
-import NavBar from "../../components/landing-page/NavBar";
 import ViewToggle from "../../components/dashboard/ViewToggle";
 import RepoRow from "../../components/dashboard/RepoRow";
 import { FiltersState, FilterValue } from "../../components/ui/filter";
@@ -148,8 +146,7 @@ const DashboardView: React.FC = () => {
   }, [bookmarks, filters, sortKey, sortDir]);
 
   return (
-    <div className="min-h-screen bg-[#F0F0E8]">
-      <NavBar  />
+    <>
       
       <h1 className="pt-12 pl-[12%] text-4xl font-bold">
         {userName}
@@ -254,7 +251,7 @@ const DashboardView: React.FC = () => {
           </ul>
         )}
       </div>
-    </div>
+    </>
   );
 };
 

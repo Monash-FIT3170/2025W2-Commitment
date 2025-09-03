@@ -1,5 +1,4 @@
 import React from "react";
-import NavBar from "@ui/components/landing-page/NavBar";
 import { Logo } from "@ui/components/landing-page/MainPage";
 import LastSavedRepos from "@ui/components/insert-git-repo/LastSavedRepos";
 import GitRepoInputSection from "@ui/components/insert-git-repo/GitRepoInputSection";
@@ -11,8 +10,7 @@ const InsertGitRepoView: React.FC = () => {
   const isLoggedIn = !!user;
 
   return (
-    <div>
-      <NavBar />
+    <>
 
       {isLoggedIn ? (
         <div className="flex flex-col items-center pt-20">
@@ -38,7 +36,7 @@ const InsertGitRepoView: React.FC = () => {
           </p>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
