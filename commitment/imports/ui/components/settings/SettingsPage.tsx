@@ -4,11 +4,13 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@ui/components/ui/tabs';
 import { Button } from '@ui/components/ui/button';
-import { Upload, Info, FileText, X, CheckCircle, AlertCircle, Download } from 'lucide-react';
+import { Upload, Info, FileText, X, CheckCircle, AlertCircle, Download, Play } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const SettingsPage: React.FC = () => {
   const user = useTracker(() => Meteor.user());
   const isLoggedIn = !!user;
+  const navigate = useNavigate();
   
   const [activeTab, setActiveTab] = useState('profile');
   
@@ -317,7 +319,7 @@ export const SettingsPage: React.FC = () => {
           Settings
         </h1>
         <p className="text-git-text-secondary text-lg mb-8">
-          This is the settings page. Content coming soon!
+          This is the settings page.
         </p>
 
         {/* This is the tab system using same styling as MetricsTab */}
@@ -384,7 +386,7 @@ export const SettingsPage: React.FC = () => {
                   <Info className="h-5 w-5 text-git-text-secondary" />
                 </div>
                 <p className="text-git-text-secondary">
-                  You can have one universal config file that applies to all repositories you analyze.
+                  You can have one universal config file that applies to all repositories you analyse.
                 </p>
               </div>
 
@@ -492,7 +494,7 @@ export const SettingsPage: React.FC = () => {
                 {currentConfigs.length > 0 && (
                   <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-sm text-yellow-800">
-                      <strong>Note:</strong> Replacing your config will immediately apply the new mappings to all repositories you analyze.
+                      <strong>Note:</strong> Replacing your config will immediately apply the new mappings to all repositories you analyse.
                     </p>
                   </div>
                 )}
@@ -659,6 +661,22 @@ export const SettingsPage: React.FC = () => {
                 >
                   {currentConfigs.length > 0 ? 'Replace Configuration' : 'Apply Configuration'}
                 </Button>
+              </div>
+
+              {/* Get Started Button */}
+              <div className="mt-4 text-center">
+                <Button 
+                  variant="outline"
+                  size="lg"
+                  className="border-git-stroke-primary text-git-text-primary hover:bg-git-bg-elevated px-8"
+                  onClick={() => navigate('/home')}
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  Get Started - Analyse Repository
+                </Button>
+                <p className="text-sm text-git-text-secondary mt-2">
+                  Ready to analyse a repository with your configuration?
+                </p>
               </div>
             </div>
           </TabsContent>
