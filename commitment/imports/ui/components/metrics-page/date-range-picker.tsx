@@ -171,12 +171,13 @@ export function DatePicker({ onChange, defaultValue }: Props) {
             toYear={new Date().getFullYear()}
             classNames={{
               day_today: "text-black font-normal",
-              day_selected: "bg-[#F1502F] text-white hover:bg-[#F1502F]",
-              day_range_middle: "bg-[#F1502F]/50 text-black",
+              day_selected:
+                "bg-git-int-primary text-white hover:bg-git-int-primary",
+              day_range_middle: "bg-git-int-primary/50 text-black",
               day_range_start:
-                "rounded-l-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
+                "rounded-l-md bg-git-int-primary text-white hover:bg-git-int-primary",
               day_range_end:
-                "rounded-r-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
+                "rounded-r-md bg-git-int-primary text-white hover:bg-git-int-primary",
               caption_dropdowns: "flex gap-2",
               caption_label: "text-sm font-medium",
               dropdown: "px-2 py-1 border rounded-md text-sm",
