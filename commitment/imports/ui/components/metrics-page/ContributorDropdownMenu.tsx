@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { Button } from '@ui/components/ui/button';
+import * as React from "react";
+import { Button } from "@ui/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -7,38 +7,34 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@ui/components/ui/dropdown-menu';
+} from "@ui/components/ui/dropdown-menu";
 
-import { ScrollArea } from '@ui/components/ui/scroll-area';
+import { ScrollArea } from "@ui/components/ui/scroll-area";
 
 interface DropdownMenuCheckboxesProps {
   contributors: string[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
 }
 
 export function ContributorDropdownMenu({
   contributors,
-}: DropdownMenuCheckboxesProps) {
-  const [selectedContributors, setContributors] = React.useState<string[]>(contributors);
-
-  const allSelected = selectedContributors.length === contributors.length
-    && contributors.length > 0;
+  selected,
+  onChange,
+}: DropdownMenuCheckboxesProps): React.JSX.Element {
+  const allSelected =
+    selected.length === contributors.length && contributors.length > 0;
 
   const maxDisplayCount = 5;
 
   const buttonText = () => {
-    if (allSelected) {
-      return 'All Contributors';
-    }
-    if (selectedContributors.length === 0) {
-      return 'Select Contributors';
-    }
-    if (selectedContributors.length > maxDisplayCount) {
-      const displayed = selectedContributors
-        .slice(0, maxDisplayCount)
-        .join(', ');
+    if (allSelected) return "All Contributors";
+    if (selected.length === 0) return "Select Contributors";
+    if (selected.length > maxDisplayCount) {
+      const displayed = selected.slice(0, maxDisplayCount).join(", ");
       return `${displayed}, ...`;
     }
-    return selectedContributors.join(', ');
+    return selected.join(", ");
   };
 
   return (
@@ -59,12 +55,12 @@ export function ContributorDropdownMenu({
             <DropdownMenuCheckboxItem
               onSelect={(event) => event.preventDefault()}
               key={contributor}
-              checked={selectedContributors.includes(contributor)}
+              checked={selected.includes(contributor)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setContributors((prev) => [...prev, contributor]);
+                  onChange([...selected, contributor]);
                 } else {
-                  setContributors((prev) => prev.filter((c) => c !== contributor));
+                  onChange(selected.filter((c) => c !== contributor));
                 }
               }}
             >

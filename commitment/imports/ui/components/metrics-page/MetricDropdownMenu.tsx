@@ -8,13 +8,13 @@ import {
 } from "@ui/components/ui/dropdown-menu";
 
 interface DropdownMenuCheckboxesProps {
-  branches: string[];
+  metrics: string[];
   selected: string | undefined;
   onChange: (selected: string) => void;
 }
 
-export default function BranchDropdownMenu({
-  branches,
+export default function MetricDropdownMenu({
+  metrics,
   selected,
   onChange,
 }: DropdownMenuCheckboxesProps): React.JSX.Element {
@@ -26,7 +26,7 @@ export default function BranchDropdownMenu({
           className="w-[280px] justify-start focus:outline-hidden focus:ring-0 border-2 "
           style={{ borderColor: "#35353140" }}
         >
-          {selected ?? "Select a branch"}
+          {selected ?? "Select a metric"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -35,13 +35,13 @@ export default function BranchDropdownMenu({
       >
         {/* <DropdownMenuLabel>Select Branch</DropdownMenuLabel> */}
         {/* <DropdownMenuSeparator /> */}
-        {branches.map((branch) => (
+        {metrics.map((metric) => (
           <DropdownMenuCheckboxItem
-            key={branch}
-            checked={selected === branch}
-            onCheckedChange={() => onChange(branch)}
+            key={metric}
+            checked={selected === metric}
+            onCheckedChange={() => onChange(metric)}
           >
-            {branch}
+            {metric}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

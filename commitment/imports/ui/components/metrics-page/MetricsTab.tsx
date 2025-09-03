@@ -15,10 +15,6 @@ interface TabData {
 }
 
 const allTabData: TabData[] = [
-  // {
-  //   value: "overview",
-  //   label: "Overview",
-  // },
   {
     value: 'metrics',
     label: 'Metrics',
@@ -61,15 +57,15 @@ export default function MetricsTabs() {
         ))}
       </TabsList>
 
-      <TabsContent value="overview">
-        {/* OVERVIEW */}
-        <OverviewPage />
-      </TabsContent>
-      <TabsContent value="metrics">
+      
+      
+      <TabsContent value="metrics" className=''>
         {/* METRICS */}
-        <AnalyticsView />
+        <div className=''>
+          <AnalyticsView />
+        </div>
       </TabsContent>
-      <TabsContent value="scaling">
+      <TabsContent value="scaling" className='mx-20 my-10 rounded-2xl bg-white outline-2 outline-git-bg-secondary p-8'>
         {/* SCALING */}
         <ScalingView />
       </TabsContent>
