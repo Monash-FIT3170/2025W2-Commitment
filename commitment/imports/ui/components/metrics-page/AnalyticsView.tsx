@@ -176,6 +176,10 @@ export function AnalyticsView(): React.JSX.Element {
               data={analytics.metrics.highlights.totalCommits.data}
             />
             <HighlightCardWithGraph
+              title="Number of Branches"
+              value={analytics.metrics.highlights.numBranches}
+            />
+            <HighlightCardWithGraph
               title="Total Lines of Code"
               value={analytics.metrics.highlights.totalLinesOfCode.total}
               percentageChange={
@@ -187,18 +191,14 @@ export function AnalyticsView(): React.JSX.Element {
               data={analytics.metrics.highlights.totalLinesOfCode.data}
             />
             <HighlightCardWithGraph
-              title="No. of Contributors"
+              title="Number of Contributors"
               value={analytics.metrics.highlights.numContributors}
             />
-            <HighlightCardWithGraph
-              title="Number of branches"
-              value={analytics.metrics.highlights.numBranches}
-            />
           </div>
-          
+
           {/* Graphs */}
           <div className="grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 gap-6 w-full">
-            <div className="w-full min-h-[300px] h-full xl:max-3xl:col-span-2" >
+            <div className="w-full min-h-[300px] h-full xl:max-3xl:col-span-2">
               <LeaderboardGraph
                 data={analytics.metrics.contributors.leaderboard.data}
                 title={analytics.metrics.contributors.leaderboard.title}
