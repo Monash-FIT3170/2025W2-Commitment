@@ -17,10 +17,16 @@ import "react-day-picker/dist/style.css";
 
 type Props = {
   onChange?: (range: DateRange | undefined) => void;
+  defaultValue?: DateRange;
 };
 
-export function DatePicker({ onChange }: Props) {
-  const [date, setDate] = React.useState<DateRange | undefined>();
+export function DatePicker({ onChange, defaultValue }: Props) {
+  const [date, setDate] = React.useState<DateRange | undefined>(
+    defaultValue ?? {
+      from: addDays(new Date(), -20),
+      to: new Date(),
+    }
+  );
 
   // constant to set 'from' date
   const [fromInput, setFromInput] = React.useState<string>(

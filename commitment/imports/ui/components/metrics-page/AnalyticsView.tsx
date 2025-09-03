@@ -32,6 +32,7 @@ export function AnalyticsView(): React.JSX.Element {
     const from = subWeeks(to, 12);
     return { from, to };
   });
+
   const [selectedBranch, setSelectedBranch] = useState<string | undefined>(
     undefined
   );
