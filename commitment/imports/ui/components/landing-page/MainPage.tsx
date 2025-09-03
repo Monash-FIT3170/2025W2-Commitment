@@ -5,7 +5,7 @@ export function Logo() {
   return (
     <div className="flex flex-row items-center">
       <img src="/logo.png" alt="Logo" className="-mr-7 w-[120px] h-auto" />
-      <p className="font-mono text-8xl text-black ">Commitment</p>
+      <p className="font-mono text-8xl ">Commitment</p>
     </div>
   );
 }
