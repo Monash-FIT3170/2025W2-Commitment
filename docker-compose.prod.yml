@@ -6,7 +6,9 @@ services:
       - "3000:3000"
     environment:
       - MONGO_URL=mongodb://mongo:27017/commitmentdb
-      - ROOT_URL=http://ec2-3-27-5-58.ap-southeast-2.compute.amazonaws.com:3000
+      - ROOT_URL=http://3.27.5.58:3000
+      - PORT=3000
+      - BIND_IP=0.0.0.0
     depends_on:
       - mongo
     tty: true
