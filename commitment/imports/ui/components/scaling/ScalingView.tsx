@@ -14,6 +14,7 @@ import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
 import type { UserScalingSummary } from "../../../api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
+import { toast } from "../../hooks/use-toast";
 
 interface ScalingConfig {
   metrics: string[];
@@ -24,7 +25,6 @@ interface ScalingConfig {
 function ScalingView(): JSX.Element {
   const [completed, setCompleted] = useState(false);
 
-  // Step of scaling config wizard
   const [hasLoaded, setHasLoaded] = useState(false);
   const [step, setStep] = useState<"config" | "sheet" | "done">("config");
   const [showDialog, setShowDialog] = useState(false);
@@ -33,27 +33,90 @@ function ScalingView(): JSX.Element {
   const [gradingSheetParseResult, setGradingSheetParseResult] = useState<ParseResult | null>(null);
   const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
 
-  // Load from localStorage on first mount
+  // Simple initialization with localStorage persistence for core state
   useEffect(() => {
-    const lsCompleted = localStorage.getItem("hasVisitedScaling") === "true";
-    setCompleted(lsCompleted);
-    if (!lsCompleted) setShowDialog(true);
+    const hasVisited = localStorage.getItem('hasVisitedScaling') === 'true';
+    setCompleted(hasVisited);
+    if (!hasVisited) setShowDialog(true);    
+    
+    // Restore key state from localStorage
+    try {
+      const savedConfig = localStorage.getItem('scaling_config');
+      const savedResults = localStorage.getItem('scaling_results');
+      const savedGradingSheetName = localStorage.getItem('scaling_grading_sheet_name');
+      const savedParseResult = localStorage.getItem('scaling_parse_result');
+      const savedStep = localStorage.getItem('scaling_step');
+      
+      if (savedConfig) {
+        const parsedConfig = JSON.parse(savedConfig) as ScalingConfig;
+        setConfig(parsedConfig);
+      }
+      if (savedResults) {
+        const parsedResults = JSON.parse(savedResults) as UserScalingSummary[];
+        setScaledResults(parsedResults);
+      }      
+      if (savedGradingSheetName) {
+        // Create a placeholder file for display purposes
+        const placeholderFile = new File([''], savedGradingSheetName, { type: 'text/csv' });
+        setGradingSheet(placeholderFile);
+      }      
+      if (savedParseResult) {
+        const parsedParseResult = JSON.parse(savedParseResult) as ParseResult;
+        setGradingSheetParseResult(parsedParseResult);
+      }      
+      if (savedStep && (savedStep === 'config' || savedStep === 'sheet' || savedStep === 'done')) {
+        setStep(savedStep);
+      }
+    } catch {
+      // Ignore errors in restoring state
+    }
+    
     setHasLoaded(true);
   }, []);
 
-  // Persist to localStorage
+  // Save all state changes to localStorage (combined auto-save)
   useEffect(() => {
-    if (hasLoaded) {
-      localStorage.setItem("hasVisitedScaling", completed ? "true" : "false");
+    if (!hasLoaded) return;
+    
+    try {
+      // Save scaling data
+      if (config) {
+        localStorage.setItem('scaling_config', JSON.stringify(config));
+      }
+      if (scaledResults.length > 0) {
+        localStorage.setItem('scaling_results', JSON.stringify(scaledResults));
+      }
+      if (gradingSheet) {
+        localStorage.setItem('scaling_grading_sheet_name', gradingSheet.name);
+      }
+      if (gradingSheetParseResult) {
+        localStorage.setItem('scaling_parse_result', JSON.stringify(gradingSheetParseResult));
+      }
+      localStorage.setItem('scaling_step', step);
+      if (completed) {
+        localStorage.setItem('hasVisitedScaling', 'true');
+      }
+    } catch {
+      // Ignore localStorage errors
     }
-  }, [completed, hasLoaded]);
+  }, [config, scaledResults, gradingSheet, gradingSheetParseResult, step, completed, hasLoaded]);
 
   const handleConfigSubmit = (
     configData: ScalingConfig,
     results: UserScalingSummary[]
   ) => {
     setConfig(configData);
-    setScaledResults(results);
+    if (gradingSheetParseResult) {
+      const parsedData = gradingSheetParseResult.data;
+      if (parsedData && parsedData.length > 0) {
+        const updatedResults = calculateFinalGrades(results, parsedData);
+        setScaledResults(updatedResults);
+      } else {
+        setScaledResults(results);
+      }
+    } else {
+      setScaledResults(results);
+    }    
     setStep("sheet");
   };
 
@@ -111,8 +174,12 @@ function ScalingView(): JSX.Element {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error generating scaled grading sheet:', error);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to download scaled grading sheet.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -135,8 +202,6 @@ function ScalingView(): JSX.Element {
             <Button
               className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
               onClick={() => {
-                setGradingSheet(null); // Reset grading sheet when creating new scaling
-                setGradingSheetParseResult(null); // Reset parse result
                 setStep("config");
                 setShowDialog(true);
               }}
@@ -160,7 +225,7 @@ function ScalingView(): JSX.Element {
               <Button
                 className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
                 onClick={() => {
-                  handleDownloadScaledSheet().catch(console.error);
+                  void handleDownloadScaledSheet();
                 }}
               >
                 <Download className="h-4 w-4"/>
