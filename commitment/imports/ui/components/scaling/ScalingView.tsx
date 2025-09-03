@@ -58,8 +58,8 @@ function ScalingView() {
   ) => {
     setConfig(configData);
     setScaledResults(results);
-    console.log("Config submitted:", configData);
-    console.log("Scaled results:", results);
+    // console.log("Config submitted:", configData);
+    // console.log("Scaled results:", results);
     setStep("sheet");
   };
 
@@ -69,7 +69,7 @@ function ScalingView() {
   ) => {
     setGradingSheet(sheetFile);
     setParsedGradingData(parsedData || null);
-    console.log("Grading sheet submitted:", parsedData);
+    // console.log("Grading sheet submitted:", parsedData);
 
     setCompleted(true);
     setShowDialog(false);

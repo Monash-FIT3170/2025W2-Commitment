@@ -177,12 +177,12 @@ export async function getAllMetrics(repoUrl: string): Promise<AllMetricsData> {
 
   contributors.forEach((contributor) => {
     allMetricData[contributor] = {
-      "Total lines of commit": getTotalCommitsPerContributor(
+      "Total No. Commits": getTotalCommitsPerContributor(
         unfilteredData,
         contributor
       ),
       "LOC": getLOCperContributor(unfilteredData, contributor),
-      "LOC/Commit": getLocPerCommitPerContributor(unfilteredData, contributor),
+      "LOC Per Commit": getLocPerCommitPerContributor(unfilteredData, contributor),
       "Commits Per Day": getCommitPerDayPerContributor(
         unfilteredData,
         contributor
@@ -414,7 +414,7 @@ export async function numBranches(): Promise<number> {
 }
 
 export function getMetricString(): string[] {
-  return ["Total No. Commits", "LOC", "LOC/Commit", "Commits Per Day"];
+  return ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
 }
 
 /**
@@ -470,7 +470,7 @@ export function getLocPerCommitPerContributor(
     totalLOC += locThisCommit;
   });
 
-  return totalLOC / commits.length; // average LOC per commit
+  return totalLOC / commits.length; // average LOC Per Commit
 }
 
 export function getCommitPerDayPerContributor(

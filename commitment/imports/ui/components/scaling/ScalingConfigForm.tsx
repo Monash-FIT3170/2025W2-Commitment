@@ -70,7 +70,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
       // Update state for later renders
       setScaledResults(result);
 
-      console.log("radssadesult", result);
+      //   console.log("radssadesult", result);
 
       // Pass the actual result, not the outdated state
       onSubmit(data, result);
@@ -81,10 +81,10 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
   const metricOptions = [
     "Total No. Commits",
-    "Use AI to filter out commits",
+    // "Use AI to filter out commits",
     "LOC",
-    "LOC per commit",
-    "Commits per day",
+    "LOC Per Commit",
+    "Commits Per Day",
   ];
   const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
 
