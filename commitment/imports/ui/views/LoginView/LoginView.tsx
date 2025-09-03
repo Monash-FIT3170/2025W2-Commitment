@@ -9,7 +9,7 @@ const LoginView = (props: LoginViewProps) => {
   const defaultTab = props.defaultTab ?? "login";
 
   return (
-    <div className="h-screen flex flex-col justify-center content-center bg-secondary">
+    <div className="h-screen flex flex-col justify-center content-center bg-git-bg-bottom">
       <LoginWidget defaultTab={defaultTab}></LoginWidget>
     </div>
   )

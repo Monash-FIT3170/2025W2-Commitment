@@ -34,9 +34,9 @@ const pages: Page[] = [
 const LoginWidget: FC<LoginWidgetProps> = (props) => {
   const CreateCardElement = useCallback((page: Page) => (
     <TabsContent value={page.name}>
-      <Card className="max-w-md w-96 grow">
+      <Card className="max-w-md w-96 grow bg-muted stroke-0">
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="text-foreground">
             {page.title}
           </CardTitle>
         </CardHeader>
