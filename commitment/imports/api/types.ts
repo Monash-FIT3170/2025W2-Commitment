@@ -8,26 +8,6 @@ export type RepositoryData = Readonly<{
   contributors: Map<string, ContributorData>;
 }>;
 
-export type SerialisableMapObject<K, V> = {
-  key: K;
-  value: V;
-};
-
-export type SerializableRepoData = Readonly<{
-  name: string;
-  branches: BranchData[];
-  allCommits: SerialisableMapObject<string, CommitData>[]; // Map converted to a list of objects
-  contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
-}>;
-export interface FilteredData {
-  repoUrl: string;
-  dateRange: {
-    start: Date;
-    end: Date;
-  };
-  repositoryData: SerializableRepoData;
-}
-
 export type BranchData = Readonly<{
   branchName: string;
   commitHashes: string[];
@@ -55,10 +35,30 @@ export type FileChanges = Readonly<{
   likeness: number    
   newLines: number    
   deletedLines: number
-  diff: [string]        
+  diff: string[]        
 }>;
 
 export type ChangeType = "A" | "M" | "D" | "R" | "C";
+
+export type SerialisableMapObject<K, V> = {
+  key: K;
+  value: V;
+};
+
+export type SerializableRepoData = Readonly<{
+  name: string;
+  branches: BranchData[];
+  allCommits: SerialisableMapObject<string, CommitData>[]; // Map converted to a list of objects
+  contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
+}>;
+export interface FilteredData {
+  repoUrl: string;
+  dateRange: {
+    start: Date;
+    end: Date;
+  };
+  repositoryData: SerializableRepoData;
+}
 
 export type AliasEmail = {
   username: string;
