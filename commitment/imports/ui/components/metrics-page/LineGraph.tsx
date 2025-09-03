@@ -121,10 +121,10 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
       </CardHeader>
       {/* Graph */}
       {/* <CardContent style={{ height: 300, display: "block" }}>            */}
-      <CardContent className="min-w-0 pt-2">
+      <CardContent className="grow min-w-0 pt-2">
         <ChartContainer
           config={chartConfig}
-          className="w-full min-w-0" // you can also set height/aspect here if you want
+          className="w-full h-full max-h-[380px] min-w-0" // you can also set height/aspect here if you want
         >
           <LineChart
             data={data}
