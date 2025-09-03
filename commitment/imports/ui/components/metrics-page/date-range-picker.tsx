@@ -13,7 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@ui/components/ui/popover";
-import "react-day-picker/dist/style.css";
+// import "react-day-picker/dist/style.css";
 
 type Props = {
   onChange?: (range: DateRange | undefined) => void;
@@ -69,9 +69,12 @@ export function DatePicker({ onChange, defaultValue }: Props) {
 
   // Update inputs
   const handleCalendarSelect = (range: DateRange | undefined) => {
-    if (range?.from && range?.to && !is12Weeks(range.from, range.to)) {
-      return;
+    if (range?.from && range?.to) {
+      if (!is12Weeks(range.from, range.to)) {
+        return;
+      }
     }
+
     setDate(range);
     setFromInput(range?.from ? format(range.from, "yyyy-MM-dd") : "");
     setToInput(range?.to ? format(range.to, "yyyy-MM-dd") : "");
@@ -156,12 +159,10 @@ export function DatePicker({ onChange, defaultValue }: Props) {
             numberOfMonths={2}
             disabled={(day) => {
               const today = new Date();
+
               if (day > today) return true;
 
-              if (date?.from) {
-                const maxTo = addDays(date.from, 84);
-                return day > maxTo;
-              }
+              if (date?.from && date?.to) return false;
 
               return false;
             }}
@@ -169,8 +170,9 @@ export function DatePicker({ onChange, defaultValue }: Props) {
             fromYear={2015}
             toYear={new Date().getFullYear()}
             classNames={{
+              day_today: "text-black font-normal",
               day_selected: "bg-[#F1502F] text-white hover:bg-[#F1502F]",
-              day_range_middle: "bg-[#F1502F]/30 text-black",
+              day_range_middle: "bg-[#F1502F]/50 text-black",
               day_range_start:
                 "rounded-l-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
               day_range_end:
