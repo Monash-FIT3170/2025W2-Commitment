@@ -1,19 +1,11 @@
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 import {
-  RepositoryData,
   UserScalingSummary,
   AllMetricsData,
-  SerialisableMapObject,
-  ContributorData,
   SerializableRepoData,
 } from "/imports/api/types";
-import { getContributors } from "./repo_metrics";
-import {
-  deserializeRepoData,
-  serializeRepoData,
-} from "/imports/api/serialisation";
 
-// Default metrics if none selected
+// All the Metrics being considered
 const DEFAULT_METRICS = [
   "Total No. Commits",
   "LOC",
@@ -21,7 +13,16 @@ const DEFAULT_METRICS = [
   "Commits Per Day",
 ];
 
-// Normalize metric values to [alpha, 1-alpha] range
+// Scaling Functions
+
+
+
+/**
+ * 
+ * @param values 
+ * @param alpha 
+ * @returns 
+ */
 function normalizeMetric(values: Array<number | null>, alpha = 0.2): number[] {
   const present = values.filter(
     (v): v is number => v !== null && Number.isFinite(v)
