@@ -16,7 +16,6 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
-import { scaleUsers } from "./ScalingFunctions";
 import {
   RepositoryData,
   FilteredData,
@@ -24,6 +23,7 @@ import {
   SerialisableMapObject,
 } from "/imports/api/types";
 import { useLocation } from "react-router-dom";
+import { config } from "process";
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
@@ -40,28 +40,11 @@ interface ScalingConfigFormProps {
   ) => void;
 }
 
-function deserializeRepo(serialized: SerialisableMapObject<string, any>[]): Map<string, any> {
-  return new Map(serialized.map((c) => {
-    const commit = { ...c.value };
-    if (commit.timestamp && typeof commit.timestamp === 'string') {
-      commit.timestamp = new Date(commit.timestamp);
-    }
-    return [c.key, commit];
-  }));
-}
-
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
-  const repoUrl: string | null = location.state?.repoUrl ?? null;
+  const repoUrl: string = location.state?.repoUrl ?? null;
 
   const [script, setScript] = useState<File[] | undefined>();
-  const [metricsData, setMetricsData] = useState<RepositoryData | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<string | undefined>();
-  const [selectedContributors, setSelectedContributors] = useState<string[]>(
-    []
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
@@ -72,89 +55,24 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   });
 
   const handleDrop = (files: File[]) => setScript(files);
+  const handleSubmit = async (data: ScalingConfig) => {
+    try {
+      const result = await Meteor.callAsync("getScalingResults", data, repoUrl);
 
-  const fetchAnalyticsData = useCallback(() => {
-    if (!repoUrl) return;
-
-    setLoading(true);
-    setError(null);
-
-    // Call the new Meteor method
-    Meteor.call(
-      "repo.getFilteredData",
-      {
-        repoUrl,
-        startDate: new Date("2000-01-01"), // fallback
-        endDate: new Date(),
-        branch: selectedBranch ?? "main",
-        contributor: selectedContributors.length
-          ? selectedContributors
-          : undefined,
-      },
-      (err: Error, filtered: FilteredData) => {
-        if (err) {
-          setError(err.message);
-          setLoading(false);
-          return;
-        }
-
-        const repoData: RepositoryData = {
-          name: filtered.repositoryData.name,
-          branches: filtered.repositoryData.branches,
-          allCommits: deserializeRepo(filtered.repositoryData.allCommits),
-          contributors: deserializeRepo(filtered.repositoryData.contributors),
-        };
-
-        setMetricsData(repoData);
-        setLoading(false);
-      }
-    );
-  }, [repoUrl, selectedBranch, selectedContributors]);
-
-  useEffect(() => {
-    fetchAnalyticsData();
-  }, [fetchAnalyticsData]);
-
-  const handleSubmit = (data: ScalingConfig) => {
-    if (!metricsData) {
-      onSubmit(data, []);
-      return;
+      onSubmit(data, result); //this is where all the scaling starts from
+    } catch (err) {
+      console.error("Error:", err);
     }
-
-    const rawResults = scaleUsers(metricsData, data);
-
-    const userScalingSummaries: UserScalingSummary[] = rawResults.map(
-      (r: any) => {
-        const contributorData = metricsData.contributors.get(r.name);
-
-        const aliases = contributorData
-          ? contributorData.emails.map((email) => ({ username: r.name, email }))
-          : [];
-
-        return {
-          name: r.name,
-          aliases,
-          finalGrade: null,
-          scale: r.score ?? 0,
-        };
-      }
-    );
-
-    onSubmit(data, userScalingSummaries);
   };
 
   const metricOptions = [
     "Total No. Commits",
-    "Use AI to filter out commits",
+    // "Use AI to filter out commits",
     "LOC",
-    "LOC per commit",
-    "Commits per day",
+    "LOC Per Commit",
+    "Commits Per Day",
   ];
   const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
-
-  if (loading) return <div>Loading repo data...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!metricsData) return <div>No repo data available</div>;
 
   return (
     <div className="w-full">

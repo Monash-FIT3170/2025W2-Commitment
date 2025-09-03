@@ -310,4 +310,12 @@
     @apply bg-background text-foreground font-mono;
     background-color: var(--git-bg-primary);
   }
+
+  .rdp [aria-hidden="true"] {
+    @apply hidden;
+  }
+
+  .rdp-vhidden {
+    @apply hidden;
+  }
 }

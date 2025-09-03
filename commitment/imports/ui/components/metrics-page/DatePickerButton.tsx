@@ -1,17 +1,17 @@
-import * as React from 'react';
-import { format, subMonths } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import * as React from "react";
+import { format, subMonths } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 
-import { cn } from '@ui/lib/utils';
-import { Button } from '@ui/components/ui/button';
-import { Calendar } from '@ui/components/ui/calendar';
+import { cn } from "@ui/lib/utils";
+import { Button } from "@ui/components/ui/button";
+import { Calendar } from "@ui/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@ui/components/ui/popover';
+} from "@ui/components/ui/popover";
 
-import { DateRange } from 'react-day-picker';
+import { DateRange } from "react-day-picker";
 
 type Props = {
   onChange?: (range: DateRange | undefined) => void;
@@ -29,9 +29,9 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
 
   const formattedRange = date?.from
     ? date.to
-      ? `${format(date.from, 'LLL dd, y')} - ${format(date.to, 'LLL dd, y')}`
-      : format(date.from, 'LLL dd, y')
-    : 'Pick a date range';
+      ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+      : format(date.from, "LLL dd, y")
+    : "Pick a date range";
 
   const today = new Date();
   const previousMonth = subMonths(today, 1);
@@ -42,10 +42,10 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
         <Button
           variant="outline"
           className={cn(
-            'w-[300px] justify-start text-left font-normal border-2 rounded-lg',
-            !date && 'text-muted-foreground',
+            "w-[300px] justify-start text-left font-normal border-2 rounded-lg",
+            !date && "text-muted-foreground"
           )}
-          style={{ borderColor: '#35353140' }}
+          style={{ borderColor: "#35353140" }}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {formattedRange}
@@ -53,23 +53,24 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
       </PopoverTrigger>
       <PopoverContent
         className="w-auto p-0 border-2"
-        style={{ borderColor: '#252522' }}
+        style={{ borderColor: "#252522" }}
         align="start"
       >
         <Calendar
           initialFocus
           mode="range"
+          disabled={(date) => date > new Date()}
           defaultMonth={previousMonth}
           selected={date}
           onSelect={setDate}
           numberOfMonths={2}
           classNames={{
-            day_selected: 'bg-[#F1502F] text-white hover:bg-[#F1502F]',
-            day_range_middle: 'bg-[#F1502F]/30 text-black',
+            day_selected: "bg-[#F1502F] text-white hover:bg-[#F1502F]",
+            day_range_middle: "bg-[#F1502F]/30 text-black",
             day_range_start:
-              'rounded-l-md bg-[#F1502F] text-white hover:bg-[#F1502F]',
+              "rounded-l-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
             day_range_end:
-              'rounded-r-md bg-[#F1502F] text-white hover:bg-[#F1502F]',
+              "rounded-r-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
           }}
         />
       </PopoverContent>

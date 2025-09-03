@@ -120,7 +120,7 @@ export function linegraphLOC(data: FilteredData): LineGraphData[] {
 }
 
 /**
- * Calculates the Commits per day and formats into a line graph strucutre.
+ * Calculates the Commits Per Day and formats into a line graph strucutre.
  * @param data The filtered Data passed.
  * @returns An array of LineGraphData objects representing commits per day.
  */
@@ -234,7 +234,7 @@ export function linegraphLOCPerCommit(data: FilteredData): LineGraphData[] {
       cumulativeCommits[user] += daily.commits[user];
     });
 
-    // entry for this date = avg LOC per commit
+    // entry for this date = avg LOC Per Commit
     const entry: LineGraphData = { date };
     allContributors.forEach((user) => {
       const commits = cumulativeCommits[user];
