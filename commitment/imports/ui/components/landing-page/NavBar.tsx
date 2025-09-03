@@ -8,23 +8,28 @@ import {
 import { navigationMenuTriggerStyle } from "../ui/navigation-menu";
 import SignUpButton from "./SignUpButton";
 import ProfileMenu from "../ui/profile-menu";
-import { Link, Moon, Sun } from "lucide-react";
-import { useLocation } from "react-router-dom";
-import {useTheme} from "@ui/hooks/useTheme";
+import {  Moon, Sun } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Accounts } from "meteor/accounts-base";
+import { useTheme } from "@ui/hooks/useTheme";
 interface NavBarProps {
   isLoggedIn: boolean;
 }
 
 export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
-const {isDark, toggle} = useTheme();
+  const { isDark, toggle } = useTheme();
 
-const location = useLocation();
+  const location = useLocation();
   const isLandingPage = location.pathname === "/";
 
 
   const handleSignOut = () => {
     // TODO: implement signing out logic here later
     console.log("Sign out clicked");
+
+    Accounts.logout(() => {
+      console.log("Signed out.")
+    });
   };
 
   const handleToggleDarkMode = () => {
@@ -36,13 +41,12 @@ const location = useLocation();
   return (
     <div
       className="z-50 flex items-center justify-between py-2 border-b bg-git-bg-elevated  sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32"
-      
+
     >
       <NavigationMenu>
         <NavigationMenuList className="flex space-x-4">
           <div className="flex items-center space-x-3">
             <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-            <span className="text-xl"></span>
           </div>
 
           {isLandingPage ? (
@@ -77,18 +81,13 @@ const location = useLocation();
             // App navigation items
             <>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <Link
-                    to="/dashboard"
-                    className={navigationMenuTriggerStyle()}
-                  >
-                    Dashboard
-                  </Link>{" "}
-                </NavigationMenuLink>
+                <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
+                  Dashboard
+                </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <div className={navigationMenuTriggerStyle()}>Docs</div>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Docs
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -97,7 +96,7 @@ const location = useLocation();
       </NavigationMenu>
 
 
-{/* Right hand side nav */}
+      {/* Right hand side nav */}
       <div className="flex items-center space-x-4 ">
         <button
           type="button"
@@ -115,12 +114,12 @@ const location = useLocation();
         </button>
 
         {!isLoggedIn && (
-          <>
+          <div>
             <a href="/login" className={navigationMenuTriggerStyle()}>
               Log in
             </a>
             <SignUpButton />
-          </>
+          </div>
         )}
         {isLoggedIn && <ProfileMenu onSignOut={handleSignOut} />}
       </div>
