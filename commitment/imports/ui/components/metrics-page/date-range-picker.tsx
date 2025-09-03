@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { addDays, format, parse } from "date-fns";
+import { addDays, format, parse, subMonths } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { type DateRange } from "react-day-picker";
 
@@ -17,16 +17,10 @@ import "react-day-picker/dist/style.css";
 
 type Props = {
   onChange?: (range: DateRange | undefined) => void;
-  defaultValue?: DateRange;
 };
 
-export function DatePicker({ onChange, defaultValue }: Props) {
-  const [date, setDate] = React.useState<DateRange | undefined>(
-    defaultValue ?? {
-      from: addDays(new Date(), -20),
-      to: new Date(),
-    }
-  );
+export function DatePicker({ onChange }: Props) {
+  const [date, setDate] = React.useState<DateRange | undefined>();
 
   // constant to set 'from' date
   const [fromInput, setFromInput] = React.useState<string>(
@@ -78,6 +72,30 @@ export function DatePicker({ onChange, defaultValue }: Props) {
     onChange?.(range);
   };
 
+  const last12Weeks = () => {
+    const to = new Date();
+    const from = addDays(to, -84);
+    const range = { from, to };
+    setDate(range);
+    onChange?.(range);
+  };
+
+  const lastMonth = () => {
+    const to = new Date();
+    const from = subMonths(to, 1);
+    const range = { from, to };
+    setDate(range);
+    onChange?.(range);
+  };
+
+  const lastWeek = () => {
+    const to = new Date();
+    const from = addDays(to, -7);
+    const range = { from, to };
+    setDate(range);
+    onChange?.(range);
+  };
+
   return (
     <div className={cn("grid gap-2")}>
       <Popover>
@@ -110,33 +128,23 @@ export function DatePicker({ onChange, defaultValue }: Props) {
           style={{ borderColor: "#252522" }}
           align="start"
         >
-          {/* user input fields */}
-          <div className="flex gap-4 mb-4">
-            <div className="flex flex-col">
-              <label className="text-xs mb-1 text-gray-600">From</label>
-              <input
-                type="date"
-                value={fromInput}
-                onChange={(e) => setFromInput(e.target.value)}
-                className="border rounded px-2 py-1 text-sm"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="text-xs mb-1 text-gray-600">To</label>
-              <input
-                type="date"
-                value={toInput}
-                onChange={(e) => setToInput(e.target.value)}
-                className="border rounded px-2 py-1 text-sm"
-              />
-            </div>
+          <div className="flex gap-2 mb-4 justify-center items-center">
+            <Button size="sm" variant="outline" onClick={last12Weeks}>
+              Last 12 Weeks
+            </Button>
+            <Button size="sm" variant="outline" onClick={lastMonth}>
+              Last Month
+            </Button>
+            <Button size="sm" variant="outline" onClick={lastWeek}>
+              Last 7 Days
+            </Button>
           </div>
 
           {/* calendar selection */}
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={date?.from}
+            defaultMonth={subMonths(new Date(), 1)}
             selected={date}
             onSelect={handleCalendarSelect}
             numberOfMonths={2}
