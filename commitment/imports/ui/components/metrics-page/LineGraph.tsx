@@ -109,7 +109,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   // card with the line graph
   return (
     // <Card  className="flex flex-col w-[475px] h-[400px] bg-[#f0f0e8] border-0 rounded-xl" style={{ backgroundColor: graphBackgroundColour }}>
-    <GraphCard className="w-full  max-w-full lg:max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
+    <GraphCard className="w-full min-w-[486px] max-w-full xl:max-w-[800px] xl:h-[500px] flex flex-col basis-1/3">
       {/* Title */}
       <CardHeader className="pb-0">
         <CardTitle className="flex text-xl mt-0 font-bold ">
@@ -121,57 +121,53 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
       </CardHeader>
       {/* Graph */}
       {/* <CardContent style={{ height: 300, display: "block" }}>            */}
-      <CardContent className="grow flex flex-col items-center justify-center pt-2">
-        <ChartContainer config={chartConfig} className="grow w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{
-                top: 12,
-                right: 12,
-                bottom: 20,
-                left: 12,
+      <CardContent className="min-w-0 pt-2">
+        <ChartContainer
+          config={chartConfig}
+          className="w-full min-w-0" // you can also set height/aspect here if you want
+        >
+          <LineChart
+            data={data}
+            margin={{ top: 12, right: 12, bottom: 20, left: 12 }}
+          >
+            <CartesianGrid vertical strokeDasharray="3 3" />
+            <XAxis
+              dataKey="date"
+              tickLine
+              axisLine
+              tickMargin={tickMarginForXAxis(data.length)}
+              label={{
+                value: xAxisLabel,
+                position: "insideBottom",
+                offset: -5,
               }}
-            >
-              <CartesianGrid vertical strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tickLine
-                axisLine
-                tickMargin={tickMarginForXAxis(data.length)}
-                label={{
-                  value: xAxisLabel,
-                  position: "insideBottom",
-                  offset: -5,
-                }}
-                tick={{ fontSize: 11 }}
+              tick={{ fontSize: 11 }}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine
+              tickMargin={2}
+              label={{
+                value: yAxisLabel,
+                angle: -90,
+                position: "center",
+                dy: 0,
+                dx: -20,
+                style: { textAnchor: "middle" },
+              }}
+            />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+            {contributors.map((contributor) => (
+              <Line
+                key={contributor}
+                dataKey={contributor}
+                type="monotone"
+                stroke={chartConfig[contributor].color}
+                strokeWidth={2}
+                dot={false}
               />
-              <YAxis
-                tickLine={false}
-                axisLine
-                tickMargin={2}
-                label={{
-                  value: yAxisLabel,
-                  angle: -90,
-                  position: "center",
-                  dy: 0,
-                  dx: -20,
-                  style: { textAnchor: "middle" },
-                }}
-              />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-              {contributors.map((contributor) => (
-                <Line
-                  key={contributor}
-                  dataKey={contributor}
-                  type="monotone"
-                  stroke={chartConfig[contributor].color}
-                  strokeWidth={2}
-                  dot={false}
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+            ))}
+          </LineChart>
         </ChartContainer>
       </CardContent>
     </GraphCard>
