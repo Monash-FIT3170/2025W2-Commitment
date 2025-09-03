@@ -7,20 +7,17 @@ interface GetStartedButtonProps {
   className?: string;
 }
 
-const GetStartedButton: React.FC<GetStartedButtonProps> = ({ className }) => {
+const GetStartedButton: React.FC<GetStartedButtonProps> = () => {
   const navigate = useNavigate();
 
   return (
     <Button
       onClick={() => navigate("/home")}
-      className={cn(
-        "w-[341px] h-auto text-[36px] font-mono rounded-full text-center text-white bg-git-int-primary hover:bg-git-int-primary-hover drop-shadow-lg",
-        className
-      )}
+      className="w-[341px] h-auto text-[36px] font-mono rounded-4xl text-center "
     >
       Get Started
     </Button>
   );
-}
+};
 
 export default GetStartedButton;

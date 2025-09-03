@@ -1,5 +1,5 @@
+
 @import "tailwindcss";
-@plugin 'tailwindcss-animate';
 
 
 /* put vars which refer to others */
@@ -186,11 +186,11 @@
     --git-dv-pink-dark: #d37295;
 
     /* Git Interactive Colours */
-    --git-int-primary: #f1502f;
+    --git-int-primary: var(--color-git-500);
     --git-int-text: #fef3ee;
-    --git-int-destructive: #951917;
-    --git-int-primary-hover: #e12a15;
-    --git-int-destructive-hover: #781816;
+    --git-int-destructive: #6b0f0e;
+    --git-int-primary-hover: var(--color-git-600);
+    --git-int-destructive-hover: #8b1d1b;
     --git-int-link: #3a76a9;
 
     /* Git Card Colours */
@@ -201,41 +201,40 @@
 
     /* Git Stroke Colours */
     --git-stroke-primary: rgba(53, 53, 49, 0.5);
-    --git-stroke-secondary: #252522;
-    --git-stroke-tertiary: #21211e;
+    --git-stroke-secondary: #25252273;
+    --git-stroke-tertiary: #21211e63;
 
     /* Git Tabs Colours */
     --git-tabs-hovered: #d0d0b7;
     --git-tabs-active: #f0f0e8;
 
     /* Shadcn Variables */
-    --background: var(--git-bg-primary);/*0 0% 100%;*/
-    --foreground:var(--git-text-primary); /*222.2 84% 4.9%;*/
+    --background: var(--git-bg-primary);
+    --foreground:var(--git-text-primary); 
 
-    --card: var(--git-card-primary);/*0 0% 100%;*/
-    --card-foreground:var(--git-card-text);/*222.2 84% 4.9%;*/ 
+    --card: var(--git-card-primary);
+    --card-foreground:var(--git-card-text);
 
-    --popover: var(--git-bg-elevated);/*0 0% 100%;*/
-    --popover-foreground: var(--git-text-primary); /*222.2 84% 4.9%;*/ 
+    --popover: var(--git-bg-elevated);
+    --popover-foreground: var(--git-text-primary); 
 
-    --primary: var(--git-int-primary);/*222.2 47.4% 11.2%;*/
-    --primary-foreground: var(--git-int-text);/*210 40% 98%;*/
+    --primary: var(--git-int-primary);
+    --primary-foreground: var(--git-int-text);
 
-    --secondary: var(--git-bg-elevated);/*210 40% 96.1%;*/
-    --secondary-foreground:var(--git-int-text); /*222.2 47.4% 11.2%;*/
-
-    --muted: var(--git-bg-elevated);/*210 40% 96.1%;*/
-    --muted-foreground:var(--git-text-disabled); /*215.4 16.3% 46.9%;*/
+    --secondary: var(--git-bg-elevated);
+    --secondary-foreground:var(--git-int-text);
+    --muted: var(--git-bg-elevated);
+    --muted-foreground:var(--git-text-disabled); 
 
     --accent: var(--git-bg-elevated);
-    --accent-foreground: var(--git-text-disabled); /*;222.2 47.4% 11.2%;*/
+    --accent-foreground: var(--git-text-disabled); 
 
-    --destructive:var(--git-int-destructive) ; /*0 100% 50%;*/
-    --destructive-foreground:var(--git-int-text) ; /*210 40% 98%;*/
+    --destructive:var(--git-int-destructive) ; 
+    --destructive-foreground:var(--git-int-text) ; 
 
-    --border:var(--git-bg-elevated) ; /*214.3 31.8% 91.4%;*/
-    --input: var(--git-bg-elevated); /*214.3 31.8% 91.4%;*/
-    --ring: var(--git-stroke-primary); /*222.2 84% 4.9%;*/
+    --border:var(--git-stroke-primary) ; 
+    --input: var(--git-bg-elevated); 
+    --ring: var(--git-stroke-primary); 
 
     --radius: 0.5rem;
 
@@ -256,17 +255,22 @@
   }
 
   .dark {
+        /* Git Interactive Colours */
+    --git-int-primary: #CC2706;
+
+
     /* Git Background Colours */
     --git-bg-bottom: #21211e;
     --git-bg-primary: #282823;
     --git-bg-secondary: #2f2f2a;
     --git-bg-tertiary: #393932;
     --git-bg-elevated: #5c5c51;
+    --git-bg-input: #9e9e95;
 
     /* Git Text Colours */
     --git-text-primary: #fff;
     --git-text-secondary: #c4c4c4;
-    --git-text-disabled: #818181;
+    --git-text-disabled: #7a7979;
 
     /* Git Data-Visualisation Colours */
     --git-dv-grey: #fffffb;
@@ -284,34 +288,42 @@
     --git-tabs-hovered: #fff;
     --git-tabs-active: #fff;
 
+    --git-int-destructive: #951917;
+    --git-int-primary-hover: #e12a15;
+    --git-int-destructive-hover: #781816;
+
+
     /* Shadcn Variables */
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
+    --background: var(--git-bg-primary);
+    --foreground:var(--git-text-primary); 
 
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
+    --card: var(--git-card-primary);
+    --card-foreground:var(--git-card-text);
 
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
+    --popover: var(--git-bg-elevated);
+    --popover-foreground: var(--git-text-primary); 
 
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 3.9%);
+    --primary: var(--git-int-primary);
+    --primary-foreground: var(--git-int-text);
 
-    --secondary: hsl(217.2 32.6% 17.5%);
-    --secondary-foreground: hsl(0 0% 98%);
+    --secondary: var(--git-bg-elevated);
+    --secondary-foreground:var(--git-int-text);
+    --muted: var(--git-bg-elevated);
+    --muted-foreground:var(--git-text-disabled); 
 
-    --muted: hsl(217.2 32.6% 17.5%);
-    --muted-foreground: hsl(215 20.2% 65.1%);
+    --accent: var(--git-bg-elevated);
+    --accent-foreground: var(--git-text-disabled); 
 
-    --accent: hsl(217.2 32.6% 17.5%);
-    --accent-foreground: hsl(0 0% 98%);
+    --destructive:var(--git-int-destructive) ; 
+    --destructive-foreground:var(--git-int-text) ; 
 
-    --destructive: hsl(0 62.8% 30.6%);
-    --destructive-foreground: hsl(0 0% 98%);
+    --border:var(--git-bg-elevated) ; 
+    --input: var(--git-bg-input); 
+    --ring: var(--git-stroke-primary); 
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --radius: 0.5rem;
+
+
 
     --chart-1:var(--git-dv-blue);
     --chart-2:var(--git-dv-orange);
@@ -324,6 +336,12 @@
     --chart-9:var(--git-dv-brown);
     --chart-10:var(--git-dv-grey);
     --chart-11:var(--git-dv-pink-dark);
+
+  }
+
+  html,body{
+    height: 100%;
+    width: 100%;
   }
 
   * {
