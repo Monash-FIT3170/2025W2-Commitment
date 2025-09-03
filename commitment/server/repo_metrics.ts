@@ -436,25 +436,6 @@ export function getLOCperContributor(
   repoData: SerializableRepoData,
   contributorName: string
 ): number {
-  let totalLOC = 0;
-
-  repoData.allCommits.forEach((commit) => {
-    if (commit.value.contributorName === contributorName) {
-      const locThisCommit = commit.value.fileData.reduce(
-        (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-        0
-      );
-      totalLOC += locThisCommit;
-    }
-  });
-
-  return totalLOC;
-}
-
-export function getLocPerCommitPerContributor(
-  repoData: SerializableRepoData,
-  contributorName: string
-): number {
   const commits = repoData.allCommits.filter(
     (commit) => commit.value.contributorName === contributorName
   );
@@ -463,14 +444,26 @@ export function getLocPerCommitPerContributor(
 
   let totalLOC = 0;
 
-  commits.forEach((commit) => {
-    const locThisCommit = commit.value.fileData.reduce((sum, fileChange) => {
-      return sum + fileChange.file.contents.split("\n").length;
+  commits.reduce((acc, commit) => {
+    return acc + commit.value.fileData.reduce((acc, fileChange) => {
+      return acc + fileChange.newLines
     }, 0);
-    totalLOC += locThisCommit;
-  });
+  }, 0);
 
-  return totalLOC / commits.length; // average LOC per commit
+  return totalLOC
+}
+
+export function getLocPerCommitPerContributor(
+  repoData: SerializableRepoData,
+  contributorName: string
+): number {
+  const totalLOC = getLOCperContributor(repoData, contributorName)
+  const commits = repoData.allCommits.filter(
+    (commit) => commit.value.contributorName === contributorName
+  );
+
+  if (commits.length === 0) return 0;
+  else return totalLOC / commits.length
 }
 
 export function getCommitPerDayPerContributor(
