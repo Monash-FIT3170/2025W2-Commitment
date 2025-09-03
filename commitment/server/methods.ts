@@ -161,18 +161,10 @@ Meteor.methods({
    * @returns 
    */
   async "repo.getAllMetrics"({repoUrl}: {repoUrl: string}): Promise<AllMetricsData> {
-    const repo: SerializableRepoData = await Meteor.callAsync(
-      "repoCollection.getData",
-      repoUrl
-    );
-    console.log("repo data: ", repo); 
-
-    console.log("commithash for main in repoData: ", repo.branches.find(b => b.branchName === "main")?.commitHashes);
     const metadata: Metadata = await Meteor.callAsync(
       "repo.getMetadata",
       repoUrl
     );
-    console.log("meta data: ", metadata)
     // set the branch to filteredBranch to "main " or "master"
 
     const filteredBranch = metadata.branches.includes("main")
@@ -181,7 +173,6 @@ Meteor.methods({
       ? "master"
       : metadata.branches[0];
 
-    console.log("Filtered branches: ", filteredBranch);
     // get all the filteredRepo Data - all the data from Main or Master Branch
     const filteredRepo: FilteredData = await Meteor.callAsync(
       "repo.getFilteredData",
@@ -195,7 +186,6 @@ Meteor.methods({
     );
 
     const serializedFilteredData = filteredRepo.repositoryData; 
-    console.log("filtered data: ", serializedFilteredData); 
     return await getAllMetrics(serializedFilteredData);
   },
 
