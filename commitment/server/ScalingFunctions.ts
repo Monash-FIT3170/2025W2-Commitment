@@ -268,9 +268,11 @@ export async function getScaledResults(
         emails: [],
       }));
 
+      // Combine all unique emails to avoid duplicates
+      const allEmails = [...new Set([...value.emails, ...(extraAliases.emails || [])])];
+      
       const aliases = [
-        ...value.emails.map((email) => ({ username: key, email })),
-        ...(extraAliases.emails || []).map((email:string) => ({ username: key, email })),
+        ...allEmails.map((email) => ({ username: key, email })),
         ...(extraAliases.gitUsernames || [])
           .filter((u:string) => u !== key)
           .map((username:string) => ({ username, email: null })),
@@ -300,13 +302,8 @@ export async function getScaledResults(
       .map((c) => c.key)
   );
 
-  console.log("Valid usernames (with emails):", Array.from(validUserNames));
-
   const scaledUsers = await scaleUsers(repoUrl, config);
   const scaledValidUsers = scaledUsers.filter(({ name }) => validUserNames.has(name));
-
-  console.log("Scaled users returned from scaleUsers():", scaledUsers);
-  console.log("Scaled users filtered to valid contributors:", scaledValidUsers);
 
   const finalResults: UserScalingSummary[] = mappedDataWithAliases.contributors.map(c => {
   const contributorValue = c.value as ContributorValueWithAliases;
