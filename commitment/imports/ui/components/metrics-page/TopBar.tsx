@@ -3,7 +3,8 @@ import { Meteor } from 'meteor/meteor';
 import {  useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
-
+import { AnalyticsData, Metadata } from '/imports/api/types';
+import BookmarkButton from '../ui/BookmarkButton';
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL
@@ -52,9 +53,14 @@ export default function TopBar() {
     <div className="flex items-center justify-between px-10 py-3 border-b border-gray-200 bg-[#FEFEFA]">
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-gray-800">{repoName}</h2>
-        {/* Bookmark icon placeholder */}
-        <div className="w-6 h-6 bg-gray-300 rounded" />
-        {' '}
+        {/* Bookmark button */}
+        {repoUrl && (
+          <BookmarkButton 
+            url={repoUrl} 
+            title={repoName}
+            variant="secondary"
+          />
+        )}
       </div>
     </div>
   );
