@@ -18,25 +18,6 @@ services:
     networks:
       - app-network
 
-#  meteor-env:
-#    build:
-#      context: ./commitment
-#      dockerfile: Dockerfile.meteor
-#    image: commitment-img
-#    container_name: meteor-env
-#    ports:
-#      - "3000:3000"
-#    volumes:
-#      - ./commitment:/projects/commitment
-#    environment:
-#      - MONGO_URL=mongodb://mongo:27017/commitmentdb
-#    depends_on:
-#      - mongo
-#    tty: true
-#    stdin_open: true
-#    networks:
-#      - app-network
-
   haskell-api:
     build:
       context: ./api
@@ -47,16 +28,6 @@ services:
       - ./commitment:/projects/api
     ports:
       - "8081:8081"
-    networks:
-      - app-network
-
-  mongo:
-    image: mongo:6
-    container_name: mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
     networks:
       - app-network
 
