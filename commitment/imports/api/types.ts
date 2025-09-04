@@ -1,4 +1,5 @@
 import { DateRange } from "react-day-picker";
+import { Pie } from "recharts";
 
 export type RepositoryData = Readonly<{
   name: string;
@@ -32,7 +33,7 @@ export type BranchData = Readonly<{
   commitHashes: string[];
 }>;
 
-// make a kind of commit where you have a snapshot of all contributors per line
+// make a kind of commit where you hazve a snapshot of all contributors per line
 export type CommitData = Readonly<{
   commitHash: string;
   commitTitle: string;
@@ -89,7 +90,7 @@ export interface Metadata {
   repoName: string;
   branches: string[];
   contributors: string[];
-  dateRange: DateRange
+  dateRange: DateRange;
 }
 
 export interface HighlightStruct {
@@ -101,7 +102,7 @@ export interface HighlightStruct {
 
 export interface LeaderboardData {
   name: string;
-  commits: number;
+  value: number;
 }
 
 export interface LineGraphData {
@@ -121,25 +122,50 @@ export type HeatMapData = {
   count: number;
 };
 
-export interface MetricsData {
-  highlights: {
-    totalCommits: HighlightStruct;
-    totalLinesOfCode: HighlightStruct;
-    numContributors: number;
-    numBranches: number;
-  };
+export type Highlights = {
+  totalCommits: HighlightStruct;
+  totalLinesOfCode: HighlightStruct;
+  numContributors: number;
+  numBranches: number;
+};
 
+export interface Leaderboard {
+  data: LeaderboardData[];
+  title: string;
+  xAxisLabel: string;
+}
+
+export interface LineGraph {
+  data: LineGraphData[];
+  title: string;
+  xAxisLabel: string;
+  yAxisLabel: string;
+}
+
+export interface Heatmap {
+  data: HeatMapData[];
+  title: string;
+}
+
+export interface PieChart {
+  data: PieChartData[];
+  title: string;
+}
+
+export interface MetricsData {
+  highlights: Highlights;
   contributors: {
-    leaderboard: LeaderboardData[];
-    lineGraph: LineGraphData[];
-    pieChart: PieChartData[];
-    heatMap: HeatMapData[];
+    leaderboard: Leaderboard;
+    lineGraph: LineGraph;
+    pieChart: PieChart;
+    heatMap: Heatmap;
   };
 }
 
 export interface Selections {
   selectedBranch: string;
   selectedContributors: string[];
+  selectedMetrics: string;
   selectedDateRange: DateRange;
 }
 
@@ -147,4 +173,25 @@ export interface AnalyticsData {
   metadata: Metadata;
   selections: Selections;
   metrics: MetricsData;
+}
+
+export enum MetricType {
+  LOC = "LOC",
+  LOC_PER_COMMIT = "LOC Per Commit",
+  COMMITS_PER_DAY = "Commits per Day",
+  TOTAL_COMMITS = "Total No. Commits",
+}
+
+// Helper: turn enum values into a string array
+export const metricNames: string[] = Object.values(MetricType);
+
+// add a type for getAllMetrics.
+
+export interface AllMetricsData {
+  [contributorName: string]: {
+    "Total No. Commits": number;
+    LOC: number;
+    "LOC Per Commit": number;
+    "Commits Per Day": number;
+  };
 }

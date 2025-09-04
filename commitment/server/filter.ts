@@ -54,6 +54,8 @@ export const getFilteredRepoDataServer = (
       key,
       value,
     })),
+    branches: filterBranch ? [filterBranch] : [],
+
   };
 
   return {

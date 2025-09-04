@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   CartesianGrid,
   Line,
@@ -6,18 +6,18 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
-} from 'recharts';
-import InfoButton from '../ui/infoButton';
+} from "recharts";
+import InfoButton from "../ui/infoButton";
 
-import { CardContent, CardHeader, CardTitle } from '../ui/card';
+import { CardContent, CardHeader, CardTitle } from "../ui/card";
 
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '../ui/chart';
-import GraphCard from './GraphCard';
+} from "../ui/chart";
+import GraphCard from "./GraphCard";
 
 // Interface for the contributor data point
 interface ContributorDataPoint {
@@ -33,17 +33,17 @@ interface ContributorsLineChart {
 }
 
 const staticColorPalette = [
-  '#4E79A7',
-  '#F28E2B',
-  '#59A14F',
-  '#E15759',
-  '#76B7B2',
-  '#EDC948',
-  '#B07AA1',
-  '#FF9DA7',
-  '#9C755F',
-  '#BAB0AC',
-  '#D37295',
+  "#4E79A7",
+  "#F28E2B",
+  "#59A14F",
+  "#E15759",
+  "#76B7B2",
+  "#EDC948",
+  "#B07AA1",
+  "#FF9DA7",
+  "#9C755F",
+  "#BAB0AC",
+  "#D37295",
 ];
 
 const extendColorPalette = (index: number): string => {
@@ -65,9 +65,30 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   xAxisLabel,
   yAxisLabel,
 }) => {
+  if (!data || data.length === 0) {
+    return (
+      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+        <CardHeader className="pb-0">
+          <CardTitle className="flex text-xl mt-0 font-bold ">
+            {title}
+            <div className="relative -mt-3 ml-2">
+              <InfoButton
+                description={"Shows contributor performance over time."}
+              />
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grow flex flex-col items-center justify-center pt-2">
+          <div className="text-gray-500 text-center py-8">
+            No contribution data available.
+          </div>
+        </CardContent>
+      </GraphCard>
+    );
+  }
   // gets the contributors from the data, assuming data is formatted: {date="2023-01-01", contributor1: 1, contributor2: 2}
   const contributors = Object.keys(data[0] || {}).filter(
-    (key) => key !== 'date',
+    (key) => key !== "date"
   );
 
   // creates a config object for each contributor with a specific color
@@ -76,8 +97,9 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   // Maps over the contributors and assigns a color to each one
   // staticColorPalette is used for the first 10 contributors, and extendColorPalette is used for the rest
   contributors.forEach((contributor, index) => {
-    const color = staticColorPalette[index]
-      ?? extendColorPalette(index - staticColorPalette.length);
+    const color =
+      staticColorPalette[index] ??
+      extendColorPalette(index - staticColorPalette.length);
     chartConfig[contributor] = {
       label: contributor,
       color,
@@ -90,7 +112,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
     <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
       {/* Title */}
       <CardHeader className="pb-0">
-        <CardTitle className="flex text-lg mt-0 font-bold ">
+        <CardTitle className="flex text-xl mt-0 font-bold ">
           {title}
           <div className="relative -mt-3 ml-2">
             <InfoButton description="Shows contributor performance over time." />
@@ -105,7 +127,10 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
             <LineChart
               data={data}
               margin={{
-                top: 12, right: 12, bottom: 20, left: 12,
+                top: 12,
+                right: 12,
+                bottom: 20,
+                left: 12,
               }}
             >
               <CartesianGrid vertical strokeDasharray="3 3" />
@@ -116,7 +141,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
                 tickMargin={tickMarginForXAxis(data.length)}
                 label={{
                   value: xAxisLabel,
-                  position: 'insideBottom',
+                  position: "insideBottom",
                   offset: -5,
                 }}
                 tick={{ fontSize: 11 }}
@@ -128,10 +153,10 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
                 label={{
                   value: yAxisLabel,
                   angle: -90,
-                  position: 'center',
+                  position: "center",
                   dy: 0,
                   dx: -20,
-                  style: { textAnchor: 'middle' },
+                  style: { textAnchor: "middle" },
                 }}
               />
               <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
