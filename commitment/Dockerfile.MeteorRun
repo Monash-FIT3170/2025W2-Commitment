@@ -25,7 +25,7 @@ RUN chown -R devuser:devuser /usr/local/lib/node_modules /usr/local/bin /home/de
 USER devuser
 
 # Set working directory
-WORKDIR /projects/commitment
+WORKDIR /projects/commitment/commitment
 
 # Copy Meteor project into image
 COPY --chown=devuser:devuser . .
