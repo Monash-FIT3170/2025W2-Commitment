@@ -49,7 +49,7 @@ function ScalingView(): JSX.Element {
   const [repoUrl, setRepoUrl] = useState<string | null>(null);
 
   // Function to clear all scaling data from localStorage and reset state
-  const clearScalingData = (preserveRepoUrl = false) => {
+  const clearScalingData : () => void = () => {
     localStorage.removeItem('hasVisitedScaling');
     localStorage.removeItem('scaling_config');
     localStorage.removeItem('scaling_results');
@@ -64,11 +64,6 @@ function ScalingView(): JSX.Element {
     setScaledResults([]);
     setCompleted(false);
     setStep("config");
-    
-    // Only show dialog if we're not preserving repo URL (manual clear)
-    if (!preserveRepoUrl) {
-      setShowDialog(true);
-    }
   };
 
   // Handle confirmed clear action
@@ -94,7 +89,7 @@ function ScalingView(): JSX.Element {
     
     if ((lastRepoUrl && lastRepoUrl !== currentRepoUrl) || 
         (hasExistingScalingData && !lastRepoUrl && currentRepoUrl)) {
-      clearScalingData(true);
+      clearScalingData();
       localStorage.setItem('scaling_last_repo_url', currentRepoUrl);
       setCompleted(false);
       setShowDialog(true);
@@ -106,7 +101,11 @@ function ScalingView(): JSX.Element {
       
       const hasVisited = localStorage.getItem('hasVisitedScaling') === 'true';
       setCompleted(hasVisited);
-      if (!hasVisited) setShowDialog(true);
+      
+      // Only show dialog on true first visit (no existing scaling data and not visited)
+      if (!hasVisited && !hasExistingScalingData) {
+        setShowDialog(true);
+      }
       
       // Restore key state from localStorage only if repo hasn't changed
       try {
