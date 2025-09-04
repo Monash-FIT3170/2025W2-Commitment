@@ -11,8 +11,6 @@ services:
       - ./commitment:/projects/commitment
     env_file:
       - ./commitment/server/.env
-    depends_on:
-      - mongo
     tty: true
     stdin_open: true
     networks:
@@ -30,9 +28,6 @@ services:
       - "8081:8081"
     networks:
       - app-network
-
-volumes:
-  mongo-data:
 
 networks:
   app-network:
