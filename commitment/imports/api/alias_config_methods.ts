@@ -88,4 +88,31 @@ Meteor.methods({
         return AliasConfigsCollection.find({ ownerId: this.userId }).fetchAsync();
 
     },
+
+    /**
+     * Returns identifiers (gitUsernames + emails) for a given contributor official name
+     * based on the current user's alias config. If no config or no match, returns empty arrays.
+     */
+    async 'aliasConfigs.getAliasesFor'(contributorName: string) {
+        check(contributorName, String);
+
+        if (!this.userId) {
+            throw new Meteor.Error('not-authorized', 'You must be logged in.');
+        }
+
+        const config = await AliasConfigsCollection.findOneAsync({ ownerId: this.userId });
+        if (!config) {
+            return { gitUsernames: [], emails: [] };
+        }
+
+        const match = config.aliases.find(a => a.officialName === contributorName);
+        if (!match) {
+            return { gitUsernames: [], emails: [] };
+        }
+
+        return {
+            gitUsernames: Array.isArray(match.gitUsernames) ? match.gitUsernames : [],
+            emails: Array.isArray(match.emails) ? match.emails : [],
+        };
+    },
 });

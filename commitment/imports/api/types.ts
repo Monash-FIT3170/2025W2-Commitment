@@ -71,7 +71,7 @@ export type CopyData = Readonly<{ oldFilePath: string; copyLikeness: number }>;
 
 export type AliasEmail = {
   username: string;
-  email: string;
+  email: string | null;
 };
 
 export type UserScalingSummary = {
@@ -195,3 +195,9 @@ export interface AllMetricsData {
     "Commits Per Day": number;
   };
 }
+
+export type ContributorValueWithAliases = {
+  name: string;
+  emails: string[];
+  aliases: { username: string; email: string | null }[];
+};
