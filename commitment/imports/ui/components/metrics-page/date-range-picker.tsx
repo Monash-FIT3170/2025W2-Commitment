@@ -105,6 +105,13 @@ export function DatePicker({ onChange, defaultValue }: Props) {
     onChange?.(range);
   };
 
+  const clearDates = () => {
+    setDate(undefined);
+    setFromInput("");
+    setToInput("");
+    onChange?.(undefined);
+  };
+
   return (
     <div className={cn("grid gap-2 ")}>
       <Popover>
@@ -145,6 +152,14 @@ export function DatePicker({ onChange, defaultValue }: Props) {
             </Button>
             <Button size="sm" variant="outline" onClick={lastWeek}>
               Last 7 Days
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={clearDates}
+              disabled={!date?.from && !date?.to}
+            >
+              Clear
             </Button>
           </div>
 
