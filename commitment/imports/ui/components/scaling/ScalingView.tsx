@@ -27,6 +27,7 @@ import type { UserScalingSummary } from "../../../api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 import { useLocation } from "react-router-dom";
 import { toast } from "../../hooks/use-toast";
+import InfoButton from "../ui/infoButton";
 
 interface ScalingConfig {
   metrics: string[];
@@ -299,6 +300,16 @@ function ScalingView(): JSX.Element {
           {/* Always render the scaling summary in the background */}
           {config && scaledResults.length > 0 && (
             <div className="mb-6">
+              {/* Header */}
+              <div className="mb-10">
+                <div className="flex items-center gap-4">
+                  <h1 className="text-5xl text-foreground font-robotoFlex">
+                    Scaling
+                  </h1>
+                  <InfoButton description={"ada"} />
+                </div>
+                <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
+              </div>
               <ScalingSummary
                 userScalingSummaries={scaledResults}
                 hasGradingSheet={!!gradingSheet}
