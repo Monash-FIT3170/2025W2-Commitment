@@ -5,7 +5,7 @@ import {  useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { AnalyticsData, Metadata } from '/imports/api/types';
-import BookmarkButton from '../ui/BookmarkButton';
+import BookmarkButton from '../dashboard/BookmarkButton';
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL
