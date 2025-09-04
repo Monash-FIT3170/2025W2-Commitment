@@ -17,8 +17,7 @@ services:
       - app-network
 
   haskell-api:
-    build:
-      image: commitment3170/haskell-api-img
+    image: commitment3170/haskell-api-img
     container_name: haskell-api
     volumes:
       - ./commitment:/projects/api
