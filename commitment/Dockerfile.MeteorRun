@@ -28,7 +28,7 @@ USER devuser
 WORKDIR /projects/commitment/
 
 # Copy Meteor project into image
-COPY --chown=devuser:devuser commitment/ .
+COPY --chown=devuser:devuser . .
 
 RUN ls -la /projects/commitment
 
@@ -42,4 +42,4 @@ EXPOSE 27017
 
 # Default: run Meteor in development mode
 # CMD ["meteor", "run", "--port", "3000", "--inspect"]
-CMD ["meteor", "run", "--port", "3000"]
+CMD ["bash"]
