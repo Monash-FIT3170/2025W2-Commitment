@@ -105,6 +105,13 @@ export function DatePicker({ onChange, defaultValue }: Props) {
     onChange?.(range);
   };
 
+  const clearDates = () => {
+    setDate(undefined);
+    setFromInput("");
+    setToInput("");
+    onChange?.(undefined);
+  };
+
   return (
     <div className={cn("grid gap-2 ")}>
       <Popover>
@@ -113,7 +120,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
             id="date"
             variant="outline"
             className={cn(
-              "w-[300px] justify-start text-left font-normal border-2 rounded-lg  border-git-stroke-primary/40 ",
+              "w-[300px] justify-start text-left font-normal border-2 rounded-lg  border-git-stroke-primary/40 "
               // !date && "text-muted-foreground"
             )}
           >
@@ -145,6 +152,14 @@ export function DatePicker({ onChange, defaultValue }: Props) {
             </Button>
             <Button size="sm" variant="outline" onClick={lastWeek}>
               Last 7 Days
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={clearDates}
+              disabled={!date?.from && !date?.to}
+            >
+              Clear
             </Button>
           </div>
 
@@ -178,8 +193,9 @@ export function DatePicker({ onChange, defaultValue }: Props) {
               day_range_end:
                 "rounded-r-md bg-git-int-primary text-white hover:bg-git-int-primary",
               caption_dropdowns: "flex gap-2",
-              caption_label: "text-sm font-medium",
-              dropdown: "px-2 py-1 border rounded-md text-sm",
+              caption_label: "text-sm font-medium text-black",
+              dropdown:
+                "px-2 py-1 border-1 border-git-stroke-primary rounded-md text-sm text-black",
             }}
           />
         </PopoverContent>

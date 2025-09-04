@@ -69,7 +69,7 @@ export default function MetricsTabs() {
       </TabsContent>
       <TabsContent
         value="scaling"
-        className="mx-20 my-10  bg-git-bg-elevated outline-2 outline-git-bg-secondary p-8 "
+        className=" w-full"
       >
         {/* SCALING */}
         <ScalingView />
