@@ -113,7 +113,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
             id="date"
             variant="outline"
             className={cn(
-              "w-[300px] justify-start text-left font-normal border-2 rounded-lg  border-git-stroke-primary/40 ",
+              "w-[300px] justify-start text-left font-normal border-2 rounded-lg  border-git-stroke-primary/40 "
               // !date && "text-muted-foreground"
             )}
           >
@@ -179,7 +179,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
                 "rounded-r-md bg-git-int-primary text-white hover:bg-git-int-primary",
               caption_dropdowns: "flex gap-2",
               caption_label: "text-sm font-medium",
-              dropdown: "px-2 py-1 border rounded-md text-sm",
+              dropdown: "px-2 py-1 border rounded-md text-sm text-black",
             }}
           />
         </PopoverContent>

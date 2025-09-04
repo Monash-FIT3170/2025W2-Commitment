@@ -1,11 +1,11 @@
-import React from 'react';
-import { Settings } from 'lucide-react';
-import { Meteor } from 'meteor/meteor';
-import {  useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useState } from 'react';
-import { AnalyticsData, Metadata } from '/imports/api/types';
-import BookmarkButton from '../ui/BookmarkButton';
+import React from "react";
+import { Settings } from "lucide-react";
+import { Meteor } from "meteor/meteor";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { useState } from "react";
+import { AnalyticsData, Metadata } from "/imports/api/types";
+import BookmarkButton from "../dashboard/BookmarkButton";
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL
@@ -26,29 +26,27 @@ function getRepoNameFromUrl(url: string): string {
   return repoNameWithGit.replace(/\.git$/, "");
 }
 
-
 export default function TopBar() {
-  // call meteor method to find the name 
+  // call meteor method to find the name
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
-  const [repoName, setRepoName] = useState<string>('Loading...');
+  const [repoName, setRepoName] = useState<string>("Loading...");
 
   useEffect(() => {
     if (!repoUrl) return;
 
     const fetchMetadata = async () => {
       try {
-        const data = await Meteor.callAsync('repo.getMetadata', repoUrl);
+        const data = await Meteor.callAsync("repo.getMetadata", repoUrl);
         setRepoName(getRepoNameFromUrl(data.repoUrl));
       } catch (error) {
-        console.error('Error fetching metadata:', error);
-        setRepoName('Unknown Repository');
+        console.error("Error fetching metadata:", error);
+        setRepoName("Unknown Repository");
       }
     };
 
     fetchMetadata();
   }, [repoUrl]);
-
 
   return (
     <div className="flex items-center justify-between px-10 py-3 border-b  border-git-stroke-primary/40 bg-git-bg-elevated">
@@ -56,11 +54,7 @@ export default function TopBar() {
         <h2 className="text-lg font-semibold text-gray-800">{repoName}</h2>
         {/* Bookmark button */}
         {repoUrl && (
-          <BookmarkButton 
-            url={repoUrl} 
-            title={repoName}
-            variant="secondary"
-          />
+          <BookmarkButton url={repoUrl} title={repoName} variant="secondary" />
         )}
       </div>
       <Settings className="w-5 h-5 text-git-stroke-secondary hover:text-git-stroke-primary cursor-pointer" />

@@ -28,7 +28,7 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
   const fillColor = isPositive ? "#59A14F" : "#E15759";
   return (
     <Card
-      className={`font-mono text-foreground flex flex-col w-[220px] h-[220px] rounded-xl outline-solid outline-2 outline-git-bg-secondary  bg-git-bg-bottom ${
+      className={`font-mono text-foreground flex flex-col w-full min-w-[220px] min-h-[220px] rounded-xl outline-solid outline-2 outline-git-bg-secondary  bg-git-bg-bottom ${
         percentageChange ? "justify-between" : "justify-center"
       }`}
     >
@@ -39,7 +39,7 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
         </CardTitle>
       </CardHeader>
       {/* Value */}
-      <CardContent className="font-bold md:text-4xl xl:text-4xl text-3xl ">
+      <CardContent className="font-bold md:text-4xl xl:text-4xl text-3xl">
         {value.toLocaleString()}
       </CardContent>
       {/* Footer: Change + Graph */}

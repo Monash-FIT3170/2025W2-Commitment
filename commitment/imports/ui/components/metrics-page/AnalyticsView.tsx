@@ -148,7 +148,9 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <div className="text-sm text-git-text-secondary">Contributors*</div>
+              <div className="text-sm text-git-text-secondary">
+                Contributors*
+              </div>
               <ContributorDropdownMenu
                 contributors={analytics.metadata.contributors}
                 selected={selectedContributors}
@@ -156,7 +158,9 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-git-text-secondary">Metrics*</label>
+              <label className="text-sm text-git-text-secondary">
+                Metrics*
+              </label>
               <MetricDropdownMenu
                 metrics={metricNames}
                 selected={selectedMetrics}
@@ -234,4 +238,4 @@ export function AnalyticsView(): React.JSX.Element {
       </div>
     </div>
   );
-} 
+}
