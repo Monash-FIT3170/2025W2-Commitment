@@ -57,7 +57,7 @@ export function ContributorDropdownMenu({
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[280px] focus:outline-none focus:ring-0">
+      <DropdownMenuContent className="w-[280px] focus:outline-none focus:ring-0 border-2 border-git-stroke-primary/40">
         <DropdownMenuLabel>Select Contributors</DropdownMenuLabel>
         <DropdownMenuSeparator />
 

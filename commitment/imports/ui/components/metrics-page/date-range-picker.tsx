@@ -124,8 +124,7 @@ export function DatePicker({ onChange }: Props) {
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto p-4 border-2"
-          style={{ borderColor: "#252522" }}
+          className="w-auto p-4 border-2 border-git-stroke-primary/40"
           align="start"
         >
           <div className="flex gap-2 mb-4 justify-center items-center">

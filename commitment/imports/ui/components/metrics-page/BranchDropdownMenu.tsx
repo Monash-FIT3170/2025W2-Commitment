@@ -28,7 +28,7 @@ export default function BranchDropdownMenu({
           {selected ?? "Select a branch"}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[280px]  focus:ring-0 border-2">
+      <DropdownMenuContent className="w-[280px]  focus:ring-0 border-2 border-git-stroke-primary/40">
         {/* <DropdownMenuLabel>Select Branch</DropdownMenuLabel> */}
         {/* <DropdownMenuSeparator /> */}
         {branches.map((branch) => (
