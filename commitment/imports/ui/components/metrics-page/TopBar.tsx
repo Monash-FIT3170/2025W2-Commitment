@@ -1,4 +1,5 @@
 import React from 'react';
+import { Settings } from 'lucide-react';
 import { Meteor } from 'meteor/meteor';
 import {  useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
