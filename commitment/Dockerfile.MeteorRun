@@ -39,4 +39,4 @@ EXPOSE 27017
 
 # Default: run Meteor in development mode
 # CMD ["meteor", "run", "--port", "3000", "--inspect"]
-CMD ["bash"]
+CMD ["meteor"]
