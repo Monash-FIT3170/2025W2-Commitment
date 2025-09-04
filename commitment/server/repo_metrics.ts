@@ -352,16 +352,6 @@ export function getTotalFilesChanged(repoData: SerializableRepoData): number {
 }
 
 /**
- * Count the number of lines in a file contents string.
- * @param fileContents The file contents as a string.
- * @returns The number of lines in the file.
- */
-function countLines(fileContents: string): number {
-  if (!fileContents) return 0;
-  return fileContents.split("\n").length;
-}
-
-/**
  * Get the total number of lines of code across all commits in a repository.
  * @param repoData The repository data.
  * @returns The total number of lines of code.
@@ -369,7 +359,7 @@ function countLines(fileContents: string): number {
 export function getTotalLinesOfCode(repoData: SerializableRepoData): number {
   return repoData.allCommits.reduce<number>((sum, commit) => {
     const commitLines = commit.value.fileData.reduce<number>(
-      (fileSum, f) => fileSum + countLines(f.file.contents), // assuming `file.contents` is the raw file text
+      (fileSum, f) => fileSum + f.newLines - f.deletedLines, // assuming `file.contents` is the raw file text
       0
     );
     return sum + commitLines;
@@ -397,7 +387,7 @@ export async function highlightTotalLinesOfCode(): Promise<HighlightStruct> {
   const linesOfCodeOverTime: { value: number }[] = sortedCommits.map(
     (commit) => ({
       value: commit.value.fileData.reduce(
-        (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
+        (sum, fileChange) => sum + fileChange.newLines - fileChange.deletedLines,
         0
       ),
     })
@@ -464,41 +454,30 @@ export function getLOCperContributor(
   repoData: SerializableRepoData,
   contributorName: string
 ): number {
-  let totalLOC = 0;
-
-  repoData.allCommits.forEach((commit) => {
-    if (commit.value.contributorName === contributorName) {
-      const locThisCommit = commit.value.fileData.reduce(
-        (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-        0
-      );
-      totalLOC += locThisCommit;
-    }
-  });
-
-  return totalLOC;
-}
-
-export function getLocPerCommitPerContributor(
-  repoData: SerializableRepoData,
-  contributorName: string
-): number {
   const commits = repoData.allCommits.filter(
     (commit) => commit.value.contributorName === contributorName
   );
 
   if (commits.length === 0) return 0;
 
-  let totalLOC = 0;
-
-  commits.forEach((commit) => {
-    const locThisCommit = commit.value.fileData.reduce((sum, fileChange) => {
-      return sum + fileChange.file.contents.split("\n").length;
+  return commits.reduce((acc, commit) => {
+    return acc + commit.value.fileData.reduce((acc, fileChange) => {
+      return acc + fileChange.newLines - fileChange.deletedLines
     }, 0);
-    totalLOC += locThisCommit;
-  });
+  }, 0);
+}
 
-  return totalLOC / commits.length; // average LOC Per Commit
+export function getLocPerCommitPerContributor(
+  repoData: SerializableRepoData,
+  contributorName: string
+): number {
+  const totalLOC = getLOCperContributor(repoData, contributorName)
+  const commits = repoData.allCommits.filter(
+    (commit) => commit.value.contributorName === contributorName
+  );
+
+  if (commits.length === 0) return 0;
+  else return totalLOC / commits.length
 }
 
 export function getCommitPerDayPerContributor(
