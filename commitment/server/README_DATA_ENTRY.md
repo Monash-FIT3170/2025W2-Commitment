@@ -19,8 +19,10 @@ Your MongoDB Atlas integration is fully functional! The server successfully:
 # Start Docker containers
 docker compose up -d
 
-# Run the server
-docker exec -it 3170-env bash -c "cd /projects/commitment/server && node server.js"
+# Run the Meteor app (port 3000 by default). Do NOT run the standalone
+# Node/Express server on port 3000 at the same time.
+# If you specifically need the standalone server for tests, use a different port:
+# docker exec -it 3170-env bash -c "cd /projects/commitment/server && SERVER_PORT=3030 node server.js"
 ```
 
 ### 2. Test the Server
@@ -49,7 +51,8 @@ Create a `.env` file in the `commitment/server/` directory with your MongoDB Atl
 ```bash
 # MongoDB Atlas Connection
 ATLAS_MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
-PORT=3000
+# Optional: only if running the standalone Node server
+# SERVER_PORT=3030
 ```
 
 ### 2. Get Your MongoDB Atlas Connection String
@@ -72,8 +75,8 @@ PORT=3000
 ### 3. Update Environment File
 
 ```bash
-# Update the .env file in the container
-docker exec -it 3170-env bash -c "cd /projects/commitment/server && echo 'ATLAS_MONGODB_URI=your_connection_string_here' > .env && echo 'PORT=3000' >> .env"
+# Update the .env file in the container (Node server on 3030 if used)
+docker exec -it 3170-env bash -c "cd /projects/commitment/server && echo 'ATLAS_MONGODB_URI=your_connection_string_here' > .env && echo 'SERVER_PORT=3030' >> .env"
 ```
 
 ## 🧪 Testing Your Integration
@@ -82,7 +85,11 @@ docker exec -it 3170-env bash -c "cd /projects/commitment/server && echo 'ATLAS_
 
 1. **Server Health Check**
    ```bash
+   # Meteor app health (default dev port)
    curl http://localhost:3000/
+
+   # If you started the standalone Node server on 3030:
+   # curl http://localhost:3030/
    ```
    **Expected Response**: `{"message":"Server is running!"}`
 
