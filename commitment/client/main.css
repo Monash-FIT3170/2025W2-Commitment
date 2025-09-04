@@ -1,6 +1,7 @@
 
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* put vars which refer to others */
 @theme inline {
