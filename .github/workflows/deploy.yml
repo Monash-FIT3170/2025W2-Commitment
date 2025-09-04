@@ -57,6 +57,8 @@ jobs:
 
             sudo docker build -t commitment-img -f commitment/Dockerfile.MeteorRun ~/app/commitment --no-cache
 
+            sudo docker-compose -f docker-compose.prod.yml down
+
             sudo docker-compose -f docker-compose.prod.yml up -d
       # mup
       # export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
