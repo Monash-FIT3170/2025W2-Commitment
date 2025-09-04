@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuContent,
-} from "@ui/components/ui/dropdown";
+} from "@ui/components/ui/dropdown-menu";
 import { Button } from "@ui/components/ui/button";
 import { Bookmark } from "/imports/api/bookmarks";
 import { Meteor } from "meteor/meteor";
@@ -100,12 +100,21 @@ const DashboardView: React.FC = () => {
       }
     });
 
-  const applySort = (list: Bookmark[]) => {
-    if (!sortKey || !sortDir) return list;
-    return [...list].sort((a, b) => {
-      const t1 = new Date((a as any)[sortKey]).getTime();
-      const t2 = new Date((b as any)[sortKey]).getTime();
-      return sortDir === "asc" ? t1 - t2 : t2 - t1;
+  const applySort = (bookmarks: Bookmark[]) => {
+    if (!sortKey || !sortDir) return bookmarks;
+
+    return [...bookmarks].sort((a, b) => {
+      let aValue: any = a[sortKey];
+      let bValue: any = b[sortKey];
+
+      if (aValue instanceof Date) aValue = aValue.getTime();
+      if (bValue instanceof Date) bValue = bValue.getTime();
+
+      if (sortDir === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
     });
   };
 

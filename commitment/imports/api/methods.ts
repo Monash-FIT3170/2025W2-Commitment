@@ -22,8 +22,11 @@ Meteor.methods({
       throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
     }
 
+    // Fix: Actually await and check the result
     const inDatabase = await repoInDatabase(url);
-    if (!inDatabase) throw new Error(`URL does not exist inside database: ${url}`)
+    if (!inDatabase) {
+        throw new Meteor.Error('not-in-database', `URL does not exist inside database: ${url}`);
+    }
 
     const newLink: Link = {
       title,
@@ -62,9 +65,9 @@ Meteor.methods({
      * @param {string} url - The URL to check.
      * @returns {Promise<boolean>} True if the URL is bookmarked, false otherwise.
      */
-  async 'links.isBookmarked'(url: string) {
-    check(url, String);
-    const link = await LinksCollection.findOneAsync({ url })
-    return !!link;
-  },
+    async 'links.isBookmarked'(url: string) {
+        check(url, String);
+        const link = await LinksCollection.findOneAsync({ url });
+        return !!link;
+    },
 });
