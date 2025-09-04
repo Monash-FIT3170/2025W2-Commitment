@@ -32,8 +32,11 @@ export default function App() {
               </Authorized>
             }
           />
+                  <Route path="/settings" element={<Authorized>
+          <SettingsPage /></Authorized>
+        } />
         </Route>
-        <Route path="/settings" element={<SettingsPage />} />
+
       </Routes>
     </BrowserRouter>
   );

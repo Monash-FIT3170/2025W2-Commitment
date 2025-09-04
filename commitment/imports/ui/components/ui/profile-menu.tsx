@@ -57,21 +57,13 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
 
             <button
               onClick={handleSettingsClick}
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-foreground hover:bg-gray-100"
             >
               <Settings className="h-4 w-4" />
               <span>Settings</span>
             </button>
 
             <Separator />
-
-            <button
-              onClick={handleSettingsClick}
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-white/20 hover:rounded-lg"
-            >
-              <Settings className="h-4 w-4" />
-              <span>Settings</span>
-            </button>
 
             <Separator />
 
