@@ -111,21 +111,21 @@ export function AnalyticsView(): React.JSX.Element {
   return (
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
-        <div className="max-w-full mx-20 my-10 rounded-sm bg-white p-8  outline-2 outline-git-bg-secondary">
+        <div className="max-w-full mx-20 my-10 rounded-sm bg-git-bg-primary p-8  outline-2 outline-git-bg-secondary">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-4">
-              <h1 className="text-5xl text-gray-900 font-robotoFlex">
+              <h1 className="text-5xl text-foreground font-robotoFlex">
                 Metrics
               </h1>
               <InfoButton description={metricsPageDescription} />
             </div>
-            <div className="h-[2px] bg-black w-1/4 mt-2" />
+            <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
           </div>
           {/* Filters */}
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
-              <p className="text-sm text-gray-600">Date Range*</p>
+              <p className="text-sm text-muted-foreground">Date Range*</p>
               <DateRangePicker
                 defaultValue={dateRange}
                 onChange={(range) => {

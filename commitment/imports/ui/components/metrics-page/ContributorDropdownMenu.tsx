@@ -42,7 +42,11 @@ export function ContributorDropdownMenu({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-auto justify-start focus:outline-hidden focus:ring-0 border-2"
+          className={
+            'w-[300px] justify-start text-left font-normal border-2 rounded-lg'
+           
+          }
+          style={{ borderColor: '#35353140' }}
         >
           {buttonText()}
         </Button>

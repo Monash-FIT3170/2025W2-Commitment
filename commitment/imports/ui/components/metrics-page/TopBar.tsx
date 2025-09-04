@@ -50,14 +50,14 @@ export default function TopBar() {
 
 
   return (
-    <div className="flex items-center justify-between px-10 py-3 border-b border-gray-200 bg-[#FEFEFA]">
+    <div className="flex items-center justify-between px-10 py-3 border-b border-border bg-git-bg-elevated">
       <div className="flex items-center gap-3">
-        <h2 className="text-lg font-semibold text-gray-800">{repoName}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{repoName}</h2>
         {/* Bookmark icon placeholder */}
         <div className="w-6 h-6 bg-gray-300 rounded" />
         {' '}
       </div>
-      <Settings className="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
+      <Settings className="w-5 h-5 text-git-stroke-secondary hover:text-git-stroke-primary cursor-pointer" />
     </div>
   );
 }

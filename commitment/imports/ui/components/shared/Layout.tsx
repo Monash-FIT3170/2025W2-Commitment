@@ -5,7 +5,7 @@ import { Outlet } from 'react-router-dom';
 
 export default function Layout() {
   return (
-    <div className="w-screen h-screen bg-bottom flex flex-col">
+    <div className="w-screen h-screen bg-bottom ">
           <NavBar />
 
           <Outlet />

@@ -23,15 +23,17 @@ export default function BranchDropdownMenu({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-[280px] justify-start focus:outline-hidden focus:ring-0 border-2 "
-          style={{ borderColor: "#35353140" }}
+          className={
+            'w-[300px] justify-start text-left font-normal border-2 rounded-lg'
+           
+          }
+          style={{ borderColor: '#35353140' }}
         >
           {selected ?? "Select a branch"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-[280px]  focus:ring-0 border-2"
-        style={{ borderColor: "#252522" }}
       >
         {/* <DropdownMenuLabel>Select Branch</DropdownMenuLabel> */}
         {/* <DropdownMenuSeparator /> */}
