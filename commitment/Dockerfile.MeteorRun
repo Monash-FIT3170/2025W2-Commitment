@@ -30,6 +30,9 @@ WORKDIR /projects/commitment
 # Copy Meteor project into image
 COPY --chown=devuser:devuser . .
 
+RUN ls -la /projects/commitment
+
+
 # Install Meteor project dependencies
 RUN meteor npm install
 
