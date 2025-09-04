@@ -213,16 +213,18 @@ function getCssVarValue(varName: string) {
     .trim();
 }
 
-const levels = [
-  { name: "none", color: getCssVarValue("--color-git-bg-elevated") },
-  { name: "s1", color: getCssVarValue("--color-git-100") },
-  { name: "s2", color: getCssVarValue("--color-git-200") },
-  { name: "s3", color: getCssVarValue("--color-git-300") },
-  { name: "s4", color: getCssVarValue("--color-git-400") },
-  { name: "s5", color: getCssVarValue("--color-git-500") },
-  { name: "s6", color: getCssVarValue("--color-git-700") },
-  { name: "s7", color: getCssVarValue("--color-git-900") },
-];
+function getLevels() {
+  return [
+    { name: "none", color: getCssVarValue("--color-git-bg-primary") },
+    { name: "s1", color: getCssVarValue("--git-heat-100") },
+    { name: "s2", color: getCssVarValue("--git-heat-200") },
+    { name: "s3", color: getCssVarValue("--git-heat-300") },
+    { name: "s4", color: getCssVarValue("--git-heat-400") },
+    { name: "s5", color: getCssVarValue("--git-heat-500") },
+    { name: "s6", color: getCssVarValue("--git-heat-600") },
+    { name: "s7", color: getCssVarValue("--git-heat-700") },
+  ];
+}
 
 // ------- component -------
 export default function HeatMapGraph({
@@ -248,7 +250,6 @@ export default function HeatMapGraph({
     () => normalizeSeriesData(sortedSeries),
     [sortedSeries]
   );
-  const totals = useMemo(() => computeRowTotals(sortedSeries), [sortedSeries]);
 
   const rowHeight = 50;
   const minHeight = 200;
@@ -257,6 +258,23 @@ export default function HeatMapGraph({
     minHeight,
     Math.min(maxHeight, users.length * rowHeight)
   );
+
+  // Listen for dark mode changes
+  const [themeKey, setThemeKey] = React.useState(0);
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setThemeKey((k) => k + 1); // force rerender when theme changes
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const levels = React.useMemo(getLevels, [themeKey]);
+
+  const totals = useMemo(() => computeRowTotals(sortedSeries), [sortedSeries]);
 
   const chartOptions = useMemo(
     () => ({
@@ -269,6 +287,7 @@ export default function HeatMapGraph({
           'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
       },
       grid: {
+        show: false,
         padding: {
           top: 0,
           right: 0, // room for totals annotations
@@ -278,12 +297,13 @@ export default function HeatMapGraph({
       },
       plotOptions: {
         heatmap: {
-          shadeIntensity: 0.3,
-          radius: 8,
+          enableShades: false,
+          shadeIntensity: 0,
+          radius: 0,
           useFillColorAsStroke: false,
           colorScale: {
             ranges: [
-              { from: -1, to: 0, color: levels[0].color, name: "none" },
+              { from: -1.1, to: -0.9, color: levels[0].color, name: "none" },
               { from: 0, to: 0.1429, color: levels[1].color, name: "very low" },
               { from: 0.1429, to: 0.2857, color: levels[2].color, name: "low" },
               {
@@ -329,16 +349,21 @@ export default function HeatMapGraph({
           style: {
             fontSize: "14px",
             fontWeight: 500,
+            colors: getCssVarValue("--color-foreground"),
           },
         },
       },
       xaxis: {
-        categories: categories,
         type: "category" as const,
         tickPlacement: "between",
         labels: {
           trim: false,
-          style: { fontSize: "0.875rem", fontWeight: "300" },
+          style: {
+            fontSize: "0.875rem",
+            fontWeight: "300",
+            colors: getCssVarValue("--color-foreground"),
+          },
+
           formatter: (label: string) => {
             // If label has a dash, only keep the part before it
             const dashIndex = label.indexOf(" -");
@@ -350,8 +375,8 @@ export default function HeatMapGraph({
         enabled: false,
       },
       stroke: {
-        width: 6,
-        colors: [getCssVarValue("--color-git-bg-bottom")],
+        width: 1,
+        colors: ["#666"],
       },
 
       tooltip: {
@@ -400,7 +425,7 @@ export default function HeatMapGraph({
         itemMargin: { horizontal: 2, vertical: 0 },
       },
     }),
-    [categories, users, mode, totals]
+    [categories, users, mode, totals, levels]
   );
 
   return (

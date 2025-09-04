@@ -83,6 +83,16 @@
   --color-git-900: #781816;
   --color-git-950: #41090a;
 
+  --color-git-heat-100: var(--git-heat-100);
+  --color-git-heat-200: var(--git-heat-200);
+  --color-git-heat-300: var(--git-heat-300);
+  --color-git-heat-400: var(--git-heat-400);
+  --color-git-heat-500: var(--git-heat-500);
+  --color-git-heat-600: var(--git-heat-600);
+  --color-git-heat-700: var(--git-heat-700);
+  --color-git-heat-800: var(--git-heat-800);
+  --color-git-heat-900: var(--git-heat-900);
+
   /* Shadcn Variables */
   --color-border: var(--border);
   --color-input: var(--input);
@@ -253,6 +263,17 @@
     --chart-10:var(--git-dv-grey);
     --chart-11:var(--git-dv-pink-dark);
 
+    /* 🔥 Heatmap Scale (Light Mode) */
+    --git-heat-100: #ffeae1; /* very light peach */
+    --git-heat-200: #ffdac9; /* soft coral */
+    --git-heat-300: #febfa3; /* mid peach */
+    --git-heat-400: #fa9a6f; /* warm orange */
+    --git-heat-500: #f1502f; /* Git brand orange-red */
+    --git-heat-600: #e12a15; /* strong red */
+    --git-heat-700: #bb1c13; /* darker red */
+    --git-heat-800: #951917; /* wine red */
+    --git-heat-900: #781816; /* darkest */
+
   }
 
   .dark {
@@ -338,6 +359,16 @@
     --chart-10:var(--git-dv-grey);
     --chart-11:var(--git-dv-pink-dark);
 
+    /* 🔥 Heatmap Scale (Dark Mode) */
+    --git-heat-100: #ffd5c2; /* soft highlight */
+    --git-heat-200: #ffb499; /* coral-orange */
+    --git-heat-300: #ff8a66; /* bright mid-orange */
+    --git-heat-400: #ff7043; /* vivid orange */
+    --git-heat-500: #f1502f; /* brand orange-red (anchor) */
+    --git-heat-600: #e63a23; /* brightened red */
+    --git-heat-700: #cc2a1f; /* strong deep red */
+    --git-heat-800: #b22222; /* firebrick red */
+    --git-heat-900: #991b1b; /* rich crimson */
   }
 
   html,body{
