@@ -6,13 +6,13 @@ import {
   NavigationMenuList,
 } from "../ui/navigation-menu";
 import { navigationMenuTriggerStyle } from "../ui/navigation-menu";
-import SignUpButton from "./signUpButton";
 import ProfileMenu from "../ui/profile-menu";
 import { Moon, Sun } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
 import { useTheme } from "@ui/hooks/useTheme";
 import { useAuth } from "../../hooks/useAuth";
+import { Button } from "../ui/button";
 
 export const NavBar: React.FC = () => {
   const { isDark, toggle } = useTheme();
@@ -33,13 +33,13 @@ export const NavBar: React.FC = () => {
   };
 
   return (
-    <div className="z-50 flex items-center justify-between py-2 border-b bg-git-bg-elevated  sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32">
+    <div className="sticky top-0 z-50 flex items-center justify-between py-2 border-b bg-git-bg-bottom relative px-4">
       <NavigationMenu>
         <NavigationMenuList className="flex space-x-4">
           <div className="flex items-center space-x-3">
             <NavigationMenuItem>
               <NavigationMenuLink>
-                <Link to={isLandingPage?"/":"/home"} >
+                <Link to={isLandingPage ? "/" : "/home"} >
                   <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
                 </Link>
               </NavigationMenuLink>
@@ -112,8 +112,15 @@ export const NavBar: React.FC = () => {
             <a href="/login" className={navigationMenuTriggerStyle() + "mr-10"}>
               Log in
             </a>
-            <SignUpButton />
-          </div>
+            {/* Sign up button */}
+            <Button
+              className={
+                'font-mono w-[100px] h-auto text-white rounded-full  text-center bg-git-int-primary hover:bg-git-int-primary-hover drop-shadow-lg'
+              }
+              asChild
+            >
+              <a href="/signup">Sign Up</a>
+            </Button>          </div>
         )}
         {isLoggedIn && <ProfileMenu onSignOut={handleSignOut} />}
       </div>
