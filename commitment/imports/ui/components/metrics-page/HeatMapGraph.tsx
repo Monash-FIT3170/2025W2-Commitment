@@ -303,7 +303,7 @@ export default function HeatMapGraph({
           useFillColorAsStroke: false,
           colorScale: {
             ranges: [
-              { from: -1.1, to: -0.9, color: levels[0].color, name: "none" },
+              { from: -1, to: 0, color: levels[0].color, name: "none" },
               { from: 0, to: 0.1429, color: levels[1].color, name: "very low" },
               { from: 0.1429, to: 0.2857, color: levels[2].color, name: "low" },
               {
@@ -380,6 +380,14 @@ export default function HeatMapGraph({
       },
 
       tooltip: {
+        theme: document.documentElement.classList.contains("dark")
+          ? "dark"
+          : "light",
+        style: {
+          fontSize: "14px",
+          fontFamily: "inherit",
+          color: getCssVarValue("--color-foreground"), // 👈 custom text color
+        },
         x: {
           formatter: (label: string) => label,
         },
