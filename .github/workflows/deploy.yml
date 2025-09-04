@@ -50,8 +50,8 @@ jobs:
               git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git ~/app
             fi
             cd ~/app
-            git fetch origin main
-            git reset --hard origin/main
+            git fetch origin cd/deploy
+            git reset --hard origin/cd/deploy
 
             docker pull commitment3170/haskell-api-img:latest
 
