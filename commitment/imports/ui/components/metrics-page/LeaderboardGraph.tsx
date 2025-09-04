@@ -58,7 +58,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
 }) => {
   if (!data || data.length === 0) {
     return (
-      <GraphCard className="w-full max-w-full  h-[500px] min-w-[486px] flex flex-col basis-1/3">
+      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
         <CardHeader className="pb-0">
           <CardTitle className="flex text-xl mt-0 font-bold ">
             {title}
@@ -80,7 +80,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
 
   const yAxisWidth = YAxisWidth(data.map((d) => d.name));
   return (
-    <GraphCard className="w-full max-w-full  h-[500px] min-w-[486px] flex flex-col basis-1/3">
+    <GraphCard className="w-full h-[500px] min-w-[486px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="pb-2 items-center flex ">
           <h2 className="text-xl font-bold">{title}</h2>
@@ -89,7 +89,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="grow flex items-center justify-center">
+      <CardContent className="grow flex max-h-full">
         <ChartContainer
           config={{
             value: {
@@ -99,7 +99,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
               label: "Contributor",
             }
           }}
-          className="w-full h-full"
+          className="w-full h-full "
         >
           <BarChart
             layout="vertical"
@@ -107,7 +107,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
             margin={{
               top: 20,
               right: 30,
-              bottom: 20,
+              bottom: 30,
               left: yAxisWidth,
             }}
             barCategoryGap="10%"
