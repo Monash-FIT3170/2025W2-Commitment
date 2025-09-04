@@ -12,7 +12,7 @@ const FormInputWithErrors : FC<FormInputWithErrors> = (props) => {
   const { error } = useFormField();
 
   return (
-    <Input {...props} className={cx(props.className, error && 'border-destructive bg-destructive-foreground')} />
+    <Input {...props} className={cx(props.className, error && 'dark:git-text-secondary border-destructive bg-destructive-foreground')} />
   );
 };
 

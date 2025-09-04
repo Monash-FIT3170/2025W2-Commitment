@@ -1,6 +1,6 @@
 // /imports/ui/widgets/BookmarkButtonTest.tsx
 import React from 'react';
-import BookmarkButton from '../imports/ui/components/ui/BookmarkButton';
+import BookmarkButton from '../imports/ui/components/dashboard/BookmarkButton';
 
 /**
  * BookmarkButtonTest is a manual visual test component that demonstrates how

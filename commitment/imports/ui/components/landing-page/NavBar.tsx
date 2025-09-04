@@ -1,67 +1,49 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@ui/components/ui/navigation-menu";
-import ProfileMenu from "@ui/components/ui/profile-menu";
+} from "../ui/navigation-menu";
+import { navigationMenuTriggerStyle } from "../ui/navigation-menu";
+import ProfileMenu from "../ui/profile-menu";
 import { Moon, Sun } from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
-import SignUpButton from "./signUpButton";
+import { useTheme } from "@ui/hooks/useTheme";
+import { useAuth } from "../../hooks/useAuth";
+import { Button } from "../ui/button";
 
-interface NavBarProps {
-  isLoggedIn: boolean;
-}
+export const NavBar: React.FC = () => {
+  const { isDark, toggle } = useTheme();
 
-function NavBar({ isLoggedIn }: NavBarProps) {
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
 
-  const handleSignOut = () => {
-    // note to self: implement signing out logic here later
-    console.log("Sign out clicked");
+  const isLoggedIn = useAuth();
 
+  const handleSignOut = () => {
     Accounts.logout(() => {
-      console.log("Signed out.")
+      console.log("Signed out.");
     });
   };
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode((prev) => {
-      const newMode = !prev;
-
-      if (newMode) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-
-      console.log("Dark mode toggled:", newMode);
-      return newMode;
-    });
+    toggle();
   };
 
   return (
-    <div
-      className={`z-50 flex items-center justify-between py-2 border-b bg-git-bg-bottom
-        ${
-          isLandingPage
-            ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32"
-            : "relative px-4"
-        }
-      `}
-    >
+    <div className="sticky top-0 z-50 flex items-center justify-between py-2 border-b bg-git-bg-bottom relative px-4">
       <NavigationMenu>
         <NavigationMenuList className="flex space-x-4">
           <div className="flex items-center space-x-3">
-            <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-              <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-              <span className="text-xl"></span>
-            </Link>
+            <NavigationMenuItem>
+              <NavigationMenuLink>
+                <Link to={isLandingPage ? "/" : "/home"} >
+                  <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
           </div>
 
           {isLandingPage ? (
@@ -98,11 +80,11 @@ function NavBar({ isLoggedIn }: NavBarProps) {
               <NavigationMenuItem>
                 <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
                   Dashboard
-                </Link>{" "}
+                </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <div className={navigationMenuTriggerStyle()}>Docs</div>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Docs
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -110,16 +92,15 @@ function NavBar({ isLoggedIn }: NavBarProps) {
         </NavigationMenuList>
       </NavigationMenu>
 
-      <div className="flex items-center space-x-4">
+      {/* Right hand side nav */}
+      <div className="flex items-center space-x-4 ">
         <button
           type="button"
           onClick={handleToggleDarkMode}
-          className="p-2 rounded-full hover:bg-gray-200 transition-colors"
-          aria-label={
-            isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-          }
+          className="p-2 rounded-full hover:bg-git-bg-bottom/30 transition-colors"
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
-          {isDarkMode ? (
+          {isDark ? (
             <Sun className="h-6 w-6 text-yellow-400" />
           ) : (
             <Moon className="h-6 w-6 text-gray-600" />
@@ -128,16 +109,23 @@ function NavBar({ isLoggedIn }: NavBarProps) {
 
         {!isLoggedIn && (
           <div>
-            <a href="/login" className={navigationMenuTriggerStyle()}>
+            <a href="/login" className={navigationMenuTriggerStyle() + "mr-10"}>
               Log in
             </a>
-            <SignUpButton />
-          </div>
+            {/* Sign up button */}
+            <Button
+              className={
+                'font-mono w-[100px] h-auto text-white rounded-full  text-center bg-git-int-primary hover:bg-git-int-primary-hover drop-shadow-lg'
+              }
+              asChild
+            >
+              <a href="/signup">Sign Up</a>
+            </Button>          </div>
         )}
         {isLoggedIn && <ProfileMenu onSignOut={handleSignOut} />}
       </div>
     </div>
   );
-}
+};
 
 export default NavBar;
