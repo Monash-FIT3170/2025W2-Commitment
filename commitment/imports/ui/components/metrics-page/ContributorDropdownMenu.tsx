@@ -50,11 +50,7 @@ export function ContributorDropdownMenu({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className={
-            'w-[300px] justify-start text-left font-normal border-2 rounded-lg'
-           
-          }
-          style={{ borderColor: '#35353140' }}
+          className="w-[300px] justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40"
         >
           <span className="block w-full truncate text-left">
             {buttonText()}

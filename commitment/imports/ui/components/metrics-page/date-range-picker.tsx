@@ -97,15 +97,15 @@ export function DatePicker({ onChange }: Props) {
   };
 
   return (
-    <div className={cn("grid gap-2")}>
+    <div className={cn("grid gap-2 ")}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             id="date"
             variant="outline"
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              "w-[300px] justify-start text-left font-normal border-2 rounded-lg  border-git-stroke-primary/40 ",
+              // !date && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />

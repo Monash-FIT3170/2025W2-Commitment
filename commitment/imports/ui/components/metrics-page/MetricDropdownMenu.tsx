@@ -23,18 +23,12 @@ export default function MetricDropdownMenu({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className={
-            'w-[300px] justify-start text-left font-normal border-2 rounded-lg'
-           
-          }
-          style={{ borderColor: '#35353140' }}
+          className="w-[300px] justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40"
         >
           {selected ?? "Select a metric"}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-[280px]  focus:ring-0 border-2"
-      >
+      <DropdownMenuContent className="w-[280px]  focus:ring-0 border-2">
         {/* <DropdownMenuLabel>Select Branch</DropdownMenuLabel> */}
         {/* <DropdownMenuSeparator /> */}
         {metrics.map((metric) => (
