@@ -18,7 +18,8 @@ import {
 
 import { ChevronRight } from "lucide-react";
 
-import type { AliasEmail } from "@server/commitment_api/types";
+import InfoButton from "../ui/infoButton";
+import { AliasEmail } from "/imports/api/types";
 
 interface DataTableProps<TData extends { aliases?: AliasEmail[] }, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -34,7 +35,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: () => true,
+    getRowCanExpand: (row) => (row.original.aliases?.length ?? 0) > 0,
   });
 
   return (
@@ -68,33 +69,60 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
               {/* Unexpanded Rows */}
               <TableRow
                 onClick={() => row.toggleExpanded()}
-                className="cursor-pointer"
+                className="cursor-pointer bg-git-int-primary hover:bg-git-int-primary-hover"
               >
                 {row.getVisibleCells().map((cell, idx) => (
                   <TableCell
                     key={cell.id}
                     className={
                       (idx === 0
-                        ? "rounded-l-md bg-git-int-primary hover:bg-git-int-primary text-git-int-text text-1xl"
+                        ? "rounded-l-md text-git-int-text text-1xl"
                         : idx === row.getVisibleCells().length - 1
-                        ? "rounded-r-md bg-git-int-primary hover:bg-git-int-primary text-git-int-text"
-                        : "bg-git-int-primary hover:bg-git-int-primary text-git-int-text text-2xl font-bold") +
-                      " py-0"
+                        ? "rounded-r-md text-git-int-text"
+                        : "text-git-int-text text-2xl font-bold") + " py-0"
                     }
                   >
-                    {idx === 0 && (
-                      <ChevronRight
-                        className={`inline-block mr-2 transition-transform duration-200 ${
-                          row.getIsExpanded() ? "rotate-90" : ""
-                        }`}
-                        size={16}
-                      />
-                    )}
+                    {idx === 0 ? (
+                      <div className="flex items-center gap-1">
+                        {/* Chevron or placeholder */}
+                        {row.getCanExpand() ? (
+                          <ChevronRight
+                            className={`transition-transform duration-200 ${
+                              row.getIsExpanded() ? "rotate-90" : ""
+                            }`}
+                            size={16}
+                          />
+                        ) : (
+                          <span className="w-4" />
+                        )}
 
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    {idx === row.getVisibleCells().length - 2 &&
-                      typeof cell.getValue() === "number" &&
-                      "%"}
+                        {/* Name */}
+                        <span className="leading-none">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </span>
+
+                        {/* InfoButton if no aliases */}
+                        {(!row.original.aliases ||
+                          row.original.aliases.length === 0) && (
+                          <div className="flex items-center -translate-y-2 pl-0.5">
+                            <InfoButton description="This user has not contributed to the default branch!" />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                        {idx === row.getVisibleCells().length - 2 &&
+                          typeof cell.getValue() === "number" &&
+                          "%"}
+                      </>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
@@ -130,7 +158,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                           className="!border-0 px-4"
                         >
                           <div className="ml-4 text-sm text-git-text-secondary">
-                            <strong>{alias.username}</strong> ({alias.email})
+                            <strong>{alias.email}</strong>
                           </div>
                         </TableCell>
                       </TableRow>

@@ -165,26 +165,24 @@ export async function getAllGraphData(
   };
 }
 
-export async function getAllMetrics(repoUrl: string): Promise<AllMetricsData> {
-  // does all of this on UNFILTERED DATA
-  setsUnfilteredData(repoUrl);
-  const unfilteredData = await getUnfilteredData();
+export async function getAllMetrics(filteredData: SerializableRepoData): Promise<AllMetricsData> {
+  // does all of this on FILTERED DATA
 
   // for each contributor in the unfiltered data, find the metric associated to them:
   const allMetricData: AllMetricsData = {};
 
-  const contributors = getContributors(unfilteredData);
+  const contributors = getContributors(filteredData);
 
   contributors.forEach((contributor) => {
     allMetricData[contributor] = {
-      "Total lines of commit": getTotalCommitsPerContributor(
-        unfilteredData,
+      "Total No. Commits": getTotalCommitsPerContributor(
+        filteredData,
         contributor
       ),
-      LOC: getLOCperContributor(unfilteredData, contributor),
-      "LOC/Commit": getLocPerCommitPerContributor(unfilteredData, contributor),
+      "LOC": getLOCperContributor(filteredData, contributor),
+      "LOC Per Commit": getLocPerCommitPerContributor(filteredData, contributor),
       "Commits Per Day": getCommitPerDayPerContributor(
-        unfilteredData,
+        filteredData,
         contributor
       ),
     };
@@ -434,7 +432,7 @@ export async function numBranches(): Promise<number> {
 }
 
 export function getMetricString(): string[] {
-  return ["Total No. Commits", "LOC", "LOC/Commit", "Commits Per Day"];
+  return ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
 }
 
 /**

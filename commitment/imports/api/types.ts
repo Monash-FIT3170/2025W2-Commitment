@@ -168,7 +168,7 @@ export interface AnalyticsData {
 
 export enum MetricType {
   LOC = "LOC",
-  LOC_PER_COMMIT = "LOC per Commit",
+  LOC_PER_COMMIT = "LOC Per Commit",
   COMMITS_PER_DAY = "Commits per Day",
   TOTAL_COMMITS = "Total No. Commits",
 }
@@ -180,9 +180,9 @@ export const metricNames: string[] = Object.values(MetricType);
 
 export interface AllMetricsData {
   [contributorName: string]: {
-    "Total lines of commit": number;
+    "Total No. Commits": number;
     LOC: number;
-    "LOC/Commit": number;
+    "LOC Per Commit": number;
     "Commits Per Day": number;
   };
 }
