@@ -125,7 +125,7 @@ export function AnalyticsView(): React.JSX.Element {
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
               <p className="text-sm text-muted-foreground">Date Range*</p>
-              <DateRangePicker
+              <DatePicker
                 defaultValue={dateRange}
                 onChange={(range: DateRange | undefined) => {
                   if (range) setDateRange(range);
