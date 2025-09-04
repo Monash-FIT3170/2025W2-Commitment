@@ -110,7 +110,7 @@ export function AnalyticsView(): React.JSX.Element {
   return (
     <div className="w-screen m-0 scroll-smooth p-10">
       <div className="flex flex-col gap-32">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-primary outline-2 outline-git-bg-secondary">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-4">

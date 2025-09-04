@@ -29,9 +29,9 @@ export default function MetricsTabs() {
   return (
     <Tabs
       defaultValue="metrics"
-      className="w-full bg-[#FEFEFA] shadow-sm justify-items-start"
+      className="w-full bg-git-bg-primary shadow-sm justify-items-start"
     >
-      <TabsList className="flex bg-git-bg-elevated border-b">
+      <TabsList className="w-full flex justify-start bg-git-bg-elevated ">
         {allTabData.map(({ value, label }) => (
           <TabsTrigger
             key={value}
@@ -39,6 +39,7 @@ export default function MetricsTabs() {
             className={`
               relative px-4 text-lg font-medium text-foreground
               bg-git-bg-elevated hover:bg-git-tabs-hovered
+              
               data-[state=active]:bg-git-tabs-active
               data-[state=active]:git-tabs-hovered
               data-[state=active]:after:content-['']
@@ -48,6 +49,7 @@ export default function MetricsTabs() {
               data-[state=active]:after:w-full
               data-[state=active]:after:h-0.5
               data-[state=active]:after:bg-git
+              data-[state=active]:after:bg-orange-500
               rounded-none border-none shadow-none focus:outline-hidden
               transition-all
             `}
@@ -65,7 +67,7 @@ export default function MetricsTabs() {
           <AnalyticsView />
         </div>
       </TabsContent>
-      <TabsContent value="scaling" className='mx-20 my-10 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary p-8'>
+      <TabsContent value="scaling" className='mx-20 my-10  bg-git-bg-elevated outline-2 outline-git-bg-secondary p-8'>
         {/* SCALING */}
         <ScalingView />
       </TabsContent>
