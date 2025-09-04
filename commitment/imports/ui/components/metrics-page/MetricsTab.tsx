@@ -69,7 +69,7 @@ export default function MetricsTabs() {
       </TabsContent>
       <TabsContent
         value="scaling"
-        className=" "
+        className=" w-full"
       >
         {/* SCALING */}
         <ScalingView />
