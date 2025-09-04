@@ -2,7 +2,8 @@ import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { BookmarksCollection, Bookmark } from './bookmarks';
 
-import { repoInDatabase } from './call_repo';
+// Import the server-side function instead of the client-side one
+import { isInDatabase } from '../../server/caching';
 
 Meteor.methods({
   /**
@@ -27,7 +28,7 @@ Meteor.methods({
       throw new Meteor.Error('invalid-url', 'URL must be valid and start with http or https');
     }
 
-    const inDatabase = await repoInDatabase(url);
+    const inDatabase = await isInDatabase(url);
     if (!inDatabase) {
       throw new Meteor.Error('not-in-database', `URL does not exist inside database: ${url}`);
     }
@@ -145,7 +146,7 @@ Meteor.methods({
          *
          * @method bookmarks.getNBookmarks
          * @returns {Promise<Bookmark[]>} An array of bookmarks for the current user.
-         * @throws {Meteor.Error} If not authorised.
+         * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
          */
   'bookmarks.getNBookmarks'(numBookmarks:number) {
     check(numBookmarks, Number);

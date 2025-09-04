@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { DataTable } from "./ScalingTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { ScalingRadialChart } from "./ScalingRadialChart";
-import type { UserScalingSummary } from "@server/commitment_api/types";
+import { UserScalingSummary } from "/imports/api/types";
 interface ScalingSummaryProps {
   userScalingSummaries: UserScalingSummary[]; //IF A GRADING SHEET IS PROVIDED, THE VALUES OF THIS PARAMETER MUST REFLECT THE FINAL GRADE, THUS CALCULATIONS ARE DONE AT THE GradingSheetForm STAGE
   hasGradingSheet: boolean;
@@ -19,7 +19,11 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
       {
         accessorKey: "name",
         header: "Contributor Name",
-        cell: ({ row }) => row.getValue("name"),
+        cell: ({ row }) => (
+          <span className="text-git-int-text text-sm font-normal">
+            {row.getValue("name")}
+          </span>
+        ),
       },
       {
         accessorKey: "scale",
@@ -37,7 +41,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
         header: "Final Grade",
         cell: ({ row }) => {
           const grade = row.getValue("finalGrade") as number | null;
-          return grade ?? 0;
+          return grade === null ? "-" : grade;
         },
       });
     }
