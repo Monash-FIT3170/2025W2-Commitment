@@ -120,6 +120,9 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
+  --breakpoint-2xl: 100rem;
+  --breakpoint-3xl: 120rem;
+
   @keyframes accordion-down {
     from {
       height: 0;

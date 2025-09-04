@@ -3,11 +3,11 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
-} from '@ui/components/ui/tabs';
-import React from 'react';
-import { OverviewPage } from './OverviewPage';
-import { AnalyticsView } from './AnalyticsView';
-import ScalingView from '../scaling/ScalingView';
+} from "@ui/components/ui/tabs";
+import React from "react";
+import { OverviewPage } from "./OverviewPage";
+import { AnalyticsView } from "./AnalyticsView";
+import ScalingView from "../scaling/ScalingView";
 
 interface TabData {
   value: string;
@@ -16,12 +16,12 @@ interface TabData {
 
 const allTabData: TabData[] = [
   {
-    value: 'metrics',
-    label: 'Metrics',
+    value: "metrics",
+    label: "Metrics",
   },
   {
-    value: 'scaling',
-    label: 'Scaling',
+    value: "scaling",
+    label: "Scaling",
   },
 ];
 
@@ -57,15 +57,16 @@ export default function MetricsTabs() {
         ))}
       </TabsList>
 
-      
-      
-      <TabsContent value="metrics" className=''>
+      <TabsContent value="metrics" className="">
         {/* METRICS */}
-        <div className=''>
+        <div className="">
           <AnalyticsView />
         </div>
       </TabsContent>
-      <TabsContent value="scaling" className='mx-20 my-10 rounded-2xl bg-white outline-2 outline-git-bg-secondary p-8'>
+      <TabsContent
+        value="scaling"
+        className="w-full bg-[#FEFEFA] shadow-sm justify-items-start"
+      >
         {/* SCALING */}
         <ScalingView />
       </TabsContent>

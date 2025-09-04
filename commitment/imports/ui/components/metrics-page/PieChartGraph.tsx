@@ -86,7 +86,7 @@ export function ContributionPieChart({ data, title }: Props) {
   }));
   if (!data || data.length === 0) {
     return (
-      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+      <GraphCard className="w-full max-w-full h-[500px] flex flex-col basis-1/3">
         <CardHeader className="pb-0">
           <CardTitle className="flex text-xl mt-0 font-bold ">
             {title}
@@ -104,7 +104,7 @@ export function ContributionPieChart({ data, title }: Props) {
     );
   }
   return (
-    <GraphCard className="w-full max-w-[800px] h-[500px] flex flex-col basis-1/3">
+    <GraphCard className="w-full max-w-full h-[500px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
           <h2 className="text-xl font-bold"> {title}</h2>
@@ -123,47 +123,45 @@ export function ContributionPieChart({ data, title }: Props) {
           Please select an End Date in the Date Range
         </CardContent>
       ) : (
-        <>
-          <CardContent className="flex flex-col items-center gap-4">
-            {/* Legend */}
-            <div className="w-full overflow-hidden">
-              <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs max-w-full">
-                {coloredData.map((entry) => (
-                  <li key={entry.user} className="flex items-center gap-1">
-                    <span
-                      className="inline-block h-3 w-3 rounded-sm"
-                      style={{ backgroundColor: entry.fill }}
-                    />
-                    <span className="whitespace-nowrap">{entry.user}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {/* Pie */}
-            <PieChart width={300} height={300}>
-              <Pie
-                data={coloredData}
-                dataKey="contributions"
-                nameKey="user"
-                cx="50%"
-                cy="50%"
-                outerRadius={110}
-                stroke="none"
-                isAnimationActive
-                animationDuration={800}
-                labelLine={false}
-              >
-                {coloredData.map((entry) => (
-                  <Cell key={entry.user} fill={entry.fill} stroke="none" />
-                ))}
-              </Pie>
-              <Tooltip
-                content={<CustomTooltip />}
-                wrapperStyle={{ outline: "none" }}
-              />
-            </PieChart>
-          </CardContent>
-        </>
+        <CardContent className="flex flex-col items-center gap-4">
+          {/* Legend */}
+          <div className="w-full overflow-hidden">
+            <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs max-w-full">
+              {coloredData.map((entry) => (
+                <li key={entry.user} className="flex items-center gap-1">
+                  <span
+                    className="inline-block h-3 w-3 rounded-sm"
+                    style={{ backgroundColor: entry.fill }}
+                  />
+                  <span className="whitespace-nowrap">{entry.user}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {/* Pie */}
+          <PieChart width={300} height={300}>
+            <Pie
+              data={coloredData}
+              dataKey="contributions"
+              nameKey="user"
+              cx="50%"
+              cy="50%"
+              outerRadius={110}
+              stroke="none"
+              isAnimationActive
+              animationDuration={800}
+              labelLine={false}
+            >
+              {coloredData.map((entry) => (
+                <Cell key={entry.user} fill={entry.fill} stroke="none" />
+              ))}
+            </Pie>
+            <Tooltip
+              content={<CustomTooltip />}
+              wrapperStyle={{ outline: "none" }}
+            />
+          </PieChart>
+        </CardContent>
       )}
     </GraphCard>
   );

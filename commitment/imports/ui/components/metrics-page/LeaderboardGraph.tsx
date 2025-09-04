@@ -59,7 +59,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
 }) => {
   if (!data || data.length === 0) {
     return (
-      <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+      <GraphCard className="w-full max-w-full  h-[500px] min-w-[486px] flex flex-col basis-1/3">
         <CardHeader className="pb-0">
           <CardTitle className="flex text-xl mt-0 font-bold ">
             {title}
@@ -82,7 +82,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
   const yAxisWidth = YAxisWidth(data.map((d) => d.name));
 
   return (
-    <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
+    <GraphCard className="w-full max-w-full  h-[500px] min-w-[486px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="pb-2 items-center flex ">
           <h2 className="text-xl font-bold">{title}</h2>
