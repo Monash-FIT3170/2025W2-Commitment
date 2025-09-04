@@ -107,7 +107,7 @@ const fetchDataFromHaskellAppWS = async (
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
     notifier.next("Connecting to the API...");
-    const socket = new WebSocket("ws://54.66.80.27:8081");
+    const socket = new WebSocket("ws://3.25.5.126:8081");
 
     socket.onopen = () => {
       // notify that connection to the api was successful
@@ -157,7 +157,7 @@ const fetchDataFromHaskellAppWS = async (
  */
 const fetchDataFromHaskellAppHTTP = async (url: string): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) =>
-    fetch("http://54.66.80.27:8081", {
+    fetch("http://3.25.5.126:8081", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: url }),
