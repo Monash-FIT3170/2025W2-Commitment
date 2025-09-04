@@ -16,6 +16,7 @@ import ViewToggle from "../../components/dashboard/ViewToggle";
 import RepoRow from "../../components/dashboard/RepoRow";
 import { FiltersState, FilterValue } from "../../components/ui/filter";
 import BookmarkFilter from "../../components/dashboard/BookmarkFilter";
+import { Input } from "../../components/ui/input";
 
 // const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
 //   _id: `${i + 1}`,
@@ -211,15 +212,13 @@ const DashboardView: React.FC = () => {
 
         {/* Search bar */}
         <div className="relative">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-          />
-          <input
+
+          <Input
             type="search"
             placeholder="Search repositories"
             onChange={handleSearch}
-            className="w-56 sm:w-64 lg:w-72 rounded-full border border-gray-300 bg-white py-1.5 pl-9 pr-3 text-sm focus:outline-hidden focus:ring-1 focus:ring-gray-400"
+            className="w-56 pl-4 sm:w-64 lg:w-72 rounded-full border "
+
           />
         </div>
       </div>
@@ -229,7 +228,7 @@ const DashboardView: React.FC = () => {
         className="
           mx-auto mt-6
           w-full max-w-[77%]
-          bg-white border border-gray-200 rounded-lg shadow
+          bg-git-bg-elevated border border-border rounded-lg shadow
           px-6 py-5
           h-[480px]
           overflow-y-auto
