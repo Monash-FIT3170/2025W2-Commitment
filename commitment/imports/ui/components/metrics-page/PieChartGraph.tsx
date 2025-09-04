@@ -1,8 +1,6 @@
 import React from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
-
 import { TrendingUp } from "lucide-react";
-
 import {
   Card,
   CardContent,
@@ -10,25 +8,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/components/ui/card";
-// import { stat } from "fs";
 import InfoButton from "../ui/infoButton";
 import GraphCard from "./GraphCard";
-import { title } from "process";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 
 export interface ChartEntry {
   user: string;
   contributions: number;
-  // fill: string;
 }
 
 interface Props {
   data: ChartEntry[];
   title: string;
 }
-
-// CURRENT COLOUR PALLETTE - ASK PMs TO help
-
-// const graphBackgroundColour = "#E8E8DD";
 
 const staticColorPalette = [
   "#4E79A7",
@@ -52,39 +44,21 @@ const extendColorPalette = (index: number): string => {
 const pieChartDescription =
   "Commit distribution by contributor — each slice shows a contributor's share of total commits.";
 
-// For pop up
-function CustomTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: any[];
-}) {
-  if (!active || !payload || !payload.length) return null;
 
-  const { user, contributions, fill } = payload[0].payload;
-
-  return (
-    <div className="rounded-md border-2 border-black bg-white px-3 py-2 text-sm shadow-md text-muted-foreground ">
-      <div className="flex items-center gap-2 font-semibold">
-        <span
-          className="inline-block h-3 w-3 rounded-sm"
-          style={{ backgroundColor: fill }}
-        />
-        {user}
-      </div>
-      <div>{contributions} contributions</div>
-    </div>
-  );
-}
 
 // Main Pie Chart
 export function ContributionPieChart({ data, title }: Props) {
+  // Debug data
+  console.log("Pie chart data:", data);
+  
   const coloredData = data.map((entry, index) => ({
     ...entry,
     title,
     fill: staticColorPalette[index] ?? extendColorPalette(index),
   }));
+  
+  console.log("Colored data:", coloredData);
+
   if (!data || data.length === 0) {
     return (
       <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
@@ -104,19 +78,16 @@ export function ContributionPieChart({ data, title }: Props) {
       </GraphCard>
     );
   }
+
   return (
     <GraphCard className="w-full max-w-[800px] h-[500px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
           <h2 className="text-xl font-bold"> {title}</h2>
-
-          {/* Special margin for the infoButton to get it centred */}
           <div className="relative -mt-2">
             <InfoButton description={pieChartDescription} />
           </div>
         </div>
-
-        {/* <CardDescription>Last 6 months</CardDescription> */}
       </CardHeader>
 
       {coloredData.length === 0 ? (
@@ -124,47 +95,65 @@ export function ContributionPieChart({ data, title }: Props) {
           Please select an End Date in the Date Range
         </CardContent>
       ) : (
-        <>
-          <CardContent className="flex flex-col items-center gap-4">
-            {/* Legend */}
-            <div className="w-full overflow-hidden">
-              <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs max-w-full">
-                {coloredData.map((entry) => (
-                  <li key={entry.user} className="flex items-center gap-1">
-                    <span
-                      className="inline-block h-3 w-3 rounded-sm"
-                      style={{ backgroundColor: entry.fill }}
-                    />
-                    <span className="whitespace-nowrap">{entry.user}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {/* Pie */}
-            <PieChart width={300} height={300}>
+        <CardContent className="flex flex-col items-center gap-4">
+          {/* Legend */}
+          <div className="w-full overflow-hidden">
+            <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs max-w-full">
+              {coloredData.map((entry) => (
+                <li key={entry.user} className="flex items-center gap-1">
+                  <span
+                    className="inline-block h-3 w-3 rounded-sm"
+                    style={{ backgroundColor: entry.fill }}
+                  />
+                  <span className="whitespace-nowrap">{entry.user}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          {/* Pie Chart */}
+          <ChartContainer
+            config={{
+              contributions: {
+                label: "Contributions",
+              },
+              user: {
+                label: "User",
+              }
+            }}
+            className="min-h-[300px] w-full max-w-[300px]"
+          >
+            <PieChart>
               <Pie
                 data={coloredData}
                 dataKey="contributions"
                 nameKey="user"
                 cx="50%"
                 cy="50%"
-                outerRadius={110}
+                outerRadius={100}
+                innerRadius={0}
                 stroke="none"
+                strokeWidth={0}
                 isAnimationActive
                 animationDuration={800}
                 labelLine={false}
               >
                 {coloredData.map((entry) => (
-                  <Cell key={entry.user} fill={entry.fill} stroke="none" />
+                  <Cell 
+                    key={entry.user} 
+                    fill={entry.fill} 
+                    stroke="none" 
+                    strokeWidth={0}
+                  />
                 ))}
               </Pie>
-              <Tooltip
-                content={<CustomTooltip />}
-                wrapperStyle={{ outline: "none" }}
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent />}
               />
             </PieChart>
-          </CardContent>
-        </>
+          </ChartContainer>
+        </CardContent>
       )}
     </GraphCard>
   );
