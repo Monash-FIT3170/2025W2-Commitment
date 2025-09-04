@@ -55,7 +55,7 @@ jobs:
 
             sudo docker pull commitment3170/haskell-api-img:latest
 
-            sudo docker build -t commitment-img -f commitment/Dockerfile.MeteorRun . --no-cache
+            sudo docker build -t commitment-img -f commitment/Dockerfile.MeteorRun ~/app/commitment --no-cache
 
             sudo docker-compose -f docker-compose.prod.yml up -d
       # mup
