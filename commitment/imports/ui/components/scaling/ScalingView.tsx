@@ -1,12 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, Download } from "lucide-react";
+import { Upload, Download, X } from "lucide-react";
 import ScalingConfigForm from "./ScalingConfigForm";
 import {
   Dialog,
   DialogContent,
 } from "../ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../ui/alert-dialog";
 import { calculateFinalGrades, generateScaledGradingSheet } from "./ScalingUtils";
 
 import { Button } from "../ui/button";
@@ -14,6 +25,7 @@ import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
 import type { UserScalingSummary } from "../../../api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
+import { useLocation } from "react-router-dom";
 import { toast } from "../../hooks/use-toast";
 
 interface ScalingConfig {
@@ -23,56 +35,113 @@ interface ScalingConfig {
 }
 
 function ScalingView(): JSX.Element {
+  const location = useLocation();
   const [completed, setCompleted] = useState(false);
 
   const [hasLoaded, setHasLoaded] = useState(false);
   const [step, setStep] = useState<"config" | "sheet" | "done">("config");
   const [showDialog, setShowDialog] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
   const [gradingSheetParseResult, setGradingSheetParseResult] = useState<ParseResult | null>(null);
   const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
+  const [repoUrl, setRepoUrl] = useState<string | null>(null);
+
+  // Function to clear all scaling data from localStorage and reset state
+  const clearScalingData = (preserveRepoUrl = false) => {
+    localStorage.removeItem('hasVisitedScaling');
+    localStorage.removeItem('scaling_config');
+    localStorage.removeItem('scaling_results');
+    localStorage.removeItem('scaling_grading_sheet_name');
+    localStorage.removeItem('scaling_parse_result');
+    localStorage.removeItem('scaling_step');
+    
+    // Reset all state
+    setConfig(null);
+    setGradingSheet(null);
+    setGradingSheetParseResult(null);
+    setScaledResults([]);
+    setCompleted(false);
+    setStep("config");
+    
+    // Only show dialog if we're not preserving repo URL (manual clear)
+    if (!preserveRepoUrl) {
+      setShowDialog(true);
+    }
+  };
+
+  // Handle confirmed clear action
+  const handleConfirmClear = () => {
+    clearScalingData();
+    setShowClearDialog(false);
+    toast({
+      title: "Scaling cleared",
+      description: "All scaling configuration and data has been cleared.",
+    });
+  };
 
   // Simple initialization with localStorage persistence for core state
   useEffect(() => {
-    const hasVisited = localStorage.getItem('hasVisitedScaling') === 'true';
-    setCompleted(hasVisited);
-    if (!hasVisited) setShowDialog(true);    
+    const currentRepoUrl: string = location.state?.repoUrl ?? null;
+    setRepoUrl(currentRepoUrl);
     
-    // Restore key state from localStorage
-    try {
-      const savedConfig = localStorage.getItem('scaling_config');
-      const savedResults = localStorage.getItem('scaling_results');
-      const savedGradingSheetName = localStorage.getItem('scaling_grading_sheet_name');
-      const savedParseResult = localStorage.getItem('scaling_parse_result');
-      const savedStep = localStorage.getItem('scaling_step');
+    // Check if repo has changed - clear localStorage if it has
+    const lastRepoUrl = localStorage.getItem('scaling_last_repo_url');
+    const hasExistingScalingData = localStorage.getItem('scaling_config') || 
+      localStorage.getItem('scaling_results') || 
+      localStorage.getItem('scaling_grading_sheet_name');
+    
+    if ((lastRepoUrl && lastRepoUrl !== currentRepoUrl) || 
+        (hasExistingScalingData && !lastRepoUrl && currentRepoUrl)) {
+      clearScalingData(true);
+      localStorage.setItem('scaling_last_repo_url', currentRepoUrl);
+      setCompleted(false);
+      setShowDialog(true);
+    } else {
+      if (currentRepoUrl) {
+        // Store current repo URL as last_visited
+        localStorage.setItem('scaling_last_repo_url', currentRepoUrl);
+      }
       
-      if (savedConfig) {
-        const parsedConfig = JSON.parse(savedConfig) as ScalingConfig;
-        setConfig(parsedConfig);
+      const hasVisited = localStorage.getItem('hasVisitedScaling') === 'true';
+      setCompleted(hasVisited);
+      if (!hasVisited) setShowDialog(true);
+      
+      // Restore key state from localStorage only if repo hasn't changed
+      try {
+        const savedConfig = localStorage.getItem('scaling_config');
+        const savedResults = localStorage.getItem('scaling_results');
+        const savedGradingSheetName = localStorage.getItem('scaling_grading_sheet_name');
+        const savedParseResult = localStorage.getItem('scaling_parse_result');
+        const savedStep = localStorage.getItem('scaling_step');
+        
+        if (savedConfig) {
+          const parsedConfig = JSON.parse(savedConfig) as ScalingConfig;
+          setConfig(parsedConfig);
+        }
+        if (savedResults) {
+          const parsedResults = JSON.parse(savedResults) as UserScalingSummary[];
+          setScaledResults(parsedResults);
+        }      
+        if (savedGradingSheetName) {
+          const placeholderFile = new File([''], savedGradingSheetName, { type: 'text/csv' });
+          setGradingSheet(placeholderFile);
+        }      
+        if (savedParseResult) {
+          const parsedParseResult = JSON.parse(savedParseResult) as ParseResult;
+          setGradingSheetParseResult(parsedParseResult);
+        }      
+        if (savedStep && (savedStep === 'config' || savedStep === 'sheet' || savedStep === 'done')) {
+          setStep(savedStep);
+        }
+      } catch {
+        // Ignore errors in restoring state
       }
-      if (savedResults) {
-        const parsedResults = JSON.parse(savedResults) as UserScalingSummary[];
-        setScaledResults(parsedResults);
-      }      
-      if (savedGradingSheetName) {
-        // Create a placeholder file for display purposes
-        const placeholderFile = new File([''], savedGradingSheetName, { type: 'text/csv' });
-        setGradingSheet(placeholderFile);
-      }      
-      if (savedParseResult) {
-        const parsedParseResult = JSON.parse(savedParseResult) as ParseResult;
-        setGradingSheetParseResult(parsedParseResult);
-      }      
-      if (savedStep && (savedStep === 'config' || savedStep === 'sheet' || savedStep === 'done')) {
-        setStep(savedStep);
-      }
-    } catch {
-      // Ignore errors in restoring state
     }
     
     setHasLoaded(true);
-  }, []);
+  }, [location]);
 
   // Save all state changes to localStorage (combined auto-save)
   useEffect(() => {
@@ -99,7 +168,7 @@ function ScalingView(): JSX.Element {
     } catch {
       // Ignore localStorage errors
     }
-  }, [config, scaledResults, gradingSheet, gradingSheetParseResult, step, completed, hasLoaded]);
+  }, [config, scaledResults, gradingSheet, gradingSheetParseResult, step, completed, hasLoaded, repoUrl]);
 
   const handleConfigSubmit = (
     configData: ScalingConfig,
@@ -231,6 +300,33 @@ function ScalingView(): JSX.Element {
                 <Download className="h-4 w-4"/>
                 Download Scaled Grading Sheet
               </Button>
+            )}
+
+            {/* Clear button - only visible when there's config or grading sheet data */}
+            {(config || gradingSheet || scaledResults.length > 0) && (
+              <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2"
+                  >
+                    <X className="h-4 w-4"/>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Clear Scaling</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to clear all scaling data? You will need to reconfigure scaling settings and re-upload your grading sheet if you do.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmClear}>
+                      Clear
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
 
