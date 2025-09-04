@@ -194,7 +194,8 @@ export function DatePicker({ onChange, defaultValue }: Props) {
                 "rounded-r-md bg-git-int-primary text-white hover:bg-git-int-primary",
               caption_dropdowns: "flex gap-2",
               caption_label: "text-sm font-medium text-black",
-              dropdown: "px-2 py-1 border-1 border-git-stroke-primary rounded-md text-sm text-git-text-primary",
+              dropdown:
+                "px-2 py-1 border-1 border-git-stroke-primary rounded-md text-sm text-black",
             }}
           />
         </PopoverContent>
