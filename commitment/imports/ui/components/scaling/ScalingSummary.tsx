@@ -19,7 +19,11 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
       {
         accessorKey: "name",
         header: "Contributor Name",
-        cell: ({ row }) => row.getValue("name"),
+        cell: ({ row }) => (
+          <span className="text-git-int-text text-sm font-normal">
+            {row.getValue("name")}
+          </span>
+        ),
       },
       {
         accessorKey: "scale",
@@ -37,7 +41,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
         header: "Final Grade",
         cell: ({ row }) => {
           const grade = row.getValue("finalGrade") as number | null;
-          return grade ?? 0;
+          return grade === null ? "-" : grade;
         },
       });
     }

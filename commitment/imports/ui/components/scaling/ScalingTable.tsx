@@ -74,13 +74,13 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                 {row.getVisibleCells().map((cell, idx) => (
                   <TableCell
                     key={cell.id}
-                    className={
-                      (idx === 0
+                    className={`${
+                      idx === 0
                         ? "rounded-l-md text-git-int-text text-1xl"
                         : idx === row.getVisibleCells().length - 1
                         ? "rounded-r-md text-git-int-text"
-                        : "text-git-int-text text-2xl font-bold") + " py-0"
-                    }
+                        : "text-git-int-text text-sm font-normal"
+                    } py-0`}
                   >
                     {idx === 0 ? (
                       <div className="flex items-center gap-1">
@@ -119,8 +119,9 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                           cell.getContext()
                         )}
                         {idx === row.getVisibleCells().length - 2 &&
-                          typeof cell.getValue() === "number" &&
-                          "%"}
+                          typeof cell.getValue() === "number" && (
+                          <span className="text-sm font-normal">%</span>
+                        )}
                       </>
                     )}
                   </TableCell>

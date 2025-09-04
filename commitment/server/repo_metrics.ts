@@ -204,12 +204,12 @@ export async function getAllMetricsFromData(repoData: SerializableRepoData): Pro
 
   contributors.forEach((contributor) => {
     allMetricData[contributor] = {
-      "Total lines of commit": getTotalCommitsPerContributor(
+      "Total No. Commits": getTotalCommitsPerContributor(
         repoData,
         contributor
       ),
       LOC: getLOCperContributor(repoData, contributor),
-      "LOC/Commit": getLocPerCommitPerContributor(repoData, contributor),
+      "LOC Per Commit": getLocPerCommitPerContributor(repoData, contributor),
       "Commits Per Day": getCommitPerDayPerContributor(
         repoData,
         contributor

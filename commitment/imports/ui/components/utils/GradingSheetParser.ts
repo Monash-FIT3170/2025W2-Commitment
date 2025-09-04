@@ -63,7 +63,7 @@ export class GradingSheetParserService {
             }
 
             try {
-                // Validate the Grading Sheet's structure??
+                // Validate the Grading Sheet's structure
                 const validation = this.validateSheetStructure(
                 results.data as Record<string, unknown>[], 
                 Object.keys(results.data[0] || {})
@@ -100,6 +100,72 @@ export class GradingSheetParserService {
             });
             }
         });
+        });
+    }
+
+    /**
+     * Convert grading sheet data back to CSV file, optionally with updated scaled grades
+     */
+    static async unParseGradingSheet(
+        parseResult: ParseResult, 
+        scalingResults?: { name: string; finalGrade: number | null; aliases: { email: string }[] }[]
+    ): Promise<File> {
+        return new Promise((resolve) => {
+            let dataToExport = parseResult.data || [];
+            if (scalingResults && dataToExport.length > 0) {
+                const finalGradeMap = new Map<string, number>();
+                const emailToGradeMap = new Map<string, number>();
+
+                scalingResults.forEach(result => {
+                    if (result.finalGrade !== null) {
+                        finalGradeMap.set(result.name.toLowerCase().trim(), result.finalGrade);
+                        result.aliases.forEach(alias => {
+                            emailToGradeMap.set(alias.email.toLowerCase().trim(), result.finalGrade!);
+                        });
+                    }
+                });
+                
+                dataToExport = dataToExport.map(student => {
+                    const studentName = student.fullName.toLowerCase().trim();
+                    const studentEmail = student.emailAddress.toLowerCase().trim();
+                    const finalGrade = finalGradeMap.get(studentName) || emailToGradeMap.get(studentEmail);
+                    if (finalGrade !== undefined) {
+                        return {
+                            ...student,
+                            grade: finalGrade
+                        };
+                    }
+                    return student;
+                });
+            }
+            
+            const csvData = dataToExport.map(row => {
+                const csvRow: Record<string, unknown> = {};
+                const rowPropertyMapping = [
+                    row.identifier,
+                    row.fullName,
+                    row.idNumber,
+                    row.emailAddress,
+                    row.status,
+                    row.grade,
+                    row.maximumGrade,
+                    row.gradeCanBeChanged ? 'Yes' : 'No',
+                    row.lastModifiedSubmission || '-',
+                    row.lastModifiedGrade || '-',
+                    row.feedbackComments
+                ];
+                this.REQUIRED_HEADERS.forEach((header, index) => {
+                    csvRow[header] = rowPropertyMapping[index];
+                });
+                
+                return csvRow;
+            });
+            
+            const csvContent = Papa.unparse(csvData);
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const filename = scalingResults ? 'scaled_grading_sheet.csv' : 'grading_sheet.csv';
+            const file = new File([blob], filename, { type: 'text/csv' });
+            resolve(file);
         });
     }
 
