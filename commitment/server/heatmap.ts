@@ -68,7 +68,7 @@ export function heatMapLOCPerCommit(data: FilteredData): HeatMapData[] {
     bucket[user].commitCount += 1;
   });
 
-  // Convert to HeatMapData[] with LOC per commit
+  // Convert to HeatMapData[] with LOC Per Commit
   const heatMapArray: HeatMapData[] = [];
   byDateUser.forEach((userCounts, date) => {
     for (const [user, { totalLOC, commitCount }] of Object.entries(
@@ -77,7 +77,7 @@ export function heatMapLOCPerCommit(data: FilteredData): HeatMapData[] {
       heatMapArray.push({
         name: user,
         date,
-        count: commitCount > 0 ? totalLOC / commitCount : 0, // LOC per commit
+        count: commitCount > 0 ? totalLOC / commitCount : 0, // LOC Per Commit
       });
     }
   });

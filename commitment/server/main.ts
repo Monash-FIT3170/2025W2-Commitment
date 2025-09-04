@@ -1,10 +1,13 @@
 import { Meteor } from "meteor/meteor";
 import { Accounts } from "meteor/accounts-base";
 import { BookmarksCollection } from "../imports/api/bookmarks";
+import { RepositoriesCollection } from "../imports/api/repositories";
 
 import "../imports/api/methods";
-
 import "../imports/api/bookmark_methods";
+import "../imports/api/repositories";
+import "../imports/api/repository_methods";
+import "../imports/api/alias_config_methods";
 
 import "./fetch_repo";
 import "./caching";
@@ -195,6 +198,17 @@ Meteor.startup(async () => {
   // We publish the entire Links collection to all clients.
   // In order to be fetched in real-time to the clients
   Meteor.publish("bookmarks", function () {
-    return BookmarksCollection.find();
+    if (!this.userId) {
+      return this.ready(); // Return empty cursor if not logged in
+    }
+    return BookmarksCollection.find({ userID: this.userId });
+  });
+
+  // Publish repositories for the current user only
+  Meteor.publish("repositories", function () {
+    if (!this.userId) {
+      return this.ready(); // Return empty cursor if not logged in
+    }
+    return RepositoriesCollection.find({ userID: this.userId });
   });
 });
