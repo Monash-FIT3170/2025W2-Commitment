@@ -91,6 +91,15 @@ function percentileRank(values: number[], value: number): number {
   return index / (sorted.length - 1 || 1); // scale to [0,1]
 }
 
+
+function smallGroupPercentileRank(values: number[], value: number): number {
+  // Apply small-group smoothing logic from smallGroupPercentile
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = sorted.indexOf(value);
+  if (idx === -1) return 0.5;
+  return (idx + 1) / (values.length + 1); // use values.length instead of sorted.length
+}
+
 /**
  * Computes scaled scales for users based on selected metrics from a repository.
  *
@@ -110,14 +119,6 @@ function percentileRank(values: number[], value: number): number {
  *   - name: the user’s name
  *   - score: the user’s scaled score rounded to two decimal places.
  */
-function smallGroupPercentileRank(values: number[], value: number): number {
-  // Smooth percentile rank to avoid extremes in small groups
-  const sorted = [...values].sort((a, b) => a - b);
-  const idx = sorted.indexOf(value);
-  if (idx === -1) return 0.5;
-  return (idx + 1) / (sorted.length + 1); // keeps values away from exact 0 or 1
-}
-
 async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl });
 
@@ -130,17 +131,28 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   const users = buildUsers(allMetrics, selectedMetrics);
   if (!users.length) return [];
 
-  const metricsValues = selectedMetrics.map((_, i) =>
+  let metricsValues: number[][];
+
+if (users.length <= 3) {
+  console.warn("Small group detected (<=3 users). Using raw values for percentile ranking.");
+  metricsValues = selectedMetrics.map((_, i) => {
+  const colValues = users
+    .map(u => u.values[i])
+    .filter((v): v is number => v !== null && Number.isFinite(v));
+  
+  return users.map(u => {
+    const v = u.values[i];
+    if (v === null || !Number.isFinite(v)) return 0.5;
+    return smallGroupPercentileRank(colValues, v); // map to 0-1 scale
+  });
+});
+
+} else {
+  metricsValues = selectedMetrics.map((_, i) =>
     normaliseMetric(users.map((u) => u.values[i]))
   );
+}
 
-  // Override method for small groups
-  if (users.length <= 3) {
-    console.warn(
-      "Small group detected (<=3 users). Using 'Default' mean method for stable scaling."
-    );
-    method = "Default";
-  }
 
   return users.map((user, idx) => {
     const scales = metricsValues.map((col) => col[idx]);
