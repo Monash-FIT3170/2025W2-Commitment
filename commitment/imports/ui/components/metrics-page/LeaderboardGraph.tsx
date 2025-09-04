@@ -5,13 +5,12 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
   Cell,
 } from "recharts";
 import InfoButton from "../ui/infoButton";
 import GraphCard from "./GraphCard";
 import { CardHeader, CardContent, CardTitle } from "../ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 
 // Type for each contributor's data
 interface TopContributor {
@@ -80,7 +79,6 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
   }
 
   const yAxisWidth = YAxisWidth(data.map((d) => d.name));
-
   return (
     <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
@@ -91,9 +89,18 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
           </div>
         </div>
       </CardHeader>
-
       <CardContent className="grow flex items-center justify-center">
-        <ResponsiveContainer width="100%" height="100%">
+        <ChartContainer
+          config={{
+            value: {
+              label: "Contributions",
+            },
+            name: {
+              label: "Contributor",
+            }
+          }}
+          className="w-full h-full"
+        >
           <BarChart
             layout="vertical"
             data={data}
@@ -108,17 +115,20 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" />
             <YAxis type="category" dataKey="name" width={100} />
-            <Tooltip />
+            <ChartTooltip
+              cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}
+              content={<ChartTooltipContent />}
+            />
             <Bar dataKey="value" barSize={30}>
-              {data.map((_entry, index) => {
+              {data.map((entry, index) => {
                 const color =
                   staticColorPalette[index] ??
                   extendColorPalette(index - staticColorPalette.length);
-                return <Cell key={`cell-${_entry.name}`} fill={color} />;
+                return <Cell key={`cell-${entry.name}`} fill={color} />;
               })}
             </Bar>
           </BarChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
     </GraphCard>
   );
