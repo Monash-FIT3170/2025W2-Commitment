@@ -30,11 +30,17 @@ interface Props {
   title?: string;
 }
 
-type Mode = "week" | "week-fill" | "month";
+type Mode =  "week" | "month";
 
 // ------- helpers -------
 function startOfDay(d: Date) {
   const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function startOfMonth(d: Date) {
+  const x = new Date(d.getFullYear(), d.getMonth(), 1);
   x.setHours(0, 0, 0, 0);
   return x;
 }
@@ -90,6 +96,25 @@ function getWeekLabel(dateStr: string) {
   return `${fmt.format(monday)} - ${fmt.format(sunday)}`;
 }
 
+function buildContinuousMonthCategories(data: HeatMapData[]): string[] {
+  if (data.length === 0) return [];
+
+  const dates = data.map((d) => new Date(d.date));
+  const minDate = startOfMonth(new Date(Math.min(...dates.map((d) => d.getTime()))));
+  const maxDate = startOfMonth(new Date(Math.max(...dates.map((d) => d.getTime()))));
+
+  const categories: string[] = [];
+  for (
+    let cur = new Date(minDate);
+    cur <= maxDate;
+    cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1)
+  ) {
+    categories.push(getMonthLabel(cur.toISOString())); // e.g. "Aug 2025"
+  }
+  return categories;
+}
+
+
 function getMonthLabel(dateStr: string) {
   const d = new Date(dateStr);
   return new Intl.DateTimeFormat("en-GB", {
@@ -105,12 +130,11 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
   const keyToFirstDay = new Map<string, Date>();
   const makeKeyAndFirstDate = (dateStr: string) => {
     const d = new Date(dateStr);
-    if (mode === "week" || mode === "week-fill") {
+    if ( mode === "week-fill") {
       const monday = alignToMonday(d);
       return { key: getWeekLabel(dateStr), first: monday };
     } else {
-      const first = new Date(d.getFullYear(), d.getMonth(), 1);
-      first.setHours(0, 0, 0, 0);
+      const first = startOfMonth(d);
       return { key: getMonthLabel(dateStr), first };
     }
   };
@@ -122,23 +146,9 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
 
   // ---- categories per mode ----
   const categories =
-    mode === "week-fill"
+    mode === "week"
       ? buildContinuousWeekCategories(data) // padded, continuous weeks
-      : mode === "week"
-      ? Array.from(new Set(data.map((d) => getWeekLabel(d.date)))).sort(
-          (a, b) => {
-            const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
-            const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
-            return aT - bT;
-          }
-        ) // sparse weeks as-is
-      : Array.from(new Set(data.map((d) => getMonthLabel(d.date)))).sort(
-          (a, b) => {
-            const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
-            const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
-            return aT - bT;
-          }
-        );
+      : buildContinuousMonthCategories(data);
 
   // aggregate counts per (user, category)
   const series: HeatmapSeries<string>[] = users.map((user) => {
