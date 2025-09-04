@@ -169,7 +169,7 @@ function Calendar({
       }}
       {...props}
     />
-  )
+  );
 }
 
 function CalendarDayButton({

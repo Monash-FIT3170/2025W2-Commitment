@@ -14,7 +14,7 @@ const InsertGitRepoView: React.FC = () => {
 
       {isLoggedIn ? (
         <div className="flex flex-col items-center pt-20">
-          <h1 className="text-8xl text-gray-700 mb-8">
+          <h1 className="text-6xl text-gray-700 mb-8">
             Welcome Back,
             {user?.profile?.name || "User"}
           </h1>

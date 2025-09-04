@@ -1,9 +1,7 @@
-import React from 'react';
-import {
-  PieChart, Pie, Cell, Tooltip,
-} from 'recharts';
+import React from "react";
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp } from "lucide-react";
 
 import {
   Card,
@@ -11,37 +9,39 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@ui/components/ui/card';
-import { stat } from 'fs';
-import InfoButton from '../ui/infoButton';
-import GraphCard from './GraphCard';
+} from "@ui/components/ui/card";
+// import { stat } from "fs";
+import InfoButton from "../ui/infoButton";
+import GraphCard from "./GraphCard";
+import { title } from "process";
 
 export interface ChartEntry {
   user: string;
   contributions: number;
-  fill: string;
+  // fill: string;
 }
 
 interface Props {
   data: ChartEntry[];
+  title: string;
 }
 
 // CURRENT COLOUR PALLETTE - ASK PMs TO help
 
-const graphBackgroundColour = '#E8E8DD';
+// const graphBackgroundColour = "#E8E8DD";
 
 const staticColorPalette = [
-  '#4E79A7',
-  '#F28E2B',
-  '#59A14F',
-  '#E15759',
-  '#76B7B2',
-  '#EDC948',
-  '#B07AA1',
-  '#FF9DA7',
-  '#9C755F',
-  '#BAB0AC',
-  '#D37295',
+  "#4E79A7",
+  "#F28E2B",
+  "#59A14F",
+  "#E15759",
+  "#76B7B2",
+  "#EDC948",
+  "#B07AA1",
+  "#FF9DA7",
+  "#9C755F",
+  "#BAB0AC",
+  "#D37295",
 ];
 
 const extendColorPalette = (index: number): string => {
@@ -49,7 +49,8 @@ const extendColorPalette = (index: number): string => {
   return `hsl(${hue}, 70%, 55%)`;
 };
 
-const pieChartDescription = "Commit distribution by contributor — each slice shows a contributor's share of total commits.";
+const pieChartDescription =
+  "Commit distribution by contributor — each slice shows a contributor's share of total commits.";
 
 // For pop up
 function CustomTooltip({
@@ -72,30 +73,24 @@ function CustomTooltip({
         />
         {user}
       </div>
-      <div>
-        {contributions}
-        {' '}
-        contributions
-      </div>
+      <div>{contributions} contributions</div>
     </div>
   );
 }
 
 // Main Pie Chart
-export function ContributionPieChart({ data }: Props) {
+export function ContributionPieChart({ data, title }: Props) {
   const coloredData = data.map((entry, index) => ({
     ...entry,
-    fill:
-      index < staticColorPalette.length
-        ? staticColorPalette[index]
-        : extendColorPalette(index - staticColorPalette.length),
+    title,
+    fill: staticColorPalette[index] ?? extendColorPalette(index),
   }));
-    if (!data || data.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
         <CardHeader className="pb-0">
-          <CardTitle className="flex text-lg mt-0 font-bold ">
-            {"Pie Chart"} 
+          <CardTitle className="flex text-xl mt-0 font-bold ">
+            {title}
             <div className="relative -mt-3 ml-2">
               <InfoButton description={pieChartDescription} />
             </div>
@@ -110,10 +105,10 @@ export function ContributionPieChart({ data }: Props) {
     );
   }
   return (
-    <GraphCard className="w-full max-w-[800px] flex flex-col basis-1/3">
+    <GraphCard className="w-full max-w-[800px] h-[500px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
-          <h2 className="text-lg font-bold text-gray-800">Pie Chart</h2>
+          <h2 className="text-xl font-bold"> {title}</h2>
 
           {/* Special margin for the infoButton to get it centred */}
           <div className="relative -mt-2">
@@ -125,10 +120,26 @@ export function ContributionPieChart({ data }: Props) {
       </CardHeader>
 
       {coloredData.length === 0 ? (
-        <CardContent className="p-4 text-gray-500">Please select an End Date in the Date Range</CardContent>
+        <CardContent className="p-4 text-gray-500">
+          Please select an End Date in the Date Range
+        </CardContent>
       ) : (
         <>
           <CardContent className="flex flex-col items-center gap-4">
+            {/* Legend */}
+            <div className="w-full overflow-hidden">
+              <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs max-w-full">
+                {coloredData.map((entry) => (
+                  <li key={entry.user} className="flex items-center gap-1">
+                    <span
+                      className="inline-block h-3 w-3 rounded-sm"
+                      style={{ backgroundColor: entry.fill }}
+                    />
+                    <span className="whitespace-nowrap">{entry.user}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
             {/* Pie */}
             <PieChart width={300} height={300}>
               <Pie
@@ -149,35 +160,10 @@ export function ContributionPieChart({ data }: Props) {
               </Pie>
               <Tooltip
                 content={<CustomTooltip />}
-                wrapperStyle={{ outline: 'none' }}
+                wrapperStyle={{ outline: "none" }}
               />
             </PieChart>
-
-            {/* Legend */}
-            <div className="w-full flex justify-center">
-              <ul className="inline-flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
-                {data.map((entry) => (
-                  <li key={entry.user} className="flex items-center gap-1">
-                    <span
-                      className="inline-block h-3 w-3 rounded-sm"
-                      style={{ backgroundColor: entry.fill }}
-                    />
-                    <span className="truncate">{entry.user}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </CardContent>
-
-          <CardFooter className="flex flex-col gap-1 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2 font-medium leading-none">
-              Trending up by 5.2% this month
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            </div>
-            <p className="leading-none">
-              Showing total contributions for the last 6 months
-            </p>
-          </CardFooter>
         </>
       )}
     </GraphCard>

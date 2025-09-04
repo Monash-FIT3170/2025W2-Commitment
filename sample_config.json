@@ -1,0 +1,30 @@
+{
+  "name": "Monash Sem 2 2025",
+  "aliases": [
+    {
+      "officialName": "John Smith",
+      "gitUsernames": ["johnsmith", "jsmith_dev", "john_s"],
+      "emails": ["john.smith@university.edu", "jsmith@github.com"]
+    },
+    {
+      "officialName": "Sarah Johnson",
+      "gitUsernames": ["sarahj", "sarah_dev", "sjohnson"],
+      "emails": ["sarah.johnson@university.edu", "sarahj@github.com"]
+    },
+    {
+      "officialName": "Michael Chen",
+      "gitUsernames": ["mchen", "michael_c", "chen_dev"],
+      "emails": ["michael.chen@university.edu", "mchen@github.com"]
+    },
+    {
+      "officialName": "Emily Davis",
+      "gitUsernames": ["emilyd", "edavis", "emily_dev"],
+      "emails": ["emily.davis@university.edu", "edavis@github.com"]
+    },
+    {
+      "officialName": "Alex Rodriguez",
+      "gitUsernames": ["alexr", "arodriguez", "alex_dev"],
+      "emails": ["alex.rodriguez@university.edu", "alexr@github.com"]
+    }
+  ]
+}

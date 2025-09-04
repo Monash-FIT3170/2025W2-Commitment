@@ -54,7 +54,7 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
               {/* Show arrow pointing up or down */}
               <ArrowUpRight
                 size={16}
-                style={{ transform: isPositive ? 'none' : 'rotate(90deg)' }}
+                style={{ transform: isPositive ? "none" : "rotate(90deg)" }}
               />
 
               {/* Show the percentage text */}

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect, useCallback } from "react";
+import { Meteor } from "meteor/meteor";
 import {
   Form,
   FormField,
@@ -16,6 +16,14 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
+import {
+  RepositoryData,
+  FilteredData,
+  UserScalingSummary,
+  SerialisableMapObject,
+} from "/imports/api/types";
+import { useLocation } from "react-router-dom";
+import { config } from "process";
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
@@ -23,13 +31,19 @@ const scalingConfigSchema = z.object({
   customScript: z.any().optional(),
 });
 
-type ScalingConfig = z.infer<typeof scalingConfigSchema>;
+export type ScalingConfig = z.infer<typeof scalingConfigSchema>;
 
-function ScalingConfigForm({
-  onSubmit,
-}: {
-  onSubmit: (config: ScalingConfig) => void;
-}) {
+interface ScalingConfigFormProps {
+  onSubmit: (
+    config: ScalingConfig,
+    scaledResults: UserScalingSummary[]
+  ) => void;
+}
+
+function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
+  const location = useLocation();
+  const repoUrl: string = location.state?.repoUrl ?? null;
+
   const [script, setScript] = useState<File[] | undefined>();
 
   const form = useForm<ScalingConfig>({
@@ -40,32 +54,28 @@ function ScalingConfigForm({
     },
   });
 
-  // Handle drop of files in the dropzone
-  const handleDrop = (files: File[]) => {
-    console.log(files);
-    setScript(files);
-  };
+  const handleDrop = (files: File[]) => setScript(files);
+  const handleSubmit = async (data: ScalingConfig) => {
+    try {
+      const result = await Meteor.callAsync("getScalingResults", data, repoUrl);
 
-  const handleSubmit = (data: ScalingConfig) => {
-    onSubmit(data);
+      onSubmit(data, result); //this is where all the scaling starts from
+    } catch (err) {
+      console.error("Error:", err);
+    }
   };
 
   const metricOptions = [
     "Total No. Commits",
-    "Use AI to filter out commits",
+    // "Use AI to filter out commits",
     "LOC",
-    "LOC per commit",
-    "Commits per day",
+    "LOC Per Commit",
+    "Commits Per Day",
   ];
-
   const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
 
   return (
     <div className="w-full">
-      <div className="absolute top-2 left-2 flex space-x-1">
-        <span className="w-2 h-2 rounded-full bg-[#F1502F]/50" />
-        <span className="w-2 h-2 rounded-full bg-[#F1502F]/30" />
-      </div>
       <Form {...form}>
         <div className="text-2xl font-bold mb-4 text-center">
           Generate Scaling
@@ -78,8 +88,7 @@ function ScalingConfigForm({
             render={() => (
               <FormItem>
                 <FormLabel className="font-bold justify-center">
-                  Select scaling metrics
-                  <span className="text-red-500">*</span>
+                  Select scaling metrics<span className="text-red-500">*</span>
                 </FormLabel>
                 <div className="flex flex-col gap-2">
                   {metricOptions.map((metric) => (
@@ -88,20 +97,17 @@ function ScalingConfigForm({
                       control={form.control}
                       name="metrics"
                       render={({ field }) => (
-                        <FormItem
-                          key={metric}
-                          className="flex items-center space-x-2"
-                        >
+                        <FormItem className="flex items-center space-x-2">
                           <FormControl>
                             <Checkbox
                               checked={field.value?.includes(metric)}
                               onCheckedChange={(checked) => {
                                 const value = field.value || [];
-                                return checked
-                                  ? field.onChange([...value, metric])
-                                  : field.onChange(
-                                      value.filter((v) => v !== metric)
-                                    );
+                                field.onChange(
+                                  checked
+                                    ? [...value, metric]
+                                    : value.filter((v) => v !== metric)
+                                );
                               }}
                             />
                           </FormControl>
@@ -125,9 +131,8 @@ function ScalingConfigForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-bold justify-center">
-                  Select a scaling method
-                  <span className="text-red-500">*</span>
-                </FormLabel>{" "}
+                  Select a scaling method<span className="text-red-500">*</span>
+                </FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -199,7 +204,6 @@ function ScalingConfigForm({
             )}
           />
 
-          {/* NEXT BUTTON */}
           <div className="flex justify-center">
             <Button
               type="submit"

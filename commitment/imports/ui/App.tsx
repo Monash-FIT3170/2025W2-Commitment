@@ -7,6 +7,7 @@ import LoadingPage from "./LoadingPage";
 import MetricsPage from "./MetricsPage";
 import DashboardView from "./views/DashboardView/DashboardView";
 import Authorized from "@ui/components/shared/Authorized";
+import SettingsPage from "./components/settings/SettingsPage";
 import Layout from "./components/shared/Layout";
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
             }
           />
         </Route>
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </BrowserRouter>
   );
