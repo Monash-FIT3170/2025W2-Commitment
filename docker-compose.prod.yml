@@ -1,7 +1,7 @@
 services:
   build-env:
     build:
-      context: ./commitment
+      context: ./commitment/commitment
       dockerfile: Dockerfile.MeteorRun
     image: commitment-img
     container_name: 3170-build

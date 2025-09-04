@@ -53,11 +53,11 @@ jobs:
             git fetch origin cd/deploy
             git reset --hard origin/cd/deploy
 
-            docker pull commitment3170/haskell-api-img:latest
+            sudo docker pull commitment3170/haskell-api-img:latest
 
-            docker build -t commitment-img -f commitment/Dockerfile.MeteorRun . --no-cache
+            sudo docker build -t commitment-img -f commitment/Dockerfile.MeteorRun . --no-cache
 
-            docker-compose -f docker-compose.prod.yml up -d
+            sudo docker-compose -f docker-compose.prod.yml up -d
       # mup
       # export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
       # export DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
