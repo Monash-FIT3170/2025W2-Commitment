@@ -79,7 +79,7 @@ function ScalingView() {
   return (
     <div className="m-0 scroll-smooth">
       <div className="flex flex-col gap-32">
-        <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
+        <div className="max-w-[1600px] mx-20 rounded-2xl bg-elevated p-8">
           {/* Always render the scaling summary in the background */}
           {config && scaledResults.length > 0 && (
             <div className="mb-6">
