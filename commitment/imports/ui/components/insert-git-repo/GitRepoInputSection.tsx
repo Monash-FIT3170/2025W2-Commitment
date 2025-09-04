@@ -52,7 +52,7 @@ function GitRepoInputSection() {
         type="text"
         placeholder="Insert git repo link"
         className={cn(
-          'w-full bg-git-bg-elevated/50 max-w-lg px-4 py-2 border rounded-full shadow-xs focus:outline-hidden',
+          'w-full bg-git-bg-elevated/50 max-w-lg px-4 py-2 border  shadow-xs focus:outline-hidden',
           validationError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-git-int-primary focus:ring-git-int-primary focus:border-git-int-primary',
           'mb-4',
         )}
