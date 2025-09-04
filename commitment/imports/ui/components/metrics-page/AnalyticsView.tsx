@@ -115,7 +115,7 @@ export function AnalyticsView(): React.JSX.Element {
   if (!analytics) return <div>No repo data available</div>;
 
   return (
-    <div className="w-screen m-0 scroll-smooth p-10">
+    <div className="w-full m-0 scroll-smooth p-10">
       <div className="flex flex-col gap-32">
         <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
           {/* Header */}
@@ -171,7 +171,7 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
           </div>
           {/* Highlight Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 3xl:grid-cols-4 gap-6 mb-12">
             <HighlightCardWithGraph
               title="Total Commits"
               value={analytics.metrics.highlights.totalCommits.total}

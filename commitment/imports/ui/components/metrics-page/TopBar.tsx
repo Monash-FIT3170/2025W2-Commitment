@@ -1,11 +1,11 @@
-import React from "react";
-import { Settings } from "lucide-react";
-import { Meteor } from "meteor/meteor";
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { useState } from "react";
-import { AnalyticsData, Metadata } from "/imports/api/types";
-import BookmarkButton from "../dashboard/BookmarkButton";
+import React from 'react';
+import { Settings } from 'lucide-react';
+import { Meteor } from 'meteor/meteor';
+import {  useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { AnalyticsData, Metadata } from '/imports/api/types';
+import BookmarkButton from '../dashboard/BookmarkButton';
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL
