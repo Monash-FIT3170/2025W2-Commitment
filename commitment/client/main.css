@@ -287,7 +287,7 @@
 
     /* Git Tabs Colours */
     --git-tabs-hovered: #fff;
-    --git-tabs-active: #fff;
+    --git-tabs-active: var(--git-bg-primary);
 
     --git-int-destructive: #951917;
     --git-int-primary-hover: #e12a15;
