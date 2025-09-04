@@ -79,7 +79,7 @@ function Footer() {
         </div>
       </div>
 
-      <div className="text-center pt-8 border-t border-gray-700 mt- font-mono">
+      <div className="text-center pt-8 border-t border-border mt- font-mono">
         <p>
           &copy; {new Date().getFullYear()} Copyright Commitment. All Rights
           Reserved
