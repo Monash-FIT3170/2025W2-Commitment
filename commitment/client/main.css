@@ -180,7 +180,7 @@
     /* Git Text Colours */
     --git-text-primary: #000;
     --git-text-secondary: #353531;
-    --git-text-disabled: #818181;
+    --git-text-disabled: #9a9a9a;
 
     /* Git Data-Visualisation Colours */
     --git-dv-blue: #4e79a7;
