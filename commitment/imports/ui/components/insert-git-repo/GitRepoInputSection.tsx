@@ -2,6 +2,7 @@ import React, { useState, KeyboardEvent } from 'react';
 import { cn } from '@ui/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 
 function GitRepoInputSection() {
   const navigate = useNavigate();
@@ -47,12 +48,12 @@ function GitRepoInputSection() {
 
   return (
     <>
-      <input
+      <Input
         type="text"
         placeholder="Insert git repo link"
         className={cn(
-          'w-full max-w-lg px-4 py-2 border rounded-full shadow-xs focus:outline-hidden',
-          validationError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-[#F1502F] focus:ring-[#F1502F] focus:border-[#F1502F]',
+          'w-full bg-git-bg-elevated/50 max-w-lg px-4 py-2 border rounded-full shadow-xs focus:outline-hidden',
+          validationError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-git-int-primary focus:ring-git-int-primary focus:border-git-int-primary',
           'mb-4',
         )}
         value={repoUrl}

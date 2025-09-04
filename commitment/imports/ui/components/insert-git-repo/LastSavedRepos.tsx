@@ -31,8 +31,8 @@ function LastSavedRepos() {
   }, [bookmarks]);
 
   return (
-    <div className="w-full max-w-4xl mt-8 p-6 bg-gray-100 border border-gray-300 rounded-lg">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Last Saved Repositories</h2>
+    <div className="w-full max-w-4xl mt-8 p-6 bg-git-bg-secondary/20 dark:bg-git-bg-secondary border border-border rounded-lg">
+      <h2 className="text-2xl font-semibold text-foreground mb-6 text-center">Last Saved Repositories</h2>
       <div className="flex flex-row justify-evenly">
         {bookmarks.map((repo) => (
           <GalleryCard
@@ -42,9 +42,8 @@ function LastSavedRepos() {
         ))}
       </div>
       <div className="flex justify-end mt-6">
-        <Button className={cn(
-          'h-auto text-sm rounded-full text-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 shadow-xs',
-        )}
+        <Button 
+        variant={'secondary'}
         >
           <Link to="/dashboard">See All</Link>
           {' '}

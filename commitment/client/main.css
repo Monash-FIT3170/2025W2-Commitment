@@ -286,7 +286,7 @@
     --git-stroke-tertiary: rgba(183, 181, 146, 0.47);
 
     /* Git Tabs Colours */
-    --git-tabs-hovered: #fff;
+    --git-tabs-hovered: var(--git-bg-secondary);
     --git-tabs-active: var(--git-bg-primary);
 
     --git-int-destructive: #951917;
