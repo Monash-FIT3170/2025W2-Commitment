@@ -106,15 +106,15 @@ export function DatePicker({ onChange, defaultValue }: Props) {
   };
 
   return (
-    <div className={cn("grid gap-2")}>
+    <div className={cn("grid gap-2 ")}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             id="date"
             variant="outline"
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              "w-[300px] justify-start text-left font-normal border-2 rounded-lg  border-git-stroke-primary/40 ",
+              // !date && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -133,8 +133,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto p-4 border-2"
-          style={{ borderColor: "#252522" }}
+          className="w-auto p-4 border-2 border-git-stroke-primary/40"
           align="start"
         >
           <div className="flex gap-2 mb-4 justify-center items-center">

@@ -30,11 +30,17 @@ interface Props {
   title?: string;
 }
 
-type Mode = "week" | "week-fill" | "month";
+type Mode =  "week" | "month";
 
 // ------- helpers -------
 function startOfDay(d: Date) {
   const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function startOfMonth(d: Date) {
+  const x = new Date(d.getFullYear(), d.getMonth(), 1);
   x.setHours(0, 0, 0, 0);
   return x;
 }
@@ -90,6 +96,25 @@ function getWeekLabel(dateStr: string) {
   return `${fmt.format(monday)} - ${fmt.format(sunday)}`;
 }
 
+function buildContinuousMonthCategories(data: HeatMapData[]): string[] {
+  if (data.length === 0) return [];
+
+  const dates = data.map((d) => new Date(d.date));
+  const minDate = startOfMonth(new Date(Math.min(...dates.map((d) => d.getTime()))));
+  const maxDate = startOfMonth(new Date(Math.max(...dates.map((d) => d.getTime()))));
+
+  const categories: string[] = [];
+  for (
+    let cur = new Date(minDate);
+    cur <= maxDate;
+    cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1)
+  ) {
+    categories.push(getMonthLabel(cur.toISOString())); // e.g. "Aug 2025"
+  }
+  return categories;
+}
+
+
 function getMonthLabel(dateStr: string) {
   const d = new Date(dateStr);
   return new Intl.DateTimeFormat("en-GB", {
@@ -105,12 +130,11 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
   const keyToFirstDay = new Map<string, Date>();
   const makeKeyAndFirstDate = (dateStr: string) => {
     const d = new Date(dateStr);
-    if (mode === "week" || mode === "week-fill") {
+    if ( mode === "week-fill") {
       const monday = alignToMonday(d);
       return { key: getWeekLabel(dateStr), first: monday };
     } else {
-      const first = new Date(d.getFullYear(), d.getMonth(), 1);
-      first.setHours(0, 0, 0, 0);
+      const first = startOfMonth(d);
       return { key: getMonthLabel(dateStr), first };
     }
   };
@@ -122,23 +146,9 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
 
   // ---- categories per mode ----
   const categories =
-    mode === "week-fill"
+    mode === "week"
       ? buildContinuousWeekCategories(data) // padded, continuous weeks
-      : mode === "week"
-      ? Array.from(new Set(data.map((d) => getWeekLabel(d.date)))).sort(
-          (a, b) => {
-            const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
-            const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
-            return aT - bT;
-          }
-        ) // sparse weeks as-is
-      : Array.from(new Set(data.map((d) => getMonthLabel(d.date)))).sort(
-          (a, b) => {
-            const aT = keyToFirstDay.get(a)?.getTime() ?? 0;
-            const bT = keyToFirstDay.get(b)?.getTime() ?? 0;
-            return aT - bT;
-          }
-        );
+      : buildContinuousMonthCategories(data);
 
   // aggregate counts per (user, category)
   const series: HeatmapSeries<string>[] = users.map((user) => {
@@ -213,16 +223,18 @@ function getCssVarValue(varName: string) {
     .trim();
 }
 
-const levels = [
-  { name: "none", color: getCssVarValue("--color-git-bg-elevated") },
-  { name: "s1", color: getCssVarValue("--color-git-100") },
-  { name: "s2", color: getCssVarValue("--color-git-200") },
-  { name: "s3", color: getCssVarValue("--color-git-300") },
-  { name: "s4", color: getCssVarValue("--color-git-400") },
-  { name: "s5", color: getCssVarValue("--color-git-500") },
-  { name: "s6", color: getCssVarValue("--color-git-700") },
-  { name: "s7", color: getCssVarValue("--color-git-900") },
-];
+function getLevels() {
+  return [
+    { name: "none", color: getCssVarValue("--color-git-bg-primary") },
+    { name: "s1", color: getCssVarValue("--git-heat-100") },
+    { name: "s2", color: getCssVarValue("--git-heat-200") },
+    { name: "s3", color: getCssVarValue("--git-heat-300") },
+    { name: "s4", color: getCssVarValue("--git-heat-400") },
+    { name: "s5", color: getCssVarValue("--git-heat-500") },
+    { name: "s6", color: getCssVarValue("--git-heat-600") },
+    { name: "s7", color: getCssVarValue("--git-heat-700") },
+  ];
+}
 
 // ------- component -------
 export default function HeatMapGraph({
@@ -248,7 +260,6 @@ export default function HeatMapGraph({
     () => normalizeSeriesData(sortedSeries),
     [sortedSeries]
   );
-  const totals = useMemo(() => computeRowTotals(sortedSeries), [sortedSeries]);
 
   const rowHeight = 50;
   const minHeight = 200;
@@ -257,6 +268,23 @@ export default function HeatMapGraph({
     minHeight,
     Math.min(maxHeight, users.length * rowHeight)
   );
+
+  // Listen for dark mode changes
+  const [themeKey, setThemeKey] = React.useState(0);
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setThemeKey((k) => k + 1); // force rerender when theme changes
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const levels = React.useMemo(getLevels, [themeKey]);
+
+  const totals = useMemo(() => computeRowTotals(sortedSeries), [sortedSeries]);
 
   const chartOptions = useMemo(
     () => ({
@@ -269,6 +297,7 @@ export default function HeatMapGraph({
           'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
       },
       grid: {
+        show: false,
         padding: {
           top: 0,
           right: 0, // room for totals annotations
@@ -278,8 +307,9 @@ export default function HeatMapGraph({
       },
       plotOptions: {
         heatmap: {
-          shadeIntensity: 0.3,
-          radius: 8,
+          enableShades: false,
+          shadeIntensity: 0,
+          radius: 0,
           useFillColorAsStroke: false,
           colorScale: {
             ranges: [
@@ -329,16 +359,21 @@ export default function HeatMapGraph({
           style: {
             fontSize: "14px",
             fontWeight: 500,
+            colors: getCssVarValue("--color-foreground"),
           },
         },
       },
       xaxis: {
-        categories: categories,
         type: "category" as const,
         tickPlacement: "between",
         labels: {
           trim: false,
-          style: { fontSize: "0.875rem", fontWeight: "300" },
+          style: {
+            fontSize: "0.875rem",
+            fontWeight: "300",
+            colors: getCssVarValue("--color-foreground"),
+          },
+
           formatter: (label: string) => {
             // If label has a dash, only keep the part before it
             const dashIndex = label.indexOf(" -");
@@ -350,11 +385,19 @@ export default function HeatMapGraph({
         enabled: false,
       },
       stroke: {
-        width: 6,
-        colors: [getCssVarValue("--color-git-bg-bottom")],
+        width: 1,
+        colors: ["#666"],
       },
 
       tooltip: {
+        theme: document.documentElement.classList.contains("dark")
+          ? "dark"
+          : "light",
+        style: {
+          fontSize: "14px",
+          fontFamily: "inherit",
+          color: getCssVarValue("--color-foreground"), // 👈 custom text color
+        },
         x: {
           formatter: (label: string) => label,
         },
@@ -400,7 +443,7 @@ export default function HeatMapGraph({
         itemMargin: { horizontal: 2, vertical: 0 },
       },
     }),
-    [categories, users, mode, totals]
+    [categories, users, mode, totals, levels]
   );
 
   return (

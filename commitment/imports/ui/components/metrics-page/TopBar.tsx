@@ -1,4 +1,5 @@
 import React from 'react';
+import { Settings } from 'lucide-react';
 import { Meteor } from 'meteor/meteor';
 import {  useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -50,7 +51,7 @@ export default function TopBar() {
 
 
   return (
-    <div className="flex items-center justify-between px-10 py-3 border-b border-gray-200 bg-[#FEFEFA]">
+    <div className="flex items-center justify-between px-10 py-3 border-b  border-git-stroke-primary/40 bg-git-bg-elevated">
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-gray-800">{repoName}</h2>
         {/* Bookmark button */}
@@ -62,6 +63,7 @@ export default function TopBar() {
           />
         )}
       </div>
+      <Settings className="w-5 h-5 text-git-stroke-secondary hover:text-git-stroke-primary cursor-pointer" />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import InfoButton from "../ui/infoButton";
 import { DatePicker } from "./date-range-picker";
 import BranchDropdownMenu from "./BranchDropdownMenu";
+// import { dark2 } from "../ui/colors";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
@@ -114,23 +115,23 @@ export function AnalyticsView(): React.JSX.Element {
   if (!analytics) return <div>No repo data available</div>;
 
   return (
-    <div className="w-screen m-0 scroll-smooth">
+    <div className="w-screen m-0 scroll-smooth p-10">
       <div className="flex flex-col gap-32">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-white">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-4">
-              <h1 className="text-5xl text-gray-900 font-robotoFlex">
+              <h1 className="text-5xl text-foreground font-robotoFlex">
                 Metrics
               </h1>
               <InfoButton description={metricsPageDescription} />
             </div>
-            <div className="h-[2px] bg-black w-1/4 mt-2" />
+            <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
           </div>
           {/* Filters */}
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
-              <p className="text-sm text-gray-600">Date Range*</p>
+              <p className="text-sm text-git-text-secondary">Date Range*</p>
               <DatePicker
                 defaultValue={dateRange}
                 onChange={(range: DateRange | undefined) => {
@@ -139,7 +140,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <div className="text-sm text-gray-600">Branch*</div>
+              <div className="text-sm text-git-text-secondary">Branch*</div>
               <BranchDropdownMenu
                 branches={analytics.metadata.branches}
                 selected={selectedBranch}
@@ -147,7 +148,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <div className="text-sm text-gray-600">Contributors*</div>
+              <div className="text-sm text-git-text-secondary">Contributors*</div>
               <ContributorDropdownMenu
                 contributors={analytics.metadata.contributors}
                 selected={selectedContributors}
@@ -155,7 +156,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Metrics*</label>
+              <label className="text-sm text-git-text-secondary">Metrics*</label>
               <MetricDropdownMenu
                 metrics={metricNames}
                 selected={selectedMetrics}

@@ -8,26 +8,35 @@ import MetricsPage from "./MetricsPage";
 import DashboardView from "./views/DashboardView/DashboardView";
 import Authorized from "@ui/components/shared/Authorized";
 import SettingsPage from "./components/settings/SettingsPage";
+import Layout from "./components/shared/Layout";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginView />} />
-        <Route path="/signup" element={<LoginView defaultTab={"signup"}/>} />
-        <Route path="/home" element={<InsertGitRepoView />} />
+        <Route path="/" element={<Layout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="/login" element={<LoginView />} />
+          <Route path="/signup" element={<LoginView defaultTab={"signup"} />} />
+          <Route path="/home" element={<InsertGitRepoView />} />
 
-        {/* Add more routes as needed */}
+          {/* Add more routes as needed */}
 
-        <Route path="/loading" element={<LoadingPage />} />
-        <Route path="/metrics" element={<MetricsPage />} />
-        <Route path="/dashboard" element={
-          <Authorized>
-            <DashboardView/>
-          </Authorized>
-        }/>
-        <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/loading" element={<LoadingPage />} />
+          <Route path="/metrics" element={<MetricsPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <Authorized>
+                <DashboardView />
+              </Authorized>
+            }
+          />
+                  <Route path="/settings" element={<Authorized>
+          <SettingsPage /></Authorized>
+        } />
+        </Route>
+
       </Routes>
     </BrowserRouter>
   );
