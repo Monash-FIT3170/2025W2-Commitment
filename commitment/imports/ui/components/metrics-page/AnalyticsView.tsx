@@ -124,7 +124,7 @@ export function AnalyticsView(): React.JSX.Element {
           {/* Filters */}
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
-              <p className="text-sm text-muted-foreground">Date Range*</p>
+              <p className="text-sm text-git-text-secondary">Date Range*</p>
               <DatePicker
                 defaultValue={dateRange}
                 onChange={(range: DateRange | undefined) => {
@@ -133,7 +133,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <div className="text-sm text-gray-600">Branch*</div>
+              <div className="text-sm text-git-text-secondary">Branch*</div>
               <BranchDropdownMenu
                 branches={analytics.metadata.branches}
                 selected={selectedBranch}
@@ -141,7 +141,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <div className="text-sm text-gray-600">Contributors*</div>
+              <div className="text-sm text-git-text-secondary">Contributors*</div>
               <ContributorDropdownMenu
                 contributors={analytics.metadata.contributors}
                 selected={selectedContributors}
@@ -149,7 +149,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Metrics*</label>
+              <label className="text-sm text-git-text-secondary">Metrics*</label>
               <MetricDropdownMenu
                 metrics={metricNames}
                 selected={selectedMetrics}
