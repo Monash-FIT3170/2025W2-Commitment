@@ -34,7 +34,7 @@ const pages: Page[] = [
 const LoginWidget: FC<LoginWidgetProps> = (props) => {
   const CreateCardElement = useCallback((page: Page) => (
     <TabsContent value={page.name}>
-      <Card className="max-w-md w-96 grow bg-muted stroke-0">
+      <Card className="max-w-md w-96 grow border-border bg-git-bg-tertiary stroke-0">
         <CardHeader>
           <CardTitle className="text-foreground">
             {page.title}
@@ -48,9 +48,9 @@ const LoginWidget: FC<LoginWidgetProps> = (props) => {
   ), []);
 
   return (
-    <div className={cx('inline-flex flex-row content-center justify-center', props.className)}>
+    <div className={cx('inline-flex  flex-row content-center justify-center', props.className)}>
       <Tabs defaultValue={props.defaultTab}>
-        <TabsList>
+        <TabsList className='bg-git-bg-tertiary rounded-xl'>
           {pages.map((page: Page) => (
             <TabsTrigger value={page.name}>{page.title}</TabsTrigger>
           ))}
