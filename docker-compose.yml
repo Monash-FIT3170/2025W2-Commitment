@@ -1,18 +1,16 @@
 services:
-  dev-env:
+  build-env:
     build:
       context: ./commitment
-      dockerfile: Dockerfile.MeteorDev
+      dockerfile: Dockerfile.MeteorRun
     image: commitment-img
-    container_name: 3170-env
+    container_name: 3170-build
     ports:
       - "3000:3000"
     volumes:
       - ./commitment:/projects/commitment
     env_file:
       - ./commitment/server/.env
-    depends_on:
-      - mongo
     tty: true
     stdin_open: true
     networks:
@@ -30,19 +28,6 @@ services:
       - "8081:8081"
     networks:
       - app-network
-
-  mongo:
-    image: mongo:6
-    container_name: mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-    networks:
-      - app-network
-
-volumes:
-  mongo-data:
 
 networks:
   app-network:

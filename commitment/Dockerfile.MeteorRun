@@ -1,0 +1,42 @@
+# Start with Node.js base image
+FROM node:23-slim
+
+# Install required dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl git python3 make g++ ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -sf python3 /usr/bin/python
+
+# Install Meteor 3.2
+ENV METEOR_ALLOW_SUPERUSER=true
+RUN curl https://install.meteor.com/ | sh
+
+# Upgrade NPM version
+RUN npm install -g npm@11.3.0
+
+# --- Create user and group ---
+RUN useradd -ms /bin/bash -G node devuser
+
+# Fix permissions for devuser
+RUN chown -R devuser:devuser /usr/local/lib/node_modules /usr/local/bin /home/devuser
+
+# Switch to non-root user
+USER devuser
+
+# Set working directory
+WORKDIR /projects/commitment
+
+# Copy Meteor project into image
+COPY --chown=devuser:devuser . .
+
+# Install Meteor project dependencies
+RUN meteor npm install
+
+# Expose Meteor and MongoDB ports
+EXPOSE 3000
+EXPOSE 27017
+
+# Default: run Meteor in development mode
+# CMD ["meteor", "run", "--port", "3000", "--inspect"]
+CMD ["bash"]
