@@ -3,7 +3,9 @@ import {
   UserScalingSummary,
   AllMetricsData,
   SerializableRepoData,
+  ContributorValueWithAliases,
 } from "/imports/api/types";
+import { applyAliasMapping, applyAliasMappingIfNeeded, createAliasMapping, getUserAliasConfig } from "./alias_mapping";
 
 // All the Metrics being considered
 const DEFAULT_METRICS = [
@@ -108,42 +110,56 @@ function percentileRank(values: number[], value: number): number {
  *   - name: the user’s name
  *   - score: the user’s scaled score rounded to two decimal places.
  */
+function smallGroupPercentileRank(values: number[], value: number): number {
+  // Smooth percentile rank to avoid extremes in small groups
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = sorted.indexOf(value);
+  if (idx === -1) return 0.5;
+  return (idx + 1) / (sorted.length + 1); // keeps values away from exact 0 or 1
+}
+
 async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl });
 
   const selectedMetrics = config.metrics?.length
     ? config.metrics
     : DEFAULT_METRICS;
-  const method = config.method ?? "Percentiles";
 
-  // Use helper to build users
+  let method = config.method ?? "Percentiles";
+
   const users = buildUsers(allMetrics, selectedMetrics);
+  if (!users.length) return [];
 
-  if (!users.length) return []; //if there's no users then immediately return
-
-  // Normalize metrics
   const metricsValues = selectedMetrics.map((_, i) =>
     normaliseMetric(users.map((u) => u.values[i]))
   );
 
-  // Calculate score (scale) per user
+  // Override method for small groups
+  if (users.length <= 3) {
+    console.warn(
+      "Small group detected (<=3 users). Using 'Default' mean method for stable scaling."
+    );
+    method = "Default";
+  }
+
   return users.map((user, idx) => {
     const scales = metricsValues.map((col) => col[idx]);
-
     let score: number;
+
     switch (method) {
       case "Percentiles": {
-        // compute percentile rank per column
         const percentileScores = selectedMetrics.map((_, colIdx) => {
-          // filter out nulls for ranking
           const colValues: number[] = users
             .map((u) => u.values[colIdx])
             .filter((v): v is number => v !== null && Number.isFinite(v));
 
           return users.map((u) => {
             const v = u.values[colIdx];
-            if (v === null || !Number.isFinite(v)) return 0.5; // neutral for missing
-            return percentileRank(colValues, v);
+            if (v === null || !Number.isFinite(v)) return 0.5;
+            // Use small-group-safe percentile
+            return users.length <= 3
+              ? smallGroupPercentileRank(colValues, v)
+              : percentileRank(colValues, v);
           });
         });
 
@@ -158,19 +174,19 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
         const std = Math.sqrt(
           scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length
         );
-        score = mean + std; 
+        score = mean + std;
         break;
 
       case "Quartiles":
-        const sorted = [...scales].sort((a, b) => a - b); //sort first
-        const mid = Math.floor(sorted.length / 2); //2nd quartile
+        const sorted = [...scales].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
         score =
           sorted.length % 2 === 0
             ? (sorted[mid - 1] + sorted[mid]) / 2
             : sorted[mid];
         break;
 
-      default:
+      default: // Default (simple mean)
         score = scales.reduce((a, b) => a + b, 0) / scales.length;
         break;
     }
@@ -178,6 +194,7 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
     return { name: user.name, score: Math.round(score * 100) / 100 };
   });
 }
+
 
 /**
  * Generates a detailed scaled results summary for each contributor in a repository.
@@ -196,43 +213,102 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
  *   - finalGrade: initially null
  *   - scale: the computed scaled score
  */
+
+
 export async function getScaledResults(
   repoData: SerializableRepoData,
   config: ScalingConfig,
-  repoUrl: string
+  repoUrl: string,
+  userId: string
 ): Promise<UserScalingSummary[]> {
-// Identify users who contributed to main (have aliases) -> this thought process will need to be updated later on, but for now this functions
-const contributors = repoData.contributors;
-const validUserNames = new Set(
-  contributors
-    .filter((c) => c.value.emails.length > 0)
-    .map((c) => c.value.name)
-);
 
-// Scale only the valid users
-const scaledUsers = await scaleUsers(repoUrl, config);
-const scaledValidUsers = scaledUsers.filter(({ name }) =>
-  validUserNames.has(name)
-);
+  const aliasConfig = await Meteor.callAsync("aliasConfigs.getAllForOwner", userId).catch(() => null);
 
-// Map scaled scores back to all contributors
-return scaledUsers.map(({ name }) => {
-  const contributor = contributors.find((c) => c.value.name === name);
+  const mappedData =
+  aliasConfig && aliasConfig.length
+    ? {
+        ...applyAliasMapping(repoData, createAliasMapping(aliasConfig[0].aliases)),
+        contributors: applyAliasMapping(repoData, createAliasMapping(aliasConfig[0].aliases)).contributors.map(c => ({
+          ...c,
+          value: {
+            ...c.value,
+            aliases: [], 
+          } as ContributorValueWithAliases
+        }))
+      }
+    : {
+        ...repoData,
+        contributors: repoData.contributors.map(c => ({
+          ...c,
+          value: {
+            ...c.value,
+            aliases: [],
+          } as ContributorValueWithAliases
+        }))
+      };
 
-  const aliases = contributor
-    ? contributor.value.emails.map((email) => ({ username: name, email }))
-    : [];
+  const updatedContributors = await Promise.all(
+    mappedData.contributors.map(async (contributor) => {
+      const { key, value } = contributor;
 
-  const scale = aliases.length > 0
-    ? scaledValidUsers.find((u) => u.name === name)?.score ?? 0
-    : 0;
+      const extraAliases = await Meteor.callAsync("aliasConfigs.getAliasesFor", key).catch(() => ({
+        gitUsernames: [],
+        emails: [],
+      }));
+
+      const aliases = [
+        ...value.emails.map((email) => ({ username: key, email })),
+        ...(extraAliases.emails || []).map((email:string) => ({ username: key, email })),
+        ...(extraAliases.gitUsernames || [])
+          .filter((u:string) => u !== key)
+          .map((username:string) => ({ username, email: null })),
+      ];
+
+      const valWithAliases: ContributorValueWithAliases = {
+        ...value,
+        emails: [...new Set([...value.emails, ...(extraAliases.emails || [])])],
+        aliases,
+      };
+
+      return {
+        ...contributor,
+        value: valWithAliases,
+      };
+    })
+  );
+
+  const mappedDataWithAliases: SerializableRepoData = {
+    ...mappedData,
+    contributors: updatedContributors,
+  };
+
+  const validUserNames = new Set(
+    mappedDataWithAliases.contributors
+      .filter((c) => c.value.emails.length > 0)
+      .map((c) => c.key)
+  );
+
+  console.log("Valid usernames (with emails):", Array.from(validUserNames));
+
+  const scaledUsers = await scaleUsers(repoUrl, config);
+  const scaledValidUsers = scaledUsers.filter(({ name }) => validUserNames.has(name));
+
+  console.log("Scaled users returned from scaleUsers():", scaledUsers);
+  console.log("Scaled users filtered to valid contributors:", scaledValidUsers);
+
+  const finalResults: UserScalingSummary[] = mappedDataWithAliases.contributors.map(c => {
+  const contributorValue = c.value as ContributorValueWithAliases;
+
+  // Use only the canonical name for scale lookup
+  const scaledUser = scaledUsers.find(u => u.name === c.key);
 
   return {
-    name,
-    aliases,
+    name: c.key,
+    aliases: contributorValue.aliases,
     finalGrade: null,
-    scale, // 0 if no aliases, otherwise valid scaled score
+    scale: scaledUser ? scaledUser.score : 0,
   };
 });
 
+  return finalResults;
 }
