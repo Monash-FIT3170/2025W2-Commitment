@@ -99,6 +99,16 @@ These commands are useful for working with the container but must be run from th
 | Access Haskell Container     | `docker exec -it haskell-api bash` |
 | Attach Container to Terminal | `docker attach <container>`        |
 
+## Other Useful Reading
+
+Below are useful links for learning a little more about the project from the READMEs scattered throughout.
+| README Name | Info / Description | Link |
+|---------------------|--------------------------------------------------------|------|
+| Mongo Setup | More information on playing with Mongo.| [View README](commitment/server/README_DATA_ENTRY.md) |
+| Mongo Architecture | Documentation on the architecture of Mongo in our application. | [View README](commitment/ARCHITECTURE.md) |
+| Tailwind How-To | Example usage and demos for applying tailwind in the project.| [View README](README.tailwind-colors.md.md) |
+| Contribution Guide | Guidelines for contributing to the project | [View README](CONTRIBUTING.md) |
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
