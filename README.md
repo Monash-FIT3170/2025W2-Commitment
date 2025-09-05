@@ -68,41 +68,6 @@ These provide steps to run the project.
 4. Run `meteor` to run the application.
     - This will be mapped to your `localhost` on `PORT 3000`.
 
-## Git Practices
-This next section briefly goes over practices for the team.
 
-### Commits
-- Keep commits **small** and **meaningful**, one responsibility per commit.
-- Use **brief and clear** messages describing the change.
-- Commit frequently, but avoid noisy or vague messages.
-All commits must follow the **Conventional Commits** format:
 
-`type(scope): message`
 
-More details on `type` of commits can be found [here](https://www.conventionalcommits.org/en/v1.0.0/#summary).
-
-### Branching
-#### Locked Branches:
-- `main`: **No direct commits allowed** – all changes must go through Pull Requests (PRs).
-
-#### Creating Feature Branches:
-- Create a new branch for each new feature or fix.
-- **Do not** commit to someone else's branch without permission.
-- To collaborate, raise a PR to their branch with a clear message.
-
-#### Branch Naming Conventions:
-- Use **dashes (`-`)** instead of spaces.
-- Avoid **nested branches** (e.g., `feature/test/test-branch`).
-
-| Type       | Prefix  | Example             |
-|------------|---------|---------------------|
-| Feature    | `feat/` | `feat/login-page`   |
-| Bug Fix    | `fix/`  | `fix/metrics-bug`   |
-| Temporary  | `temp/` | `temp/test-branch`  |
-
-### Pull Requests (Merge Requests)
-
-- **All changes** must go through a Pull Request.
-- Share PRs via the `#pull-requests` Discord channel.
-- PRs must be **squashed and merged** to keep history clean.
-- A PR must be **reviewed and approved** before being merged into `main`.
