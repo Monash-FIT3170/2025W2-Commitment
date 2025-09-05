@@ -1,5 +1,28 @@
 # 2025W2-Commitment
 
+**Commitment** is a web-based GUI tool that provides **code contribution analysis** and **automatic scaling suggestions** for student assessments.
+
+With Commitment, you can:
+
+- Enter a Git URL to view repository stats or bookmark repos (when signed in).
+- Explore contributor metrics (commits, lines of code, LOC per commit, commit frequency, etc.) filtered by branch and timeframe.
+- Generate recommended assessment scalings using a variety of strategies (percentiles, mean + standard deviation, quartiles, etc.).
+- Visualize metrics and recommendations through interactive graphs.
+- Upload a Moodle grading sheet to automatically apply scaling before downloading it for submission.
+- Filter out unwanted commits (e.g., merges or keyword-based).
+- Map multiple Git accounts to the same contributor via a repo-specific config file.
+
+Commitment is designed to support fairer and more transparent grading in team-based coding projects.
+
+## System Requirements
+
+To run this project with **Docker**, **Meteor**, and **Haskell**, to ensure a smooth experience running your development environment must meet the following requirements:
+
+- **OS**: Linux (Ubuntu 22.04+) or macOS (Intel/Apple Silicon), or Windows 10/11 Pro with WSL2
+- **CPU**: Quad-core 64-bit processor (Intel i5/i7, AMD Ryzen 5/7, or Apple M1/M2)
+- **RAM**: **16 GB+** strongly recommended
+- **Disk**: **100 GB SSD free** (fast storage for builds and containers)
+
 ## Environment Setup
 
 Follow the below steps to set up your Docker environment for development.
@@ -36,32 +59,45 @@ _If there are any issues please contact an SA for help._
 
 These next steps are required to build and spin up the Docker image that will be used.
 
-1. Ensure that you are in the **root directory** of the project and open a terminal.
-2. Run `docker-compose build` to build the image.
+1. Create the `.env` file for Mongo connection in the `commitment\server` directory, example show below.
+   - You will need to create a database on [Atlas](https://www.mongodb.com/) and set up a URI string for the `MONGO_URL`
+
+```
+MONGO_URL=mongodb+srv://<user>:<password>@database.c8q1uxt.mongodb.net/<database>?retryWrites=true&w=majority&appName=<Database>
+SERVER_HOST=0.0.0.0
+PORT=3000
+DB_NAME=commitment_db
+NODE_ENV=development
+```
+
+2. Ensure that you are in the **root directory** of the project and open a terminal.
+3. Run `docker-compose build` to build the image.
    - This may take some time!
-3. Run `docker-compose up -d` to spin it up and attach to a container.
-4. The container is ready for development.
-
-### Docker Commands
-
-These commands are useful for working with the container but must be run from the root directory of the project.
-
-| Use                    | Command                         |
-| ---------------------- | ------------------------------- |
-| Start Container        | `docker-compose start`          |
-| Stop Container         | `docker-compose stop`           |
-| Access Dev Container   | `docker exec -it 3170-env bash` |
-| Access Mongo Container | `docker exec -it mongo bash`    |
+4. Run `docker-compose up -d` to spin it up and attach to a container.
+5. The container is ready for development.
 
 ## Running Project
 
 These provide steps to run the project.
 
-1. In the root directory of the project start the container.
-2. Once it has started enter the `3170-env` container, this should take you into the `\commitment` directory.
+1. In the root directory of the project start the container with `docker-compose start`.
+2. Once it has started enter the `3170-env` container using `docker exec -it 3170-env bash`, this should take you into the `\commitment` directory.
 3. Run `npm install` to install required dependencies, this may take some time.
 4. Run `meteor` to run the application.
    - This will be mapped to your `localhost` on `PORT 3000`.
+5. Enjoy developing!
+
+### Docker Commands
+
+These commands are useful for working with the container but must be run from the root directory of the project.
+
+| Use                          | Command                            |
+| ---------------------------- | ---------------------------------- |
+| Start Container              | `docker-compose start`             |
+| Stop Container               | `docker-compose stop`              |
+| Access Dev Container         | `docker exec -it 3170-env bash`    |
+| Access Haskell Container     | `docker exec -it haskell-api bash` |
+| Attach Container to Terminal | `docker attach <container>`        |
 
 ## Contributors ✨
 
