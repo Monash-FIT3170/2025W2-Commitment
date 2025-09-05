@@ -106,7 +106,7 @@ Below are useful links for learning a little more about the project from the REA
 |---------------------|--------------------------------------------------------|------|
 | Mongo Setup | More information on playing with Mongo.| [View README](commitment/server/README_DATA_ENTRY.md) |
 | Mongo Architecture | Documentation on the architecture of Mongo in our application. | [View README](commitment/ARCHITECTURE.md) |
-| Tailwind How-To | Example usage and demos for applying tailwind in the project.| [View README](README.tailwind-colors.md.md) |
+| Tailwind How-To | Example usage and demos for applying tailwind in the project.| [View README](README.tailwind-colors.md) |
 | Contribution Guide | Guidelines for contributing to the project | [View README](CONTRIBUTING.md) |
 
 ## Contributors ✨
