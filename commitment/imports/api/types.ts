@@ -1,5 +1,4 @@
 import { DateRange } from "react-day-picker";
-import { Pie } from "recharts";
 
 export type RepositoryData = Readonly<{
   name: string;
@@ -75,7 +74,6 @@ export type UserScalingSummary = {
 /**
  * Data Structures for Analytics View
  */
-
 export interface Metadata {
   repoUrl: string;
   repoName: string;

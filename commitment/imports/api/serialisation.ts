@@ -12,7 +12,6 @@ import {
 /**
  * Convert RepositoryData's Maps into plain objects to store in DB.
  */
-
 export const mapToArray = <K, V>(m: unknown): SerialisableMapObject<K, V>[] => {
   if (m instanceof Map) {
     return Array.from(m.entries()).map(([key, value]) => ({ key, value }))
