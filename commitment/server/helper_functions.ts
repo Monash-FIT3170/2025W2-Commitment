@@ -106,9 +106,7 @@ export const getLocPerCommitPerContributor = (
 ): number => {
   const totalLOC = getLOCperContributor(repoData, contributorName)
   const commits = getCommitsFrom(repoData, contributorName)
-
-  if (commits.length === 0) return 0;
-  else return totalLOC / commits.length
+  return commits.length === 0 ? 0 : totalLOC / commits.length
 }
 
 export const getCommitPerDayPerContributor = (
