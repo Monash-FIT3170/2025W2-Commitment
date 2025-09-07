@@ -43,6 +43,22 @@ Meteor.methods({
   },
 
   /**
+   * Gets the data for a specific repository.
+   *
+   * @method repoCollection.getData
+   * @param {string} url - The URL of the repository.
+   * @returns {Promise<SerializableRepoData>} The repository data.
+   * @throws {Meteor.Error} If the repository is not found.
+   */
+  async "repoCollection.getData"(url: string) {
+    const repoData = await RepoCollection.findOneAsync({ url });
+    if (!repoData) {
+      throw new Meteor.Error("repository-not-found", "Repository not found")
+    }
+    return repoData.data;
+  },
+
+  /**
    * Removes a repo from the RepoCollection by its URL.
    *
    * @method repoCollection.removeRepo
@@ -62,7 +78,7 @@ Meteor.methods({
     if (!d) {
       throw new Meteor.Error("link-not-found", "Link not found")
     }
-    
+
     return await RepoCollection.removeAsync({ url })
       .then((d: number) => true)
       .catch((e: Error) => false)
@@ -84,29 +100,30 @@ Meteor.methods({
   /**
    * Checks whether a link with the given URL exists in the repoCollection.
    *
-   * @method repoCollection.  async "repoCollection.allUrls"(): Promise<string[]> {
-
+   * @method repoCollection.allUrls
    * @returns {Promise<string[]>} all urls existing in the database
    */
   async "repoCollection.allUrls"(): Promise<string[]> {
-    return RepoCollection.find().fetch()
-      .map((d: ServerRepoData) => d.url)
+    return await RepoCollection.find().fetch()
+      .then((d: ServerRepoData[]) => d.map((d: ServerRepoData) => d.url))
   },
 
   /**
-   * Gets the data for a specific repository.
+   * Updates the lastViewed parameter of the bookmark.
    *
-   * @method repoCollection.getData
-   * @param {string} url - The URL of the repository.
-   * @returns {Promise<SerializableRepoData>} The repository data.
-   * @throws {Meteor.Error} If the repository is not found.
-   */
-  async "repoCollection.getData"(url: string) {
-    const repoData = await RepoCollection.findOneAsync({ url });
-    if (!repoData) {
-      throw new Meteor.Error("repository-not-found", "Repository not found")
+   * @method repoCollection.updateLastViewed
+   * @param {string} url - The URL of the bookmark to update.
+   * @returns {Promise<number>} The number of documents updated (should be 1 if successful).
+   * @throws {Meteor.Error} If the URL is invalid, bookmark not found, or not authorised.
+  */
+  async "repoCollection.updateLastViewed"(url: string) {
+    const bm = await RepoCollection.findOneAsync({ url })
+
+    if (!bm) {
+      throw new Meteor.Error("bookmark-not-found", "Bookmark not found");
     }
-    return repoData.data;
+
+    return await RepoCollection.updateAsync({ url }, { $set: { lastViewed: new Date() } })
   }
 })
 
