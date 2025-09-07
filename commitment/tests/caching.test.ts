@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { expect } from 'chai';
 
+import {} from "../server/caching"
+
 describe('Caching Tests', () => {
   const testUrl = 'https://github.com/test/repo';
 
