@@ -5,6 +5,12 @@ import {} from "../server/caching"
 
 describe('Caching Tests', () => {
   const testUrl = 'https://github.com/test/repo';
+  const testData = { 
+    name: 'test', 
+    branches: [], 
+    contributors: [], 
+    allCommits: [] 
+  };
 
   beforeEach(async () => {
     // Clean up before each test
@@ -17,13 +23,6 @@ describe('Caching Tests', () => {
   });
 
   it('should store and retrieve repository data', async () => {
-    const testData = {
-      name: 'test-repo',
-      branches: [],
-      contributors: [],
-      allCommits: []
-    };
-
     // Store data
     await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
 
@@ -37,8 +36,6 @@ describe('Caching Tests', () => {
   });
 
   it('should return all URLs', async () => {
-    const testData = { name: 'test', branches: [], contributors: [], allCommits: [] };
-    
     await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
     
     const urls = await Meteor.call("repoCollection.allUrls");
@@ -46,8 +43,6 @@ describe('Caching Tests', () => {
   });
 
   it('should remove repository data', async () => {
-    const testData = { name: 'test', branches: [], contributors: [], allCommits: [] };
-    
     // Store data
     await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
     
@@ -60,8 +55,6 @@ describe('Caching Tests', () => {
   });
 
   it('should update last viewed timestamp', async () => {
-    const testData = { name: 'test', branches: [], contributors: [], allCommits: [] };
-    
     await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
     await Meteor.call("repoCollection.updateLastViewed", testUrl);
     
