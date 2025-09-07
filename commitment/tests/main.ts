@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import assert from 'assert';
 
-import "../server/caching"
 import './caching.test';
 
 describe('meteor-app', function () {

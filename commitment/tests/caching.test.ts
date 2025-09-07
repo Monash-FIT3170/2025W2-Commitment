@@ -1,64 +1,67 @@
-import { Meteor } from 'meteor/meteor';
-import { expect } from 'chai';
+import { Meteor } from 'meteor/meteor'
+import { expect } from 'chai'
 
-import {} from "../server/caching"
+import { cacheIntoDatabase, isInDatabase, tryFromDatabase } from "../server/caching"
+import { RepositoryData } from '/imports/api/types'
 
 describe('Caching Tests', () => {
-  const testUrl = 'https://github.com/test/repo';
+  const testUrl = 'https://github.com/test/repo'
   const testData = { 
     name: 'test', 
     branches: [], 
-    contributors: [], 
-    allCommits: [] 
-  };
+    allCommits: new Map(), 
+    contributors: new Map()
+  } as RepositoryData
 
   beforeEach(async () => {
     // Clean up before each test
-    await Meteor.call("repoCollection.removeRepo", testUrl);
-  });
+    Meteor.call("repoCollection.removeRepo", testUrl)
+  })
 
   afterEach(async () => {
     // Clean up after each test
-    await Meteor.call("repoCollection.removeRepo", testUrl);
-  });
+    Meteor.call("repoCollection.removeRepo", testUrl)
+  })
 
   it('should store and retrieve repository data', async () => {
     // Store data
-    await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
+    await cacheIntoDatabase(testUrl, testData)
 
     // Check if it exists
-    const exists = await Meteor.call("repoCollection.exists", testUrl);
-    expect(exists).to.be.true;
+    const exists = await isInDatabase(testUrl)
+    expect(exists).to.be.true
 
     // Retrieve data
-    const retrievedData = await Meteor.call("repoCollection.getData", testUrl);
-    expect(retrievedData).to.deep.equal(testData);
-  });
+    const retrievedData = await tryFromDatabase(testUrl, null)
+    expect(retrievedData).to.deep.equal(testData)
+  })
 
   it('should return all URLs', async () => {
-    await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
+    // Store data
+    await cacheIntoDatabase(testUrl, testData)
     
-    const urls = await Meteor.call("repoCollection.allUrls");
-    expect(urls).to.include(testUrl);
-  });
+    const urls = await Meteor.call("repoCollection.allUrls")
+    expect(urls).to.include(testUrl)
+  })
 
   it('should remove repository data', async () => {
     // Store data
-    await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
+    await cacheIntoDatabase(testUrl, testData)
     
     // Remove data
-    await Meteor.call("repoCollection.removeRepo", testUrl);
+    await Meteor.call("repoCollection.removeRepo", testUrl)
     
     // Check if it's gone
-    const exists = await Meteor.call("repoCollection.exists", testUrl);
-    expect(exists).to.be.false;
-  });
+    const exists = await isInDatabase(testUrl)
+    expect(exists).to.be.false
+  })
 
   it('should update last viewed timestamp', async () => {
-    await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
-    await Meteor.call("repoCollection.updateLastViewed", testUrl);
+    // Store data
+    await cacheIntoDatabase(testUrl, testData)
+    await Meteor.call("repoCollection.updateLastViewed", testUrl)
     
     // This test just ensures the method doesn't throw an error
-    expect(true).to.be.true;
-  });
-});
+    expect(true).to.be.true
+  })
+})

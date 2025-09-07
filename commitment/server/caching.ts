@@ -116,6 +116,7 @@ Meteor.methods({
  */
 export const isInDatabase = async (url: string): Promise<boolean> => 
   Meteor.callAsync("repoCollection.exists", url)
+    .catch((_e: Error) => false)
 
 /**
  * Tries to get repository data from the database.
@@ -127,11 +128,11 @@ export const tryFromDatabaseSerialised = (
   url: string,
   notifier: Subject<string>
 ): Promise<SerializableRepoData> => new Promise((resolve, reject) => {
-  notifier.next("Checking database for existing data...");
+  if (notifier != null) notifier.next("Checking database for existing data...");
   Meteor.callAsync("repoCollection.getData", url)
     .then((d: SerializableRepoData) => {
       // TODO CHECK IF REPO DATA IS MOST UP TO DATE
-      notifier.next("Found data in database!");
+      if (notifier != null) notifier.next("Found data in database!");
       resolve(d);
     })
     .catch((_e: Error) => {
