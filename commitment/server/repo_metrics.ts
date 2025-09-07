@@ -1,6 +1,7 @@
 import {
   MetricsData,
   SerializableRepoData,
+  CommitData,
   FilteredData,
   HighlightStruct,
   LeaderboardData,
@@ -15,6 +16,18 @@ import {
   LineGraph,
   Leaderboard,
 } from "../imports/api/types";
+
+import {
+  getContributors,
+  getTotalCommits,
+  getTotalLinesOfCode,
+  getTotalCommitsPerContributor,
+  getLOCperContributor,
+  getLocPerCommitPerContributor,
+  getCommitPerDayPerContributor,
+  getNumberOfContributors,
+  getTotalBranches
+} from "./helper_functions"
 
 import {
   leaderboardCommitsPerDay,
@@ -43,16 +56,11 @@ import {
 
 import { Meteor } from "meteor/meteor";
 
-// storing a global access unfiltered data here
-let unfilteredRepoData = {} as Promise<SerializableRepoData>;
-
 // -------- THIS FUNCTION NEEDS TO BE CALLED FIRST -----------------------
 export async function getAllGraphData(
   data: FilteredData,
   selectedMetric: MetricType
 ): Promise<MetricsData> {
-  // set the unfiltered data we will use for all other metrics
-  setsUnfilteredData(data.repoUrl);
   // get all the metrics based on the AnalyticsData structure
 
   let leaderboard: Leaderboard;
@@ -154,8 +162,7 @@ export async function getAllGraphData(
   }
 
   return {
-    highlights: await returnHighlightData(),
-
+    highlights: returnHighlightData(data.repositoryData),
     contributors: {
       leaderboard,
       lineGraph,
@@ -165,7 +172,7 @@ export async function getAllGraphData(
   };
 }
 
-export async function getAllMetrics(filteredData: SerializableRepoData): Promise<AllMetricsData> {
+export const getAllMetrics = (filteredData: SerializableRepoData): AllMetricsData => {
   // does all of this on FILTERED DATA
 
   // for each contributor in the unfiltered data, find the metric associated to them:
@@ -196,7 +203,7 @@ export async function getAllMetrics(filteredData: SerializableRepoData): Promise
  * @param repoData Repository data to calculate metrics from
  * @returns AllMetricsData object with metrics for each contributor
  */
-export async function getAllMetricsFromData(repoData: SerializableRepoData): Promise<AllMetricsData> {
+export const getAllMetricsFromData = (repoData: SerializableRepoData): AllMetricsData => {
   // for each contributor in the provided data, find the metric associated to them:
   const allMetricData: AllMetricsData = {};
 
@@ -221,79 +228,25 @@ export async function getAllMetricsFromData(repoData: SerializableRepoData): Pro
 }
 
 /**
- * SETTERS AND GETTERS
- */
-
-/**
- * Fetch unfiltered repository data from the database.
- * @param repoUrl The URL of the repository.
- * @returns A promise that resolves to the unfiltered repository data.
- */
-export function setsUnfilteredData(repoUrl: string): void {
-  // implementation of fetched repo data from the database
-  // set global variable:
-  unfilteredRepoData = Meteor.callAsync("repoCollection.getData", repoUrl);
-}
-
-export function getUnfilteredData(): Promise<SerializableRepoData> {
-  return unfilteredRepoData;
-}
-
-/** Branch names
- * @param data Repository Data
- * @returns Array of branch names
- */
-export function getBranches(data: FilteredData): string[] {
-  return data.repositoryData.branches.map((b) => b.branchName);
-}
-
-/** Contributors (from RepositoryData.contributors map)
- * @param data Repository Data
- * @returns Array of contributor names
- */
-export function getContributors(data: SerializableRepoData): string[] {
-  return data.contributors.map((c) => c.value.name);
-}
-
-/**
- * Get the repository name.
- * @param data Repository Data
- * @returns String of the repo name
- */
-export function getRepoName(data: FilteredData): string {
-  return data.repositoryData.name;
-}
-
-/**
  * FUNCTIONS FOR HIGHLIGHTS
  */
-
-export async function returnHighlightData(): Promise<Highlights> {
-  return {
-    totalCommits: await highlightTotalCommits(),
-    totalLinesOfCode: await highlightTotalLinesOfCode(),
-    numContributors: await numContributors(),
-    numBranches: await numBranches(),
-  };
-}
-
-/**
- *
- * @param data
- * @returns
- */
-export function getTotalCommits(data: SerializableRepoData): number {
-  return data.allCommits.length;
-}
+export const returnHighlightData = (data: SerializableRepoData): Highlights => (
+  {
+    totalCommits: highlightTotalCommits(data),
+    totalLinesOfCode: highlightTotalLinesOfCode(data),
+    numContributors: getNumberOfContributors(data),
+    numBranches: getTotalBranches(data),
+  } as Highlights
+)
 
 /**
  * Returns the total commits in a repository for a highlight card.
  * @param data Filtered Repository Data
  * @returns Highlighted total commits information
  */
-export async function highlightTotalCommits(): Promise<HighlightStruct> {
-  const unfilteredData = await getUnfilteredData();
-
+export const highlightTotalCommits = (
+  unfilteredData: SerializableRepoData
+): HighlightStruct =>{
   const totalCommits = getTotalCommits(unfilteredData);
 
   // Sort commits by timestamp
@@ -340,41 +293,14 @@ export async function highlightTotalCommits(): Promise<HighlightStruct> {
 }
 
 /**
- * Get the total number of files changed in a repository.
- * @param repoData The repository data.
- * @returns The total number of files changed.
- */
-export function getTotalFilesChanged(repoData: SerializableRepoData): number {
-  return repoData.allCommits.reduce<number>((sum, commit) => {
-    const numFiles = commit.value.fileData.length;
-    return numFiles + sum;
-  }, 0);
-}
-
-/**
- * Get the total number of lines of code across all commits in a repository.
- * @param repoData The repository data.
- * @returns The total number of lines of code.
- */
-export function getTotalLinesOfCode(repoData: SerializableRepoData): number {
-  return repoData.allCommits.reduce<number>((sum, commit) => {
-    const commitLines = commit.value.fileData.reduce<number>(
-      (fileSum, f) => fileSum + f.newLines - f.deletedLines, // assuming `file.contents` is the raw file text
-      0
-    );
-    return sum + commitLines;
-  }, 0);
-}
-
-/**
  * Returns the total lines of code(total files changed) in the repository for the highlight card.
  * @param data Filtered Repository Data
  * @returns Highlighted total lines of code information
  */
-export async function highlightTotalLinesOfCode(): Promise<HighlightStruct> {
+export const highlightTotalLinesOfCode = (
+  unfilteredData: SerializableRepoData
+): HighlightStruct => {
   // number of files changed
-  const unfilteredData = await getUnfilteredData();
-
   const sortedCommits = unfilteredData.allCommits
     .slice()
     .sort(
@@ -411,92 +337,6 @@ export async function highlightTotalLinesOfCode(): Promise<HighlightStruct> {
   };
 }
 
-/**
- * Returns the number of contributors in the repository for the highlight card.
- * @param data Filtered Repository Data
- * @returns Highlighted number of contributors information
- */
-export async function numContributors(): Promise<number> {
-  const unfilteredData = await getUnfilteredData();
-  return unfilteredData.contributors.length;
-}
-
-/**
- * Returns the number of branches in the repository for the highlight card.
- * @param data Filtered Repository Data
- * @returns Highlighted number of branches information
- */
-export async function numBranches(): Promise<number> {
-  const unfilteredData = await getUnfilteredData();
-  return unfilteredData.branches.length;
-}
-
 export function getMetricString(): string[] {
   return ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
-}
-
-/**
- * METRICS FOR EACH CONTRIBUTOR
- */
-// Function for total lines of commit returning a string
-
-export function getTotalCommitsPerContributor(
-  repoData: SerializableRepoData,
-  contributorName: string
-): number {
-  // function that finds all the commits for a contributor and returns the total number of commits as a string
-  return repoData.allCommits.filter(
-    (commit) => commit.value.contributorName === contributorName
-  ).length;
-}
-
-export function getLOCperContributor(
-  repoData: SerializableRepoData,
-  contributorName: string
-): number {
-  const commits = repoData.allCommits.filter(
-    (commit) => commit.value.contributorName === contributorName
-  );
-
-  if (commits.length === 0) return 0;
-
-  return commits.reduce((acc, commit) => {
-    return acc + commit.value.fileData.reduce((acc, fileChange) => {
-      return acc + fileChange.newLines - fileChange.deletedLines
-    }, 0);
-  }, 0);
-}
-
-export function getLocPerCommitPerContributor(
-  repoData: SerializableRepoData,
-  contributorName: string
-): number {
-  const totalLOC = getLOCperContributor(repoData, contributorName)
-  const commits = repoData.allCommits.filter(
-    (commit) => commit.value.contributorName === contributorName
-  );
-
-  if (commits.length === 0) return 0;
-  else return totalLOC / commits.length
-}
-
-export function getCommitPerDayPerContributor(
-  repoData: SerializableRepoData,
-  contributorName: string
-): number {
-  // get commits filtered according to contributors
-  const commits = repoData.allCommits.filter(
-    (commit) => commit.value.contributorName === contributorName
-  );
-  if (commits.length === 0) return 0;
-
-  // extract commit dates as (YYYY-MM-DD)
-  const dates = commits.map((commit) => {
-    const date = new Date(commit.value.timestamp);
-    return date.toISOString().split("T")[0];
-  });
-
-  // count unique days
-  const uniqueDays = new Set(dates);
-  return commits.length / uniqueDays.size;
 }

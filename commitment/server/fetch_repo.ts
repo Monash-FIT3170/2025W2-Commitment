@@ -4,7 +4,7 @@ import { WebSocket } from "ws";
 import net from "net";
 
 import { RepositoryData } from "../imports/api/types";
-import {deserializeRepoData, serializeRepoData, assertRepoTyping } from "../imports/api/serialisation"
+import { deserializeRepoData, serializeRepoData, assertRepoTyping } from "../imports/api/serialisation"
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};

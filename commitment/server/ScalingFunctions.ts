@@ -1,10 +1,10 @@
-import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
+import { ScalingConfig } from "../imports/ui/components/scaling/ScalingConfigForm";
 import {
   UserScalingSummary,
   AllMetricsData,
   SerializableRepoData,
   ContributorValueWithAliases,
-} from "/imports/api/types";
+} from "../imports/api/types";
 import { applyAliasMapping, applyAliasMappingIfNeeded, createAliasMapping, getUserAliasConfig } from "./alias_mapping";
 
 // All the Metrics being considered

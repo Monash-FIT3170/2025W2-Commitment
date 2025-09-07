@@ -1,9 +1,8 @@
-import { HeatMapData, FilteredData } from "/imports/api/types";
+import { HeatMapData, FilteredData } from "../imports/api/types";
 
 /**
  * HEATMAP FUNCTIONS
  */
-
 export function heatMapLOC(data: FilteredData): HeatMapData[] {
   const repoData = data.repositoryData;
   // Map of date → user → LOC count
