@@ -62,7 +62,8 @@ Meteor.methods({
     if (!d) {
       throw new Meteor.Error("link-not-found", "Link not found")
     }
-    return RepoCollection.removeAsync({ url })
+    
+    return await RepoCollection.removeAsync({ url })
       .then((d: number) => true)
       .catch((e: Error) => false)
   },
@@ -152,8 +153,8 @@ export const tryFromDatabase = (
  * @param url The repository URL.
  * @param data The repository data to cache.
  */
-export const cacheIntoDatabase = (url: string, data: RepositoryData): Promise<void> => 
-  Meteor.callAsync("repoCollection.insertOrUpdateRepoData", 
+export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<void> => 
+  await Meteor.callAsync("repoCollection.insertOrUpdateRepoData", 
     url, 
     serializeRepoData(data)
   )
