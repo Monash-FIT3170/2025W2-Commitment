@@ -1,3 +1,5 @@
+import { Meteor } from "meteor/meteor"
+
 import { ScalingConfig } from "../imports/ui/components/scaling/ScalingConfigForm";
 import {
   UserScalingSummary,
@@ -133,25 +135,25 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
 
   let metricsValues: number[][];
 
-if (users.length <= 3) {
-  console.warn("Small group detected (<=3 users). Using raw values for percentile ranking.");
-  metricsValues = selectedMetrics.map((_, i) => {
-  const colValues = users
-    .map(u => u.values[i])
-    .filter((v): v is number => v !== null && Number.isFinite(v));
-  
-  return users.map(u => {
-    const v = u.values[i];
-    if (v === null || !Number.isFinite(v)) return 0.5;
-    return smallGroupPercentileRank(colValues, v); // map to 0-1 scale
+  if (users.length <= 3) {
+    console.warn("Small group detected (<=3 users). Using raw values for percentile ranking.");
+    metricsValues = selectedMetrics.map((_, i) => {
+    const colValues = users
+      .map(u => u.values[i])
+      .filter((v): v is number => v !== null && Number.isFinite(v));
+    
+    return users.map(u => {
+      const v = u.values[i];
+      if (v === null || !Number.isFinite(v)) return 0.5;
+      return smallGroupPercentileRank(colValues, v); // map to 0-1 scale
+    });
   });
-});
 
-} else {
-  metricsValues = selectedMetrics.map((_, i) =>
-    normaliseMetric(users.map((u) => u.values[i]))
-  );
-}
+  } else {
+    metricsValues = selectedMetrics.map((_, i) =>
+      normaliseMetric(users.map((u) => u.values[i]))
+    );
+  }
 
 
   return users.map((user, idx) => {

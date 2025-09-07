@@ -137,22 +137,29 @@ export const isInDatabase = async (url: string): Promise<boolean> => {
  * @param notifier Subject to notify about the status.
  * @returns Promise that resolves to the repository data.
  */
-export const tryFromDatabase = (
+export const tryFromDatabaseSerialised = (
   url: string,
   notifier: Subject<string>
-): Promise<RepositoryData> => new Promise((resolve, reject) => {
+): Promise<SerializableRepoData> => new Promise((resolve, reject) => {
   notifier.next("Checking database for existing data...");
   Meteor.callAsync("repoCollection.getData", url)
     .then(d => {
       // TODO CHECK IF REPO DATA IS MOST UP TO DATE
       notifier.next("Found data in database!");
-      resolve(deserializeRepoData(d));
+      resolve(d);
     })
     .catch((_e: Error) => {
       reject(new Error("Data not found in database"))
     })
 })
 
+export const tryFromDatabase = (
+  url: string,
+  notifier: Subject<string>
+): Promise<RepositoryData> => 
+  tryFromDatabaseSerialised(url, notifier)
+    .then(deserializeRepoData)
+    
 /**
  * Caches repository data in the database.
  * @param url The repository URL.

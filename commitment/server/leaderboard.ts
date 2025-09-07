@@ -2,39 +2,29 @@ import {
   FilteredData,
   LeaderboardData,
   SerializableRepoData,
-} from "/imports/api/types";
+} from "../imports/api/types";
+
+import {
+  getAllContributorsCommitCounts,
+  getLinesOfCodeFromCommit
+} from "./helper_functions"
 
 /**
  * LEADERBOARD FUNCTIONS
  */
 
-export function leaderboardTotalCommits(data: FilteredData): LeaderboardData[] {
-  const repoData = data.repositoryData;
-  const counts: Record<string, number> = {};
-
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    counts[user] = (counts[user] ?? 0) + 1;
-  });
-
-  const leaderboard: LeaderboardData[] = Object.entries(counts).map(
-    ([name, value]) => ({ name, value })
-  );
-
-  return leaderboard.sort((a, b) => b.value - a.value).slice(0, 10);
-}
+export const leaderboardTotalCommits = (data: FilteredData): LeaderboardData[] => 
+  getAllContributorsCommitCounts(data.repositoryData)
+    .sort((a, b) => b.value - a.value).slice(0, 10)
 
 export function leaderboardLOC(data: FilteredData): LeaderboardData[] {
   const repoData = data.repositoryData;
   const counts: Record<string, number> = {};
 
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
-
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value
+    const user = commit.contributorName;
+    const locThisCommit = getLinesOfCodeFromCommit(commit)
     counts[user] = (counts[user] || 0) + locThisCommit;
   });
 
@@ -50,12 +40,10 @@ export function leaderboardLOCPerCommit(data: FilteredData): LeaderboardData[] {
   const locCounts: Record<string, number> = {};
   const commitCounts: Record<string, number> = {};
 
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value
+    const user = commit.contributorName;
+    const locThisCommit = getLinesOfCodeFromCommit(commit)
 
     locCounts[user] = (locCounts[user] || 0) + locThisCommit;
     commitCounts[user] = (commitCounts[user] || 0) + 1;

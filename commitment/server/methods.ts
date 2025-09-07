@@ -1,5 +1,8 @@
 import { Meteor } from "meteor/meteor";
+import { Subject } from "rxjs"
+
 import { getFilteredRepoDataServer } from "./filter";
+import { tryFromDatabaseSerialised } from "./caching"
 import {
   SerializableRepoData,
   FilteredData,
@@ -10,13 +13,18 @@ import {
   AllMetricsData,
   MetricType,
   RepositoryData,
-} from "/imports/api/types";
-import { getAllGraphData, getAllMetricsFromData, getContributors, getUnfilteredData, setsUnfilteredData } from "./repo_metrics";
+} from "../imports/api/types";
+
+import {
+  getContributors,
+} from "./helper_functions"
+
+import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
 import { getRepoData } from "./fetch_repo";
-import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation";
+import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation";
 import { getScaledResults } from "./ScalingFunctions";
-import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
+import { ScalingConfig } from "../imports/ui/components/scaling/ScalingConfigForm";
 import { useLocation } from "react-router-dom";
 import { serialize } from "v8";
 import { createDropdownMenuScope } from "@radix-ui/react-dropdown-menu";
@@ -181,12 +189,12 @@ Meteor.methods({
   },
 
   async "getScalingResults"(data: ScalingConfig, repoUrl: string) {
-    setsUnfilteredData(repoUrl);
-
-    const repoData: SerializableRepoData = await getUnfilteredData();
-
-    const result = await getScaledResults(repoData, data, repoUrl);
-
-    return result;
+    const n = new Subject<string>()
+    return getScaledResults(
+      await tryFromDatabaseSerialised(repoUrl, n),
+      data, 
+      repoUrl,
+      "" // null string for now as Yoonus is TODO fix this 
+    );
   }
 });
