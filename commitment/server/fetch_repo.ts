@@ -98,7 +98,7 @@ export const getRepoData = async (
 
 /**
  * Fetches the repository data structure from the Haskell API
- * Using Unix IPC mechanisms to bypass 
+ * Using Unix IPC mechanisms to bypass the network layer
  *
  * @param url url to run the API on
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
