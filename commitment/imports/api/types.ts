@@ -62,7 +62,7 @@ export interface FilteredData {
 
 export type AliasEmail = {
   username: string;
-  email: string;
+  email: string | null;
 };
 
 export type UserScalingSummary = {
@@ -186,3 +186,9 @@ export interface AllMetricsData {
     "Commits Per Day": number;
   };
 }
+
+export type ContributorValueWithAliases = {
+  name: string;
+  emails: string[];
+  aliases: { username: string; email: string | null }[];
+};

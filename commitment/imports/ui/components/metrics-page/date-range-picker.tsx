@@ -13,14 +13,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@ui/components/ui/popover";
-import "react-day-picker/dist/style.css";
+// import "react-day-picker/dist/style.css";
 
 type Props = {
   onChange?: (range: DateRange | undefined) => void;
+  defaultValue?: DateRange;
 };
 
-export function DatePicker({ onChange }: Props) {
-  const [date, setDate] = React.useState<DateRange | undefined>();
+export function DatePicker({ onChange, defaultValue }: Props) {
+  const [date, setDate] = React.useState<DateRange | undefined>(
+    defaultValue ?? {
+      from: addDays(new Date(), -20),
+      to: new Date(),
+    }
+  );
 
   // constant to set 'from' date
   const [fromInput, setFromInput] = React.useState<string>(
@@ -63,9 +69,12 @@ export function DatePicker({ onChange }: Props) {
 
   // Update inputs
   const handleCalendarSelect = (range: DateRange | undefined) => {
-    if (range?.from && range?.to && !is12Weeks(range.from, range.to)) {
-      return;
+    if (range?.from && range?.to) {
+      if (!is12Weeks(range.from, range.to)) {
+        return;
+      }
     }
+
     setDate(range);
     setFromInput(range?.from ? format(range.from, "yyyy-MM-dd") : "");
     setToInput(range?.to ? format(range.to, "yyyy-MM-dd") : "");
@@ -96,16 +105,23 @@ export function DatePicker({ onChange }: Props) {
     onChange?.(range);
   };
 
+  const clearDates = () => {
+    setDate(undefined);
+    setFromInput("");
+    setToInput("");
+    onChange?.(undefined);
+  };
+
   return (
-    <div className={cn("grid gap-2")}>
+    <div className={cn("grid gap-2 ")}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             id="date"
             variant="outline"
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              "w-[300px] justify-start text-left font-normal border-2 rounded-lg  border-git-stroke-primary/40 "
+              // !date && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -124,8 +140,7 @@ export function DatePicker({ onChange }: Props) {
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto p-4 border-2"
-          style={{ borderColor: "#252522" }}
+          className="w-auto p-4 border-2 border-git-stroke-primary/40"
           align="start"
         >
           <div className="flex gap-2 mb-4 justify-center items-center">
@@ -137,6 +152,14 @@ export function DatePicker({ onChange }: Props) {
             </Button>
             <Button size="sm" variant="outline" onClick={lastWeek}>
               Last 7 Days
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={clearDates}
+              disabled={!date?.from && !date?.to}
+            >
+              Clear
             </Button>
           </div>
 
@@ -150,12 +173,10 @@ export function DatePicker({ onChange }: Props) {
             numberOfMonths={2}
             disabled={(day) => {
               const today = new Date();
+
               if (day > today) return true;
 
-              if (date?.from) {
-                const maxTo = addDays(date.from, 84);
-                return day > maxTo;
-              }
+              if (date?.from && date?.to) return false;
 
               return false;
             }}
@@ -163,15 +184,18 @@ export function DatePicker({ onChange }: Props) {
             fromYear={2015}
             toYear={new Date().getFullYear()}
             classNames={{
-              day_selected: "bg-[#F1502F] text-white hover:bg-[#F1502F]",
-              day_range_middle: "bg-[#F1502F]/30 text-black",
+              day_today: "text-black font-normal",
+              day_selected:
+                "bg-git-int-primary text-white hover:bg-git-int-primary",
+              day_range_middle: "bg-git-int-primary/50 text-black",
               day_range_start:
-                "rounded-l-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
+                "rounded-l-md bg-git-int-primary text-white hover:bg-git-int-primary",
               day_range_end:
-                "rounded-r-md bg-[#F1502F] text-white hover:bg-[#F1502F]",
+                "rounded-r-md bg-git-int-primary text-white hover:bg-git-int-primary",
               caption_dropdowns: "flex gap-2",
-              caption_label: "text-sm font-medium",
-              dropdown: "px-2 py-1 border rounded-md text-sm",
+              caption_label: "text-sm font-medium text-black",
+              dropdown:
+                "px-2 py-1 border-1 border-git-stroke-primary rounded-md text-sm text-black",
             }}
           />
         </PopoverContent>

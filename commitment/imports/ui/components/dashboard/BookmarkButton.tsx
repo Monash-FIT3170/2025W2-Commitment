@@ -88,7 +88,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
 
     // checks if a repo data struct is already in the database (not links collection)
     // if not, prompt the server to cache it in using the API server calls.
-    if (!repoInDatabase(url)) {
+    if (!(await repoInDatabase(url))) {
       const updateNotifier = new Subject<string>();
       const repoCached = await fetchRepo(url, updateNotifier);
 

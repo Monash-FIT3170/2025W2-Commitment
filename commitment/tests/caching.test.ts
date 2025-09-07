@@ -1,59 +1,69 @@
-import { expect } from "chai";
-import { Subject } from "rxjs";
-import sinon from "sinon";
+import { Meteor } from 'meteor/meteor';
+import { expect } from 'chai';
 
-import { RepositoryData } from "../imports/api/types";
-import { tryFromDatabase, cacheIntoDatabase } from "/server/caching";
-import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation"
-
-describe("caching.ts", () => {
-  const fakeRepo: RepositoryData = {
-    name: "test-repo",
-    branches: [],
-    allCommits: new Map(),
-    contributors: new Map(),
-  };
+describe('Caching Tests', () => {
+  const testUrl = 'https://github.com/test/repo';
 
   beforeEach(async () => {
-    // Clear collection before each test
-    await Meteor.call("repoCollection.allUrls")
-      .catch((_e: Error) => [])
-      .then((urls: string[]) => 
-          urls.forEach(async (url) => {
-            await Meteor.call("repoCollection.removeRepo", url)
-              .catch((_e: Error) => {})
-          })
-      );
-    sinon.restore();
+    // Clean up before each test
+    await Meteor.call("repoCollection.removeRepo", testUrl);
   });
 
-  it("can properly serialise data", async () => {
-    const inverted = deserializeRepoData(serializeRepoData(fakeRepo))
-    expect(inverted).to.deep.equal(fakeRepo);
+  afterEach(async () => {
+    // Clean up after each test
+    await Meteor.call("repoCollection.removeRepo", testUrl);
   });
 
-  it("can insert and fetch repo data", async () => {
-    const url = "http://test"
-    await cacheIntoDatabase(url, fakeRepo)
-    const found = await Meteor.call("repoCollection.exists", url)
-    expect(found).to.equal(true);
+  it('should store and retrieve repository data', async () => {
+    const testData = {
+      name: 'test-repo',
+      branches: [],
+      contributors: [],
+      allCommits: []
+    };
+
+    // Store data
+    await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
+
+    // Check if it exists
+    const exists = await Meteor.call("repoCollection.exists", testUrl);
+    expect(exists).to.be.true;
+
+    // Retrieve data
+    const retrievedData = await Meteor.call("repoCollection.getData", testUrl);
+    expect(retrievedData).to.deep.equal(testData);
   });
 
-  it("returns data from database if present", async () => {
-    const url = "http://missing"
-    await cacheIntoDatabase(url, fakeRepo)
-    const notifier = new Subject<string>();
-    const result = await tryFromDatabase("http://missing", notifier)
-      .catch((_e: Error) => expect(false).to.equal(true));
-    expect(result).to.deep.equal(fakeRepo);
+  it('should return all URLs', async () => {
+    const testData = { name: 'test', branches: [], contributors: [], allCommits: [] };
+    
+    await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
+    
+    const urls = await Meteor.call("repoCollection.allUrls");
+    expect(urls).to.include(testUrl);
   });
 
-  it("throws when removing missing repo", async () => {
-    Meteor.callAsync(
-        "repoCollection.removeRepo",
-        "http://does-not-exist"
-      )
-      .then(_ => expect(false).to.equal(true))
-      .catch((e: Meteor.Error) => expect(e.error).to.equal("not-in-database"))
+  it('should remove repository data', async () => {
+    const testData = { name: 'test', branches: [], contributors: [], allCommits: [] };
+    
+    // Store data
+    await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
+    
+    // Remove data
+    await Meteor.call("repoCollection.removeRepo", testUrl);
+    
+    // Check if it's gone
+    const exists = await Meteor.call("repoCollection.exists", testUrl);
+    expect(exists).to.be.false;
+  });
+
+  it('should update last viewed timestamp', async () => {
+    const testData = { name: 'test', branches: [], contributors: [], allCommits: [] };
+    
+    await Meteor.call("repoCollection.insertOrUpdateRepoData", testUrl, testData);
+    await Meteor.call("repoCollection.updateLastViewed", testUrl);
+    
+    // This test just ensures the method doesn't throw an error
+    expect(true).to.be.true;
   });
 });

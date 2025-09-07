@@ -20,7 +20,7 @@ const ViewToggle: React.FC<ViewToggleProps> = ({
         id="view-mode"
         onCheckedChange={() => onChange(isList ? 'gallery' : 'list')}
       />
-      <Label className="w-[100px] text-center" htmlFor="view-mode">
+      <Label className="w-[120px] text-center" htmlFor="view-mode">
         {label}
         {' '}
         Mode

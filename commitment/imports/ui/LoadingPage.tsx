@@ -5,7 +5,6 @@ import { Subject } from "rxjs";
 
 import LoadingBar from "@ui/components/Loading-page/LoadingBar";
 import TipBox from "@ui/components/Loading-page/TipBox";
-import NavBar from "@ui/components/landing-page/NavBar";
 import { fetchRepo } from "../api/call_repo";
 
 interface LocationState {
@@ -77,17 +76,10 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
   // If no repo URL provided, redirect immediately
   if (!repoUrl) return <Navigate to="/insert-git-repo" replace />;
 
-  const containerClasses = [
-    darkMode ? "dark" : "",
-    "min-h-screen bg-background text-foreground",
-  ]
-    .filter(Boolean)
-    .join(" ");
 
   return (
-    <div className={containerClasses}>
+    <>
       <div className="fixed top-0 w-full z-10">
-        <NavBar isLoggedIn={!!Meteor.userId && !!Meteor.userId()} />
       </div>
       <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
         {/* Live notifier message */}
@@ -100,7 +92,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
         {/* Rotating tips */}
         <TipBox tip={tips[tipIndex]} />
       </div>
-    </div>
+    </>
   );
 };
 

@@ -66,8 +66,8 @@ Meteor.methods({
 // can have a case here to see if it is deployment or a docker localhost
 // this means that the API can be connected to without the connection being hard coded
 const DEV_API_CONN_ENDPOINT = "haskell-api:8081"
-const DEPLOYMENT_API_CONN_ENDPOINT = "undefined" // TODO
-const API_CONN_ENDPOINT = DEV_API_CONN_ENDPOINT
+const DEPLOYMENT_API_CONN_ENDPOINT = "54.66.80.27:8081" 
+const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT
 
 /**
  * Fetches repository data from an external source.

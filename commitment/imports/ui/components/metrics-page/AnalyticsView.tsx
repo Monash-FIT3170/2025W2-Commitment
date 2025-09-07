@@ -4,12 +4,14 @@ import { useLocation } from "react-router-dom";
 import InfoButton from "../ui/infoButton";
 import { DatePicker } from "./date-range-picker";
 import BranchDropdownMenu from "./BranchDropdownMenu";
+// import { dark2 } from "../ui/colors";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
 import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import HeatmapGraph from "./HeatMapGraph";
+import { subWeeks } from "date-fns";
 
 import { AnalyticsData, MetricType, metricNames } from "/imports/api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
@@ -25,7 +27,13 @@ export function AnalyticsView(): React.JSX.Element {
 
   // setting up filters
   const [analytics, setAnalyticsData] = useState<AnalyticsData | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  // set default date range to last 12 weeks
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const to = new Date();
+    const from = subWeeks(to, 12);
+    return { from, to };
+  });
+
   const [selectedBranch, setSelectedBranch] = useState<string | undefined>(
     undefined
   );
@@ -107,23 +115,23 @@ export function AnalyticsView(): React.JSX.Element {
   if (!analytics) return <div>No repo data available</div>;
 
   return (
-    <div className="w-screen m-0 scroll-smooth">
+    <div className="w-full m-0 scroll-smooth p-10">
       <div className="flex flex-col gap-32">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-white">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-4">
-              <h1 className="text-5xl text-gray-900 font-robotoFlex">
+              <h1 className="text-5xl text-foreground font-robotoFlex">
                 Metrics
               </h1>
               <InfoButton description={metricsPageDescription} />
             </div>
-            <div className="h-[2px] bg-black w-1/4 mt-2" />
+            <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
           </div>
           {/* Filters */}
           <div className="flex flex-wrap gap-8 mb-12">
             <div className="flex flex-col">
-              <p className="text-sm text-gray-600">Date Range*</p>
+              <p className="text-sm text-git-text-secondary">Date Range*</p>
               <DatePicker
                 defaultValue={dateRange}
                 onChange={(range: DateRange | undefined) => {
@@ -132,7 +140,7 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <div className="text-sm text-gray-600">Branch*</div>
+              <div className="text-sm text-git-text-secondary">Branch*</div>
               <BranchDropdownMenu
                 branches={analytics.metadata.branches}
                 selected={selectedBranch}
@@ -140,7 +148,9 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <div className="text-sm text-gray-600">Contributors*</div>
+              <div className="text-sm text-git-text-secondary">
+                Contributors*
+              </div>
               <ContributorDropdownMenu
                 contributors={analytics.metadata.contributors}
                 selected={selectedContributors}
@@ -148,7 +158,9 @@ export function AnalyticsView(): React.JSX.Element {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-gray-600">Metrics*</label>
+              <label className="text-sm text-git-text-secondary">
+                Metrics*
+              </label>
               <MetricDropdownMenu
                 metrics={metricNames}
                 selected={selectedMetrics}
@@ -159,7 +171,7 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
           </div>
           {/* Highlight Cards */}
-          <div className="flex flex-wrap gap-6 min-w-0 mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 3xl:grid-cols-4 gap-6 mb-12">
             <HighlightCardWithGraph
               title="Total Commits"
               value={analytics.metrics.highlights.totalCommits.total}
@@ -168,6 +180,10 @@ export function AnalyticsView(): React.JSX.Element {
               }
               isPositive={analytics.metrics.highlights.totalCommits.isPositive}
               data={analytics.metrics.highlights.totalCommits.data}
+            />
+            <HighlightCardWithGraph
+              title="Number of Branches"
+              value={analytics.metrics.highlights.numBranches}
             />
             <HighlightCardWithGraph
               title="Total Lines of Code"
@@ -181,25 +197,14 @@ export function AnalyticsView(): React.JSX.Element {
               data={analytics.metrics.highlights.totalLinesOfCode.data}
             />
             <HighlightCardWithGraph
-              title="No. of Contributors"
+              title="Number of Contributors"
               value={analytics.metrics.highlights.numContributors}
             />
-            <HighlightCardWithGraph
-              title="Number of branches"
-              value={analytics.metrics.highlights.numBranches}
-            />
           </div>
+
           {/* Graphs */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-            <div className="w-full min-h-[300px] h-full">
-              <ContributorLineGraph
-                data={analytics.metrics.contributors.lineGraph.data}
-                title={analytics.metrics.contributors.lineGraph.title}
-                xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
-                yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
-              />
-            </div>
-            <div className="w-full min-h-[300px] h-full">
+          <div className="grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 gap-6 w-full">
+            <div className="w-full min-h-[300px] h-full xl:max-3xl:col-span-2">
               <LeaderboardGraph
                 data={analytics.metrics.contributors.leaderboard.data}
                 title={analytics.metrics.contributors.leaderboard.title}
@@ -208,13 +213,21 @@ export function AnalyticsView(): React.JSX.Element {
                 }
               />
             </div>
+            <div className="w-full min-h-[300px] h-full ">
+              <ContributorLineGraph
+                data={analytics.metrics.contributors.lineGraph.data}
+                title={analytics.metrics.contributors.lineGraph.title}
+                xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
+                yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
+              />
+            </div>
             <div className="w-full min-h-[300px] h-full">
               <ContributionPieChart
                 data={analytics.metrics.contributors.pieChart.data}
                 title={analytics.metrics.contributors.pieChart.title}
               />
             </div>
-            <div className="w-full col-span-1 md:col-span-3">
+            <div className="w-full col-span-full">
               <HeatmapGraph
                 data={analytics.metrics.contributors.heatMap.data}
                 title={analytics.metrics.contributors.heatMap.title}

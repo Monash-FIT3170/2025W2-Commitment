@@ -1,7 +1,7 @@
 import NotAuthorizedView from "@ui/views/NotAuthorizedView/NotAuthorizedView";
-import React, {ReactNode, useMemo} from "react";
-import {useTracker} from "meteor/react-meteor-data";
+import React, {ReactNode} from "react";
 import {Meteor} from "meteor/meteor";
+import { useAuth } from "../../hooks/useAuth";
 
 
 export interface AuthorizedProps {
@@ -17,13 +17,8 @@ export interface AuthorizedProps {
 export default function Authorized(props: AuthorizedProps) {
   const { predicate, children } = props;
 
-  const user = useTracker(() => Meteor.user());
-  const isLoggedIn = useMemo<boolean>(() => (
-    user !== null && user !== undefined
-  ), [user]);
-  const isAuthorized = useMemo<boolean>(() => (
-    isLoggedIn && (predicate?.(user!) ?? isLoggedIn)
-  ), [isLoggedIn, user]);
+  const isAuthorized = useAuth(predicate);
+
 
   return isAuthorized ? <>{children}</> : <NotAuthorizedView />;
 }

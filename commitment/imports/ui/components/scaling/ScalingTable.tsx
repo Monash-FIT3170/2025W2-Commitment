@@ -74,13 +74,13 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                 {row.getVisibleCells().map((cell, idx) => (
                   <TableCell
                     key={cell.id}
-                    className={
-                      (idx === 0
+                    className={`${
+                      idx === 0
                         ? "rounded-l-md text-git-int-text text-1xl"
                         : idx === row.getVisibleCells().length - 1
                         ? "rounded-r-md text-git-int-text"
-                        : "text-git-int-text text-2xl font-bold") + " py-0"
-                    }
+                        : "text-git-int-text text-sm font-normal"
+                    } py-0`}
                   >
                     {idx === 0 ? (
                       <div className="flex items-center gap-1">
@@ -119,8 +119,9 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                           cell.getContext()
                         )}
                         {idx === row.getVisibleCells().length - 2 &&
-                          typeof cell.getValue() === "number" &&
-                          "%"}
+                          typeof cell.getValue() === "number" && (
+                            <span className="text-sm font-normal">%</span>
+                          )}
                       </>
                     )}
                   </TableCell>
@@ -149,33 +150,49 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                     </TableCell>
                   </TableRow>
 
-                  {/* Rows for Aliases */}
-                  {row.original.aliases.map((alias, idx) => (
-                    <React.Fragment key={`${row.id}-alias-${idx}`}>
-                      <TableRow className="bg-git-int-secondary hover:bg-git-int-secondary !border-0">
-                        <TableCell
-                          colSpan={columns.length}
-                          className="!border-0 px-4"
-                        >
-                          <div className="ml-4 text-sm text-git-text-secondary">
-                            <strong>{alias.email}</strong>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                  {/* Expanded Rows */}
+                  {row.getIsExpanded() &&
+                    row.original.aliases?.length > 0 &&
+                    (() => {
+                      // Only show aliases with non-null emails
+                      const visibleAliases = row.original.aliases.filter(
+                        (alias) => alias.email
+                      );
 
-                      {/* Dashed separator, only if not last alias */}
-                      {idx < row.original.aliases.length - 1 && (
-                        <TableRow className="!border-0">
-                          <TableCell
-                            colSpan={columns.length}
-                            className="!border-0 px-4"
-                          >
-                            <div className="h-0.5 border-t-2 border-dashed border-git-stroke-primary mx-1" />
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  ))}
+                      if (visibleAliases.length === 0) return null;
+
+                      return (
+                        <>
+                          {/* Rows for Aliases */}
+                          {visibleAliases.map((alias, idx) => (
+                            <React.Fragment key={`${row.id}-alias-${idx}`}>
+                              <TableRow className="bg-git-int-secondary hover:bg-git-int-secondary !border-0">
+                                <TableCell
+                                  colSpan={columns.length}
+                                  className="!border-0 px-4"
+                                >
+                                  <div className="ml-4 text-sm text-git-text-secondary">
+                                    <strong>{alias.email}</strong>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+
+                              {/* Dashed separator, only if not last visible alias */}
+                              {idx < visibleAliases.length - 1 && (
+                                <TableRow className="!border-0">
+                                  <TableCell
+                                    colSpan={columns.length}
+                                    className="!border-0 px-4"
+                                  >
+                                    <div className="h-0.5 border-t-2 border-dashed border-git-stroke-primary mx-1" />
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </>
+                      );
+                    })()}
                 </>
               )}
             </React.Fragment>
