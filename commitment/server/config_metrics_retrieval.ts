@@ -1,4 +1,3 @@
-
 import { CommitData, SerializableRepoData } from "../imports/api/types";
 import { AliasConfig, StudentAlias } from "../imports/api/alias_configs";
 import { zip, getAllContributorsCommitCounts } from "./helper_functions"

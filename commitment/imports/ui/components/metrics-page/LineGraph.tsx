@@ -73,7 +73,7 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
             {title}
             <div className="relative -mt-3 ml-2">
               <InfoButton
-                description={"Shows contributor performance over time."}
+                description="Shows contributor performance over time."
               />
             </div>
           </CardTitle>

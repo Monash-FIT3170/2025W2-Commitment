@@ -54,7 +54,7 @@ function LastSavedRepos() {
           
           <div className="flex justify-end mt-6">
         <Button
-          variant={'secondary'}
+          variant='secondary'
         >
               <Link to="/dashboard">See All</Link>
               {' '}
