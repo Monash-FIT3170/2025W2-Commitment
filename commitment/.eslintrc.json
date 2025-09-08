@@ -26,7 +26,7 @@
   "plugins": ["@typescript-eslint", "import"],
   "parserOptions": {
     "project": "./tsconfig.json",
-    "tsconfigRootDir": "/home/runner/work/2025W2-Commitment/2025W2-Commitment/commitment",
+    // "tsconfigRootDir": "/Users/finn/repos/2025W2-Commitment/commitment",
     "sourceType": "module"
   },
   "settings": {
@@ -51,18 +51,18 @@
         "react/function-component-definition":"off",
         "import/prefer-default-export": "off",
         "react/jsx-props-no-spreading": "off",
-        "no-nested-ternary": "off",
+        // "no-nested-ternary": "off",
         "no-plusplus": "off",
         "react/prop-types": "off",
         "react/no-unused-prop-types": "off",
         "no-void": ["error", { "allowAsStatement": true }],
         "react/destructuring-assignment": "off",
-        "no-use-before-define": ["warn", { "functions": false }],
-        "@typescript-eslint/explicit-module-boundary-types": "warn",
+        // "no-use-before-define": ["warn", { "functions": false }],
+        // "@typescript-eslint/explicit-module-boundary-types": "warn",
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
         "@typescript-eslint/no-floating-promises": "error",
         "no-console": "warn",
-        "prefer-const": "warn",
+        "prefer-const": "error",
         "import/no-unresolved": "error",
         "react/react-in-jsx-scope": "off",    
         "import/extensions": "off"
