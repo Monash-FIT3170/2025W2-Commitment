@@ -23,39 +23,39 @@ export const mapToArray = <K, V>(m: unknown): SerialisableMapObject<K, V>[] => {
     }))
   }
   return []
-};
+}
 
 const arrayToMap = <K, V>(a: unknown): Map<K, V> => {
   if (Array.isArray(a)) {
     // Convert array of objects to array of [key, value] tuples
     const entries: [K, V][] = a.map((e) => {
       const obj = e as SerialisableMapObject<K, V>;
-      return [obj.key, obj.value];
-    });
-    return new Map(entries);
+      return [obj.key, obj.value]
+    })
+    return new Map(entries)
   } else if (a && typeof a === "object") {
     return new Map(
       Object.entries(a).map(([key, value]) => [key as unknown as K, value as V])
-    );
+    )
   }
   return new Map();
-};
+}
 
-export const serializeRepoData = (data: RepositoryData): SerializableRepoData => {
-  return {
+export const serializeRepoData = (data: RepositoryData): SerializableRepoData => (
+  {
     ...data,
     allCommits: mapToArray<string, CommitData>(data.allCommits),
     contributors: mapToArray<string, ContributorData>(data.contributors),
   }
-}
+)
 
-export const deserializeRepoData = (data: SerializableRepoData): RepositoryData => {
-  return {
+export const deserializeRepoData = (data: SerializableRepoData): RepositoryData => (
+  {
     ...data,
     allCommits: arrayToMap<string, CommitData>(data.allCommits),
     contributors: arrayToMap<string, ContributorData>(data.contributors),
   }
-}
+)
 
 export const assertRepoTyping = (data: RepositoryData): RepositoryData => (
   {
