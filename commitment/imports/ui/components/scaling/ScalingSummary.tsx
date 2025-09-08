@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { DataTable } from "./ScalingTable";
 import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "./ScalingTable";
 import { ScalingRadialChart } from "./ScalingRadialChart";
 import { UserScalingSummary } from "/imports/api/types";
+
 interface ScalingSummaryProps {
-  userScalingSummaries: UserScalingSummary[]; //IF A GRADING SHEET IS PROVIDED, THE VALUES OF THIS PARAMETER MUST REFLECT THE FINAL GRADE, THUS CALCULATIONS ARE DONE AT THE GradingSheetForm STAGE
+  userScalingSummaries: UserScalingSummary[]; // IF A GRADING SHEET IS PROVIDED, THE VALUES OF THIS PARAMETER MUST REFLECT THE FINAL GRADE, THUS CALCULATIONS ARE DONE AT THE GradingSheetForm STAGE
   hasGradingSheet: boolean;
 }
 
@@ -29,7 +30,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
         accessorKey: "scale",
         header: "Scale",
         cell: ({ row }) => (
-          <ScalingRadialChart value={row.getValue("scale") as number} />
+          <ScalingRadialChart value={row.getValue("scale")} />
         ),
       },
     ];
@@ -40,7 +41,7 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
         accessorKey: "finalGrade",
         header: "Final Grade",
         cell: ({ row }) => {
-          const grade = row.getValue("finalGrade") as number | null;
+          const grade = row.getValue("finalGrade");
           return grade === null ? "-" : grade;
         },
       });

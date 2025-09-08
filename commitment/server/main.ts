@@ -5,15 +5,13 @@ import { RepositoriesCollection } from "../imports/api/repositories";
 
 import "../imports/api/methods";
 import "../imports/api/bookmark_methods";
-import "../imports/api/repositories";
 import "../imports/api/repository_methods";
 import "../imports/api/alias_config_methods";
 
 import "./fetch_repo";
 import "./caching";
 
-import "../server/fetch_repo";
-import "../server/methods";
+import "./methods";
 
 Meteor.startup(async () => {
   const userCount = await Meteor.users.find().countAsync();

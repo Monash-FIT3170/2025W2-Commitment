@@ -34,8 +34,7 @@ export const fetchRepo = (url: string, subject: Subject<string>): Promise<boolea
 			});
 		})
 
-export const repoInDatabase = async (url: string): Promise<boolean> => {
-    return new Promise<boolean>((resolve, reject) => {
+export const repoInDatabase = async (url: string): Promise<boolean> => new Promise<boolean>((resolve, reject) => {
         // Only check connection status on the client side
         if (Meteor.isClient && !Meteor.status().connected) {
             return reject(new Error("Server is not connected"));
@@ -49,8 +48,7 @@ export const repoInDatabase = async (url: string): Promise<boolean> => {
                 resolve(result);
             }
         });
-    });
-}
+    })
 
 export const getMetric = async <T>(url: string, f: string) => 
     new Promise<T>((resolve, reject) => {

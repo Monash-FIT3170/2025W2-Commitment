@@ -1,19 +1,16 @@
 import React from "react";
 
-const AboutUs = () => {
-  return (
+const AboutUs = () => (
     <div className="flex flex-col justify-center items-center mt-6 ">
       <Header />
       <Description />
       <KeyFeatureImage />
     </div>
   );
-};
 
 export default AboutUs;
 
-const Header = () => {
-  return (
+const Header = () => (
     <div className="flex flex-col justify-center items-center">
       <h4 className="font-mono text-lg font-semibold text-git-500">
         WHAT IS COMMITMENT?
@@ -21,10 +18,8 @@ const Header = () => {
       <h1 className="text-5xl font-mono">Your Contribution Analyser </h1>
     </div>
   );
-};
 
-const Description = () => {
-  return (
+const Description = () => (
     <div className="flex flex-col justify-center items-center mt-6 max-w-xl mx-auto">
       <p className="text-sm text-center font-mono">
         {" "}
@@ -34,10 +29,8 @@ const Description = () => {
       </p>
     </div>
   );
-};
 
-const KeyFeatureImage = () => {
-  return (
+const KeyFeatureImage = () => (
     <div className="mt-6">
       <img
         src="/about-us-placeholder.png"
@@ -46,4 +39,3 @@ const KeyFeatureImage = () => {
       />
     </div>
   );
-};
