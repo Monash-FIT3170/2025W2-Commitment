@@ -65,7 +65,8 @@
         "prefer-const": "error",
         "import/no-unresolved": "error",
         "react/react-in-jsx-scope": "off",    
-        "import/extensions": "off"
+        "import/extensions": "off",
+        "import/no-relative-packages": "off"
       }
     }
   ]
