@@ -40,14 +40,13 @@ export const getTotalCommits = (data: SerializableRepoData): number =>
   data.allCommits.length
 
 export const getTotalFilesChanged = (repoData: SerializableRepoData): number =>
-  repoData.allCommits.reduce((sum, commit) => {
-    const numFiles = commit.value.fileData.length;
-    return numFiles + sum;
-  }, 0);
+  repoData.allCommits.reduce((sum, p) => 
+    sum + p.value.fileData.length
+  , 0)
 
 export const getTotalLinesOfCode = (repoData: SerializableRepoData): number =>
-  repoData.allCommits.reduce((sum, commit) => 
-    sum + commit.value.fileData.reduce(
+  repoData.allCommits.reduce((sum, p) => 
+    sum + p.value.fileData.reduce(
       (fileSum, f) => fileSum + f.newLines - f.deletedLines
       , 0
     ), 0)
@@ -77,7 +76,10 @@ export const getTotalLocDataSerializable = (
 
 // FUNCTIONS THAT USE SerializableRepoData + contributorName (for targeted metrics)
 
-export const getCommitsFrom = (data: SerializableRepoData, name: string): CommitData[] => 
+export const getCommitsFrom = (
+  data: SerializableRepoData, 
+  name: string
+): CommitData[] => 
   data.allCommits
     .filter(p => p.value.contributorName == name)
     .map(p => p.value)
