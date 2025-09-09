@@ -51,10 +51,12 @@ describe('Caching Tests', () => {
     expect(await isInDatabase(testUrl)).to.be.true
     
     // Remove data
-    await meteorCallAsync("repoCollection.removeRepo")(testUrl)
+    const removed = await meteorCallAsync("repoCollection.removeRepo")(testUrl)
+    expect(removed).to.be.true
     
     // Check if it's gone
-    expect(await isInDatabase(testUrl)).to.be.false
+    const result = await isInDatabase(testUrl)
+    expect(result).to.be.false
   })
 
   it('should update last viewed timestamp', async () => {
