@@ -27,6 +27,11 @@ describe('Caching Tests', () => {
     await RepositoriesCollection.removeAsync({})
   })
 
+  it('should not find it', async () => {
+    // looks for a url that isn't in the database
+    expect(await isInDatabase(testUrl)).to.be.false
+  })
+
   it('should store and retrieve repository data', async () => {
     // Store data
     await cacheIntoDatabase(testUrl, testData)
@@ -53,7 +58,6 @@ describe('Caching Tests', () => {
     expect(await isInDatabase(testUrl)).to.be.true
     
     // Remove data
-    await RepositoriesCollection.removeAsync({})
     const removed = await meteorCallAsync("repoCollection.removeRepo")(testUrl)
     expect(removed).to.be.true
 
