@@ -53,6 +53,7 @@ describe('Caching Tests', () => {
     expect(await isInDatabase(testUrl)).to.be.true
     
     // Remove data
+    await RepositoriesCollection.removeAsync({})
     const removed = await meteorCallAsync("repoCollection.removeRepo")(testUrl)
     expect(removed).to.be.true
 
