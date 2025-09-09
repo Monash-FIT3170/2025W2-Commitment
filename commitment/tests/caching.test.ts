@@ -6,6 +6,8 @@ import { meteorCallAsync, suppressError } from "../imports/api/meteor_interface"
 import { RepositoryData } from '/imports/api/types'
 import { RepositoriesCollection } from '/imports/api/repositories'
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 describe('Caching Tests', () => {
   const testUrl = 'https://github.com/test/repo'
   const testData = { 
@@ -53,6 +55,8 @@ describe('Caching Tests', () => {
     // Remove data
     const removed = await meteorCallAsync("repoCollection.removeRepo")(testUrl)
     expect(removed).to.be.true
+
+    await delay(500) // simulates 500ms of work for the database to actually remove it
     
     // Check if it's gone
     const result = await isInDatabase(testUrl)
