@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { expect } from 'chai'
 
 import { cacheIntoDatabase, isInDatabase, tryFromDatabase } from "../server/caching"
-import { executeMeteorMethod } from "../imports/api/meteor_interface"
+import { meteorCallAsync } from "../imports/api/meteor_interface"
 import { RepositoryData } from '/imports/api/types'
 
 describe('Caching Tests', () => {
@@ -41,7 +41,7 @@ describe('Caching Tests', () => {
     // Store data
     await cacheIntoDatabase(testUrl, testData)
     
-    const urls = await Meteor.call("repoCollection.allUrls")
+    const urls = await meteorCallAsync("repoCollection.allUrls")()
     expect(urls).to.include(testUrl)
   })
 
@@ -50,7 +50,7 @@ describe('Caching Tests', () => {
     await cacheIntoDatabase(testUrl, testData)
     
     // Remove data
-    await executeMeteorMethod("repoCollection.removeRepo")(testUrl)
+    await meteorCallAsync("repoCollection.removeRepo")(testUrl)
     
     // Check if it's gone
     const exists = await isInDatabase(testUrl)
@@ -60,7 +60,7 @@ describe('Caching Tests', () => {
   it('should update last viewed timestamp', async () => {
     // Store data
     await cacheIntoDatabase(testUrl, testData)
-    await executeMeteorMethod("repoCollection.updateLastViewed")(testUrl)
+    await meteorCallAsync("repoCollection.updateLastViewed")(testUrl)
     
     // This test just ensures the method doesn't throw an error
     expect(true).to.be.true

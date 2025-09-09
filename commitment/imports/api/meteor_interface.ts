@@ -6,10 +6,10 @@ import { Meteor } from 'meteor/meteor'
  * @param args arguments to give the meteor method 
  * @returns the value which the meteor method will return (templated for convenience)
  */
-export const executeMeteorMethod = <T = any>(method: string) => (...args: any[]): Promise<T> => 
+export const meteorCallAsync = <T = any>(method: string) => (...args: any[]): Promise<T> => 
   new Promise((resolve, reject) => 
-    Meteor.callAsync(method, ...args, (err: Error, res: T) => {
+    Meteor.call(method, ...args, (err: Error | null, res: T) => {
       if (err) reject(err)
-      resolve(res)
+      else resolve(res)
     })
   ) 

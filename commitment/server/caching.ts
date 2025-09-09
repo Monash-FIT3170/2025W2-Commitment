@@ -4,7 +4,7 @@ import { Meteor } from "meteor/meteor"
 
 import { RepositoryData, SerializableRepoData } from "../imports/api/types"
 import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
-import { executeMeteorMethod } from "../imports/api/meteor_interface"
+import { meteorCallAsync } from "../imports/api/meteor_interface"
 
 /**
  * COLLECTION OF REPOSITORY METHODS
@@ -134,7 +134,7 @@ Meteor.methods({
  * @returns True if the repository exists, false otherwise.
  */
 export const isInDatabase = (url: string): Promise<boolean> => 
-  executeMeteorMethod("repoCollection.exists")(url)
+  meteorCallAsync("repoCollection.exists")(url)
     .catch((_e: Error) => false)
 
 /**
@@ -148,7 +148,7 @@ export const tryFromDatabaseSerialised = (
   notifier: Subject<string>
 ): Promise<SerializableRepoData> => new Promise((resolve, reject) => {
   if (notifier != null) notifier.next("Checking database for existing data...");
-  executeMeteorMethod("repoCollection.getData")(url)
+  meteorCallAsync("repoCollection.getData")(url)
     .then((d: SerializableRepoData) => {
       // TODO CHECK IF REPO DATA IS MOST UP TO DATE
       if (notifier != null) notifier.next("Found data in database!");
@@ -172,7 +172,7 @@ export const tryFromDatabase = (
  * @param data The repository data to cache.
  */
 export const cacheIntoDatabase = (url: string, data: RepositoryData): Promise<void> => 
-  executeMeteorMethod("repoCollection.insertOrUpdateRepoData")(
+  meteorCallAsync("repoCollection.insertOrUpdateRepoData")(
     url,
     serializeRepoData(data)
   )
