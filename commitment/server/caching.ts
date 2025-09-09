@@ -35,7 +35,7 @@ Meteor.methods({
       data: data,
     };
 
-    return RepoCollection.upsertAsync(
+    return await RepoCollection.upsertAsync(
         { url }, // filter to find existing doc
         s        // update operation
       )
