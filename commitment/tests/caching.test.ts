@@ -16,12 +16,12 @@ describe('Caching Tests', () => {
 
   beforeEach(async () => {
     // Clean up before each test
-    Meteor.call("repoCollection.removeRepo", testUrl)
+    await meteorCallAsync("repoCollection.removeRepo")(testUrl)
   })
 
   afterEach(async () => {
     // Clean up after each test
-    Meteor.call("repoCollection.removeRepo", testUrl)
+    await meteorCallAsync("repoCollection.removeRepo")(testUrl)
   })
 
   it('should store and retrieve repository data', async () => {
@@ -56,8 +56,7 @@ describe('Caching Tests', () => {
     await meteorCallAsync("repoCollection.removeRepo")(testUrl)
     
     // Check if it's gone
-    const exists = await isInDatabase(testUrl)
-    expect(exists).to.be.false
+    expect(await isInDatabase(testUrl)).to.be.false
   })
 
   it('should update last viewed timestamp', async () => {
