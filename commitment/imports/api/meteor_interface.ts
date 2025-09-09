@@ -13,8 +13,8 @@ export const meteorCallAsync = <T = any>(method: string) => (...args: any[]): Pr
       reject(new Error("Server is not found"))
     
     // checks to see if the method is in the list of known methods
-    if (!(method in Meteor.server.method_handlers))
-      reject(new Error(`Method not found: ${method}`))
+    // if (!(method in Meteor.server.method_handlers))
+    //   reject(new Error(`Method not found: ${method}`))
 
     // calls the method, awaiting the result
     Meteor.call(method, ...args, (err: Error | null, res: T) => {

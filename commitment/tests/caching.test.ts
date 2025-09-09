@@ -48,6 +48,9 @@ describe('Caching Tests', () => {
   it('should remove repository data', async () => {
     // Store data
     await cacheIntoDatabase(testUrl, testData)
+
+    // Confirm it exists
+    expect(await isInDatabase(testUrl)).to.be.true
     
     // Remove data
     await meteorCallAsync("repoCollection.removeRepo")(testUrl)
