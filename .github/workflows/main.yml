@@ -74,7 +74,6 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --bind_ip 0.0.0.0
           --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'"
           --health-interval 10s
           --health-timeout 5s
