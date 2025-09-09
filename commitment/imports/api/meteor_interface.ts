@@ -22,3 +22,10 @@ export const meteorCallAsync = <T = any>(method: string) => (...args: any[]): Pr
       else resolve(res)
     })
   }) 
+
+  /**
+   * a function which suppresses the error 
+   * @param _err the error occured in the catch
+   * @returns nothing, ignore the return result
+   */
+export const suppressError = (_err: Error): null => null

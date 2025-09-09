@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { expect } from 'chai'
 
 import { cacheIntoDatabase, isInDatabase, tryFromDatabase } from "../server/caching"
-import { meteorCallAsync } from "../imports/api/meteor_interface"
+import { meteorCallAsync, suppressError } from "../imports/api/meteor_interface"
 import { RepositoryData } from '/imports/api/types'
 
 describe('Caching Tests', () => {
@@ -17,11 +17,13 @@ describe('Caching Tests', () => {
   beforeEach(async () => {
     // Clean up before each test
     await meteorCallAsync("repoCollection.removeRepo")(testUrl)
+      .catch(suppressError)
   })
 
   afterEach(async () => {
     // Clean up after each test
     await meteorCallAsync("repoCollection.removeRepo")(testUrl)
+      .catch(suppressError)
   })
 
   it('should store and retrieve repository data', async () => {
