@@ -89,7 +89,8 @@ Meteor.methods({
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
    */
   async "repoCollection.exists"(url: string): Promise<boolean> {
-    return null !== await RepoCollection.findOneAsync({ url })
+    const doc = await RepoCollection.findOneAsync({ url })
+    return null !== doc
   },
 
   /**
