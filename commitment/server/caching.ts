@@ -77,7 +77,7 @@ Meteor.methods({
     }
 
     return RepoCollection.removeAsync({ url })
-      .then((d: number) => true)
+      .then((d: number) => d > 0)
       .catch((e: Error) => false)
   },
 
