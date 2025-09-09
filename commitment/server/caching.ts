@@ -76,8 +76,8 @@ Meteor.methods({
       )
     }
 
-    const removedCount = await RepoCollection.rawCollection().deleteMany({ url });
-    return removedCount > 0;
+    const res = await RepoCollection.rawCollection().deleteMany({ url });
+    return res.deletedCount  > 0;
   },
 
   /**
