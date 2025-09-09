@@ -68,7 +68,7 @@ Meteor.methods({
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
    */
   async "repoCollection.removeRepo"(url: string): Promise<boolean> {
-    const existing = await RepoCollection.findOneAsync({ url })
+    const existing = await RepoCollection.rawCollection().findOneAsync({ url })
     if (!existing) {
       throw new Meteor.Error(
         "not-in-database", 
@@ -76,7 +76,7 @@ Meteor.methods({
       )
     }
 
-    const removedCount = await RepoCollection.removeAsync({ url });
+    const removedCount = await RepoCollection.rawCollection().deleteMany({ url });
     return removedCount > 0;
   },
 
@@ -89,7 +89,7 @@ Meteor.methods({
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
    */
   async "repoCollection.exists"(url: string): Promise<boolean> {
-    return null !== await RepoCollection.findOneAsync({ url })
+    return null !== await RepoCollection.rawCollection().findOneAsync({ url })
   },
 
   /**
