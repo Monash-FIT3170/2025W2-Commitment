@@ -74,13 +74,36 @@ jobs:
         ports:
           - 27017:27017
         options: >-
+          --auth
+          --bind_ip 0.0.0.0
           --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
-      - run: curl https://install.meteor.com/ | sh
-      - run: meteor npm install
+
+      # Install Meteor
+      - name: Install Meteor
+        run: curl https://install.meteor.com/ | sh
+
+      # Install npm dependencies
+      - name: Install dependencies
+        run: meteor npm install
+
+      # Wait for Mongo to be ready
+      - name: Wait for Mongo
+        run: |
+          echo "Waiting for MongoDB to be ready..."
+          for i in {1..30}; do
+            if mongo --username admin --password admin --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
+              echo "Mongo is ready!"
+              break
+            fi
+            echo "Mongo not ready yet, retrying..."
+            sleep 2
+          done
+
+      # Run Meteor tests
       - name: Run Tests
         run: meteor npm run test

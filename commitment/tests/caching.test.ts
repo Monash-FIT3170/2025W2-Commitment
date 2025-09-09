@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import { cacheIntoDatabase, isInDatabase, tryFromDatabase } from "../server/caching"
 import { meteorCallAsync, suppressError } from "../imports/api/meteor_interface"
 import { RepositoryData } from '/imports/api/types'
+import { RepositoriesCollection } from '/imports/api/repositories'
 
 describe('Caching Tests', () => {
   const testUrl = 'https://github.com/test/repo'
@@ -16,14 +17,12 @@ describe('Caching Tests', () => {
 
   beforeEach(async () => {
     // Clean up before each test
-    await meteorCallAsync("repoCollection.removeRepo")(testUrl)
-      .catch(suppressError)
+    await RepositoriesCollection.removeAsync({})
   })
 
   afterEach(async () => {
     // Clean up after each test
-    await meteorCallAsync("repoCollection.removeRepo")(testUrl)
-      .catch(suppressError)
+    await RepositoriesCollection.removeAsync({})
   })
 
   it('should store and retrieve repository data', async () => {
@@ -31,20 +30,17 @@ describe('Caching Tests', () => {
     await cacheIntoDatabase(testUrl, testData)
 
     // Check if it exists
-    const exists = await isInDatabase(testUrl)
-    expect(exists).to.be.true
+    expect(await isInDatabase(testUrl)).to.be.true
 
     // Retrieve data
-    const retrievedData = await tryFromDatabase(testUrl, null)
-    expect(retrievedData).to.deep.equal(testData)
+    expect(await tryFromDatabase(testUrl, null)).to.deep.equal(testData)
   })
 
   it('should return all URLs', async () => {
     // Store data
     await cacheIntoDatabase(testUrl, testData)
     
-    const urls = await meteorCallAsync("repoCollection.allUrls")()
-    expect(urls).to.include(testUrl)
+    expect(await meteorCallAsync("repoCollection.allUrls")()).to.include(testUrl)
   })
 
   it('should remove repository data', async () => {
