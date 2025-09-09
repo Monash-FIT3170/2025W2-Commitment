@@ -4,6 +4,7 @@ import { Meteor } from "meteor/meteor"
 
 import { RepositoryData, SerializableRepoData } from "../imports/api/types"
 import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
+import { executeMeteorMethod } from "../imports/api/meteor_interface"
 
 /**
  * COLLECTION OF REPOSITORY METHODS
@@ -79,7 +80,7 @@ Meteor.methods({
       throw new Meteor.Error("link-not-found", "Link not found")
     }
 
-    return await RepoCollection.removeAsync({ url })
+    return RepoCollection.removeAsync({ url })
       .then((d: number) => true)
       .catch((e: Error) => false)
   },
@@ -132,8 +133,8 @@ Meteor.methods({
  * @param url The repository URL to check.
  * @returns True if the repository exists, false otherwise.
  */
-export const isInDatabase = async (url: string): Promise<boolean> => 
-  Meteor.callAsync("repoCollection.exists", url)
+export const isInDatabase = (url: string): Promise<boolean> => 
+  executeMeteorMethod("repoCollection.exists")(url)
     .catch((_e: Error) => false)
 
 /**
@@ -147,7 +148,7 @@ export const tryFromDatabaseSerialised = (
   notifier: Subject<string>
 ): Promise<SerializableRepoData> => new Promise((resolve, reject) => {
   if (notifier != null) notifier.next("Checking database for existing data...");
-  Meteor.callAsync("repoCollection.getData", url)
+  executeMeteorMethod("repoCollection.getData")(url)
     .then((d: SerializableRepoData) => {
       // TODO CHECK IF REPO DATA IS MOST UP TO DATE
       if (notifier != null) notifier.next("Found data in database!");
@@ -170,9 +171,9 @@ export const tryFromDatabase = (
  * @param url The repository URL.
  * @param data The repository data to cache.
  */
-export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<void> => 
-  await Meteor.callAsync("repoCollection.insertOrUpdateRepoData", 
-    url, 
+export const cacheIntoDatabase = (url: string, data: RepositoryData): Promise<void> => 
+  executeMeteorMethod("repoCollection.insertOrUpdateRepoData")(
+    url,
     serializeRepoData(data)
   )
 

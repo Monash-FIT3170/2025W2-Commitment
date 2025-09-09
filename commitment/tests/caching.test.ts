@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { expect } from 'chai'
 
 import { cacheIntoDatabase, isInDatabase, tryFromDatabase } from "../server/caching"
+import { executeMeteorMethod } from "../imports/api/meteor_interface"
 import { RepositoryData } from '/imports/api/types'
 
 describe('Caching Tests', () => {
@@ -49,7 +50,7 @@ describe('Caching Tests', () => {
     await cacheIntoDatabase(testUrl, testData)
     
     // Remove data
-    await Meteor.call("repoCollection.removeRepo", testUrl)
+    await executeMeteorMethod("repoCollection.removeRepo")(testUrl)
     
     // Check if it's gone
     const exists = await isInDatabase(testUrl)
@@ -59,7 +60,7 @@ describe('Caching Tests', () => {
   it('should update last viewed timestamp', async () => {
     // Store data
     await cacheIntoDatabase(testUrl, testData)
-    await Meteor.call("repoCollection.updateLastViewed", testUrl)
+    await executeMeteorMethod("repoCollection.updateLastViewed")(testUrl)
     
     // This test just ensures the method doesn't throw an error
     expect(true).to.be.true
