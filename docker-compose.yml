@@ -10,7 +10,7 @@ services:
     volumes:
       - ./commitment:/projects/commitment
     env_file:
-      - ./commitment/server/.env
+      - ./commitment/atlas/.env
     tty: true
     stdin_open: true
     networks:
