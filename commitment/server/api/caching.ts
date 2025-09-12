@@ -1,10 +1,10 @@
-import { Subject } from "rxjs"
-import { Mongo } from "meteor/mongo"
-import { Meteor } from "meteor/meteor"
+import { Subject } from "rxjs";
+import { Mongo } from "meteor/mongo";
+import { Meteor } from "meteor/meteor";
 
-import { RepositoryData, SerializableRepoData } from "../imports/api/types"
-import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
-import { meteorCallAsync } from "../imports/api/meteor_interface"
+import { RepositoryData, SerializableRepoData } from "../imports/api/types";
+import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation";
+import { meteorCallAsync, override, overrideValue } from "../imports/api/meteor_interface";
 
 /**
  * COLLECTION OF REPOSITORY METHODS
@@ -16,7 +16,7 @@ export interface ServerRepoData {
   data: SerializableRepoData;
 }
 
-const RepoCollection = new Mongo.Collection<ServerRepoData>("repoCollection")
+const RepoCollection = new Mongo.Collection<ServerRepoData>("repoCollection");
 
 Meteor.methods({
   /**
@@ -28,7 +28,10 @@ Meteor.methods({
    * @returns {Promise<boolean>} whether the repo was successfully inserted or not
    * @throws {Meteor.Error} If the URL is invalid or does not start with 'http', not in db or not authorised.
    */
-  async "repoCollection.insertOrUpdateRepoData"(url: string, data: SerializableRepoData): Promise<boolean> {
+  async "repoCollection.insertOrUpdateRepoData"(
+    url: string,
+    data: SerializableRepoData
+  ): Promise<boolean> {
     const s: ServerRepoData = {
       url,
       createdAt: new Date(),
@@ -36,11 +39,11 @@ Meteor.methods({
     };
 
     return await RepoCollection.upsertAsync(
-        { url }, // filter to find existing doc
-        s        // update operation
-      )
+      { url }, // filter to find existing doc
+      s // update operation
+    )
       .then((_d: any) => true)
-      .catch((_e: Error) => false);
+      .catch(overrideValue(false));
   },
 
   /**
@@ -54,7 +57,7 @@ Meteor.methods({
   async "repoCollection.getData"(url: string) {
     const repoData = await RepoCollection.findOneAsync({ url });
     if (!repoData) {
-      throw new Meteor.Error("repository-not-found", "Repository not found")
+      throw new Meteor.Error("repository-not-found", "Repository not found");
     }
     return repoData.data;
   },
@@ -68,12 +71,12 @@ Meteor.methods({
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
    */
   async "repoCollection.removeRepo"(url: string): Promise<boolean> {
-    const existing = await RepoCollection.findOneAsync({ url })
+    const existing = await RepoCollection.findOneAsync({ url });
     if (!existing) {
       throw new Meteor.Error(
-        "not-in-database", 
+        "not-in-database",
         "The repo must exist in the database to be removed"
-      )
+      );
     }
 
     const res = await RepoCollection.removeAsync({ url });
@@ -89,8 +92,8 @@ Meteor.methods({
    * @throws {Meteor.Error} If no link with the given URL is found or not authorised.
    */
   async "repoCollection.exists"(url: string): Promise<boolean> {
-    const doc = await RepoCollection.findOneAsync({ url })
-    return null !== doc
+    const doc = await RepoCollection.findOneAsync({ url });
+    return null !== doc;
   },
 
   /**
@@ -100,8 +103,9 @@ Meteor.methods({
    * @returns {Promise<string[]>} all urls existing in the database
    */
   async "repoCollection.allUrls"(): Promise<string[]> {
-    return await RepoCollection.find().fetch()
-      .then((d: ServerRepoData[]) => d.map((d: ServerRepoData) => d.url))
+    return await RepoCollection.find()
+      .fetch()
+      .then((d: ServerRepoData[]) => d.map((d: ServerRepoData) => d.url));
   },
 
   /**
@@ -111,26 +115,25 @@ Meteor.methods({
    * @param {string} url - The URL of the bookmark to update.
    * @returns {Promise<number>} The number of documents updated (should be 1 if successful).
    * @throws {Meteor.Error} If the URL is invalid, bookmark not found, or not authorised.
-  */
+   */
   async "repoCollection.updateLastViewed"(url: string) {
-    const bm = await RepoCollection.findOneAsync({ url })
+    const bm = await RepoCollection.findOneAsync({ url });
 
     if (!bm) {
       throw new Meteor.Error("bookmark-not-found", "Bookmark not found");
     }
 
-    return await RepoCollection.updateAsync({ url }, { $set: { lastViewed: new Date() } })
-  }
-})
+    return await RepoCollection.updateAsync({ url }, { $set: { lastViewed: new Date() } });
+  },
+});
 
 /**
  * Checks if a repository exists in the database.
  * @param url The repository URL to check.
  * @returns True if the repository exists, false otherwise.
  */
-export const isInDatabase = (url: string): Promise<boolean> => 
-  meteorCallAsync("repoCollection.exists")(url)
-    .catch((_e: Error) => false)
+export const isInDatabase = (url: string): Promise<boolean> =>
+  meteorCallAsync("repoCollection.exists")(url).catch(overrideValue(false));
 
 /**
  * Tries to get repository data from the database.
@@ -138,37 +141,44 @@ export const isInDatabase = (url: string): Promise<boolean> =>
  * @param notifier Subject to notify about the status.
  * @returns Promise that resolves to the repository data.
  */
-export const tryFromDatabaseSerialised = (
+export const tryFromDatabaseSerialised = async (
   url: string,
   notifier: Subject<string>
-): Promise<SerializableRepoData> => new Promise((resolve, reject) => {
+): Promise<SerializableRepoData> => {
   if (notifier != null) notifier.next("Checking database for existing data...");
-  meteorCallAsync("repoCollection.getData")(url)
-    .then((d: SerializableRepoData) => {
-      // TODO CHECK IF REPO DATA IS MOST UP TO DATE
-      if (notifier != null) notifier.next("Found data in database!");
-      resolve(d);
-    })
-    .catch((_e: Error) => {
-      reject(new Error("Data not found in database"))
-    })
-})
 
-export const tryFromDatabase = (
-  url: string,
-  notifier: Subject<string>
-): Promise<RepositoryData> => 
-  tryFromDatabaseSerialised(url, notifier)
-    .then(deserializeRepoData)
-    
+  const d: SerializableRepoData = await meteorCallAsync("repoCollection.getData")(url).catch(
+    override("Data not found in database")
+  );
+  const upToDate: boolean = await isUpToDate(d);
+
+  if (!upToDate) throw Error("Repo is not up to date with the latest changes");
+  if (notifier != null) notifier.next("Found data in database!");
+  return d;
+};
+
+/**
+ *
+ * @param url a url to search for
+ * @param notifier a notifier to notify messages to
+ * @returns Promise<RepositoryData> where it found the result, rejected results are search misses
+ */
+export const tryFromDatabase = (url: string, notifier: Subject<string>): Promise<RepositoryData> =>
+  tryFromDatabaseSerialised(url, notifier).then(deserializeRepoData);
+
 /**
  * Caches repository data in the database.
  * @param url The repository URL.
  * @param data The repository data to cache.
  */
-export const cacheIntoDatabase = (url: string, data: RepositoryData): Promise<void> => 
-  meteorCallAsync("repoCollection.insertOrUpdateRepoData")(
-    url,
-    serializeRepoData(data)
-  )
+export const cacheIntoDatabase = (url: string, data: RepositoryData): Promise<void> =>
+  meteorCallAsync("repoCollection.insertOrUpdateRepoData")(url, serializeRepoData(data));
 
+/**
+ *
+ * @param data the data to check whether it is up to date or not
+ * @returns whether the data is up to date
+ */
+export const isUpToDate = async (data: SerializableRepoData): Promise<boolean> => {
+  return true;
+};
