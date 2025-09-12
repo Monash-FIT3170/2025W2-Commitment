@@ -154,6 +154,7 @@ export const tryFromDatabaseSerialised = async (
 
   if (!upToDate) throw Error("Repo is not up to date with the latest changes");
   if (notifier != null) notifier.next("Found data in database!");
+
   return d;
 };
 
@@ -173,12 +174,3 @@ export const tryFromDatabase = (url: string, notifier: Subject<string>): Promise
  */
 export const cacheIntoDatabase = (url: string, data: RepositoryData): Promise<void> =>
   meteorCallAsync("repoCollection.insertOrUpdateRepoData")(url, serializeRepoData(data));
-
-/**
- *
- * @param data the data to check whether it is up to date or not
- * @returns whether the data is up to date
- */
-export const isUpToDate = async (data: SerializableRepoData): Promise<boolean> => {
-  return true;
-};

@@ -3,14 +3,14 @@ import { Subject } from "rxjs";
 import { WebSocket } from "ws";
 import net from "net";
 
-import { RepositoryData } from "/imports/api/types";
+import { RepositoryData } from "../imports/api/types";
 import {
   deserializeRepoData,
   serializeRepoData,
   assertRepoTyping,
 } from "/imports/api/serialisation";
-import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "./caching";
-import { overrideValue } from "/imports/api/meteor_interface";
+import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "..server/api/caching";
+import { overrideValue } from "../imports/api/meteor_interface";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -90,7 +90,7 @@ export const getRepoData = (
 ): Promise<RepositoryData> =>
   tryFromDatabase(url, notifier).catch((_e1: Error) => fetchRepoData(url, notifier));
 
-export const fetchRepoData = async (
+export const fetchRepoData = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
@@ -114,7 +114,7 @@ export const fetchRepoData = async (
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppIPC = async (
+const fetchDataFromHaskellAppIPC = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
@@ -139,7 +139,7 @@ const fetchDataFromHaskellAppIPC = async (
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppWS = async (
+const fetchDataFromHaskellAppWS = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
@@ -154,7 +154,7 @@ const fetchDataFromHaskellAppWS = async (
  * @param socket a WebSocket to send the messages over
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppFromSocket = async (
+const fetchDataFromHaskellAppFromSocket = (
   url: string,
   notifier: Subject<string> | null,
   socket: WebSocket
@@ -206,7 +206,7 @@ const fetchDataFromHaskellAppFromSocket = async (
  * @param url url to run the API on
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppHTTP = async (url: string): Promise<RepositoryData> =>
+const fetchDataFromHaskellAppHTTP = (url: string): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) =>
     fetch("http://" + API_CONN_ENDPOINT, {
       method: "POST",
