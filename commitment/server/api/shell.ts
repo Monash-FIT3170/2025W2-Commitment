@@ -20,6 +20,13 @@ export type CommandResult = Readonly<{
 export const successful = (res: CommandResult): boolean =>
   res.error == null && res.stdError == null;
 
+export const assertSuccess =
+  (errMsg: string) =>
+  (res: CommandResult): string => {
+    if (!successful(res)) throw Error(errMsg);
+    return res.result;
+  };
+
 const defaultResult = {
   result: null,
   error: null,

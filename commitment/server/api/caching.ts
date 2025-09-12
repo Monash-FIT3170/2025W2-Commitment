@@ -5,6 +5,7 @@ import { Meteor } from "meteor/meteor";
 import { RepositoryData, SerializableRepoData } from "../imports/api/types";
 import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation";
 import { meteorCallAsync, override, overrideValue } from "../imports/api/meteor_interface";
+import { isUpToDate } from "./update";
 
 /**
  * COLLECTION OF REPOSITORY METHODS
@@ -150,7 +151,7 @@ export const tryFromDatabaseSerialised = async (
   const d: SerializableRepoData = await meteorCallAsync("repoCollection.getData")(url).catch(
     override("Data not found in database")
   );
-  const upToDate: boolean = await isUpToDate(d);
+  const upToDate: boolean = await isUpToDate(url, d);
 
   if (!upToDate) throw Error("Repo is not up to date with the latest changes");
   if (notifier != null) notifier.next("Found data in database!");
