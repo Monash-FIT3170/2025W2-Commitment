@@ -26,7 +26,6 @@
   "plugins": ["@typescript-eslint", "import"],
   "parserOptions": {
     "project": "./tsconfig.json",
-    // "tsconfigRootDir": "/Users/finn/repos/2025W2-Commitment/commitment",
     "sourceType": "module"
   },
   "settings": {
