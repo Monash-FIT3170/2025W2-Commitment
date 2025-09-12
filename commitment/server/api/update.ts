@@ -4,11 +4,10 @@ import { CommitData } from "/imports/api/types";
 import { getAllCommits } from "../server/helper_functions";
 import {
   Command,
-  CommandResult,
-  successful,
   assertSuccess,
   doNotLogData,
-  guaranteeExecution,
+  executeCommand,
+  deleteAllFromDirectory,
 } from "./shell";
 
 const compareDates = (d1: Date, d2: Date): boolean => d1.valueOf() > d2.valueOf();
@@ -27,7 +26,7 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
 
   const temp_working_dir = `/tmp-clone-dir/${data.name}`;
 
-  const commandLocal = guaranteeExecution(temp_working_dir);
+  const commandLocal = executeCommand(temp_working_dir);
 
   const hash = await commandLocal(getLatestCommit(url)).then(
     assertSuccess(`Failed to fetch HEAD from ${url}`)
@@ -38,6 +37,8 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   const date = await commandLocal(getDateFrom(hash)).then(
     assertSuccess("Failed to fetch the HEAD commit details")
   );
+
+  const awaitDirectoryDeletion = await deleteAllFromDirectory(temp_working_dir);
 
   const dateObj = new Date(date);
   return !compareDates(dateObj, lastCommitFromDatabase);

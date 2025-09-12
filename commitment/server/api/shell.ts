@@ -52,7 +52,7 @@ export const doNotLogData: Command = {
   shouldLog: false,
 };
 
-export const guaranteeExecution =
+export const executeCommand =
   (cwd: string) =>
   (f: Command): Promise<CommandResult> =>
     new Promise((resolve, reject) => {
@@ -85,68 +85,20 @@ export const guaranteeExecution =
       });
     });
 
-export const executeCommand =
-  (cwd: string) =>
-  (f: Command): Promise<CommandResult> =>
-    new Promise((resolve, reject) => {
-      const [command, ...args] = f.cmd.split(" ");
-      const child = spawn(command, args, { cwd });
+export const deleteAllFromDirectory = async (dirPath: string) => {
+  const entries: fs.Dirent[] = await fs_promise.readdir(dirPath, { withFileTypes: true });
 
-      // memory mutability is used here as it reduces overhead and increases performance as opposed to RXJS observable acculuation in state
-      // this is one of the only times I will not use pure consts, but because it works with side effect code its fine
-      // and it should also spare on some performance
-      const stdoutChunks: Buffer[] = [];
-      const stderrChunks: Buffer[] = [];
+  await Promise.all(
+    entries.map(async (entry) => {
+      const fullPath = path.join(dirPath, entry.name);
 
-      child.stdout.on("data", (chunk: Buffer) => {
-        stdoutChunks.push(chunk);
-      });
-
-      child.stderr.on("data", (chunk: Buffer) => {
-        stderrChunks.push(chunk);
-      });
-
-      child.on("error", (error: Error) => {
-        const stdout = Buffer.concat(stdoutChunks).toString();
-        const stderr = Buffer.concat(stderrChunks).toString();
-
-        if (f.shouldLog) console.error(f.onFail(f.cmd, error));
-        resolve({
-          ...defaultResult,
-          result: stdout,
-          error,
-          stdError: stderr || null,
-        });
-      });
-
-      child.on("close", (code) => {
-        const stdout = Buffer.concat(stdoutChunks).toString();
-        const stderr = Buffer.concat(stderrChunks).toString();
-
-        if (stderr) {
-          if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr));
-          return resolve({
-            ...defaultResult,
-            result: stdout,
-            stdError: stderr,
-          });
-        }
-
-        if (code !== 0) {
-          const err = new Error(`Process exited with code ${code}`);
-          if (f.shouldLog) console.error(f.onFail(f.cmd, err));
-          return resolve({
-            ...defaultResult,
-            result: stdout,
-            error: err,
-            stdError: stderr || null,
-          });
-        }
-
-        if (f.shouldLog) console.log(f.onSuccess(f.cmd));
-        resolve({
-          ...defaultResult,
-          result: stdout,
-        });
-      });
-    });
+      if (entry.isDirectory()) {
+        // is a subdirectory, so delete this as well
+        return fs_promise.rm(fullPath, { recursive: true, force: true });
+      } else {
+        // just a file, so delete
+        return fs_promise.unlink(fullPath);
+      }
+    })
+  );
+};
