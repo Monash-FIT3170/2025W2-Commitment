@@ -1,9 +1,7 @@
-import React from 'react';
+import React, {  useEffect , useState } from 'react';
 import { Settings } from 'lucide-react';
 import { Meteor } from 'meteor/meteor';
-import {  useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useState } from 'react';
 import { AnalyticsData, Metadata } from '/imports/api/types';
 import BookmarkButton from '../dashboard/BookmarkButton';
 

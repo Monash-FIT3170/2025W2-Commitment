@@ -15,7 +15,6 @@ import { Button } from "@ui/components/ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
 import {
   RepositoryData,
   FilteredData,
@@ -24,6 +23,7 @@ import {
 } from "/imports/api/types";
 import { useLocation } from "react-router-dom";
 import { config } from "process";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
@@ -59,7 +59,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     try {
       const result = await Meteor.callAsync("getScalingResults", data, repoUrl);
 
-      onSubmit(data, result); //this is where all the scaling starts from
+      onSubmit(data, result); // this is where all the scaling starts from
     } catch (err) {
       console.error("Error:", err);
     }

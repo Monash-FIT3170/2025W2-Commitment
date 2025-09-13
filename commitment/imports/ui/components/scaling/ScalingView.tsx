@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Upload, Download, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import ScalingConfigForm from "./ScalingConfigForm";
 import { Dialog, DialogContent } from "../ui/dialog";
 import {
@@ -25,7 +26,6 @@ import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
 import type { UserScalingSummary } from "../../../api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
-import { useLocation } from "react-router-dom";
 import { toast } from "../../hooks/use-toast";
 import InfoButton from "../ui/infoButton";
 
@@ -306,7 +306,7 @@ function ScalingView(): JSX.Element {
                   <h1 className="text-5xl text-foreground font-robotoFlex">
                     Scaling
                   </h1>
-                  <InfoButton description={"ada"} />
+                  <InfoButton description="ada" />
                 </div>
                 <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
               </div>

@@ -1,8 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import path from 'path';
+import path, { dirname } from 'path';
 import cors from 'cors';
 import { 
     listCollections, 

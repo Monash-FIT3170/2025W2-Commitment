@@ -72,7 +72,7 @@ Meteor.methods({
       {},
       {
         sort: { createdAt: -1 },
-        limit: limit
+        limit
       }
     ).fetchAsync();
   },

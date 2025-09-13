@@ -1,3 +1,4 @@
+import { Meteor } from "meteor/meteor";
 import {
   MetricsData,
   SerializableRepoData,
@@ -41,7 +42,6 @@ import {
   heatMapTotalCommits,
 } from "./heatmap";
 
-import { Meteor } from "meteor/meteor";
 
 // storing a global access unfiltered data here
 let unfilteredRepoData = {} as Promise<SerializableRepoData>;
@@ -492,9 +492,7 @@ export function getLocPerCommitPerContributor(
   let totalLOC = 0;
 
   commits.forEach((commit) => {
-    const locThisCommit = commit.value.fileData.reduce((sum, fileChange) => {
-      return sum + fileChange.file.contents.split("\n").length;
-    }, 0);
+    const locThisCommit = commit.value.fileData.reduce((sum, fileChange) => sum + fileChange.file.contents.split("\n").length, 0);
     totalLOC += locThisCommit;
   });
 

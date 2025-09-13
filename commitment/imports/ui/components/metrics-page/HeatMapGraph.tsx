@@ -133,10 +133,10 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
     if ( mode === "week-fill") {
       const monday = alignToMonday(d);
       return { key: getWeekLabel(dateStr), first: monday };
-    } else {
+    } 
       const first = startOfMonth(d);
       return { key: getMonthLabel(dateStr), first };
-    }
+    
   };
 
   for (const r of data) {

@@ -14,7 +14,7 @@ import {
 export const mapToArray = <K, V>(m: unknown): SerialisableMapObject<K, V>[] => {
   if (m instanceof Map) {
     return Array.from(m.entries()).map(([key, value]) => ({ key, value }))
-  } else if (m && typeof m === "object") {
+  } if (m && typeof m === "object") {
     // plain object fallback
     return Object.entries(m).map(([key, value]) => ({
       key: key as K,
@@ -32,7 +32,7 @@ const arrayToMap = <K, V>(a: unknown): Map<K, V> => {
       return [obj.key, obj.value];
     });
     return new Map(entries);
-  } else if (a && typeof a === "object") {
+  } if (a && typeof a === "object") {
     return new Map(
       Object.entries(a).map(([key, value]) => [key as unknown as K, value as V])
     );

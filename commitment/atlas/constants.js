@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import path from 'path';
+import path, { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,7 +21,7 @@ console.log('Environment variables loaded successfully');
 
 export const SERVER_HOST = process.env.SERVER_HOST || '0.0.0.0';
 export const SERVER_PORT = process.env.PORT || 3000;
-export const ATLAS_MONGODB_URI = process.env.ATLAS_MONGODB_URI;
+export const {ATLAS_MONGODB_URI} = process.env;
 
 console.log('Environment variables loaded:', {
     SERVER_HOST: SERVER_HOST ? 'set' : 'not set',
