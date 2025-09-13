@@ -1,4 +1,7 @@
-import { FilteredData, LineGraphData } from "/imports/api/types";
+import { FilteredData, LineGraphData } from "../imports/api/types";
+import {
+  getLinesOfCodeFromCommit
+} from "./helper_functions"
 
 /**
  * LINEGRAPH FUNCTIONS
@@ -74,15 +77,13 @@ export function linegraphLOC(data: FilteredData): LineGraphData[] {
   });
 
   // Collect daily LOC
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value
+    const user = commit.contributorName;
+    const date = new Date(commit.timestamp).toISOString().split("T")[0];
 
     // LOC snapshot for this commit
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
+    const locThisCommit = getLinesOfCodeFromCommit(commit)
     if (!byDate.has(date)) byDate.set(date, {});
     const bucket = byDate.get(date)!;
     bucket[user] = (bucket[user] ?? 0) + locThisCommit;
@@ -191,15 +192,13 @@ export function linegraphLOCPerCommit(data: FilteredData): LineGraphData[] {
   });
 
   // Collect daily LOC + commit counts
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value
+    const user = commit.contributorName;
+    const date = new Date(commit.timestamp).toISOString().split("T")[0];
 
     // LOC snapshot for this commit
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
+    const locThisCommit = getLinesOfCodeFromCommit(commit)
 
     if (!byDate.has(date)) {
       byDate.set(date, { loc: {}, commits: {} });

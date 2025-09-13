@@ -1,23 +1,23 @@
-import { HeatMapData, FilteredData } from "/imports/api/types";
+import { HeatMapData, FilteredData } from "../imports/api/types";
+import {
+  getLinesOfCodeFromCommit
+} from "./helper_functions"
 
 /**
  * HEATMAP FUNCTIONS
  */
-
 export function heatMapLOC(data: FilteredData): HeatMapData[] {
   const repoData = data.repositoryData;
   // Map of date → user → LOC count
   const byDateUser = new Map<string, Record<string, number>>();
 
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value
+    const user = commit.contributorName;
+    const date = new Date(commit.timestamp).toISOString().split("T")[0];
 
     // calculate LOC for this commit
-    const locthisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
+    const locthisCommit = getLinesOfCodeFromCommit(commit)
 
     if (!byDateUser.has(date)) byDateUser.set(date, {});
     const bucket = byDateUser.get(date)!;
@@ -49,15 +49,13 @@ export function heatMapLOCPerCommit(data: FilteredData): HeatMapData[] {
     Record<string, { totalLOC: number; commitCount: number }>
   >();
 
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value
+    const user = commit.contributorName;
+    const date = new Date(commit.timestamp).toISOString().split("T")[0];
 
     // calculate LOC for this commit
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
+    const locThisCommit = getLinesOfCodeFromCommit(commit)
 
     if (!byDateUser.has(date)) byDateUser.set(date, {});
     const bucket = byDateUser.get(date)!;
@@ -101,9 +99,10 @@ export function heatMapCommitsPerDay(data: FilteredData): HeatMapData[] {
   // Map of date → user → commit count
   const byDateUser = new Map<string, Record<string, number>>();
 
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value
+    const user = commit.contributorName;
+    const date = new Date(commit.timestamp).toISOString().split("T")[0];
 
     if (!byDateUser.has(date)) byDateUser.set(date, {});
     const bucket = byDateUser.get(date)!;

@@ -1,9 +1,10 @@
 import { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
 import { WebSocket } from "ws";
+import net from "net";
 
 import { RepositoryData } from "../imports/api/types";
-import {deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
+import { deserializeRepoData, serializeRepoData, assertRepoTyping } from "../imports/api/serialisation"
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
@@ -62,6 +63,12 @@ Meteor.methods({
   },
 });
 
+// can have a case here to see if it is deployment or a docker localhost
+// this means that the API can be connected to without the connection being hard coded
+const DEV_API_CONN_ENDPOINT = "haskell-api:8081"
+const DEPLOYMENT_API_CONN_ENDPOINT = "54.66.80.27:8081" 
+const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT
+
 /**
  * Fetches repository data from an external source.
  *
@@ -75,23 +82,44 @@ export const getRepoData = async (
   url: string,
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
-  tryFromDatabase(url, notifier).catch((_e) =>
+  tryFromDatabase(url, notifier).catch((_e1) =>
     fetchDataFromHaskellAppWS(url, notifier)  
-      .catch((_e) => {
-        notifier.next(`Websockets failed, trying HTTP...`);
-        return fetchDataFromHaskellAppHTTP(url);
-      })
-      .then(serializeRepoData).then(deserializeRepoData) // enforces strong typing for the map object
+      .then(assertRepoTyping) // enforces strong typing for the entire data structure
       .then((data: RepositoryData) => {
         notifier.next("Consolidating new data into database...");
         cacheIntoDatabase(url, data);
         return data;
       })
-      .catch((e) => {
-        notifier.next(`API fetch failed: ${e}`);
-        throw e;
+      .catch((e2) => {
+        notifier.next(`API fetch failed: ${e2}`);
+        throw e2;
       })
   );
+
+/**
+ * Fetches the repository data structure from the Haskell API
+ * Using Unix IPC mechanisms to bypass the network layer
+ *
+ * @param url url to run the API on
+ * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
+ * @returns Promise<RepositoryData>: a promise of the API completion
+ */
+const fetchDataFromHaskellAppIPC = async (
+  url: string,
+  notifier: Subject<string>
+): Promise<RepositoryData> => 
+  new Promise<RepositoryData>((resolve, reject) => {
+    const path = "/tmp/haskell-ipc.sock"
+
+    // Connect to Unix socket
+    const socket = net.createConnection(path, () => {
+      const ws = new WebSocket(null)
+      ws.setSocket(socket, null, 100 * 1024 * 1024) // hijack underlying socket (sets max msg size to 100MB)
+      fetchDataFromHaskellAppFromSocket(url, notifier, ws)
+        .then(d => resolve(d))
+        .catch(e => reject(e))
+    })
+  })
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -105,9 +133,28 @@ const fetchDataFromHaskellAppWS = async (
   url: string,
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
+  fetchDataFromHaskellAppFromSocket(
+    url, 
+    notifier, 
+    new WebSocket("ws://" + API_CONN_ENDPOINT)
+  )
+
+/**
+ * Fetches the repository data structure from the Haskell API
+ * Uses Websockets to recieve reactive messages from the app
+ *
+ * @param url url to run the API on
+ * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
+ * @param socket a WebSocket to send the messages over
+ * @returns Promise<RepositoryData>: a promise of the API completion
+ */
+const fetchDataFromHaskellAppFromSocket = async (
+  url: string,
+  notifier: Subject<string>,
+  socket: WebSocket
+): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
     notifier.next("Connecting to the API...");
-    const socket = new WebSocket("ws://54.66.80.27:8081");
 
     socket.onopen = () => {
       // notify that connection to the api was successful
@@ -157,7 +204,7 @@ const fetchDataFromHaskellAppWS = async (
  */
 const fetchDataFromHaskellAppHTTP = async (url: string): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) =>
-    fetch("http://54.66.80.27:8081", {
+    fetch("http://" + API_CONN_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: url }),

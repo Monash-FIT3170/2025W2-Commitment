@@ -29,7 +29,7 @@ executable commitment-api
       base >= 4.7 && < 5,
       wai,
       warp,
-      websockets,
+      websockets >= 0.13.0.0,
       wai-websockets,
       aeson,
       text,
@@ -44,7 +44,9 @@ executable commitment-api
       directory,
       filepath,
       unix-compat,
-      deepseq
+      deepseq,
+      network,
+      regex-posix
   ghc-options:
       -Wall
       -Wcompat
