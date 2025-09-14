@@ -58,7 +58,7 @@ export const SettingsPage: React.FC = () => {
       setSuccessMessage('Config removed successfully!');
       loadCurrentConfigs(); // Reload the list
     } catch (error) {
-      setError('Failed to remove config: ' + (error as any).message);
+      setError(`Failed to remove config: ${  (error as any).message}`);
     }
   };
 
@@ -392,7 +392,7 @@ export const SettingsPage: React.FC = () => {
 
               {isLoadingConfigs ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-git-accent-primary mx-auto mb-4"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-git-accent-primary mx-auto mb-4" />
                   <p className="text-git-text-secondary">Loading your configuration...</p>
                 </div>
               ) : currentConfigs.length === 0 ? (

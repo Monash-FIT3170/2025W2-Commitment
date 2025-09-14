@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { DateRange } from "react-day-picker";
 import { useLocation } from "react-router-dom";
+import { subWeeks } from "date-fns";
 import InfoButton from "../ui/infoButton";
 import { DatePicker } from "./date-range-picker";
 import BranchDropdownMenu from "./BranchDropdownMenu";
@@ -11,7 +12,6 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import HeatmapGraph from "./HeatMapGraph";
-import { subWeeks } from "date-fns";
 
 import { AnalyticsData, MetricType, metricNames } from "/imports/api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";

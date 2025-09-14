@@ -4,7 +4,7 @@ import { WebSocket } from "ws";
 
 import { RepositoryData } from "../imports/api/types";
 import {deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
-import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
+import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "./caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -115,7 +115,7 @@ const fetchDataFromHaskellAppWS = async (
       // send data through socket
       socket.send(
         JSON.stringify({
-          url: url,
+          url,
         })
       );
     };
@@ -124,7 +124,7 @@ const fetchDataFromHaskellAppWS = async (
       // Step 2: Await response from haskell app
       try {
         
-        const data = event.data;
+        const {data} = event;
         const parsed = JSON.parse(data);
 
         if (parsed.type === "text_update") notifier.next(parsed.data);
@@ -160,7 +160,7 @@ const fetchDataFromHaskellAppHTTP = async (url: string): Promise<RepositoryData>
     fetch("http://54.66.80.27:8081", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: url }),
+      body: JSON.stringify({ url }),
     }).then((response) => {
       if (!response.ok) reject(`Haskell API returned status ${response.status}`);
       response.json().then((d) => resolve(d.data));
