@@ -4,7 +4,11 @@ import { WebSocket } from "ws";
 import net from "net";
 
 import { RepositoryData } from "../imports/api/types";
-import { deserializeRepoData, serializeRepoData, assertRepoTyping } from "../imports/api/serialisation"
+import {
+  deserializeRepoData,
+  serializeRepoData,
+  assertRepoTyping,
+} from "../imports/api/serialisation";
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
@@ -51,9 +55,7 @@ Meteor.methods({
     const subject = sub || new Subject<string>();
 
     // returns whether it was successful in caching to the database or not
-    return await getRepoData(repoUrl.trim(), subject)
-      .then((_) => true)
-      .catch((_e) => false);
+    return await getRepoData(repoUrl.trim(), subject).then((_) => true);
   },
 });
 
@@ -65,9 +67,9 @@ Meteor.methods({
 
 // can have a case here to see if it is deployment or a docker localhost
 // this means that the API can be connected to without the connection being hard coded
-const DEV_API_CONN_ENDPOINT = "haskell-api:8081"
-const DEPLOYMENT_API_CONN_ENDPOINT = "54.66.80.27:8081" 
-const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT
+const DEV_API_CONN_ENDPOINT = "haskell-api:8081";
+const DEPLOYMENT_API_CONN_ENDPOINT = "54.66.80.27:8081";
+const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT;
 
 /**
  * Fetches repository data from an external source.
@@ -83,7 +85,7 @@ export const getRepoData = async (
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
   tryFromDatabase(url, notifier).catch((_e1) =>
-    fetchDataFromHaskellAppWS(url, notifier)  
+    fetchDataFromHaskellAppWS(url, notifier)
       .then(assertRepoTyping) // enforces strong typing for the entire data structure
       .then((data: RepositoryData) => {
         notifier.next("Consolidating new data into database...");
@@ -107,19 +109,19 @@ export const getRepoData = async (
 const fetchDataFromHaskellAppIPC = async (
   url: string,
   notifier: Subject<string>
-): Promise<RepositoryData> => 
+): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
-    const path = "/tmp/haskell-ipc.sock"
+    const path = "/tmp/haskell-ipc.sock";
 
     // Connect to Unix socket
     const socket = net.createConnection(path, () => {
-      const ws = new WebSocket(null)
-      ws.setSocket(socket, null, 100 * 1024 * 1024) // hijack underlying socket (sets max msg size to 100MB)
+      const ws = new WebSocket(null);
+      ws.setSocket(socket, null, 100 * 1024 * 1024); // hijack underlying socket (sets max msg size to 100MB)
       fetchDataFromHaskellAppFromSocket(url, notifier, ws)
-        .then(d => resolve(d))
-        .catch(e => reject(e))
-    })
-  })
+        .then((d) => resolve(d))
+        .catch((e) => reject(e));
+    });
+  });
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -133,11 +135,7 @@ const fetchDataFromHaskellAppWS = async (
   url: string,
   notifier: Subject<string>
 ): Promise<RepositoryData> =>
-  fetchDataFromHaskellAppFromSocket(
-    url, 
-    notifier, 
-    new WebSocket("ws://" + API_CONN_ENDPOINT)
-  )
+  fetchDataFromHaskellAppFromSocket(url, notifier, new WebSocket("ws://" + API_CONN_ENDPOINT));
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -170,7 +168,6 @@ const fetchDataFromHaskellAppFromSocket = async (
     socket.onmessage = (event: WebSocket.MessageEvent) => {
       // Step 2: Await response from haskell app
       try {
-        
         const data = event.data;
         const parsed = JSON.parse(data);
 
@@ -179,21 +176,20 @@ const fetchDataFromHaskellAppFromSocket = async (
         else if (parsed.type === "value") {
           resolve(parsed.data);
           socket.close();
-        } 
-
+        }
       } catch (err) {
         reject(err);
         socket.close();
       }
-    }
+    };
 
     socket.onerror = (_err: WebSocket.ErrorEvent) => {
-      const s = "Encountered a Websocket Error"
+      const s = "Encountered a Websocket Error";
       notifier.next(s);
-      reject(new Error(s))
-      socket.close()
-    }
-  })
+      reject(new Error(s));
+      socket.close();
+    };
+  });
 
 /**
  * Fetches the repository data structure from the Haskell API

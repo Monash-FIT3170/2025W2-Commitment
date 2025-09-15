@@ -32,7 +32,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
   // Rotate tips every 4s
   useEffect(() => {
     const id = Meteor.setInterval(() => {
-      setTipIndex(i => (i + 1) % tips.length);
+      setTipIndex((i) => (i + 1) % tips.length);
     }, 4000);
     return () => Meteor.clearInterval(id);
   }, []);
@@ -46,19 +46,16 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
     //const $sout = notifier.subscribe(console.log) // for debugging purposes
 
     fetchRepo(repoUrl, notifier)
-      .then((value: boolean) => {
-        
-        if (value == false) throw Error("fetchRepo Failed")
-
+      .then((_: boolean) => {
         notifier.next("Repository data loaded!");
         setProgress(100);
 
-        // redirect to the metrics page 
+        // redirect to the metrics page
         setTimeout(() => {
           navigate("/metrics", { replace: true, state: { repoUrl } });
         }, 1000);
       })
-      .catch(err => {
+      .catch((err) => {
         notifier.next(`${err}`);
         // Wait 10 seconds to let user read the error, then redirect back
         setTimeout(() => {
@@ -76,16 +73,12 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
   // If no repo URL provided, redirect immediately
   if (!repoUrl) return <Navigate to="/insert-git-repo" replace />;
 
-
   return (
     <>
-      <div className="fixed top-0 w-full z-10">
-      </div>
+      <div className="fixed top-0 w-full z-10"></div>
       <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
         {/* Live notifier message */}
-        <h2 className="text-3xl font-inconsolata-bold mb-6">
-          {message}
-        </h2>
+        <h2 className="text-3xl font-inconsolata-bold mb-6">{message}</h2>
 
         <LoadingBar progress={progress} />
 
