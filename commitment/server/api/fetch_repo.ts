@@ -4,12 +4,8 @@ import { WebSocket } from "ws";
 import net from "net";
 
 import { RepositoryData } from "../imports/api/types";
-import {
-  deserializeRepoData,
-  serializeRepoData,
-  assertRepoTyping,
-} from "/imports/api/serialisation";
-import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "..server/api/caching";
+import { assertRepoTyping } from "/imports/api/serialisation";
+import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "./caching";
 import { overrideValue } from "../imports/api/meteor_interface";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
@@ -56,9 +52,7 @@ Meteor.methods({
     const subject = sub || new Subject<string>();
 
     // returns whether it was successful in caching to the database or not
-    return await getRepoData(repoUrl.trim(), subject)
-      .then((_) => true)
-      .catch(overrideValue(false));
+    return await getRepoData(repoUrl.trim(), subject).then((_) => true);
   },
 });
 
@@ -70,7 +64,6 @@ Meteor.methods({
 
 // can have a case here to see if it is deployment or a docker localhost
 // this means that the API can be connected to without the connection being hard coded
-// TODO CHANGE TO AN ENV FILE FETCH
 const DEV_API_CONN_ENDPOINT = "haskell-api:8081";
 const DEPLOYMENT_API_CONN_ENDPOINT = "54.66.80.27:8081";
 const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT;

@@ -1,6 +1,8 @@
 --{-# LANGUAGE OverloadedStrings #-}
 
 module GitCommands (
+  quote, 
+  delim,
   checkIfRepoExists,
   cloneRepo,
   getBranches,
@@ -16,6 +18,9 @@ import Control.Concurrent.STM ( TBQueue )
 
 quote :: String -> String
 quote s = "\"" ++ s ++ "\""
+
+delim :: String
+delim  = "\\n|||END|||"
 
 checkIfRepoExists :: String -> Command
 checkIfRepoExists url = doNotLogData
@@ -52,7 +57,7 @@ getContributorEmails name = doNotLogData
 
 getCommitDetails :: String -> Command
 getCommitDetails hash = doNotLogData
-  { command = "git show \"--pretty=format:%H\\n|||END|||%an\\n|||END|||%ad\\n|||END|||%s\\n|||END|||%b\\n|||END|||\" \"--name-status\" " ++ hash 
+  { command = "git show \"--pretty=format:%H" ++ delim ++ "%an" ++ delim ++ "%ad" ++ delim ++ "%s" ++ delim ++ "%b" ++ delim ++ "\" \"--name-status\" " ++ hash 
   }
 
 getCommitDiff :: String -> Command

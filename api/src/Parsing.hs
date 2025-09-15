@@ -37,6 +37,7 @@ import Data.Maybe (mapMaybe)
 
 import Types
 import Command
+import GitCommands
 
 -- ParseResult
 data ParseResult a = Result a | Error String
@@ -91,6 +92,7 @@ parsed _ (Result r)   = r
 parsed "" (Error "")  = error "Got blank string"
 parsed "" (Error msg) = error msg
 parsed msg (Error e)  = error $ msg ++ ":\n" ++ e
+--                    = error $ msg 
 --                    = error $ msg ++ ":\n" ++ e
 
 parsedLists :: String -> [ParseResult a] -> [a]
@@ -185,12 +187,9 @@ parseCommitData txt
         , involvedFiles     = parseFileLines (drop 5 blocks)
         }
   where
-    delim  = "\\n|||END|||"
-    blocks = splitOn delim txt
+    blocks = splitOn1 delim txt
     trim   = intercalate "\n" . map (dropWhile isSpace) . lines
-
-parseFileLines :: [String] -> [[String]]
-parseFileLines = map words . filter (not . null) . lines . unlines
+    parseFileLines = map words . filter (not . null) . lines . unlines
 
 -- Name-status record
 data MetaFileChanges = MetaFileChanges
@@ -243,11 +242,10 @@ data MetaFileChangesDiff = MetaFileChangesDiff
 parseFileDataFromDiff :: String -> ParseResult [MetaFileChangesDiff]
 parseFileDataFromDiff txt
   | failedOutput txt = Error txt
-  | otherwise        = Result (finalize (reverse acc))
+  | otherwise        = Result (finalize (reverse (maybeAddLast acc curHdr curBody)))
   where
     ls = lines txt
 
-    -- group into file blocks starting at "diff --git ..."
     (acc, curHdr, curBody) = foldl step ([], Nothing, []) ls
 
     step :: ([ (String,[String]) ], Maybe String, [String]) -> String -> ([ (String,[String]) ], Maybe String, [String])
@@ -258,6 +256,11 @@ parseFileDataFromDiff txt
                           Nothing -> blocks
           in (blocks', Just line, [])
       | otherwise = (blocks, mHdr, line:body)
+
+    -- add last block after fold
+    maybeAddLast :: [ (String,[String]) ] -> Maybe String -> [String] -> [ (String,[String]) ]
+    maybeAddLast blocks (Just h) body = (h, reverse body) : blocks
+    maybeAddLast blocks Nothing _     = blocks
 
     finalize :: [ (String,[String]) ] -> [MetaFileChangesDiff]
     finalize blocks =
@@ -306,8 +309,8 @@ mergeFileMetaData = map (
     ) 
 
 -- Helpers
-splitOn :: Eq a => [a] -> [a] -> [[a]]
-splitOn delim = go
+splitOn1 :: Eq a => [a] -> [a] -> [[a]]
+splitOn1 delim = go
   where
     go s = case breakList delim s of
       Just (before, after) -> before : go after
