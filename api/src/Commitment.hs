@@ -66,7 +66,8 @@ fetchDataFrom url notifier = (do
 
         emit notifier "Found the repo!"
 
-        let repoNameFromUrl = lastSplit '/' url
+        let parts = splitOn '/' url
+            repoNameFromUrl = last (init parts) ++ "/" ++ last parts
             repoRelativePath = "cloned-repos" </> repoNameFromUrl
             repoAbsPath = workingDir </> repoRelativePath
 
@@ -88,10 +89,14 @@ fetchDataFrom url notifier = (do
         emit notifier ("Error occurred:\n" ++ errMsg)
         pure (Left errMsg)
     `finally` do
+        
         -- cleanup no matter what
         workingDir <- getCurrentDirectory
-        let repoNameFromUrl = lastSplit '/' url
-            repoAbsPath     = workingDir </> "cloned-repos" </> repoNameFromUrl
+        let parts = splitOn '/' url
+            repoNameFromUrl = last (init parts) ++ "/" ++ last parts
+            repoRelativePath = "cloned-repos" </> repoNameFromUrl
+            repoAbsPath = workingDir </> repoRelativePath
+
         deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
     
 
@@ -179,6 +184,14 @@ formulateRepoData _url path notifier = do
         contributorMap
 
 -- | Utility
+splitOn :: Eq a => a -> [a] -> [[a]]
+splitOn delim = go []
+  where
+    go acc [] = [reverse acc]
+    go acc (x:xs)
+      | x == delim = reverse acc : go [] xs
+      | otherwise  = go (x:acc) xs
+
 lastSplit :: Eq a => a -> [a] -> [a]
 lastSplit delim = reverse . takeWhile (/= delim) . reverse
 
