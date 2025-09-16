@@ -1,7 +1,7 @@
-import { SerializableRepoData } from "../imports/api/types";
-import { meteorCallAsync, override, overrideValue } from "../imports/api/meteor_interface";
+import { SerializableRepoData } from "/imports/api/types";
+import { meteorCallAsync, override, overrideValue } from "/imports/api/meteor_interface";
 import { CommitData } from "/imports/api/types";
-import { getAllCommits } from "../server/helper_functions";
+import { getAllCommits } from "/server/helper_functions";
 import {
   Command,
   assertSuccess,
