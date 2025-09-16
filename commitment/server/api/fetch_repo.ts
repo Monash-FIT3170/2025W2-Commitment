@@ -149,9 +149,9 @@ const fetchDataFromHaskellAppWS = (
  * @param socket a WebSocket to send the messages over
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppFromSocket = (
+const fetchDataFromHaskellAppFromSocket = async (
   url: string,
-  notifier: Subject<string> | null,
+  notifier: Subject<string>,
   socket: WebSocket
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
