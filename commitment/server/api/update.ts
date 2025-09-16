@@ -12,6 +12,10 @@ import {
 
 const compareDates = (d1: Date, d2: Date): boolean => d1.valueOf() > d2.valueOf();
 
+const takeFromBack = <T>(arr: T[], num: number): T[] => arr.slice(-num);
+
+const join = (arr: string[]): string => arr.reduce((acc, i) => acc + i, "");
+
 /**
  * checks whether a repository splat is up to date with the real version on github (doesn't need to clone anything to the server, can just use remote query)
  * @param data the data to check whether it is up to date or not
@@ -24,7 +28,9 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
     null
   ).timestamp;
 
-  const temp_working_dir = `/tmp-clone-dir/${data.name}`;
+  const rel_dir = join(takeFromBack(url.split("/"), 2));
+
+  const temp_working_dir = `/tmp-clone-dir/${rel_dir}`;
 
   const commandLocal = executeCommand(temp_working_dir);
 
