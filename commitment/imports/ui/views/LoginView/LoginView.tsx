@@ -10,7 +10,7 @@ const LoginView = (props: LoginViewProps) => {
 
   return (
     <div className="h-[90%] flex flex-col justify-center content-center ">
-      <LoginWidget defaultTab={defaultTab}></LoginWidget>
+      <LoginWidget defaultTab={defaultTab} />
     </div>
   )
 };

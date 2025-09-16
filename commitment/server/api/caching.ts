@@ -36,7 +36,7 @@ Meteor.methods({
     const s: ServerRepoData = {
       url,
       createdAt: new Date(),
-      data: data,
+      data,
     };
 
     return await RepoCollection.upsertAsync(

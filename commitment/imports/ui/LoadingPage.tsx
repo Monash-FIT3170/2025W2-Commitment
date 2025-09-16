@@ -43,7 +43,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
 
     const notifier = new Subject<string>();
     const sub = notifier.subscribe(setMessage);
-    //const $sout = notifier.subscribe(console.log) // for debugging purposes
+    // const $sout = notifier.subscribe(console.log) // for debugging purposes
 
     fetchRepo(repoUrl, notifier)
       .then((_: boolean) => {
@@ -65,7 +65,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
 
     return () => {
       sub.unsubscribe();
-      //$sout.unsubscribe()
+      // $sout.unsubscribe()
       notifier.complete();
     };
   }, [repoUrl, navigate]);
@@ -75,7 +75,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
 
   return (
     <>
-      <div className="fixed top-0 w-full z-10"></div>
+      <div className="fixed top-0 w-full z-10" />
       <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
         {/* Live notifier message */}
         <h2 className="text-3xl font-inconsolata-bold mb-6">{message}</h2>

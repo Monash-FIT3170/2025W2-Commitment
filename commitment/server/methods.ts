@@ -22,10 +22,7 @@ import { applyAliasMappingIfNeeded } from "./alias_mapping";
 import { getRepoData } from "./api/fetch_repo";
 import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation";
 import { getScaledResults } from "./ScalingFunctions";
-import { ScalingConfig } from "../imports/ui/components/scaling/ScalingConfigForm";
-import { useLocation } from "react-router-dom";
-import { serialize } from "v8";
-import { createDropdownMenuScope } from "@radix-ui/react-dropdown-menu";
+import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 
 Meteor.methods({
   /**

@@ -2,11 +2,11 @@ import { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
 import { WebSocket } from "ws";
 import net from "net";
+import dotenv from "dotenv";
 
 import { RepositoryData } from "../imports/api/types";
-import { assertRepoTyping } from "/imports/api/serialisation";
-import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "./caching";
-import { overrideValue } from "../imports/api/meteor_interface";
+import { assertRepoTyping } from "../imports/api/serialisation";
+import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -64,9 +64,11 @@ Meteor.methods({
 
 // can have a case here to see if it is deployment or a docker localhost
 // this means that the API can be connected to without the connection being hard coded
+// Load environment variables
+dotenv.config();
 const DEV_API_CONN_ENDPOINT = "haskell-api:8081";
-const DEPLOYMENT_API_CONN_ENDPOINT = "54.66.80.27:8081";
-const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT;
+const DEPLOYMENT_API_CONN_ENDPOINT = process.env.API_CONN_ENDPOINT; // "54.66.80.27:8081";
+const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT || DEV_API_CONN_ENDPOINT;
 
 /**
  * Fetches repository data from an external source.
@@ -161,7 +163,7 @@ const fetchDataFromHaskellAppFromSocket = (
       // send data through socket
       socket.send(
         JSON.stringify({
-          url: url,
+          url,
         })
       );
     };
@@ -169,7 +171,7 @@ const fetchDataFromHaskellAppFromSocket = (
     socket.onmessage = (event: WebSocket.MessageEvent) => {
       // Step 2: Await response from haskell app
       try {
-        const data = event.data;
+        const { data } = event;
         const parsed = JSON.parse(data);
 
         if (parsed.type === "text_update" && notifier !== null) notifier.next(parsed.data);
@@ -204,7 +206,7 @@ const fetchDataFromHaskellAppHTTP = (url: string): Promise<RepositoryData> =>
     fetch("http://" + API_CONN_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: url }),
+      body: JSON.stringify({ url }),
     }).then((response) => {
       if (!response.ok) reject(`Haskell API returned status ${response.status}`);
       response.json().then((d) => resolve(d.data));

@@ -61,7 +61,7 @@ function buildUsers(
   return Object.entries(allMetrics).map(([name, metrics]) => {
     const values = selectedMetrics.map((metricName) => {
       const val = metrics[metricName as keyof typeof metrics];
-      return Number.isFinite(val as number) ? (val as number) : null;
+      return Number.isFinite(val) ? (val) : null;
     });
 
     return { name, values };
@@ -118,7 +118,7 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
 
   const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
 
-  let method = config.method ?? "Percentiles";
+  const method = config.method ?? "Percentiles";
 
   const users = buildUsers(allMetrics, selectedMetrics);
   if (!users.length) return [];
