@@ -375,6 +375,7 @@ export default function HeatMapGraph({
           },
 
           formatter: (label: string) => {
+            if (typeof label !== "string") return ""; // handle missing label
             // If label has a dash, only keep the part before it
             const dashIndex = label.indexOf(" -");
             return dashIndex !== -1 ? label.substring(0, dashIndex) : label;
