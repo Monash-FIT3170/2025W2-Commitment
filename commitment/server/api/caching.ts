@@ -1,10 +1,9 @@
 import { Subject } from "rxjs";
 import { Mongo } from "meteor/mongo";
 import { Meteor } from "meteor/meteor";
-
-import { RepositoryData, SerializableRepoData } from "../imports/api/types";
-import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation";
-import { meteorCallAsync, override, overrideValue } from "../imports/api/meteor_interface";
+import { RepositoryData, SerializableRepoData } from "/imports/api/types";
+import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation";
+import { meteorCallAsync, override, overrideValue } from "/imports/api/meteor_interface";
 import { isUpToDate } from "./update";
 
 /**

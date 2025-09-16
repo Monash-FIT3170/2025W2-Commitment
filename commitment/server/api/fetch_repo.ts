@@ -4,9 +4,9 @@ import { WebSocket } from "ws";
 import net from "net";
 import dotenv from "dotenv";
 
-import { RepositoryData } from "../imports/api/types";
-import { assertRepoTyping } from "../imports/api/serialisation";
-import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
+import { RepositoryData } from "/imports/api/types";
+import { assertRepoTyping } from "/imports/api/serialisation";
+import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "./caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
