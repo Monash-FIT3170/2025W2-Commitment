@@ -43,7 +43,7 @@ jobs:
       - run: curl https://install.meteor.com/ | sh
       - run: meteor npm install
       - name: Run ESLint
-        run: npx eslint client tests server imports --quiet
+        run: npx eslint client tests imports server --quiet
 
   typecheck:
     needs: setup
@@ -77,31 +77,10 @@ jobs:
           --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
-
-      # Install Meteor
-      - name: Install Meteor
-        run: curl https://install.meteor.com/ | sh
-
-      # Install npm dependencies
-      - name: Install dependencies
-        run: meteor npm install
-
-      # Wait for Mongo to be ready
-      - name: Wait for Mongo
-        run: |
-          echo "Waiting for MongoDB to be ready..."
-          for i in {1..30}; do
-            if mongo --username admin --password admin --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
-              echo "Mongo is ready!"
-              break
-            fi
-            echo "Mongo not ready yet, retrying..."
-            sleep 2
-          done
-
-      # Run Meteor tests
+      - run: curl https://install.meteor.com/ | sh
+      - run: meteor npm install
       - name: Run Tests
         run: meteor npm run test

@@ -1,3 +1,5 @@
+import { Meteor } from "meteor/meteor";
+
 import {
   MetricsData,
   SerializableRepoData,
@@ -26,8 +28,8 @@ import {
   getLocPerCommitPerContributor,
   getCommitPerDayPerContributor,
   getNumberOfContributors,
-  getTotalBranches
-} from "./helper_functions"
+  getTotalBranches,
+} from "./helper_functions";
 
 import {
   leaderboardCommitsPerDay,
@@ -54,8 +56,6 @@ import {
   heatMapTotalCommits,
 } from "./heatmap";
 
-import { Meteor } from "meteor/meteor";
-
 // -------- THIS FUNCTION NEEDS TO BE CALLED FIRST -----------------------
 export async function getAllGraphData(
   data: FilteredData,
@@ -73,7 +73,7 @@ export async function getAllGraphData(
       leaderboard = {
         data: leaderboardLOC(data),
         title: "Top Contributors by Lines of Code",
-        xAxisLabel: "Lines of Code"
+        xAxisLabel: "Lines of Code",
       };
       lineGraph = {
         data: linegraphLOC(data),
@@ -95,7 +95,7 @@ export async function getAllGraphData(
       leaderboard = {
         data: leaderboardLOCPerCommit(data),
         title: "Top Contributors by LOC per Commit",
-        xAxisLabel: "Lines of Code / Commit"
+        xAxisLabel: "Lines of Code / Commit",
       };
       lineGraph = {
         data: linegraphLOCPerCommit(data),
@@ -117,7 +117,7 @@ export async function getAllGraphData(
       leaderboard = {
         data: leaderboardCommitsPerDay(data),
         title: "Top Contributors by Commits per Day",
-        xAxisLabel: "Commits / Day"
+        xAxisLabel: "Commits / Day",
       };
       lineGraph = {
         data: linegraphCommitsPerDay(data),
@@ -130,7 +130,7 @@ export async function getAllGraphData(
         title: "Distribution of Commits per Day",
       };
       heatMap = {
-        data: heatMapTotalCommits(data), 
+        data: heatMapTotalCommits(data),
         title: "Commit Activity (Commits per Day)",
       };
       break;
@@ -139,7 +139,7 @@ export async function getAllGraphData(
       leaderboard = {
         data: leaderboardTotalCommits(data),
         title: "Top Contributors by Total Commits",
-        xAxisLabel: "Total Commits"
+        xAxisLabel: "Total Commits",
       };
       lineGraph = {
         data: linegraphTotalCommits(data),
@@ -182,21 +182,15 @@ export const getAllMetrics = (filteredData: SerializableRepoData): AllMetricsDat
 
   contributors.forEach((contributor) => {
     allMetricData[contributor] = {
-      "Total No. Commits": getTotalCommitsPerContributor(
-        filteredData,
-        contributor
-      ),
-      "LOC": getLOCperContributor(filteredData, contributor),
+      "Total No. Commits": getTotalCommitsPerContributor(filteredData, contributor),
+      LOC: getLOCperContributor(filteredData, contributor),
       "LOC Per Commit": getLocPerCommitPerContributor(filteredData, contributor),
-      "Commits Per Day": getCommitPerDayPerContributor(
-        filteredData,
-        contributor
-      ),
+      "Commits Per Day": getCommitPerDayPerContributor(filteredData, contributor),
     };
   });
 
   return allMetricData;
-}
+};
 
 /**
  * Get all metrics from provided repository data (useful for alias-mapped data)
@@ -211,52 +205,39 @@ export const getAllMetricsFromData = (repoData: SerializableRepoData): AllMetric
 
   contributors.forEach((contributor) => {
     allMetricData[contributor] = {
-      "Total No. Commits": getTotalCommitsPerContributor(
-        repoData,
-        contributor
-      ),
+      "Total No. Commits": getTotalCommitsPerContributor(repoData, contributor),
       LOC: getLOCperContributor(repoData, contributor),
       "LOC Per Commit": getLocPerCommitPerContributor(repoData, contributor),
-      "Commits Per Day": getCommitPerDayPerContributor(
-        repoData,
-        contributor
-      ),
+      "Commits Per Day": getCommitPerDayPerContributor(repoData, contributor),
     };
   });
 
   return allMetricData;
-}
+};
 
 /**
  * FUNCTIONS FOR HIGHLIGHTS
  */
-export const returnHighlightData = (data: SerializableRepoData): Highlights => (
-  {
+export const returnHighlightData = (data: SerializableRepoData): Highlights =>
+  ({
     totalCommits: highlightTotalCommits(data),
     totalLinesOfCode: highlightTotalLinesOfCode(data),
     numContributors: getNumberOfContributors(data),
     numBranches: getTotalBranches(data),
-  } as Highlights
-)
+  } as Highlights);
 
 /**
  * Returns the total commits in a repository for a highlight card.
  * @param data Filtered Repository Data
  * @returns Highlighted total commits information
  */
-export const highlightTotalCommits = (
-  unfilteredData: SerializableRepoData
-): HighlightStruct =>{
+export const highlightTotalCommits = (unfilteredData: SerializableRepoData): HighlightStruct => {
   const totalCommits = getTotalCommits(unfilteredData);
 
   // Sort commits by timestamp
   const sortedCommits = unfilteredData.allCommits
     .slice()
-    .sort(
-      (a, b) =>
-        new Date(a.value.timestamp).getTime() -
-        new Date(b.value.timestamp).getTime()
-    );
+    .sort((a, b) => new Date(a.value.timestamp).getTime() - new Date(b.value.timestamp).getTime());
 
   // Bucket commits by day
   const commitsByDay: Record<string, number> = {};
@@ -290,7 +271,7 @@ export const highlightTotalCommits = (
     isPositive: percentageChange > 0,
     data: commitsCumulative,
   };
-}
+};
 
 /**
  * Returns the total lines of code(total files changed) in the repository for the highlight card.
@@ -303,21 +284,15 @@ export const highlightTotalLinesOfCode = (
   // number of files changed
   const sortedCommits = unfilteredData.allCommits
     .slice()
-    .sort(
-      (a, b) =>
-        new Date(a.value.timestamp).getTime() -
-        new Date(b.value.timestamp).getTime()
-    );
+    .sort((a, b) => new Date(a.value.timestamp).getTime() - new Date(b.value.timestamp).getTime());
 
   // Compute lines of code per commit
-  const linesOfCodeOverTime: { value: number }[] = sortedCommits.map(
-    (commit) => ({
-      value: commit.value.fileData.reduce(
-        (sum, fileChange) => sum + fileChange.newLines - fileChange.deletedLines,
-        0
-      ),
-    })
-  );
+  const linesOfCodeOverTime: { value: number }[] = sortedCommits.map((commit) => ({
+    value: commit.value.fileData.reduce(
+      (sum, fileChange) => sum + fileChange.newLines - fileChange.deletedLines,
+      0
+    ),
+  }));
 
   let percentageChange: number = 0;
   if (linesOfCodeOverTime.length >= 2) {
@@ -335,7 +310,7 @@ export const highlightTotalLinesOfCode = (
     isPositive: percentageChange > 0,
     data: linesOfCodeOverTime,
   };
-}
+};
 
 export function getMetricString(): string[] {
   return ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
