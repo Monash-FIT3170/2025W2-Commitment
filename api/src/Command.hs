@@ -12,10 +12,13 @@ module Command (
   logData,
   doNotLogData,
   executeCommand,
+  executeCommandTimedOut,
   deleteDirectoryIfExists
 ) where
 
 import System.Exit (ExitCode(..))
+import System.Environment (getEnvironment)
+import System.Timeout (timeout)
 import System.IO
 import Control.Monad (when)
 import Control.Concurrent.STM (TBQueue)
@@ -33,6 +36,8 @@ import Threading
 
 data Command = Command
   { command    :: String
+  , env_vars   :: Maybe [(String, String)]
+  , env_clean  :: [String]
   , onSuccess  :: String -> String -> String
   , onFail     :: String -> String -> String
   , onStdFail  :: String -> String -> String -> String
@@ -60,7 +65,7 @@ defaultStdFail :: String -> String -> String -> String
 defaultStdFail c _ se = "Command:\n" ++ c ++ "\nError:\n" ++ se
 
 logData :: Command
-logData = Command "" defaultSuccess defaultFail defaultStdFail True
+logData = Command "" Nothing [] defaultSuccess defaultFail defaultStdFail True
 
 doNotLogData :: Command
 doNotLogData = logData { shouldLog = False }
@@ -72,10 +77,19 @@ executeCommand notifier filepath f = do
     then pure $ CommandResult "" (Just $ "Invalid filepath: " ++ filepath) Nothing
     else do
       let rawCmd = command f
-          processSpec = (shell rawCmd)
+      baseEnv <- getEnvironment
+      let procEnv =
+            case env_vars f of
+              Nothing    -> Nothing
+              Just extra -> do 
+                let cleanedEnv = filter (\(k,_) -> k `notElem` env_clean f) baseEnv
+                Just (cleanedEnv ++ extra)
+
+      let processSpec = (shell rawCmd)
             { cwd = Just filepath
             , std_out = CreatePipe
             , std_err = CreatePipe
+            , env = procEnv
             }
 
       (_, Just hout, Just herr, phandle) <- createProcess processSpec
@@ -114,6 +128,21 @@ executeCommand notifier filepath f = do
                 emit notifier stdErrMsg
               pure $ CommandResult stdout_txt Nothing (Just stderr_txt)
 
+executeCommandTimedOut :: Int -> TBQueue String -> FilePath -> Command -> IO CommandResult
+executeCommandTimedOut seconds notifier filepath cmd = do
+  let micros = seconds * (10^6)
+  mres <- timeout micros (executeCommand notifier filepath cmd)
+  case mres of
+    Just res -> pure res
+    Nothing  -> do
+      let errMsg =
+            "Process timed out after "
+              ++ show micros ++ "μs "
+              ++ "for command: " ++ command cmd
+              ++ " in path: " ++ filepath
+      when (shouldLog cmd) $
+        emit notifier errMsg
+      pure $ CommandResult "" (Just errMsg) Nothing
 
 -- | Filesystem helpers
 -- Deletes directory if it exists (raises errors when it fails)

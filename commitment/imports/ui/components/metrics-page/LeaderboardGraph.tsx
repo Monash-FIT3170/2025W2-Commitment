@@ -64,7 +64,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
             {title}
             <div className="relative -mt-3 ml-2">
               <InfoButton
-                description={"Shows top 5 contributors based on a given metric"}
+                description="Shows top 5 contributors based on a given metric"
               />
             </div>
           </CardTitle>

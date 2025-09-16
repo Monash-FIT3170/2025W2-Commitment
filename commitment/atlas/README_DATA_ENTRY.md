@@ -22,7 +22,7 @@ docker compose up -d
 # Run the Meteor app (port 3000 by default). Do NOT run the standalone
 # Node/Express server on port 3000 at the same time.
 # If you specifically need the standalone server for tests, use a different port:
-# docker exec -it 3170-env bash -c "cd /projects/commitment/server && SERVER_PORT=3030 node server.js"
+# docker exec -it 3170-env bash -c "cd /projects/commitment/atlas && SERVER_PORT=3030 node server.js"
 ```
 
 ### 2. Test the Server
@@ -46,7 +46,7 @@ curl -X POST http://localhost:3000/api/users/login \
 
 ### 1. Environment Variables
 
-Create a `.env` file in the `commitment/server/` directory with your MongoDB Atlas connection string:
+Create a `.env` file in the `commitment/atlas/` directory with your MongoDB Atlas connection string:
 
 ```bash
 # MongoDB Atlas Connection
@@ -76,7 +76,7 @@ ATLAS_MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<dat
 
 ```bash
 # Update the .env file in the container (Node server on 3030 if used)
-docker exec -it 3170-env bash -c "cd /projects/commitment/server && echo 'ATLAS_MONGODB_URI=your_connection_string_here' > .env && echo 'SERVER_PORT=3030' >> .env"
+docker exec -it 3170-env bash -c "cd /projects/commitment/atlas && echo 'ATLAS_MONGODB_URI=your_connection_string_here' > .env && echo 'SERVER_PORT=3030' >> .env"
 ```
 
 ## 🧪 Testing Your Integration
@@ -276,10 +276,10 @@ The server creates these indexes for performance:
 docker logs 3170-env
 
 # Test MongoDB connection
-docker exec -it 3170-env bash -c "cd /projects/commitment/server && node -e \"import('mongodb').then(async ({ MongoClient }) => { const client = new MongoClient(process.env.ATLAS_MONGODB_URI); try { await client.connect(); console.log('Connected!'); await client.close(); } catch(e) { console.error('Error:', e); } })\""
+docker exec -it 3170-env bash -c "cd /projects/commitment/atlas && node -e \"import('mongodb').then(async ({ MongoClient }) => { const client = new MongoClient(process.env.ATLAS_MONGODB_URI); try { await client.connect(); console.log('Connected!'); await client.close(); } catch(e) { console.error('Error:', e); } })\""
 
 # Check environment variables
-docker exec -it 3170-env bash -c "cd /projects/commitment/server && cat .env"
+docker exec -it 3170-env bash -c "cd /projects/commitment/atlas && cat .env"
 ```
 
 ## 🔒 Security Notes

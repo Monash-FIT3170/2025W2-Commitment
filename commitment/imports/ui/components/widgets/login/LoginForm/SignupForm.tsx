@@ -4,11 +4,11 @@ import { z } from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
 import {Form, FormControl, FormField, FormItem} from "@ui/components/ui/form";
-import FormInputWithErrors from "../../../shared/FormInputWithErrors";
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
 import { Accounts } from "meteor/accounts-base";
+import FormInputWithErrors from "../../../shared/FormInputWithErrors";
 
 
 
@@ -70,7 +70,7 @@ const SignupForm: FC<SignupFormProps> = (props) => {
       (err?: Meteor.Error) => {
         if (err) {
           // Handle different types of login errors
-          let errorMessage = "Signup failed: " + err.reason;
+          let errorMessage = `Signup failed: ${  err.reason}`;
 
           if (err.reason === 'User not found') {
             errorMessage = "No account found with this email address.";

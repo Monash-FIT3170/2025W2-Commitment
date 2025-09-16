@@ -48,7 +48,7 @@ Meteor.methods({
       name,
       owner,
       description: description || '',
-      userID: this.userId, // Link to current user if logged in
+      ...(this.userId !== null ? { userID: this.userId } : {} ), // Link to current user if logged in
       createdAt: new Date(),
       updatedAt: new Date(),
       lastAnalyzed: new Date(),
@@ -72,7 +72,7 @@ Meteor.methods({
       {},
       {
         sort: { createdAt: -1 },
-        limit: limit
+        limit
       }
     ).fetchAsync();
   },

@@ -2,7 +2,11 @@ import {
   FilteredData,
   PieChartData,
   SerializableRepoData,
-} from "/imports/api/types";
+} from "../imports/api/types";
+
+import {
+  getLinesOfCodeFromCommit
+} from "./helper_functions"
 
 /**
  * PIECHART FUNCTIONS
@@ -38,12 +42,10 @@ export function pieChartLOC(data: FilteredData): PieChartData[] {
   const repoData = data.repositoryData;
   const counts: Record<string, number> = {};
 
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value
+    const user = commit.contributorName;
+    const locThisCommit = getLinesOfCodeFromCommit(commit)
 
     counts[user] = (counts[user] || 0) + locThisCommit;
   });
@@ -65,16 +67,14 @@ export function pieChartLOCPerCommit(data: FilteredData): PieChartData[] {
   const locCounts: Record<string, number> = {};
   const commitCounts: Record<string, number> = {};
 
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value
+    const user = commit.contributorName;
+    const locThisCommit = getLinesOfCodeFromCommit(commit)
 
     locCounts[user] = (locCounts[user] || 0) + locThisCommit;
     commitCounts[user] = (commitCounts[user] || 0) + 1;
-  });
+  })
 
   const pie: PieChartData[] = Object.keys(locCounts).map((user) => {
     const totalLOC = locCounts[user];

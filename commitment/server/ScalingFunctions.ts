@@ -1,24 +1,24 @@
-import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
+import { Meteor } from "meteor/meteor";
+
+import { ScalingConfig } from "../imports/ui/components/scaling/ScalingConfigForm";
 import {
   UserScalingSummary,
   AllMetricsData,
   SerializableRepoData,
   ContributorValueWithAliases,
-} from "/imports/api/types";
-import { applyAliasMapping, applyAliasMappingIfNeeded, createAliasMapping, getUserAliasConfig } from "./alias_mapping";
+} from "../imports/api/types";
+import {
+  applyAliasMapping,
+  applyAliasMappingIfNeeded,
+  createAliasMapping,
+  getUserAliasConfig,
+} from "./alias_mapping";
 
 // All the Metrics being considered
-const DEFAULT_METRICS = [
-  "Total No. Commits",
-  "LOC",
-  "LOC Per Commit",
-  "Commits Per Day",
-];
+const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
 
 // The order these functions work in are as such:
 // getScaledResults() calls scaleUsers() which will buildUsers() and normaliseMetric() to get name, emails, and associated scales
-
-
 
 /**
  * this method takes in raw metric data and applies an alpha value to it. In essence, it scales an array of numbers to a bounded 
@@ -29,9 +29,7 @@ const DEFAULT_METRICS = [
  * @returns the normalised set of values
  */
 function normaliseMetric(values: Array<number | null>, alpha = 0.2): number[] {
-  const present = values.filter(
-    (v): v is number => v !== null && Number.isFinite(v)
-  );
+  const present = values.filter((v): v is number => v !== null && Number.isFinite(v));
   if (!present.length) return values.map(() => 0.5); // a fallback to 0.5 if for some reason the metric cannot be found
 
   const min = Math.min(...present);
@@ -39,12 +37,9 @@ function normaliseMetric(values: Array<number | null>, alpha = 0.2): number[] {
   const range = max !== min ? max - min : 1;
 
   return values.map((v) =>
-    v !== null && Number.isFinite(v)
-      ? alpha + ((v - min) / range) * (1 - 2 * alpha)
-      : alpha
+    v !== null && Number.isFinite(v) ? alpha + ((v - min) / range) * (1 - 2 * alpha) : alpha
   );
 }
-
 
 /**
  * Builds an array of user data objects containing selected metric values.
@@ -66,7 +61,7 @@ function buildUsers(
   return Object.entries(allMetrics).map(([name, metrics]) => {
     const values = selectedMetrics.map((metricName) => {
       const val = metrics[metricName as keyof typeof metrics];
-      return Number.isFinite(val as number) ? (val as number) : null;
+      return Number.isFinite(val) ? (val) : null;
     });
 
     return { name, values };
@@ -90,7 +85,6 @@ function percentileRank(values: number[], value: number): number {
   if (index === -1) return 0.5; // neutral if missing
   return index / (sorted.length - 1 || 1); // scale to [0,1]
 }
-
 
 function smallGroupPercentileRank(values: number[], value: number): number {
   // Apply small-group smoothing logic from smallGroupPercentile
@@ -122,41 +116,41 @@ function smallGroupPercentileRank(values: number[], value: number): number {
 async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl });
 
-  const selectedMetrics = config.metrics?.length
-    ? config.metrics
-    : DEFAULT_METRICS;
+  const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
 
-  let method = config.method ?? "Percentiles";
+  const method = config.method ?? "Percentiles";
 
   const users = buildUsers(allMetrics, selectedMetrics);
   if (!users.length) return [];
 
   let metricsValues: number[][];
 
-if (users.length <= 3) {
-  console.warn("Small group detected (<=3 users). Using raw values for percentile ranking.");
-  metricsValues = selectedMetrics.map((_, i) => {
-  const colValues = users
-    .map(u => u.values[i])
-    .filter((v): v is number => v !== null && Number.isFinite(v));
-  
-  return users.map(u => {
-    const v = u.values[i];
-    if (v === null || !Number.isFinite(v)) return 0.5;
-    return smallGroupPercentileRank(colValues, v); // map to 0-1 scale
-  });
-});
+  // const m = users.length <= 3 ? a : b
 
-} else {
-  metricsValues = selectedMetrics.map((_, i) =>
-    normaliseMetric(users.map((u) => u.values[i]))
-  );
-}
+  if (users.length <= 3) {
+    console.warn("Small group detected (<=3 users). Using raw values for percentile ranking.");
+    metricsValues = selectedMetrics.map((_, i) => {
+      const colValues = users
+        .map((u) => u.values[i])
+        .filter((v): v is number => v !== null && Number.isFinite(v));
 
+      return users.map((u) => {
+        const v = u.values[i];
+        if (v === null || !Number.isFinite(v)) return 0.5;
+        return smallGroupPercentileRank(colValues, v); // map to 0-1 scale
+      });
+    });
+  } else {
+    metricsValues = selectedMetrics.map((_, i) => normaliseMetric(users.map((u) => u.values[i])));
+  }
 
   return users.map((user, idx) => {
     const scales = metricsValues.map((col) => col[idx]);
     let score: number;
+
+    // const score = switch (a) {
+    //  case b -> return x
+    // }
 
     switch (method) {
       case "Percentiles": {
@@ -175,27 +169,20 @@ if (users.length <= 3) {
           });
         });
 
-        score =
-          percentileScores.reduce((sum, col) => sum + col[idx], 0) /
-          selectedMetrics.length;
+        score = percentileScores.reduce((sum, col) => sum + col[idx], 0) / selectedMetrics.length;
         break;
       }
 
       case "Mean +/- Std":
         const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
-        const std = Math.sqrt(
-          scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length
-        );
+        const std = Math.sqrt(scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length);
         score = mean + std;
         break;
 
       case "Quartiles":
         const sorted = [...scales].sort((a, b) => a - b);
         const mid = Math.floor(sorted.length / 2);
-        score =
-          sorted.length % 2 === 0
-            ? (sorted[mid - 1] + sorted[mid]) / 2
-            : sorted[mid];
+        score = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
         break;
 
       default: // Default (simple mean)
@@ -206,7 +193,6 @@ if (users.length <= 3) {
     return { name: user.name, score: Math.round(score * 100) / 100 };
   });
 }
-
 
 /**
  * Generates a detailed scaled results summary for each contributor in a repository.
@@ -226,38 +212,42 @@ if (users.length <= 3) {
  *   - scale: the computed scaled score
  */
 
-
 export async function getScaledResults(
   repoData: SerializableRepoData,
   config: ScalingConfig,
   repoUrl: string,
   userId: string
 ): Promise<UserScalingSummary[]> {
-
-  const aliasConfig = await Meteor.callAsync("aliasConfigs.getAllForOwner", userId).catch(() => null);
+  const aliasConfig = await Meteor.callAsync("aliasConfigs.getAllForOwner", userId).catch(
+    () => null
+  );
+  // const aliasConfig = await meteorCallAsync<AliasConfig>("aliasConfigs.getAllForOwner")(userId)
 
   const mappedData =
-  aliasConfig && aliasConfig.length
-    ? {
-        ...applyAliasMapping(repoData, createAliasMapping(aliasConfig[0].aliases)),
-        contributors: applyAliasMapping(repoData, createAliasMapping(aliasConfig[0].aliases)).contributors.map(c => ({
-          ...c,
-          value: {
-            ...c.value,
-            aliases: [], 
-          } as ContributorValueWithAliases
-        }))
-      }
-    : {
-        ...repoData,
-        contributors: repoData.contributors.map(c => ({
-          ...c,
-          value: {
-            ...c.value,
-            aliases: [],
-          } as ContributorValueWithAliases
-        }))
-      };
+    aliasConfig && aliasConfig.length
+      ? {
+          ...applyAliasMapping(repoData, createAliasMapping(aliasConfig[0].aliases)),
+          contributors: applyAliasMapping(
+            repoData,
+            createAliasMapping(aliasConfig[0].aliases)
+          ).contributors.map((c) => ({
+            ...c,
+            value: {
+              ...c.value,
+              aliases: [],
+            } as ContributorValueWithAliases,
+          })),
+        }
+      : {
+          ...repoData,
+          contributors: repoData.contributors.map((c) => ({
+            ...c,
+            value: {
+              ...c.value,
+              aliases: [],
+            } as ContributorValueWithAliases,
+          })),
+        };
 
   const updatedContributors = await Promise.all(
     mappedData.contributors.map(async (contributor) => {
@@ -270,12 +260,12 @@ export async function getScaledResults(
 
       // Combine all unique emails to avoid duplicates
       const allEmails = [...new Set([...value.emails, ...(extraAliases.emails || [])])];
-      
+
       const aliases = [
         ...allEmails.map((email) => ({ username: key, email })),
         ...(extraAliases.gitUsernames || [])
-          .filter((u:string) => u !== key)
-          .map((username:string) => ({ username, email: null })),
+          .filter((u: string) => u !== key)
+          .map((username: string) => ({ username, email: null })),
       ];
 
       const valWithAliases: ContributorValueWithAliases = {
@@ -297,27 +287,25 @@ export async function getScaledResults(
   };
 
   const validUserNames = new Set(
-    mappedDataWithAliases.contributors
-      .filter((c) => c.value.emails.length > 0)
-      .map((c) => c.key)
+    mappedDataWithAliases.contributors.filter((c) => c.value.emails.length > 0).map((c) => c.key)
   );
 
   const scaledUsers = await scaleUsers(repoUrl, config);
   const scaledValidUsers = scaledUsers.filter(({ name }) => validUserNames.has(name));
 
-  const finalResults: UserScalingSummary[] = mappedDataWithAliases.contributors.map(c => {
-  const contributorValue = c.value as ContributorValueWithAliases;
+  const finalResults: UserScalingSummary[] = mappedDataWithAliases.contributors.map((c) => {
+    const contributorValue = c.value as ContributorValueWithAliases;
 
-  // Use only the canonical name for scale lookup
-  const scaledUser = scaledUsers.find(u => u.name === c.key);
+    // Use only the canonical name for scale lookup
+    const scaledUser = scaledUsers.find((u) => u.name === c.key);
 
-  return {
-    name: c.key,
-    aliases: contributorValue.aliases,
-    finalGrade: null,
-    scale: scaledUser ? scaledUser.score : 0,
-  };
-});
+    return {
+      name: c.key,
+      aliases: contributorValue.aliases,
+      finalGrade: null,
+      scale: scaledUser ? scaledUser.score : 0,
+    };
+  });
 
   return finalResults;
 }
