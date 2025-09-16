@@ -1,0 +1,31 @@
+services:
+  build-env:
+    build:
+      context: ./commitment
+      dockerfile: Dockerfile.MeteorRun
+    image: commitment-img
+    container_name: 3170-build
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./commitment:/projects/commitment
+    env_file:
+      - ./commitment/atlas/.env
+    tty: true
+    stdin_open: true
+    networks:
+      - app-network
+
+  haskell-api:
+    image: commitment3170/haskell-api-img
+    container_name: haskell-api
+    volumes:
+      - ./commitment:/projects/api
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

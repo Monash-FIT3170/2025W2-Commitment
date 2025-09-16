@@ -1,6 +1,4 @@
 import React from "react";
-import InfoButton from "../ui/infoButton";
-
 import {
   CartesianGrid,
   Line,
@@ -9,6 +7,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import InfoButton from "../ui/infoButton";
+
 import { CardContent, CardHeader, CardTitle } from "../ui/card";
 
 import {
@@ -58,7 +58,6 @@ const tickMarginForXAxis = (dataLength: number) => {
   return 2;
 };
 
-
 // container with the contributor line graph.
 export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   data,
@@ -66,6 +65,27 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   xAxisLabel,
   yAxisLabel,
 }) => {
+  if (!data || data.length === 0) {
+    return (
+      <GraphCard className="w-full min-w-[486px] max-w-full h-[500px] flex flex-col basis-1/3">
+        <CardHeader className="pb-0">
+          <CardTitle className="flex text-xl mt-0 font-bold ">
+            {title}
+            <div className="relative -mt-3 ml-2">
+              <InfoButton
+                description="Shows contributor performance over time."
+              />
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grow flex flex-col items-center justify-center pt-2">
+          <div className="text-gray-500 text-center py-8">
+            No contribution data available.
+          </div>
+        </CardContent>
+      </GraphCard>
+    );
+  }
   // gets the contributors from the data, assuming data is formatted: {date="2023-01-01", contributor1: 1, contributor2: 2}
   const contributors = Object.keys(data[0] || {}).filter(
     (key) => key !== "date"
@@ -89,10 +109,10 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
   // card with the line graph
   return (
     // <Card  className="flex flex-col w-[475px] h-[400px] bg-[#f0f0e8] border-0 rounded-xl" style={{ backgroundColor: graphBackgroundColour }}>
-    <GraphCard className="w-full max-w-[800px] h-[500px] min-w-[486px] flex flex-col basis-1/3">
-      {/* Title*/}
+    <GraphCard className="w-full min-w-[486px] max-w-full  xl:h-[500px] flex flex-col basis-1/3">
+      {/* Title */}
       <CardHeader className="pb-0">
-        <CardTitle className="flex text-lg mt-0 font-bold ">
+        <CardTitle className="flex text-xl mt-0 font-bold ">
           {title}
           <div className="relative -mt-3 ml-2">
             <InfoButton description="Shows contributor performance over time." />
@@ -101,52 +121,53 @@ export const ContributorLineGraph: React.FC<ContributorsLineChart> = ({
       </CardHeader>
       {/* Graph */}
       {/* <CardContent style={{ height: 300, display: "block" }}>            */}
-      <CardContent className="grow flex flex-col items-center justify-center pt-2">
-        <ChartContainer config={chartConfig} className="grow w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{ top: 12, right: 12, bottom: 20, left: 12 }}
-            >
-              <CartesianGrid vertical={true} strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tickLine={true}
-                axisLine={true}
-                tickMargin={tickMarginForXAxis(data.length)}
-                label={{
-                  value: xAxisLabel,
-                  position: "insideBottom",
-                  offset: -5,
-                }}
-                tick={{ fontSize: 11 }}
+      <CardContent className="grow min-w-0 pt-2">
+        <ChartContainer
+          config={chartConfig}
+          className="w-full h-full max-h-[380px] min-w-0" // you can also set height/aspect here if you want
+        >
+          <LineChart
+            data={data}
+            margin={{ top: 12, right: 12, bottom: 20, left: 12 }}
+          >
+            <CartesianGrid vertical strokeDasharray="3 3" />
+            <XAxis
+              dataKey="date"
+              tickLine
+              axisLine
+              tickMargin={tickMarginForXAxis(data.length)}
+              label={{
+                value: xAxisLabel,
+                position: "insideBottom",
+                offset: -5,
+              }}
+              tick={{ fontSize: 11 }}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine
+              tickMargin={2}
+              label={{
+                value: yAxisLabel,
+                angle: -90,
+                position: "center",
+                dy: 0,
+                dx: -20,
+                style: { textAnchor: "middle" },
+              }}
+            />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+            {contributors.map((contributor) => (
+              <Line
+                key={contributor}
+                dataKey={contributor}
+                type="monotone"
+                stroke={chartConfig[contributor].color}
+                strokeWidth={2}
+                dot={false}
               />
-              <YAxis
-                tickLine={false}
-                axisLine={true}
-                tickMargin={2}
-                label={{
-                  value: yAxisLabel,
-                  angle: -90,
-                  position: "center",
-                  dy: 0,
-                  dx: -20,
-                  style: { textAnchor: "middle" },
-                }}
-              />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-              {contributors.map((contributor) => (
-                <Line
-                  key={contributor}
-                  dataKey={contributor}
-                  type="monotone"
-                  stroke={chartConfig[contributor].color}
-                  strokeWidth={2}
-                  dot={false}
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+            ))}
+          </LineChart>
         </ChartContainer>
       </CardContent>
     </GraphCard>

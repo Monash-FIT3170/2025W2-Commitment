@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-
+import React, { useState, useEffect, useCallback } from "react";
+import { Meteor } from "meteor/meteor";
 import {
   Form,
   FormField,
@@ -7,67 +7,80 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from '@ui/components/ui/form';
-import { UploadIcon } from 'lucide-react';
-import { Checkbox } from '@ui/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@ui/components/ui/radio-group';
-import { Button } from '@ui/components/ui/button';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from '../ui/dropzone';
+} from "@ui/components/ui/form";
+import { UploadIcon } from "lucide-react";
+import { Checkbox } from "@ui/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@ui/components/ui/radio-group";
+import { Button } from "@ui/components/ui/button";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  RepositoryData,
+  FilteredData,
+  UserScalingSummary,
+  SerialisableMapObject,
+} from "/imports/api/types";
+import { useLocation } from "react-router-dom";
+import { config } from "process";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
 
 const scalingConfigSchema = z.object({
-  metrics: z.array(z.string()).min(1, 'Select at least one metric'),
-  method: z.string().nonempty('Select a method'),
+  metrics: z.array(z.string()).min(1, "Select at least one metric"),
+  method: z.string().nonempty("Select a method"),
   customScript: z.any().optional(),
 });
 
-type ScalingConfig = z.infer<typeof scalingConfigSchema>;
+export type ScalingConfig = z.infer<typeof scalingConfigSchema>;
 
-function ScalingConfigForm({
-  onSubmit,
-}: {
-  onSubmit: (config: ScalingConfig) => void;
-}) {
+interface ScalingConfigFormProps {
+  onSubmit: (
+    config: ScalingConfig,
+    scaledResults: UserScalingSummary[]
+  ) => void;
+}
+
+function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
+  const location = useLocation();
+  const repoUrl: string = location.state?.repoUrl ?? null;
+
   const [script, setScript] = useState<File[] | undefined>();
 
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
       metrics: [],
-      method: 'Percentiles',
+      method: "Percentiles",
     },
   });
 
-  // Handle drop of files in the dropzone
-  const handleDrop = (files: File[]) => {
-    console.log(files);
-    setScript(files);
-  };
+  const handleDrop = (files: File[]) => setScript(files);
+  const handleSubmit = async (data: ScalingConfig) => {
+    try {
+      const result = await Meteor.callAsync("getScalingResults", data, repoUrl);
 
-  const handleSubmit = (data: ScalingConfig) => {
-    onSubmit(data);
+      onSubmit(data, result); // this is where all the scaling starts from
+    } catch (err) {
+      console.error("Error:", err);
+    }
   };
 
   const metricOptions = [
-    'Total No. Commits',
-    'Use AI to filter out commits',
-    'LOC',
-    'LOC per commit',
-    'Commits per day',
+    "Total No. Commits",
+    // "Use AI to filter out commits",
+    "LOC",
+    "LOC Per Commit",
+    "Commits Per Day",
   ];
-
-  const methodOptions = ['Percentiles', 'Mean +/- Std', 'Quartiles'];
+  const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
 
   return (
-    <div className="max-w-full">
+    <div className="w-full">
       <Form {...form}>
         <div className="text-2xl font-bold mb-4 text-center">
           Generate Scaling
         </div>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-
           {/* METRICS CHECKBOXES */}
           <FormField
             control={form.control}
@@ -75,8 +88,7 @@ function ScalingConfigForm({
             render={() => (
               <FormItem>
                 <FormLabel className="font-bold justify-center">
-                  Select scaling metrics
-                  <span className="text-red-500">*</span>
+                  Select scaling metrics<span className="text-red-500">*</span>
                 </FormLabel>
                 <div className="flex flex-col gap-2">
                   {metricOptions.map((metric) => (
@@ -85,20 +97,17 @@ function ScalingConfigForm({
                       control={form.control}
                       name="metrics"
                       render={({ field }) => (
-                        <FormItem
-                          key={metric}
-                          className="flex items-center space-x-2"
-                        >
+                        <FormItem className="flex items-center space-x-2">
                           <FormControl>
                             <Checkbox
                               checked={field.value?.includes(metric)}
                               onCheckedChange={(checked) => {
                                 const value = field.value || [];
-                                return checked
-                                  ? field.onChange([...value, metric])
-                                  : field.onChange(
-                                    value.filter((v) => v !== metric),
-                                  );
+                                field.onChange(
+                                  checked
+                                    ? [...value, metric]
+                                    : value.filter((v) => v !== metric)
+                                );
                               }}
                             />
                           </FormControl>
@@ -122,10 +131,8 @@ function ScalingConfigForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-bold justify-center">
-                  Select a scaling method
-                  <span className="text-red-500">*</span>
+                  Select a scaling method<span className="text-red-500">*</span>
                 </FormLabel>
-                {' '}
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -166,7 +173,7 @@ function ScalingConfigForm({
                     }}
                     onError={console.error}
                     src={script}
-                    accept={{ '.py': [] }}
+                    accept={{ ".py": [] }}
                     maxFiles={1}
                     className="border-2 border-dashed border-muted-foreground rounded-md transition-colors hover:border-primary focus:border-primary"
                   >
@@ -184,9 +191,7 @@ function ScalingConfigForm({
                             Drag and drop or click to select
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            Accepted:
-                            {' '}
-                            <span className="font-mono">.py</span>
+                            Accepted: <span className="font-mono">.py</span>
                           </p>
                         </div>
                       </div>
@@ -199,7 +204,6 @@ function ScalingConfigForm({
             )}
           />
 
-          {/* NEXT BUTTON */}
           <div className="flex justify-center">
             <Button
               type="submit"

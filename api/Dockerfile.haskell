@@ -1,0 +1,39 @@
+# -------- Build Stage --------
+FROM haskell:9.8.1 AS builder
+
+WORKDIR /projects/commitment/api
+
+# Copy Stack configuration & Cabal files first for caching
+COPY stack.yaml stack.yaml.lock ./
+COPY *.cabal ./
+
+# Install GHC and build dependencies (cached if config files haven't changed)
+RUN stack setup --install-ghc
+RUN stack build --only-dependencies
+
+# Copy the rest of the source code
+COPY . .
+
+# Build the binary
+RUN stack build
+RUN cp $(stack path --local-install-root)/bin/commitment-api /commitment-api
+
+# -------- Runtime Stage --------
+FROM debian:bookworm-slim
+
+# Install runtime dependencies + git for shell commands
+RUN apt-get update && \
+    apt-get install -y libgmp-dev git && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m appuser
+USER appuser
+
+# Copy binary from builder
+COPY --from=builder /commitment-api /usr/local/bin/commitment-api
+
+WORKDIR /projects/commitment/api
+EXPOSE 8081
+
+CMD ["commitment-api"]

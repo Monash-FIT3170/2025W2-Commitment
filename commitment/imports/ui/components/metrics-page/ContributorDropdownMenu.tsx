@@ -13,34 +13,36 @@ import { ScrollArea } from "@ui/components/ui/scroll-area";
 
 interface DropdownMenuCheckboxesProps {
   contributors: string[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
 }
 
 export function ContributorDropdownMenu({
   contributors,
-}: DropdownMenuCheckboxesProps) {
-  const [selectedContributors, setContributors] =
-    React.useState<string[]>(contributors);
-
+  selected,
+  onChange,
+}: DropdownMenuCheckboxesProps): React.JSX.Element {
   const allSelected =
-    selectedContributors.length === contributors.length &&
-    contributors.length > 0;
+    selected.length === contributors.length && contributors.length > 0;
 
   const maxDisplayCount = 5;
 
   const buttonText = () => {
-    if (allSelected) {
-      return "All Contributors";
-    }
-    if (selectedContributors.length === 0) {
-      return "Select Contributors";
-    }
-    if (selectedContributors.length > maxDisplayCount) {
-      const displayed = selectedContributors
-        .slice(0, maxDisplayCount)
-        .join(", ");
+    if (allSelected) return "All Contributors";
+    if (selected.length === 0) return "Select Contributors";
+    if (selected.length > maxDisplayCount) {
+      const displayed = selected.slice(0, maxDisplayCount).join(", ");
       return `${displayed}, ...`;
     }
-    return selectedContributors.join(", ");
+    return selected.join(", ");
+  };
+
+  const handleToggleAll = () => {
+    if (allSelected) {
+      onChange([]);
+    } else {
+      onChange([...contributors]);
+    }
   };
 
   return (
@@ -48,31 +50,42 @@ export function ContributorDropdownMenu({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-auto justify-start focus:outline-hidden focus:ring-0 border-2"
+          className="w-[300px] justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40"
         >
-          {buttonText()}
+          <span className="block w-full truncate text-left">
+            {buttonText()}
+          </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[280px] focus:outline-hidden focus:ring-0">
+      <DropdownMenuContent className="w-[280px] focus:outline-none focus:ring-0 border-2 border-git-stroke-primary/40">
         <DropdownMenuLabel>Select Contributors</DropdownMenuLabel>
         <DropdownMenuSeparator />
+
+        <DropdownMenuCheckboxItem
+          checked={allSelected}
+          onSelect={(e) => e.preventDefault()}
+          onCheckedChange={handleToggleAll}
+        >
+          {allSelected ? "Unselect All" : "Select All"}
+        </DropdownMenuCheckboxItem>
+
+        <DropdownMenuSeparator />
+
         <ScrollArea className="h-48">
-          {contributors.map((contributors) => (
+          {contributors.map((contributor) => (
             <DropdownMenuCheckboxItem
               onSelect={(event) => event.preventDefault()}
-              key={contributors}
-              checked={selectedContributors.includes(contributors)}
+              key={contributor}
+              checked={selected.includes(contributor)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setContributors((prev) => [...prev, contributors]);
+                  onChange([...selected, contributor]);
                 } else {
-                  setContributors((prev) =>
-                    prev.filter((c) => c !== contributors)
-                  );
+                  onChange(selected.filter((c) => c !== contributor));
                 }
               }}
             >
-              {contributors}
+              {contributor}
             </DropdownMenuCheckboxItem>
           ))}
         </ScrollArea>

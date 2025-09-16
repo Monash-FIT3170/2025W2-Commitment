@@ -1,48 +1,39 @@
-import React from 'react';
-import {
-  PieChart, Pie, Cell, Tooltip,
-} from 'recharts';
-
-import { TrendingUp } from 'lucide-react';
-
+import React from "react";
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@ui/components/ui/card';
-import { stat } from 'fs';
-import InfoButton from '../ui/infoButton';
-import GraphCard from './GraphCard';
+} from "@ui/components/ui/card";
+import InfoButton from "../ui/infoButton";
+import GraphCard from "./GraphCard";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 
 export interface ChartEntry {
   user: string;
   contributions: number;
-  fill: string;
 }
 
 interface Props {
   data: ChartEntry[];
+  title: string;
 }
 
-// CURRENT COLOUR PALLETTE - ASK PMs TO help
-
-const graphBackgroundColour = '#E8E8DD';
-
 const staticColorPalette = [
-  '#4E79A7',
-  '#F28E2B',
-  '#59A14F',
-  '#E15759',
-  '#76B7B2',
-  '#EDC948',
-  '#B07AA1',
-  '#FF9DA7',
-  '#9C755F',
-  '#BAB0AC',
-  '#D37295',
+  "#4E79A7",
+  "#F28E2B",
+  "#59A14F",
+  "#E15759",
+  "#76B7B2",
+  "#EDC948",
+  "#B07AA1",
+  "#FF9DA7",
+  "#9C755F",
+  "#BAB0AC",
+  "#D37295",
 ];
 
 const extendColorPalette = (index: number): string => {
@@ -50,117 +41,108 @@ const extendColorPalette = (index: number): string => {
   return `hsl(${hue}, 70%, 55%)`;
 };
 
-const pieChartDescription = "Commit distribution by contributor — each slice shows a contributor's share of total commits.";
-
-// For pop up
-function CustomTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: any[];
-}) {
-  if (!active || !payload || !payload.length) return null;
-
-  const { user, contributions, fill } = payload[0].payload;
-
-  return (
-    <div className="rounded-md border-2 border-black bg-white px-3 py-2 text-sm shadow-md text-muted-foreground ">
-      <div className="flex items-center gap-2 font-semibold">
-        <span
-          className="inline-block h-3 w-3 rounded-sm"
-          style={{ backgroundColor: fill }}
-        />
-        {user}
-      </div>
-      <div>
-        {contributions}
-        {' '}
-        contributions
-      </div>
-    </div>
-  );
-}
+const pieChartDescription =
+  "Commit distribution by contributor — each slice shows a contributor's share of total commits.";
 
 // Main Pie Chart
-export function ContributionPieChart({ data }: Props) {
+export function ContributionPieChart({ data, title }: Props) {
   const coloredData = data.map((entry, index) => ({
     ...entry,
-    fill:
-      index < staticColorPalette.length
-        ? staticColorPalette[index]
-        : extendColorPalette(index - staticColorPalette.length),
+    title,
+    fill: staticColorPalette[index] ?? extendColorPalette(index),
   }));
+  if (!data || data.length === 0) {
+    return (
+      <GraphCard className="w-full max-w-full h-[500px] flex flex-col basis-1/3">
+        <CardHeader className="pb-0">
+          <CardTitle className="flex text-xl mt-0 font-bold ">
+            {title}
+            <div className="relative -mt-3 ml-2">
+              <InfoButton description={pieChartDescription} />
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grow flex flex-col items-center justify-center pt-2">
+          <div className="text-gray-500 text-center py-8">
+            No contribution data available.
+          </div>
+        </CardContent>
+      </GraphCard>
+    );
+  }
+
   return (
-    <GraphCard className="w-full max-w-[800px] flex flex-col basis-1/3">
+    <GraphCard className="w-full max-w-full h-[500px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
         <div className="flex items-center space-x-2 w-4/5">
-          <h2 className="text-lg font-bold text-gray-800">Pie Chart</h2>
-
-          {/* Special margin for the infoButton to get it centred */}
+          <h2 className="text-xl font-bold"> {title}</h2>
           <div className="relative -mt-2">
             <InfoButton description={pieChartDescription} />
           </div>
         </div>
-
-        {/* <CardDescription>Last 6 months</CardDescription> */}
       </CardHeader>
 
       {coloredData.length === 0 ? (
-        <CardContent className="p-4 text-gray-500">Please select an End Date in the Date Range</CardContent>
+        <CardContent className="p-4 text-gray-500">
+          Please select an End Date in the Date Range
+        </CardContent>
       ) : (
-        <>
-          <CardContent className="flex flex-col items-center gap-4">
-            {/* Pie */}
-            <PieChart width={300} height={300}>
+        <CardContent className="flex flex-col items-center gap-4">
+          {/* Legend */}
+          <div className="w-full overflow-hidden">
+            <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs max-w-full">
+              {coloredData.map((entry) => (
+                <li key={entry.user} className="flex items-center gap-1">
+                  <span
+                    className="inline-block h-3 w-3 rounded-sm"
+                    style={{ backgroundColor: entry.fill }}
+                  />
+                  <span className="whitespace-nowrap">{entry.user}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Pie Chart */}
+          <ChartContainer
+            config={{
+              contributions: {
+                label: "Contributions",
+              },
+              user: {
+                label: "User",
+              },
+            }}
+            className="min-h-[300px] w-full max-w-[300px]"
+          >
+            <PieChart>
               <Pie
                 data={coloredData}
                 dataKey="contributions"
                 nameKey="user"
                 cx="50%"
                 cy="50%"
-                outerRadius={110}
+                outerRadius={100}
+                innerRadius={0}
                 stroke="none"
+                strokeWidth={0}
                 isAnimationActive
                 animationDuration={800}
                 labelLine={false}
               >
-                {coloredData.map((entry, i) => (
-                  <Cell key={`cell-${i}`} fill={entry.fill} stroke="none" />
+                {coloredData.map((entry) => (
+                  <Cell
+                    key={entry.user}
+                    fill={entry.fill}
+                    stroke="none"
+                    strokeWidth={0}
+                  />
                 ))}
               </Pie>
-              <Tooltip
-                content={<CustomTooltip />}
-                wrapperStyle={{ outline: 'none' }}
-              />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             </PieChart>
-
-            {/* Legend */}
-            <div className="w-full flex justify-center">
-              <ul className="inline-flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
-                {data.map((entry, i) => (
-                  <li key={`legend-${i}`} className="flex items-center gap-1">
-                    <span
-                      className="inline-block h-3 w-3 rounded-sm"
-                      style={{ backgroundColor: entry.fill }}
-                    />
-                    <span className="truncate">{entry.user}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </CardContent>
-
-          <CardFooter className="flex flex-col gap-1 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2 font-medium leading-none">
-              Trending up by 5.2 % this month
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            </div>
-            <p className="leading-none">
-              Showing total contributions for the last 6 months
-            </p>
-          </CardFooter>
-        </>
+          </ChartContainer>
+        </CardContent>
       )}
     </GraphCard>
   );

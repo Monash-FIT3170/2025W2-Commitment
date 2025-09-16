@@ -1,298 +1,473 @@
 import React, { useMemo } from "react";
-import {
-  format,
-  parseISO,
-  differenceInCalendarDays,
-  addDays,
-  getDay,
-  getMonth,
-  getYear,
-} from "date-fns";
-import InfoButton from "../ui/infoButton";
+import Chart from "react-apexcharts";
 import GraphCard from "./GraphCard";
-import { CardHeader, CardTitle, CardContent } from "../ui/card";
+import { CardHeader, CardTitle } from "../ui/card";
+import InfoButton from "../ui/infoButton";
+import { HeatMapData } from "/imports/api/types";
+import { ModeToggle } from "./ModeToggle";
 
-type ContributionDataItem = {
+// Types
+interface HeatmapPoint<X extends string | number = string> {
+  x: X;
+  rawY: number;
+}
+interface HeatmapSeries<X extends string | number = string> {
   name: string;
-  date: string; // "yyyy-MM-dd"
-  count: number;
-};
-
-interface HeatMapProps {
-  data: ContributionDataItem[];
-  startDate?: Date;
-  endDate?: Date;
-  maxUsersToShow?: number;
-  title?: string; //This changes depending on the heatmap name - if it needs to change at all
+  data: ReadonlyArray<HeatmapPoint<X>>;
+}
+interface NormalizedPoint<X extends string | number = string> {
+  x: X;
+  raw: number;
+  /** -1 means "none"/zero bucket; otherwise 0 < y <= 1 */
+  y: number;
+}
+interface NormalizedSeries<X extends string | number = string> {
+  name: string;
+  data: ReadonlyArray<NormalizedPoint<X>>;
+}
+interface Props {
+  data: HeatMapData[];
+  title?: string;
 }
 
-const heatMapDescription =
-  "Gain a visual insight on how contributors are performing within a certain period of time"; //FIX: Make a better heatmap description
+type Mode =  "week" | "month";
 
-// FIX: When the Product Managers define the colours in the system, use those instead of cardcoding
-const levels = [
-  "bg-orange-200",
-  "bg-orange-300",
-  "bg-orange-500",
-  "bg-orange-600",
-  "bg-orange-800",
-];
+// ------- helpers -------
+function startOfDay(d: Date) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
 
-const graphBackgroundColour = "#E8E8DD";
+function startOfMonth(d: Date) {
+  const x = new Date(d.getFullYear(), d.getMonth(), 1);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
 
-// Applying normalisation to the data -> the gradient is represented by the value
-const getLevelClassNormalized = (ratio: number) => {
-  if (ratio === 0) return levels[0];
-  if (ratio < 0.25) return levels[1];
-  if (ratio < 0.5) return levels[2];
-  if (ratio < 0.75) return levels[3];
-  return levels[4];
-};
+function alignToMonday(d: Date) {
+  const day = d.getDay(); // 0=Sun, 1=Mon
+  const diffToMonday = (day === 0 ? -6 : 1) - day;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diffToMonday);
+  return startOfDay(monday);
+}
 
-// Main heatmap function
-export default function UserContributionHeatMap({
-  data,
-  startDate,
-  endDate,
-  maxUsersToShow,
-  title,
-}: HeatMapProps & { title?: string }) {
-  //Mapping on many different properties - Days/ Weeks/ Months or Years
+function buildContinuousWeekCategories(data: HeatMapData[]): string[] {
+  if (data.length === 0) return [];
 
-  // In the case where no data is given
-  if (!data || data.length === 0) {
-    return (
-      <div
-        className="rounded border p-6 overflow-x-auto font-mono "
-        style={{
-          maxWidth: "fit-content",
-          backgroundColor: graphBackgroundColour,
-        }}
-      >
-        {title && ( // could make this into a component
-          <div className="flex items-center space-x-2 w-4/5 ">
-            <h2 className="text-lg font-bold text-gray-800">{title}</h2>
+  const dates = data.map((d) => startOfDay(new Date(d.date)));
+  const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
+  const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
 
-            <div className="relative -mt-2 ">
-              <InfoButton description={heatMapDescription} />
-            </div>
-          </div>
-        )}
+  const firstMonday = alignToMonday(minDate);
+  const lastMonday = alignToMonday(maxDate);
 
-        <div className="p-4 text-gray-500">
-          Please select an End Date in the Date Range
-        </div>
-      </div>
-    );
+  const categories: string[] = [];
+  for (
+    let cur = new Date(firstMonday);
+    cur <= lastMonday;
+    cur.setDate(cur.getDate() + 7)
+  ) {
+    // Reuse your existing label logic
+    categories.push(getWeekLabel(cur.toISOString()));
   }
+  return categories;
+}
 
-  const users = useMemo(
-    () => Array.from(new Set(data.map((d) => d.name))).slice(0, maxUsersToShow),
-    [data, maxUsersToShow]
-  );
+function getWeekLabel(dateStr: string) {
+  const date = new Date(dateStr);
 
-  const from = useMemo(() => {
-    if (startDate) return startDate;
-    return parseISO(
-      data.reduce((min, d) => (d.date < min ? d.date : min), data[0]?.date)
-    );
-  }, [data, startDate]);
+  // Align to Monday as start of week
+  const day = date.getDay(); // 0=Sun, 1=Mon
+  const diffToMonday = (day === 0 ? -6 : 1) - day;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + diffToMonday);
 
-  const to = useMemo(() => {
-    if (endDate) return endDate;
-    return parseISO(
-      data.reduce((max, d) => (d.date > max ? d.date : max), data[0]?.date)
-    );
-  }, [data, endDate]);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
 
-  const totalDays = differenceInCalendarDays(to, from) + 1;
-
-  type Mode = "dayOfWeek" | "weeks" | "months" | "years";
-  let mode: Mode;
-
-  if (totalDays <= 7) {
-    mode = "dayOfWeek";
-  } else if (totalDays <= 28) {
-    mode = "weeks";
-  } else if (getYear(to) > getYear(from)) {
-    mode = "years";
-  } else {
-    mode = "months";
-  }
-
-  const xLabels: string[] = [];
-  let bucketsCount = 0;
-
-  if (mode === "dayOfWeek") {
-    xLabels.push(...["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
-    bucketsCount = 7;
-  } else if (mode === "weeks") {
-    const numWeeks = Math.min(4, Math.ceil(totalDays / 7));
-    bucketsCount = numWeeks;
-    for (let i = 0; i < numWeeks; i++) {
-      const weekStart = addDays(from, i * 7);
-      const weekEnd = addDays(weekStart, 6);
-      xLabels.push(
-        `${format(weekStart, "MMM d")} - ${format(
-          weekEnd < to ? weekEnd : to,
-          "MMM d"
-        )}`
-      );
-    }
-  } else if (mode === "months") {
-    bucketsCount = 12;
-    xLabels.push(
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec"
-    );
-  } else {
-    const endYear = getYear(to);
-    bucketsCount = 10;
-    for (let i = 0; i < bucketsCount; i++) {
-      xLabels.unshift((endYear - i).toString());
-    }
-  }
-
-  const table: Record<string, number[]> = {};
-  users.forEach((user) => {
-    table[user] = Array(bucketsCount).fill(0);
+  // Example: "12–18 Oct"
+  const fmt = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
   });
 
-  const getBucketIndex = (dateStr: string): number => {
-    const date = parseISO(dateStr);
-    if (mode === "dayOfWeek") {
-      return getDay(date);
-    } else if (mode === "weeks") {
-      const diffDays = differenceInCalendarDays(date, from);
-      return Math.min(Math.floor(diffDays / 7), bucketsCount - 1);
-    } else if (mode === "months") {
-      return getMonth(date);
-    } else {
-      const year = getYear(date);
-      const endYear = getYear(to);
-      const idx = endYear - year;
-      return idx >= 0 && idx < bucketsCount ? bucketsCount - 1 - idx : -1;
-    }
+  return `${fmt.format(monday)} - ${fmt.format(sunday)}`;
+}
+
+function buildContinuousMonthCategories(data: HeatMapData[]): string[] {
+  if (data.length === 0) return [];
+
+  const dates = data.map((d) => new Date(d.date));
+  const minDate = startOfMonth(new Date(Math.min(...dates.map((d) => d.getTime()))));
+  const maxDate = startOfMonth(new Date(Math.max(...dates.map((d) => d.getTime()))));
+
+  const categories: string[] = [];
+  for (
+    let cur = new Date(minDate);
+    cur <= maxDate;
+    cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1)
+  ) {
+    categories.push(getMonthLabel(cur.toISOString())); // e.g. "Aug 2025"
+  }
+  return categories;
+}
+
+
+function getMonthLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  return new Intl.DateTimeFormat("en-GB", {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(d.getFullYear(), d.getMonth(), 1)); // e.g., "Aug 2025"
+}
+
+function processHeatMapData(data: HeatMapData[], mode: Mode) {
+  const users = Array.from(new Set(data.map((d) => d.name)));
+
+  // key -> firstDate for sorting (month 1st; week uses label's Monday)
+  const keyToFirstDay = new Map<string, Date>();
+  const makeKeyAndFirstDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    if ( mode === "week-fill") {
+      const monday = alignToMonday(d);
+      return { key: getWeekLabel(dateStr), first: monday };
+    } 
+      const first = startOfMonth(d);
+      return { key: getMonthLabel(dateStr), first };
+    
   };
 
-  data.forEach(({ name, date, count }) => {
-    if (!users.includes(name)) return;
-    const idx = getBucketIndex(date);
-    if (idx >= 0 && idx < bucketsCount) {
-      table[name][idx] += count;
-    }
+  for (const r of data) {
+    const { key, first } = makeKeyAndFirstDate(r.date);
+    if (!keyToFirstDay.has(key)) keyToFirstDay.set(key, first);
+  }
+
+  // ---- categories per mode ----
+  const categories =
+    mode === "week"
+      ? buildContinuousWeekCategories(data) // padded, continuous weeks
+      : buildContinuousMonthCategories(data);
+
+  // aggregate counts per (user, category)
+  const series: HeatmapSeries<string>[] = users.map((user) => {
+    const keyToCount: Record<string, number> = {};
+    data
+      .filter((d) => d.name === user)
+      .forEach((d) => {
+        const key =
+          mode === "month" ? getMonthLabel(d.date) : getWeekLabel(d.date);
+        keyToCount[key] = (keyToCount[key] ?? 0) + d.count;
+      });
+
+    // project onto chosen categories; missing weeks => 0 (pads in week-fill)
+    return {
+      name: user,
+      data: categories.map((k) => ({ x: k, rawY: keyToCount[k] ?? 0 })),
+    };
   });
 
-  const userMaxMap = useMemo(() => {
-    const map: Record<string, number> = {};
-    users.forEach((user) => {
-      map[user] = Math.max(...table[user]);
+  return { series, categories, users };
+}
+
+/** Normalizes each column by its max; zero raw -> y = -1 */
+export function normalizeSeriesData<X extends string | number = string>(
+  rawSeries: ReadonlyArray<HeatmapSeries<X>>
+): NormalizedSeries<X>[] {
+  if (rawSeries.length === 0) return [];
+
+  const pointsCount = Math.max(...rawSeries.map((s) => s.data.length));
+
+  const xLabels: (X | number)[] = Array.from(
+    { length: pointsCount },
+    (_, idx) =>
+      rawSeries.find((s) => s.data[idx] !== undefined)?.data[idx].x ?? idx
+  );
+
+  const colMax: number[] = Array.from({ length: pointsCount }, (_unused, idx) =>
+    rawSeries.reduce<number>((max, series) => {
+      const val = series.data[idx]?.rawY ?? 0;
+      return val > max ? val : max;
+    }, 0)
+  );
+
+  return rawSeries.map<NormalizedSeries<X>>((series) => ({
+    name: series.name,
+    data: Array.from({ length: pointsCount }, (_, idx) => {
+      const raw = series.data[idx]?.rawY ?? 0;
+      const maxAtIdx = colMax[idx] ?? 0;
+      const norm = maxAtIdx === 0 ? 0 : raw / maxAtIdx;
+      const y = norm === 0 ? -1 : norm;
+      return {
+        x: series.data[idx]?.x ?? xLabels[idx],
+        raw,
+        y,
+      };
+    }),
+  }));
+}
+
+/** Sum the raw values in each row (series). */
+function computeRowTotals<X extends string | number = string>(
+  rawSeries: ReadonlyArray<HeatmapSeries<X>>
+): number[] {
+  return rawSeries.map((s) =>
+    s.data.reduce<number>((acc, p) => acc + p.rawY, 0)
+  );
+}
+
+function getCssVarValue(varName: string) {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(varName)
+    .trim();
+}
+
+function getLevels() {
+  return [
+    { name: "none", color: getCssVarValue("--color-git-bg-primary") },
+    { name: "s1", color: getCssVarValue("--git-heat-100") },
+    { name: "s2", color: getCssVarValue("--git-heat-200") },
+    { name: "s3", color: getCssVarValue("--git-heat-300") },
+    { name: "s4", color: getCssVarValue("--git-heat-400") },
+    { name: "s5", color: getCssVarValue("--git-heat-500") },
+    { name: "s6", color: getCssVarValue("--git-heat-600") },
+    { name: "s7", color: getCssVarValue("--git-heat-700") },
+  ];
+}
+
+// ------- component -------
+export default function HeatMapGraph({
+  data,
+  title,
+}: Props): React.ReactElement {
+  const [mode, setMode] = React.useState<Mode>("week");
+  const { series, categories, users } = useMemo(
+    () => processHeatMapData(data, mode),
+    [data, mode]
+  );
+
+  // Compute totals and sort series by total descending
+  const sortedSeries = useMemo(() => {
+    const totals = computeRowTotals(series);
+    return [...series]
+      .map((s, idx) => ({ s, total: totals[idx] }))
+      .sort((a, b) => a.total - b.total)
+      .map(({ s }) => s);
+  }, [series]);
+
+  const chartSeries = useMemo(
+    () => normalizeSeriesData(sortedSeries),
+    [sortedSeries]
+  );
+
+  const rowHeight = 50;
+  const minHeight = 200;
+  const maxHeight = 800;
+  const dynamicHeight = Math.max(
+    minHeight,
+    Math.min(maxHeight, users.length * rowHeight)
+  );
+
+  // Listen for dark mode changes
+  const [themeKey, setThemeKey] = React.useState(0);
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setThemeKey((k) => k + 1); // force rerender when theme changes
     });
-    return map;
-  }, [table, users]);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
-  // Cell styling
+  const levels = React.useMemo(getLevels, [themeKey]);
 
-  const cellSize = 40;
-  const spacing = 8;
-  const labelWidth = 50;
-  const gridTemplateColumns = `${labelWidth}px repeat(${bucketsCount}, ${cellSize}px)`;
-  const gridTemplateRows = `repeat(${users.length}, ${cellSize}px) 1fr`;
+  const totals = useMemo(() => computeRowTotals(sortedSeries), [sortedSeries]);
+
+  const chartOptions = useMemo(
+    () => ({
+      chart: {
+        type: "heatmap" as const,
+        id: "heatmap-demo",
+        toolbar: { show: false },
+        parentHeightOffset: 0,
+        fontFamily:
+          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      },
+      grid: {
+        show: false,
+        padding: {
+          top: 0,
+          right: 0, // room for totals annotations
+          bottom: 0,
+          left: 28,
+        },
+      },
+      plotOptions: {
+        heatmap: {
+          enableShades: false,
+          shadeIntensity: 0,
+          radius: 0,
+          useFillColorAsStroke: false,
+          colorScale: {
+            ranges: [
+              { from: -1, to: 0, color: levels[0].color, name: "none" },
+              { from: 0, to: 0.1429, color: levels[1].color, name: "very low" },
+              { from: 0.1429, to: 0.2857, color: levels[2].color, name: "low" },
+              {
+                from: 0.2857,
+                to: 0.4286,
+                color: levels[3].color,
+                name: "mid-low",
+              },
+              {
+                from: 0.4286,
+                to: 0.5714,
+                color: levels[4].color,
+                name: "medium",
+              },
+              {
+                from: 0.5714,
+                to: 0.7143,
+                color: levels[5].color,
+                name: "mid-high",
+              },
+              {
+                from: 0.7143,
+                to: 0.8571,
+                color: levels[6].color,
+                name: "high",
+              },
+              {
+                from: 0.8571,
+                to: 1.0,
+                color: levels[7].color,
+                name: "extreme",
+              },
+            ],
+          },
+        },
+      },
+      states: {
+        hover: { filter: { type: "none" } },
+        active: { filter: { type: "none" } },
+      },
+      yaxis: {
+        labels: {
+          style: {
+            fontSize: "14px",
+            fontWeight: 500,
+            colors: getCssVarValue("--color-foreground"),
+          },
+        },
+      },
+      xaxis: {
+        type: "category" as const,
+        tickPlacement: "between",
+        labels: {
+          trim: false,
+          style: {
+            fontSize: "0.875rem",
+            fontWeight: "300",
+            colors: getCssVarValue("--color-foreground"),
+          },
+
+          formatter: (label: string) => {
+            if (typeof label !== "string") return ""; // handle missing label
+            // If label has a dash, only keep the part before it
+            const dashIndex = label.indexOf(" -");
+            return dashIndex !== -1 ? label.substring(0, dashIndex) : label;
+          },
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        width: 1,
+        colors: ["#666"],
+      },
+
+      tooltip: {
+        theme: document.documentElement.classList.contains("dark")
+          ? "dark"
+          : "light",
+        style: {
+          fontSize: "14px",
+          fontFamily: "inherit",
+          color: getCssVarValue("--color-foreground"), // 👈 custom text color
+        },
+        x: {
+          formatter: (label: string) => label,
+        },
+        y: {
+          formatter(
+            value: number,
+            {
+              seriesIndex,
+              dataPointIndex,
+              w,
+            }: {
+              seriesIndex: number;
+              dataPointIndex: number;
+              w: {
+                config: {
+                  series: Array<{
+                    data: Array<{
+                      raw?: number;
+                    }>;
+                  }>;
+                };
+              };
+            }
+          ) {
+            const rawY =
+              w.config.series[seriesIndex]?.data[dataPointIndex]?.raw;
+            const total = totals[seriesIndex];
+            return rawY !== undefined
+              ? `${rawY} (Total: ${total ?? 0})`
+              : String(value);
+          },
+        },
+      },
+
+      legend: {
+        show: true,
+        position: "bottom",
+        horizontalAlign: "right",
+        floating: false,
+        clusterGroupedSeries: false,
+        formatter: () => "",
+        markers: { size: 16, shape: "square", radius: 10, strokeWidth: 0 },
+        itemMargin: { horizontal: 2, vertical: 0 },
+      },
+    }),
+    [categories, users, mode, totals, levels]
+  );
 
   return (
-    //   The things actually in this component
-    <GraphCard className="w-full max-w-[800px] min-w-[486px] flex flex-col basis-1/3">
+    <GraphCard className="w-full p-0">
       <CardHeader className="pb-0">
-        <CardTitle className="flex text-lg mt-0 font-bold ">
-          {title}
-          <div className="relative -mt-3 ml-2">
-            <InfoButton description={heatMapDescription} />
+        <CardTitle className="flex justify-between text-xl mt-0 font-bold ">
+          <div className="flex ">
+            {title ?? "Contributions Heatmap"}
+            <div className="relative -mt-3 ml-2">
+              <InfoButton description="Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period" />
+            </div>
           </div>
+          <ModeToggle value={mode} onChange={(v: Mode) => setMode(v)} />
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="grow flex flex-col items-center justify-center pt-2">
-        {/* STYLING FOR HEATMAP OVERALL */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns,
-            gridTemplateRows,
-            gap: `${spacing}px ${spacing}px`,
-            boxSizing: "border-box",
-            padding: "0",
-            width: "fit-content",
-            maxWidth: "100%",
-          }}
-        >
-          {/*  Y AXIS LABELS */}
-          {users.map((user, idx) => (
-            <div
-              key={user}
-              style={{
-                gridColumn: 1,
-                gridRow: idx + 1,
-                height: cellSize,
-                lineHeight: `${cellSize}px`,
-                overflow: "hidden",
-              }}
-              className="text-sm text-gray-700 truncate font-semibold "
-              title={user}
-            >
-              {user}
-            </div>
-          ))}
-          {/* MAP USERS TO ROWS */}
-          {users.map((user, rowIdx) =>
-            table[user].map((count, colIdx) => {
-              const max = userMaxMap[user];
-              const ratio = max === 0 ? 0 : count / max;
-              return (
-                <div
-                  key={`${user}-${colIdx}`}
-                  className={`rounded-sm cursor-default  ${getLevelClassNormalized(
-                    ratio
-                  )}`}
-                  style={{
-                    gridColumn: colIdx + 2,
-                    gridRow: rowIdx + 1,
-                    width: cellSize,
-                    height: cellSize,
-                  }}
-                  title={`${user} · ${xLabels[colIdx]}: ${count} LOC (max: ${max})`}
-                />
-              );
-            })
-          )}
-          {/* X AXIS LABELS */}
-          {xLabels.map((label, idx) => (
-            <div
-              key={`x-label-${idx}`}
-              style={{
-                gridColumn: idx + 2,
-                gridRow: users.length + 1,
-                width: cellSize,
-                textAlign: "center",
-                fontWeight: 600,
-                fontSize: "0.875rem",
-                color: "#4B5563",
-              }}
-            >
-              {label}
-            </div>
-          ))}
-        </div>
-      </CardContent>
+      <Chart
+        options={chartOptions}
+        series={chartSeries}
+        type="heatmap"
+        width="100%"
+        height={dynamicHeight}
+      />
     </GraphCard>
   );
 }

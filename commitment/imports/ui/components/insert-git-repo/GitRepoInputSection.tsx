@@ -1,6 +1,5 @@
 import React, { useState, KeyboardEvent } from 'react';
-import { Button } from '../ui/button';
-import { cn } from "@ui/lib/utils";
+import { cn } from '@ui/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 // Define supported Git platforms

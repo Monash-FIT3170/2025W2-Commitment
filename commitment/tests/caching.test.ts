@@ -1,52 +1,79 @@
-import { expect } from "chai";
-import { Subject } from "rxjs";
-import { RepoCollection, getRepoData } from "../server/caching";
-import { RepositoryData } from "../server/commitment_api/types";
-import sinon from "sinon";
+import { Meteor } from 'meteor/meteor'
+import { expect } from 'chai'
 
-describe("caching.ts", function () {
-  const fakeRepo: RepositoryData = {
-    name: "test-repo",
-    branches: [],
-    allCommits: {},
-    contributors: {},
-  };
+import { cacheIntoDatabase, isInDatabase, tryFromDatabase } from "../server/caching"
+import { meteorCallAsync, suppressError } from "../imports/api/meteor_interface"
+import { RepositoryData } from '/imports/api/types'
+import { RepositoriesCollection } from '/imports/api/repositories'
 
-  beforeEach(async function () {
-    // Clear collection before each test
-    await RepoCollection.removeAsync({});
-    sinon.restore();
-  });
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-  it("can insert and fetch repo data", async function () {
-    await RepoCollection.insertAsync({ url: "http://test", data: fakeRepo });
+describe('Caching Tests', () => {
+  const testUrl = 'https://github.com/test/repo'
+  const testData = { 
+    name: 'test', 
+    branches: [], 
+    allCommits: new Map(), 
+    contributors: new Map()
+  } as RepositoryData
 
-    const found = await RepoCollection.findOneAsync({ url: "http://test" });
-    expect(found?.data).to.deep.equal(fakeRepo);
-  });
+  beforeEach(async () => {
+    // Clean up before each test
+    await RepositoriesCollection.removeAsync({})
+  })
 
-  it("returns data from database if present", async function () {
-    await RepoCollection.insertAsync({
-      url: "http://missing",
-      data: fakeRepo,
-    });
-    const notifier = new Subject<string>();
+  afterEach(async () => {
+    // Clean up after each test
+    await RepositoriesCollection.removeAsync({})
+  })
 
-    const result = await getRepoData("http://missing", notifier);
-    expect(result.data).to.deep.equal(fakeRepo);
-  });
+  it('should not find it', async () => {
+    // looks for a url that isn't in the database
+    expect(await isInDatabase(testUrl)).to.be.false
+  })
 
-  it("throws when removing missing repo", async function () {
-    let error: unknown;
-    try {
-      await Meteor.callAsync(
-        "repoCollection.removeRepo",
-        "http://does-not-exist"
-      );
-    } catch (e) {
-      error = e;
-    }
-    expect(error).to.exist;
-    expect(error.error).to.equal("link-not-found");
-  });
-});
+  it('should store and retrieve repository data', async () => {
+    // Store data
+    await cacheIntoDatabase(testUrl, testData)
+
+    // Check if it exists
+    expect(await isInDatabase(testUrl)).to.be.true
+
+    // Retrieve data
+    expect(await tryFromDatabase(testUrl, null)).to.deep.equal(testData)
+  })
+
+  it('should return all URLs', async () => {
+    // Store data
+    await cacheIntoDatabase(testUrl, testData)
+    
+    expect(await meteorCallAsync("repoCollection.allUrls")()).to.include(testUrl)
+  })
+
+  it('should remove repository data', async () => {
+    // Store data
+    await cacheIntoDatabase(testUrl, testData)
+
+    // Confirm it exists
+    expect(await isInDatabase(testUrl)).to.be.true
+    
+    // Remove data
+    const removed = await meteorCallAsync("repoCollection.removeRepo")(testUrl)
+    expect(removed).to.be.true
+
+    await delay(500) // simulates 500ms of work for the database to actually remove it
+    
+    // Check if it's gone
+    const result = await isInDatabase(testUrl)
+    expect(result).to.be.false
+  })
+
+  it('should update last viewed timestamp', async () => {
+    // Store data
+    await cacheIntoDatabase(testUrl, testData)
+    await meteorCallAsync("repoCollection.updateLastViewed")(testUrl)
+    
+    // This test just ensures the method doesn't throw an error
+    expect(true).to.be.true
+  })
+})

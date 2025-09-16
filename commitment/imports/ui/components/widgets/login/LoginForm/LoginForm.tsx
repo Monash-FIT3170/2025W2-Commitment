@@ -1,36 +1,35 @@
-import React, {FC} from "react";
-import {Button} from "@ui/components/ui/button";
-import { z } from "zod";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {useForm} from "react-hook-form";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@ui/components/ui/form";
-import {Checkbox} from "@ui/components/ui/checkbox";
-import FormInputWithErrors from "../../../shared/FormInputWithErrors";
+import React from "react";
+import { Button } from "@ui/components/ui/button";
+import { Checkbox } from "@ui/components/ui/checkbox";
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import {
+  Form, FormControl, FormField, FormItem, FormLabel,
+} from '@ui/components/ui/form';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
+import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
 
-
+import FormInputWithErrors from '../../../shared/FormInputWithErrors';
 
 export interface LoginFormProps {
   className?: string
 }
 
-
 const formSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  rememberMe: z.boolean()
-})
+  rememberMe: z.boolean(),
+});
 
-
-const LoginForm: FC<LoginFormProps> = (props) => {
-
+function LoginForm(props: LoginFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: false
+      email: '',
+      password: '',
+      rememberMe: false,
     },
   });
 
@@ -42,53 +41,52 @@ const LoginForm: FC<LoginFormProps> = (props) => {
     Meteor.loginWithPassword(values.email, values.password, (err: any) => {
       if (err) {
         // Handle different types of login errors
-        let errorMessage = "Login failed. Please check your credentials.";
-        
+        let errorMessage = 'Login failed. Please check your credentials.';
+
         if (err.reason === 'User not found') {
-          errorMessage = "No account found with this email address.";
+          errorMessage = 'No account found with this email address.';
         } else if (err.reason === 'Incorrect password') {
-          errorMessage = "Incorrect password. Please try again.";
+          errorMessage = 'Incorrect password. Please try again.';
         } else if (err.reason === 'User has no password set') {
-          errorMessage = "Please reset your password to continue.";
+          errorMessage = 'Please reset your password to continue.';
         }
 
-        form.setError("email", { 
-          type: "manual", 
-          message: errorMessage 
-        });
-        
-        // Also set error on password field for better UX
-        form.setError("password", { 
-          type: "manual", 
-          message: " " // Empty space to maintain form layout
+        form.setError('email', {
+          type: 'manual',
+          message: errorMessage,
         });
 
+        // Also set error on password field for better UX
+        form.setError('password', {
+          type: 'manual',
+          message: ' ', // Empty space to maintain form layout
+        });
       } else {
         if (values.rememberMe) {
           // Set a cookie or localStorage item to remember the user
-          localStorage.setItem("rememberedUser", values.email);
+          localStorage.setItem('rememberedUser', values.email);
         } else {
           // Clear the remembered user if not checked
-          localStorage.removeItem("rememberedUser");
+          localStorage.removeItem('rememberedUser');
         }
 
-        navigate("/home");
+        navigate('/home');
       }
     });
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className={`flex flex-col gap-2 ${props.className ?? ""}`}>
+      <form onSubmit={(e) => { void form.handleSubmit(onSubmit)(e); }} className={`flex flex-col gap-2 ${props.className ?? ''}`}>
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <FormInputWithErrors placeholder="Email" {...field} type="email"/>
+                <FormInputWithErrors placeholder="Email" {...field} type="email" />
               </FormControl>
-              <FormMessage displayWithoutError={true} className="transition-all" noErrorClassName="h-0 opacity-0" errorClassName="h-5"/>
+              <LoginFormErrorMessage/>
             </FormItem>
           )}
         />
@@ -99,9 +97,9 @@ const LoginForm: FC<LoginFormProps> = (props) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <FormInputWithErrors placeholder="Password" type="password" {...field}/>
+                <FormInputWithErrors placeholder="Password" type="password" {...field} />
               </FormControl>
-              <FormMessage displayWithoutError={true} className="transition-all ease-out" noErrorClassName="h-0 opacity-0" errorClassName="h-5"/>
+              <LoginFormErrorMessage/>
             </FormItem>
           )}
         />
@@ -115,7 +113,7 @@ const LoginForm: FC<LoginFormProps> = (props) => {
 
                 <div className="flex items-center space-x-2 ml-3">
                   <FormControl>
-                    <Checkbox checked={field.value} onCheckedChange={field.onChange}/>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
                   <div className="space-y-1 leading-none align-middle inline-flex flex-col content-center">
                     <FormLabel>

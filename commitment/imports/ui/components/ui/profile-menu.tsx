@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { HelpCircle, LogOut, User, ChevronDown } from "lucide-react";
+import { HelpCircle, LogOut, User, ChevronDown, Settings } from "lucide-react";
 import { Button } from "./button";
 import { Separator } from "./separator";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileMenuProps {
   onSignOut: () => void;
@@ -12,6 +13,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -25,22 +27,27 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleSettingsClick = () => {
+    setIsOpen(false);
+    navigate('/settings');
+  };
+
   return (
     <div className="relative" ref={menuRef}>
       <Button 
         variant="ghost" 
-        className="relative h-10 w-10 rounded-full hover:bg-gray-100 flex items-center justify-center gap-1"
+        className=""
         onClick={() => setIsOpen(!isOpen)}
       >
-        <User className="h-6 w-6 text-gray-600" />
-        <ChevronDown className={`h-4 w-4 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : 'rotate-0'}`} />
+        <User className="h-6 w-6 text-foreground" />
+        <ChevronDown className={`h-4 w-4 text-foreground transition-transform ${isOpen ? 'rotate-180' : 'rotate-0'}`} />
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+        <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-popover ring-1 ring-black ring-opacity-5 z-50">
           <div className="py-1">
             <button
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-popover-foreground hover:bg-white/20 hover:rounded-lg"
             >
               <HelpCircle className="h-4 w-4" />
               <span>Help</span>
@@ -49,7 +56,19 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
             <Separator />
 
             <button
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              onClick={handleSettingsClick}
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-foreground hover:bg-gray-100"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
+            </button>
+
+            <Separator />
+
+            <Separator />
+
+            <button
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-white/20 hover:rounded-lg"
               onClick={onSignOut}
             >
               <LogOut className="h-4 w-4" />

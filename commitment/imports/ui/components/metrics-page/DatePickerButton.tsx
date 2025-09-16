@@ -59,6 +59,7 @@ export function DateRangePicker({ onChange, defaultValue }: Props) {
         <Calendar
           initialFocus
           mode="range"
+          disabled={(date) => date > new Date()}
           defaultMonth={previousMonth}
           selected={date}
           onSelect={setDate}

@@ -1,15 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import ScalingConfigForm from './ScalingConfigForm';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog';
+"use client";
 
-import { Button } from '../ui/button';
-import { GradingSheetForm } from './GradingSheetForm';
+import React, { useState, useEffect } from "react";
+import { Upload, Download, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import ScalingConfigForm from "./ScalingConfigForm";
+import { Dialog, DialogContent } from "../ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../ui/alert-dialog";
+import {
+  calculateFinalGrades,
+  generateScaledGradingSheet,
+} from "./ScalingUtils";
+
+import { Button } from "../ui/button";
+import GradingSheetForm from "./GradingSheetForm";
+import ScalingSummary from "./ScalingSummary";
+import type { UserScalingSummary } from "../../../api/types";
+import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
+import { toast } from "../../hooks/use-toast";
+import InfoButton from "../ui/infoButton";
 
 interface ScalingConfig {
   metrics: string[];
@@ -17,66 +35,376 @@ interface ScalingConfig {
   customScript?: File[];
 }
 
-function ScalingView() {
-  // Grab from local storage, defines if completed or not
+function ScalingView(): JSX.Element {
+  const location = useLocation();
   const [completed, setCompleted] = useState(false);
 
-  // Step of scaling config wizard
-  const [step, setStep] = useState<'config' | 'sheet' | 'done'>('config');
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [step, setStep] = useState<"config" | "sheet" | "done">("config");
   const [showDialog, setShowDialog] = useState(false);
-
-  // Shared state for config and grading sheet
+  const [showClearDialog, setShowClearDialog] = useState(false);
   const [config, setConfig] = useState<ScalingConfig | null>(null);
   const [gradingSheet, setGradingSheet] = useState<File | null>(null);
+  const [gradingSheetParseResult, setGradingSheetParseResult] =
+    useState<ParseResult | null>(null);
+  const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
+  const [repoUrl, setRepoUrl] = useState<string | null>(null);
 
-  // Flow for first visits
-  useEffect(() => {
-    // Grab from local storage first
-    const lsCompleted = localStorage.getItem('hasVisitedScaling') === 'true';
-    setCompleted(lsCompleted);
-    setShowDialog(!completed); // Opens automatically if we haven't made scaling yet
-  }, []);
+  // Function to clear all scaling data from localStorage and reset state
+  const clearScalingData: () => void = () => {
+    localStorage.removeItem("hasVisitedScaling");
+    localStorage.removeItem("scaling_config");
+    localStorage.removeItem("scaling_results");
+    localStorage.removeItem("scaling_grading_sheet_name");
+    localStorage.removeItem("scaling_parse_result");
+    localStorage.removeItem("scaling_step");
 
-  const handleConfigSubmit = (configData: ScalingConfig) => {
-    setConfig(configData);
-    console.log('Config submitted:', configData);
-    setStep('sheet');
+    // Reset all state
+    setConfig(null);
+    setGradingSheet(null);
+    setGradingSheetParseResult(null);
+    setScaledResults([]);
+    setCompleted(false);
+    setStep("config");
   };
 
-  const handleSheetSubmit = (sheetFile: File) => {
+  // Handle confirmed clear action
+  const handleConfirmClear = () => {
+    clearScalingData();
+    setShowClearDialog(false);
+    toast({
+      title: "Scaling cleared",
+      description: "All scaling configuration and data has been cleared.",
+    });
+  };
+
+  // Simple initialization with localStorage persistence for core state
+  useEffect(() => {
+    const currentRepoUrl: string = location.state?.repoUrl ?? null;
+    setRepoUrl(currentRepoUrl);
+
+    // Check if repo has changed - clear localStorage if it has
+    const lastRepoUrl = localStorage.getItem("scaling_last_repo_url");
+    const hasExistingScalingData =
+      localStorage.getItem("scaling_config") ||
+      localStorage.getItem("scaling_results") ||
+      localStorage.getItem("scaling_grading_sheet_name");
+
+    if (
+      (lastRepoUrl && lastRepoUrl !== currentRepoUrl) ||
+      (hasExistingScalingData && !lastRepoUrl && currentRepoUrl)
+    ) {
+      clearScalingData();
+      localStorage.setItem("scaling_last_repo_url", currentRepoUrl);
+      setCompleted(false);
+      setShowDialog(true);
+    } else {
+      if (currentRepoUrl) {
+        // Store current repo URL as last_visited
+        localStorage.setItem("scaling_last_repo_url", currentRepoUrl);
+      }
+
+      const hasVisited = localStorage.getItem("hasVisitedScaling") === "true";
+      setCompleted(hasVisited);
+
+      // Only show dialog on true first visit (no existing scaling data and not visited)
+      if (!hasVisited && !hasExistingScalingData) {
+        setShowDialog(true);
+      }
+
+      // Restore key state from localStorage only if repo hasn't changed
+      try {
+        const savedConfig = localStorage.getItem("scaling_config");
+        const savedResults = localStorage.getItem("scaling_results");
+        const savedGradingSheetName = localStorage.getItem(
+          "scaling_grading_sheet_name"
+        );
+        const savedParseResult = localStorage.getItem("scaling_parse_result");
+        const savedStep = localStorage.getItem("scaling_step");
+
+        if (savedConfig) {
+          const parsedConfig = JSON.parse(savedConfig) as ScalingConfig;
+          setConfig(parsedConfig);
+        }
+        if (savedResults) {
+          const parsedResults = JSON.parse(
+            savedResults
+          ) as UserScalingSummary[];
+          setScaledResults(parsedResults);
+        }
+        if (savedGradingSheetName) {
+          const placeholderFile = new File([""], savedGradingSheetName, {
+            type: "text/csv",
+          });
+          setGradingSheet(placeholderFile);
+        }
+        if (savedParseResult) {
+          const parsedParseResult = JSON.parse(savedParseResult) as ParseResult;
+          setGradingSheetParseResult(parsedParseResult);
+        }
+        if (
+          savedStep &&
+          (savedStep === "config" ||
+            savedStep === "sheet" ||
+            savedStep === "done")
+        ) {
+          setStep(savedStep);
+        }
+      } catch {
+        // Ignore errors in restoring state
+      }
+    }
+
+    setHasLoaded(true);
+  }, [location]);
+
+  // Save all state changes to localStorage (combined auto-save)
+  useEffect(() => {
+    if (!hasLoaded) return;
+
+    try {
+      // Save scaling data
+      if (config) {
+        localStorage.setItem("scaling_config", JSON.stringify(config));
+      }
+      if (scaledResults.length > 0) {
+        localStorage.setItem("scaling_results", JSON.stringify(scaledResults));
+      }
+      if (gradingSheet) {
+        localStorage.setItem("scaling_grading_sheet_name", gradingSheet.name);
+      }
+      if (gradingSheetParseResult) {
+        localStorage.setItem(
+          "scaling_parse_result",
+          JSON.stringify(gradingSheetParseResult)
+        );
+      }
+      localStorage.setItem("scaling_step", step);
+      if (completed) {
+        localStorage.setItem("hasVisitedScaling", "true");
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [
+    config,
+    scaledResults,
+    gradingSheet,
+    gradingSheetParseResult,
+    step,
+    completed,
+    hasLoaded,
+    repoUrl,
+  ]);
+
+  const handleConfigSubmit = (
+    configData: ScalingConfig,
+    results: UserScalingSummary[]
+  ) => {
+    setConfig(configData);
+    if (gradingSheetParseResult) {
+      const parsedData = gradingSheetParseResult.data;
+      if (parsedData && parsedData.length > 0) {
+        const updatedResults = calculateFinalGrades(results, parsedData);
+        setScaledResults(updatedResults);
+      } else {
+        setScaledResults(results);
+      }
+    } else {
+      setScaledResults(results);
+    }
+    setStep("sheet");
+  };
+
+  const handleSheetSubmit = (
+    sheetFile: File,
+    parsedData?: GradingSheetRow[],
+    parseResult?: ParseResult
+  ) => {
     setGradingSheet(sheetFile);
-    setStep('done');
+
+    // Store the parse result for later use in generating scaled CSV
+    if (parseResult) {
+      setGradingSheetParseResult(parseResult);
+    }
+
+    // Calculate final grades when grading sheet is provided
+    if (parsedData && scaledResults.length > 0) {
+      const updatedResults = calculateFinalGrades(scaledResults, parsedData);
+      setScaledResults(updatedResults);
+    }
+
     setCompleted(true);
     setShowDialog(false);
+    setStep("done");
+  };
+
+  const handleSkipSheet = () => {
+    if (!gradingSheet) {
+      setGradingSheet(null);
+      setGradingSheetParseResult(null);
+    }
+    setCompleted(true);
+    setShowDialog(false);
+    setStep("done");
+  };
+
+  const handleDownloadScaledSheet = async () => {
+    if (!gradingSheetParseResult || !gradingSheet) return;
+
+    try {
+      // Generate the scaled grading sheet
+      const scaledFile = generateScaledGradingSheet(
+        gradingSheetParseResult,
+        scaledResults
+      );
+
+      // Create a filename with "scaled_" prefix
+      const originalName = gradingSheet.name;
+      const fileExtension = originalName.substring(
+        originalName.lastIndexOf(".")
+      );
+      const nameWithoutExtension = originalName.substring(
+        0,
+        originalName.lastIndexOf(".")
+      );
+      const scaledFileName = `scaled_${nameWithoutExtension}${fileExtension}`;
+
+      // Create a new file with the custom name
+      const renamedFile = new File([scaledFile], scaledFileName, {
+        type: scaledFile.type,
+      });
+
+      // Trigger download
+      const url = URL.createObjectURL(renamedFile);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = scaledFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to download scaled grading sheet.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <div className="m-0 scroll-smooth">
+    <div className="w-full m-0 scroll-smooth p-10">
       <div className="flex flex-col gap-32">
-        <div className="max-w-[1600px] mx-20 rounded-2xl bg-white p-8">
-          {/* DEFAULT BACKGROUND */}
-          <Button
-            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-            onClick={() => {
-              setStep('config');
-              setShowDialog(true);
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
+          {/* Always render the scaling summary in the background */}
+          {config && scaledResults.length > 0 && (
+            <div className="mb-6">
+              {/* Header */}
+              <div className="mb-10">
+                <div className="flex items-center gap-4">
+                  <h1 className="text-5xl text-foreground font-robotoFlex">
+                    Scaling
+                  </h1>
+                  <InfoButton description="ada" />
+                </div>
+                <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
+              </div>
+              <ScalingSummary
+                userScalingSummaries={scaledResults}
+                hasGradingSheet={!!gradingSheet}
+              />
+            </div>
+          )}
+
+          {/* Buttons for grading sheet or regenerate */}
+          <div className="flex justify-center gap-6 p-4">
+            <Button
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+              onClick={() => {
+                setStep("config");
+                setShowDialog(true);
+              }}
+            >
+              Create New Scaling
+            </Button>
+
+            <Button
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+              onClick={() => {
+                setStep("sheet");
+                setShowDialog(true);
+              }}
+            >
+              <Upload className="h-4 w-4" />
+              {gradingSheet ? "Replace Grading Sheet" : "Upload Grading Sheet"}
+            </Button>
+
+            {/* Download button - only visible when grading sheet is uploaded */}
+            {gradingSheet && gradingSheetParseResult && (
+              <Button
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                onClick={() => {
+                  void handleDownloadScaledSheet();
+                }}
+              >
+                <Download className="h-4 w-4" />
+                Download Scaled Grading Sheet
+              </Button>
+            )}
+
+            {/* Clear button - only visible when there's config or grading sheet data */}
+            {(config || gradingSheet || scaledResults.length > 0) && (
+              <AlertDialog
+                open={showClearDialog}
+                onOpenChange={setShowClearDialog}
+              >
+                <AlertDialogTrigger asChild>
+                  <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Clear Scaling</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to clear all scaling data? You will
+                      need to reconfigure scaling settings and re-upload your
+                      grading sheet if you do.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmClear}>
+                      Clear
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+
+          {/* Multi-Step Dialog */}
+          <Dialog
+            open={showDialog}
+            onOpenChange={(open) => {
+              if (!open && step === "sheet") {
+                setCompleted(true);
+                setStep("done");
+              }
+              setShowDialog(open);
             }}
           >
-            Create New Scaling
-          </Button>
-
-          {/* MULTI STEP DIALOG */}
-          <Dialog open={showDialog} onOpenChange={setShowDialog}>
-            {/* here to mute any errors */}
-            <DialogHeader>
-              <DialogTitle />
-              <DialogDescription />
-            </DialogHeader>
             <DialogContent className="max-w-2xl">
-              {step === 'config' && (
+              {step === "config" && (
                 <ScalingConfigForm onSubmit={handleConfigSubmit} />
               )}
-              {step === 'sheet' && <GradingSheetForm />}
+              {step === "sheet" && (
+                <GradingSheetForm
+                  onSubmit={handleSheetSubmit}
+                  onSkip={handleSkipSheet}
+                />
+              )}
             </DialogContent>
           </Dialog>
         </div>
@@ -85,4 +413,4 @@ function ScalingView() {
   );
 }
 
-export default ScalingView
+export default ScalingView;

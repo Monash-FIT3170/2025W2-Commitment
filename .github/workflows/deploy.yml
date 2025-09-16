@@ -1,0 +1,67 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - "cd/deploy"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # - name: Log in to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # # Meteor build
+      # - name: Build Meteor app image
+      #   run: |
+      #     docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest -f commitment/Dockerfile.meteor commitment/
+
+      # - name: Push Meteor app image
+      #   run: |
+      #     docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest
+
+      # # Haskell API build
+      # - name: Build Haskell API image
+      #   run: |
+      #     docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest -f api/Dockerfile.haskell api/
+
+      # - name: Push Haskell API image
+      #   run: |
+      #     docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST_2 }}
+          username: ${{ secrets.EC2_USER_2 }}
+          key: ${{ secrets.EC2_KEY_2 }}
+          script: |
+            set -e
+            if [ ! -d ~/app/.git ]; then
+              rm -rf ~/app
+              git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git ~/app
+            fi
+            cd ~/app
+            git fetch origin cd/deploy
+            git reset --hard origin/cd/deploy
+
+            sudo docker pull commitment3170/haskell-api-img:latest
+
+            sudo docker build -t commitment-img -f commitment/Dockerfile.MeteorRun ~/app/commitment --no-cache
+
+            sudo docker-compose -f docker-compose.prod.yml down
+
+            sudo docker-compose -f docker-compose.prod.yml up -d
+      # mup
+      # export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+      # export DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
+      # chmod +x deploy.sh
+      # ./deploy.sh

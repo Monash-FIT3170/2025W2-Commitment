@@ -12,7 +12,7 @@ import {
 } from "react-hook-form"
 
 import { cn } from "@ui/lib/utils"
-import { Label } from "@ui/components/ui/label"
+import { Label } from "./label"
 
 const Form = FormProvider
 
@@ -133,19 +133,26 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
   )
 }
 
-function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
+export interface FormMessageProps extends React.ComponentProps<"p"> {
+  errorClassName?: string,
+  noErrorClassName?: string,
+  displayWithoutError?: boolean,
+}
+
+function FormMessage({ className, ...props }: FormMessageProps) {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message ?? "") : props.children
 
-  if (!body) {
+  if (!body && !props.displayWithoutError) {
     return null
   }
 
+  const extraClassName = (body ? props.errorClassName : props.noErrorClassName) ?? "";
   return (
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn("text-destructive text-sm", className)}
+      className={cn("text-destructive text-sm", className, extraClassName)}
       {...props}
     >
       {body}

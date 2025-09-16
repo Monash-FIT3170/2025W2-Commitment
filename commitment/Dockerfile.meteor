@@ -1,0 +1,46 @@
+# Stage 1: Build Meteor bundle
+FROM node:18-bullseye as builder
+
+# Install Meteor
+RUN curl https://install.meteor.com/ | sh
+
+# Set working directory
+WORKDIR /app
+
+# Copy package definitions first (better layer caching)
+COPY package*.json ./
+COPY .meteor/ .meteor/
+
+# Allow running as root inside Docker
+ENV METEOR_ALLOW_SUPERUSER=true
+
+# Install dependencies
+RUN meteor npm install --allow-superuser
+
+# Copy rest of the app
+COPY . .
+
+# Fix lightningcss / native modules by forcing a rebuild
+RUN meteor npm rebuild lightningcss --update-binary
+
+# Build Meteor bundle for Linux x86_64
+RUN METEOR_ALLOW_SUPERUSER=true meteor build --directory /build \
+    --architecture os.linux.x86_64 --server-only
+
+
+# Stage 2: Runtime image
+FROM node:18-bullseye
+
+WORKDIR /app
+
+# Copy built bundle from builder
+COPY --from=builder /build/bundle /app
+
+# Install production dependencies
+WORKDIR /app/programs/server
+RUN npm install --production
+
+WORKDIR /app
+EXPOSE 3000
+
+CMD ["node", "main.js"]

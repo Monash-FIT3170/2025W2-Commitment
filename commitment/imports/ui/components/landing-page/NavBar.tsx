@@ -1,70 +1,75 @@
-import React, { useState } from "react";
-import {
+import React from "react";
+import { Moon, Sun } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Accounts } from "meteor/accounts-base";
+import { useTheme } from "@ui/hooks/useTheme";
+import ProfileMenu from "../ui/profile-menu";
+import { navigationMenuTriggerStyle ,
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@ui/components/ui/navigation-menu";
-import { navigationMenuTriggerStyle } from "@ui/components/ui/navigation-menu";
-import SignUpButton from "./signUpButton";
-import ProfileMenu from "@ui/components/ui/profile-menu";
-import { Moon, Sun } from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
-interface NavBarProps {
-  isLoggedIn: boolean;
-}
+} from "../ui/navigation-menu";
+import { useAuth } from "../../hooks/useAuth";
+import { Button } from "../ui/button";
 
-export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+export const NavBar: React.FC = () => {
+  const { isDark, toggle } = useTheme();
+
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
 
+  const isLoggedIn = useAuth();
+
   const handleSignOut = () => {
-    // note to self: implement signing out logic here later
-    console.log("Sign out clicked");
+    Accounts.logout(() => {
+      console.log("Signed out.");
+    });
   };
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    // note to self: implement dark mode logic here later
-    console.log("Dark mode toggled:", !isDarkMode);
+    toggle();
   };
 
   return (
-    <div
-      className={`z-50 flex items-center justify-between py-2 border-b bg-white  
-        ${isLandingPage ? "sticky top-0 px-4 rounded-md shadow-lg  ml-32 mr-32" : "relative px-4"}
-      `}
-    >
+    <div className="sticky top-0 z-50 flex items-center justify-between py-2 border-b bg-git-bg-bottom relative px-4">
       <NavigationMenu>
         <NavigationMenuList className="flex space-x-4">
-          <a className="flex items-center space-x-3">
-            <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-            <span className="text-xl text-gray-900"></span>
-          </a>
+          <div className="flex items-center space-x-3">
+            <NavigationMenuItem>
+              <NavigationMenuLink>
+                <Link to={isLandingPage ? "/" : "/home"} >
+                  <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </div>
 
           {isLandingPage ? (
             // Landing page navigation items
             <>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#about" className={navigationMenuTriggerStyle()}>
-                    About
-                  </a>
+                <NavigationMenuLink
+                  href="#about"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  About
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#features" className={navigationMenuTriggerStyle()}>
-                    Features
-                  </a>
+                <NavigationMenuLink
+                  href="#features"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  Features
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a href="#howto" className={navigationMenuTriggerStyle()}>
-                    How-To
-                  </a>
+                <NavigationMenuLink
+                  href="#howto"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  How-To
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -72,14 +77,13 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
             // App navigation items
             <>
               <NavigationMenuItem>
-                <NavigationMenuLink>
                 <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
-                    Dashboard
-                  </Link>                </NavigationMenuLink>
+                  Dashboard
+                </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink>
-                  <a className={navigationMenuTriggerStyle()}>Docs</a>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Docs
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </>
@@ -87,15 +91,15 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
         </NavigationMenuList>
       </NavigationMenu>
 
-      <div className="flex items-center space-x-4">
+      {/* Right hand side nav */}
+      <div className="flex items-center space-x-4 ">
         <button
+          type="button"
           onClick={handleToggleDarkMode}
-          className="p-2 rounded-full hover:bg-gray-200 transition-colors"
-          aria-label={
-            isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-          }
+          className="p-2 rounded-full hover:bg-git-bg-bottom/30 transition-colors"
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
-          {isDarkMode ? (
+          {isDark ? (
             <Sun className="h-6 w-6 text-yellow-400" />
           ) : (
             <Moon className="h-6 w-6 text-gray-600" />
@@ -103,12 +107,17 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn }) => {
         </button>
 
         {!isLoggedIn && (
-          <>
-            <a href="/login" className={navigationMenuTriggerStyle()}>
-              Login
+          <div>
+            <a href="/login" className={`${navigationMenuTriggerStyle()  }mr-10`}>
+              Log in
             </a>
-            <SignUpButton />
-          </>
+            {/* Sign up button */}
+            <Button
+              className="font-mono w-[100px] h-auto text-white rounded-full  text-center bg-git-int-primary hover:bg-git-int-primary-hover drop-shadow-lg"
+              asChild
+            >
+              <a href="/signup">Sign Up</a>
+            </Button>          </div>
         )}
         {isLoggedIn && <ProfileMenu onSignOut={handleSignOut} />}
       </div>

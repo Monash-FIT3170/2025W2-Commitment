@@ -5,7 +5,6 @@ import { Subject } from "rxjs";
 
 import LoadingBar from "@ui/components/Loading-page/LoadingBar";
 import TipBox from "@ui/components/Loading-page/TipBox";
-import NavBar from "@ui/components/landing-page/NavBar";
 import { fetchRepo } from "../api/call_repo";
 
 interface LocationState {
@@ -33,7 +32,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
   // Rotate tips every 4s
   useEffect(() => {
     const id = Meteor.setInterval(() => {
-      setTipIndex(i => (i + 1) % tips.length);
+      setTipIndex((i) => (i + 1) % tips.length);
     }, 4000);
     return () => Meteor.clearInterval(id);
   }, []);
@@ -43,20 +42,21 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
     if (!repoUrl) return;
 
     const notifier = new Subject<string>();
-    const sub = notifier.subscribe(msg => setMessage(msg));
+    const sub = notifier.subscribe(setMessage);
+    // const $sout = notifier.subscribe(console.log) // for debugging purposes
 
     fetchRepo(repoUrl, notifier)
-      .then(() => {
-        notifier.next(" Repository data loaded!");
+      .then((_: boolean) => {
+        notifier.next("Repository data loaded!");
         setProgress(100);
 
-        // redirect to the metrics page 
+        // redirect to the metrics page
         setTimeout(() => {
           navigate("/metrics", { replace: true, state: { repoUrl } });
         }, 1000);
       })
-      .catch(err => {
-        notifier.next(` ${err}`);
+      .catch((err) => {
+        notifier.next(`${err}`);
         // Wait 10 seconds to let user read the error, then redirect back
         setTimeout(() => {
           navigate("/home", { replace: true });
@@ -65,6 +65,7 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
 
     return () => {
       sub.unsubscribe();
+      // $sout.unsubscribe()
       notifier.complete();
     };
   }, [repoUrl, navigate]);
@@ -72,30 +73,19 @@ const LoadingPage: React.FC<{ darkMode?: boolean }> = ({ darkMode = false }) => 
   // If no repo URL provided, redirect immediately
   if (!repoUrl) return <Navigate to="/insert-git-repo" replace />;
 
-  const containerClasses = [
-    darkMode ? "dark" : "",
-    "min-h-screen bg-background text-foreground",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
   return (
-    <div className={containerClasses}>
-      <div className="fixed top-0 w-full z-10">
-        <NavBar isLoggedIn={!!Meteor.userId && !!Meteor.userId()} />
-      </div>
+    <>
+      <div className="fixed top-0 w-full z-10" />
       <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
         {/* Live notifier message */}
-        <h2 className="text-3xl font-inconsolata-bold mb-6">
-          {message}
-        </h2>
+        <h2 className="text-3xl font-inconsolata-bold mb-6">{message}</h2>
 
         <LoadingBar progress={progress} />
 
         {/* Rotating tips */}
         <TipBox tip={tips[tipIndex]} />
       </div>
-    </div>
+    </>
   );
 };
 
