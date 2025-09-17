@@ -28,27 +28,29 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
   const fillColor = isPositive ? "#59A14F" : "#E15759";
   return (
     <Card
-      className={`font-mono text-foreground flex flex-col w-full min-w-[220px] min-h-[220px] rounded-xl outline-solid outline-2 outline-git-bg-secondary  bg-git-bg-bottom ${
-        percentageChange ? "justify-between" : "justify-center"
+      className={`font-mono text-foreground flex flex-col w-full min-w-[220px] gap-2 max-w-[500px] rounded-xl outline-solid outline-2 outline-git-bg-secondary  bg-git-bg-bottom justify-between ${
+        percentageChange ? "justify-between" : "justify-start"
       }`}
     >
-      {/* Title & Menu Icon */}
-      <CardHeader className="pb-0">
-        <CardTitle className="flex justify-between items-start md:text-3xl lg:text-3xl xl:text-3xl text-2xl mt-0 font-normal ">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      {/* Value */}
-      <CardContent className="font-bold md:text-4xl xl:text-4xl text-3xl">
-        {value.toLocaleString()}
-      </CardContent>
+      <div className="flex flex-row justify-between ">
+        {/* Title & Menu Icon */}
+        <CardHeader className="pb-0">
+          <CardTitle className="flex justify-between items-start  text-2xl mt-0 font-normal ">
+            {title}
+          </CardTitle>
+        </CardHeader>
+        {/* Value */}
+        <CardContent className="font-bold  text-3xl flex items-end pb-0">
+          {value.toLocaleString()}
+        </CardContent>
+      </div>
       {/* Footer: Change + Graph */}
       {percentageChange ? (
         <CardFooter className="flex justify-between items-center gap-x-4">
           {/* Percentage Change */}
           <div className="w-[160px] h-[80px]">
             <div
-              className="flex items-center gap-1 text-4xl font-semibold leading-[40px]"
+              className="flex items-center gap-1 text-2xl font-semibold leading-[40px]"
               style={{ color: fillColor }}
             >
               {/* Show arrow pointing up or down */}
@@ -63,7 +65,7 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
           </div>
 
           {/* Graph */}
-          <div className="w-full h-[80px]">
+          <div className="w-full h-[50px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data}>
                 <Area
