@@ -5,19 +5,20 @@ import {
   cacheIntoDatabase,
   isInDatabase,
   removeRepo,
-  tryFromDatabase,
+  tryFromDatabaseNoCheck,
+  allUrls,
   voidDatabase,
 } from "../server/api/caching";
-import { meteorCallAsync, suppressError } from "../imports/api/meteor_interface";
+
+import { meteorCallAsync } from "../imports/api/meteor_interface";
 import { RepositoryData } from "/imports/api/types";
-import { RepositoriesCollection } from "/imports/api/repositories";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe("Caching Tests", () => {
   const testUrl = "https://github.com/test/repo";
   const testData = {
-    name: "test",
+    name: "repo",
     branches: [],
     allCommits: new Map(),
     contributors: new Map(),
@@ -46,14 +47,14 @@ describe("Caching Tests", () => {
     expect(await isInDatabase(testUrl)).to.be.true;
 
     // Retrieve data
-    expect(await tryFromDatabase(testUrl, null)).to.deep.equal(testData);
+    expect(await tryFromDatabaseNoCheck(testUrl, null)).to.deep.equal(testData);
   });
 
   it("should return all URLs", async () => {
     // Store data
     await cacheIntoDatabase(testUrl, testData);
 
-    expect(await meteorCallAsync("repoCollection.allUrls")()).to.include(testUrl);
+    expect(await allUrls()).to.include(testUrl);
   });
 
   it("should remove repository data", async () => {
@@ -64,14 +65,12 @@ describe("Caching Tests", () => {
     expect(await isInDatabase(testUrl)).to.be.true;
 
     // Remove data
-    const removed = removeRepo(testUrl);
-    expect(removed).to.be.true;
+    expect(await removeRepo(testUrl)).to.be.true;
 
     await delay(500); // simulates 500ms of work for the database to actually remove it
 
     // Check if it's gone
-    const result = await isInDatabase(testUrl);
-    expect(result).to.be.false;
+    expect(await isInDatabase(testUrl)).to.be.false;
   });
 
   it("should update last viewed timestamp", async () => {

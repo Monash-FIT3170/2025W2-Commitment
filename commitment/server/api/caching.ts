@@ -110,7 +110,7 @@ export const removeRepo = async (url: string): Promise<boolean> => {
 };
 
 // should be used carefully as this exposes all data in the database
-export const allUrls = async (): Promise<string[]> =>
+export const allUrls = (): Promise<string[]> =>
   RepoCollection.find()
     .fetch()
     .then((d: ServerRepoData[]) => d.map((d: ServerRepoData) => d.url));
@@ -118,8 +118,10 @@ export const allUrls = async (): Promise<string[]> =>
 // -----------------------  WARNING  -----------------------
 // IF I SEE THIS OUTSIDE OF THE TESTCASES
 // YOU WILL BE SENT TO THE GULAG
-export const voidDatabase = async (): Promise<boolean[]> =>
-  allUrls().then((urls: string[]) => Promise.all(urls.map(removeRepo)));
+export const voidDatabase = async (): Promise<boolean[]> => {
+  const urls: string[] = await allUrls();
+  return await Promise.all(urls.map(removeRepo));
+};
 
 /**
  * Tries to get repository data from the database.
@@ -135,21 +137,38 @@ export const tryFromDatabaseSerialised = async (
 
   const repoData = await RepoCollection.findOneAsync({ url });
   if (!repoData) throw Error("Data not found in database");
+  if (notifier != null) notifier.next("Found data in database!");
 
-  const d: SerializableRepoData = repoData.data;
+  return repoData.data;
+};
+
+export const tryFromDatabaseSerialisedViaLatest = async (
+  url: string,
+  notifier: Subject<string>
+): Promise<SerializableRepoData> => {
+  const d: SerializableRepoData = await tryFromDatabaseSerialised(url, notifier);
   const upToDate: boolean = await isUpToDate(url, d);
 
   if (!upToDate) throw Error("Repo is not up to date with the latest changes");
-  if (notifier != null) notifier.next("Found data in database!");
-
   return d;
 };
 
 /**
- *
+ * checks the database, ensuring the data is the most up to date on git
  * @param url a url to search for
  * @param notifier a notifier to notify messages to
  * @returns Promise<RepositoryData> where it found the result, rejected results are search misses
  */
 export const tryFromDatabase = (url: string, notifier: Subject<string>): Promise<RepositoryData> =>
-  tryFromDatabaseSerialised(url, notifier).then(deserializeRepoData);
+  tryFromDatabaseSerialisedViaLatest(url, notifier).then(deserializeRepoData);
+
+/**
+ * checks the database without checking whether its up to date
+ * @param url a url to search for
+ * @param notifier a notifier to notify messages to
+ * @returns Promise<RepositoryData> where it found the result, rejected results are search misses
+ */
+export const tryFromDatabaseNoCheck = (
+  url: string,
+  notifier: Subject<string>
+): Promise<RepositoryData> => tryFromDatabaseSerialised(url, notifier).then(deserializeRepoData);

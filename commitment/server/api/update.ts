@@ -23,10 +23,9 @@ const join = (arr: string[]): string => arr.reduce((acc, i) => acc + i, "");
  */
 export const isUpToDate = async (url: string, data: SerializableRepoData): Promise<boolean> => {
   const lastCommitFromDatabase: Date = getAllCommits(data).reduce(
-    (acc: CommitData, c: CommitData) =>
-      acc !== null && compareDates(acc.timestamp, c.timestamp) ? acc : c,
-    null
-  ).timestamp;
+    (acc: Date, c: CommitData) => (compareDates(acc, c.timestamp) ? acc : c.timestamp),
+    new Date(0) // git didn't exist here so its fine :D
+  );
 
   const rel_dir = join(takeFromBack(url.split("/"), 2));
 
@@ -37,14 +36,12 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   const hash = await commandLocal(getLatestCommit(url)).then(
     assertSuccess(`Failed to fetch HEAD from ${url}`)
   );
-  const assertCloneSuccess = await commandLocal(fetchFromHEAD(url, hash)).then(
-    assertSuccess("Failed to clone the repo")
-  );
+  await commandLocal(fetchFromHEAD(url, hash)).then(assertSuccess("Failed to clone the repo"));
   const date = await commandLocal(getDateFrom(hash)).then(
     assertSuccess("Failed to fetch the HEAD commit details")
   );
 
-  const awaitDirectoryDeletion = await deleteAllFromDirectory(temp_working_dir);
+  await deleteAllFromDirectory(temp_working_dir);
 
   const dateObj = new Date(date);
   return !compareDates(dateObj, lastCommitFromDatabase);
