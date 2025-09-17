@@ -73,6 +73,7 @@ Meteor.methods({
  */
 export const isInDatabase = async (url: string): Promise<boolean> => {
   const doc = await RepoCollection.findOneAsync({ url: url });
+  console.log(doc);
   return null !== doc;
 };
 
