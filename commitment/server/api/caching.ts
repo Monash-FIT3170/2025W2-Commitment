@@ -72,7 +72,7 @@ Meteor.methods({
  * @returns   True if the repository exists, false otherwise.
  */
 export const isInDatabase = async (url: string): Promise<boolean> => {
-  const doc = await RepoCollection.findOneAsync({ url });
+  const doc = await RepoCollection.findOneAsync({ url: url });
   return null !== doc;
 };
 
@@ -88,14 +88,14 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
     data: serializeRepoData(data),
   };
 
-  return await RepoCollection.upsertAsync(
-    { url }, // filter to find existing doc
-    s // update operation
-  )
-    .then((_d: any) => true)
-    .catch(overrideValue(false));
-};
+  const res = await RepoCollection.upsertAsync(
+    { url }, // filter
+    { $set: s } // only set/replace the intended fields
+  ).catch(overrideValue({ numberAffected: 0 }));
 
+  // res is an object like { numberAffected, insertedId }
+  return res.numberAffected > 0;
+};
 /**
  * removes a repo inside the database
  * throws an error if does not exist
@@ -103,9 +103,9 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
  * @returns   whether the removal was successful
  */
 export const removeRepo = async (url: string): Promise<boolean> => {
-  const existing = await RepoCollection.findOneAsync({ url });
+  const existing = await RepoCollection.findOneAsync({ url: url });
   if (!existing) throw Error(`url ${url} is not in the database`);
-  const res = await RepoCollection.removeAsync({ url });
+  const res = await RepoCollection.removeAsync({ url: url });
   return res > 0;
 };
 
@@ -135,7 +135,7 @@ export const tryFromDatabaseSerialised = async (
 ): Promise<SerializableRepoData> => {
   if (notifier != null) notifier.next("Checking database for existing data...");
 
-  const repoData = await RepoCollection.findOneAsync({ url });
+  const repoData = await RepoCollection.findOneAsync({ url: url });
   if (!repoData) throw Error("Data not found in database");
   if (notifier != null) notifier.next("Found data in database!");
 
