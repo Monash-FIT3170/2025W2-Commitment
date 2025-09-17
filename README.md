@@ -81,7 +81,7 @@ NODE_ENV=development
 These provide steps to run the project.
 
 1. In the root directory of the project start the container with `docker-compose start`.
-2. Once it has started enter the `3170-env` container using `docker exec -it 3170-env bash`, this should take you into the `\commitment` directory.
+2. Once it has started enter the `3170-build` container using `docker exec -it 3170-build bash`, this should take you into the `\commitment` directory.
 3. Run `npm install` to install required dependencies, this may take some time.
 4. Run `meteor` to run the application.
    - This will be mapped to your `localhost` on `PORT 3000`.
@@ -95,7 +95,7 @@ These commands are useful for working with the container but must be run from th
 | ---------------------------- | ---------------------------------- |
 | Start Container              | `docker-compose start`             |
 | Stop Container               | `docker-compose stop`              |
-| Access Dev Container         | `docker exec -it 3170-env bash`    |
+| Access Dev Container         | `docker exec -it 3170-build bash`    |
 | Access Haskell Container     | `docker exec -it haskell-api bash` |
 | Attach Container to Terminal | `docker attach <container>`        |
 

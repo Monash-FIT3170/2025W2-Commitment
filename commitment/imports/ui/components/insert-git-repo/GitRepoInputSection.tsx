@@ -10,6 +10,7 @@ function GitRepoInputSection() {
   const [repoUrl, setRepoUrl] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCheckingExistence, setIsCheckingExistence] = useState(false);
 
   // Platform configuration for GitHub, GitLab and Bitbucket support
   const GIT_PLATFORMS = {
@@ -133,7 +134,18 @@ function GitRepoInputSection() {
     return null;
   };
 
-
+  const checkRepositoryExists = async (url: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      Meteor.call('repo.checkExists', url, (error: any, result: boolean) => {
+        if (error) {
+          console.error('Error checking repository existence:', error);
+          resolve(false);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  };
 
   const handleAnalyseClick = async () => {
     const validation = validateRepoUrl(repoUrl);
@@ -141,8 +153,19 @@ function GitRepoInputSection() {
 
     if (validation.isValid) {
       setIsProcessing(true);
+      setIsCheckingExistence(true);
       
       try {
+        // Check if repository exists before processing
+        const exists = await checkRepositoryExists(repoUrl);
+        setIsCheckingExistence(false);
+        
+        if (!exists) {
+          setValidationError('Repository not found or not accessible. Please check the URL and try again.');
+          setIsProcessing(false);
+          return;
+        }
+
         // Extract repository information from URL
         const repoInfo = extractRepoInfo(repoUrl);
         if (!repoInfo) {
@@ -182,6 +205,7 @@ function GitRepoInputSection() {
         console.error('Error processing repository:', error);
         setValidationError('An unexpected error occurred. Please try again.');
         setIsProcessing(false);
+        setIsCheckingExistence(false);
       }
     }
   };
@@ -224,7 +248,7 @@ function GitRepoInputSection() {
         onClick={handleAnalyseClick}
         disabled={isProcessing}
       >
-        {isProcessing ? 'Processing...' : 'Analyse Repository'}
+        {isCheckingExistence ? 'Checking repository...' : isProcessing ? 'Processing...' : 'Analyse Repository'}
       </Button>
     </>
   );
