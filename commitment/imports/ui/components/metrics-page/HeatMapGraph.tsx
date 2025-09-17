@@ -448,12 +448,12 @@ export default function HeatMapGraph({
   );
 
   return (
-    <GraphCard className="w-full h-full p-0">
+    <GraphCard className="w-full p-0">
       <CardHeader className="pb-0">
-        <CardTitle className="flex justify-between text-xl mt-0 font-bold ">
-          <div className="flex ">
-            {title ?? "Contributions Heatmap"}
-            <div className="relative -mt-3 ml-2">
+        <CardTitle className="flex justify-between flex-wrap text-xl mt-0 font-bold gap-2">
+          <div className="flex gap-2">
+            <span className="whitespace-nowrap">{title ?? "Contributions Heatmap"}</span>
+            <div className="relative -mt-3">
               <InfoButton description="Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period" />
             </div>
           </div>
