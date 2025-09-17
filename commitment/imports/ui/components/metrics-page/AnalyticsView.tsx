@@ -159,9 +159,7 @@ export function AnalyticsView(): React.JSX.Element {
                 />
               </div>
               <div className="flex flex-col">
-                <div className="text-sm text-git-text-secondary">
-                  Metrics*
-                </div>
+                <div className="text-sm text-git-text-secondary">Metrics*</div>
                 <MetricDropdownMenu
                   metrics={metricNames}
                   selected={selectedMetrics}
@@ -173,68 +171,76 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
           </div>
 
-          {/* Highlight Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 3xl:grid-cols-4 gap-6 mb-12">
-            <HighlightCardWithGraph
-              title="Total Commits"
-              value={analytics.metrics.highlights.totalCommits.total}
-              percentageChange={
-                analytics.metrics.highlights.totalCommits.percentageChange
-              }
-              isPositive={analytics.metrics.highlights.totalCommits.isPositive}
-              data={analytics.metrics.highlights.totalCommits.data}
-            />
-            <HighlightCardWithGraph
-              title="Number of Branches"
-              value={analytics.metrics.highlights.numBranches}
-            />
-            <HighlightCardWithGraph
-              title="Total Lines of Code"
-              value={analytics.metrics.highlights.totalLinesOfCode.total}
-              percentageChange={
-                analytics.metrics.highlights.totalLinesOfCode.percentageChange
-              }
-              isPositive={
-                analytics.metrics.highlights.totalLinesOfCode.isPositive
-              }
-              data={analytics.metrics.highlights.totalLinesOfCode.data}
-            />
-            <HighlightCardWithGraph
-              title="Number of Contributors"
-              value={analytics.metrics.highlights.numContributors}
-            />
-          </div>
+          <div className="grid grid-cols-3 gap-10">
+            {/* Highlight Cards */}
+            <div className="flex flex-col gap-10 mb-12 col-start-3 row-end-auto">
+              <HighlightCardWithGraph
+                title="Total Commits"
+                value={analytics.metrics.highlights.totalCommits.total}
+                percentageChange={
+                  analytics.metrics.highlights.totalCommits.percentageChange
+                }
+                isPositive={
+                  analytics.metrics.highlights.totalCommits.isPositive
+                }
+                data={analytics.metrics.highlights.totalCommits.data}
+              />
+              {/* <HighlightCardWithGraph
+                title="Number of Branches"
+                value={analytics.metrics.highlights.numBranches}
+              /> */}
+              <HighlightCardWithGraph
+                title="Total Lines of Code"
+                value={analytics.metrics.highlights.totalLinesOfCode.total}
+                percentageChange={
+                  analytics.metrics.highlights.totalLinesOfCode.percentageChange
+                }
+                isPositive={
+                  analytics.metrics.highlights.totalLinesOfCode.isPositive
+                }
+                data={analytics.metrics.highlights.totalLinesOfCode.data}
+              />
+              {/* <HighlightCardWithGraph
+                title="Number of Contributors"
+                value={analytics.metrics.highlights.numContributors}
+              /> */}
 
-          {/* Graphs */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full">
-            <div className="w-full h-full col-span-2">
+              {/* <div className="w-full min-h-[300px] h-full ">
+                <ContributorLineGraph
+                  data={analytics.metrics.contributors.lineGraph.data}
+                  title={analytics.metrics.contributors.lineGraph.title}
+                  xAxisLabel={
+                    analytics.metrics.contributors.lineGraph.xAxisLabel
+                  }
+                  yAxisLabel={
+                    analytics.metrics.contributors.lineGraph.yAxisLabel
+                  }
+                />
+              </div> */}
+              <div className="w-full min-h-[300px] h-full ">
+                <ContributionPieChart
+                  data={analytics.metrics.contributors.pieChart.data}
+                  title={analytics.metrics.contributors.pieChart.title}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col col-span-2 row-start-1 gap-10">
+              {/* Graphs */}
               <HeatmapGraph
                 data={analytics.metrics.contributors.heatMap.data}
                 title={analytics.metrics.contributors.heatMap.title}
               />
-            </div>
-            <div className="w-full min-h-[300px] h-full col-start-3">
-              <LeaderboardGraph
-                data={analytics.metrics.contributors.leaderboard.data}
-                title={analytics.metrics.contributors.leaderboard.title}
-                xAxisLabel={
-                  analytics.metrics.contributors.leaderboard.xAxisLabel
-                }
-              />
-            </div>
-            <div className="w-full min-h-[300px] h-full col-span-2">
-              <ContributorLineGraph
-                data={analytics.metrics.contributors.lineGraph.data}
-                title={analytics.metrics.contributors.lineGraph.title}
-                xAxisLabel={analytics.metrics.contributors.lineGraph.xAxisLabel}
-                yAxisLabel={analytics.metrics.contributors.lineGraph.yAxisLabel}
-              />
-            </div>
-            <div className="w-full min-h-[300px] h-full col-start-3">
-              <ContributionPieChart
-                data={analytics.metrics.contributors.pieChart.data}
-                title={analytics.metrics.contributors.pieChart.title}
-              />
+
+              <div className="w-full min-h-[300px] h-full ">
+                <LeaderboardGraph
+                  data={analytics.metrics.contributors.leaderboard.data}
+                  title={analytics.metrics.contributors.leaderboard.title}
+                  xAxisLabel={
+                    analytics.metrics.contributors.leaderboard.xAxisLabel
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>

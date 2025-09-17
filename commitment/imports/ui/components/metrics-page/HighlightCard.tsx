@@ -28,14 +28,14 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
   const fillColor = isPositive ? "#59A14F" : "#E15759";
   return (
     <Card
-      className={`font-mono text-foreground flex flex-col w-full min-w-[220px] gap-2 max-w-[500px] rounded-xl outline-solid outline-2 outline-git-bg-secondary  bg-git-bg-bottom justify-between ${
+      className={`font-mono text-foreground flex flex-col w-full min-w-[220px] gap-2 rounded-xl outline-solid outline-2 outline-git-bg-secondary  bg-git-bg-bottom justify-between ${
         percentageChange ? "justify-between" : "justify-start"
       }`}
     >
       <div className="flex flex-row justify-between ">
         {/* Title & Menu Icon */}
         <CardHeader className="pb-0">
-          <CardTitle className="flex justify-between items-start  text-2xl mt-0 font-normal ">
+          <CardTitle className="flex justify-between items-start font-bold text-2xl mt-0 ">
             {title}
           </CardTitle>
         </CardHeader>
