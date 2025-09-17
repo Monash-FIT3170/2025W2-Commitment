@@ -11,51 +11,135 @@ function GitRepoInputSection() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const validateRepoUrl = (url: string): string | null => {
+  // Platform configuration for GitHub, GitLab and Bitbucket support
+  const GIT_PLATFORMS = {
+    github: {
+      name: 'GitHub',
+      domains: ['github.com'],
+      httpsPattern: /^https:\/\/github\.com\/[a-zA-Z0-9_.~-]+\/[a-zA-Z0-9_.~-]+(?:\.git)?$/,
+      sshPattern: /^git@github\.com:[a-zA-Z0-9_.~-]+\/[a-zA-Z0-9_.~-]+\.git$/
+    },
+    gitlab: {
+      name: 'GitLab',
+      domains: ['gitlab.com'],
+      httpsPattern: /^https:\/\/gitlab\.com\/[a-zA-Z0-9_.~-]+\/[a-zA-Z0-9_.~-]+(?:\.git)?$/,
+      sshPattern: /^git@gitlab\.com:[a-zA-Z0-9_.~-]+\/[a-zA-Z0-9_.~-]+\.git$/
+    },
+    bitbucket: {
+      name: 'Bitbucket',
+      domains: ['bitbucket.org'],
+      httpsPattern: /^https:\/\/(?:[a-zA-Z0-9_.~-]+@)?bitbucket\.org\/[a-zA-Z0-9_.~-]+\/[a-zA-Z0-9_.~-]+(?:\.git)?$/,
+      sshPattern: /^git@bitbucket\.org:[a-zA-Z0-9_.~-]+\/[a-zA-Z0-9_.~-]+\.git$/
+    }
+  };
+
+  const detectPlatform = (url: string) => {
+    for (const [key, platform] of Object.entries(GIT_PLATFORMS)) {
+      if (platform.domains.some(domain => url.includes(domain))) {
+        return { key, ...platform };
+      }
+    }
+    return null;
+  };
+
+  const validateRepoUrl = (url: string): { isValid: boolean; error?: string; platform?: string } => {
     const trimmedUrl = url.trim();
     const cleanUrl = trimmedUrl.startsWith('@') ? trimmedUrl.substring(1) : trimmedUrl;
 
-    // regex for standard github HTTPS and SSH formats, allowing .git optionally for HTTPS
-    const githubHttpsRegex = /^https:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+(\.git)?$/;
-    const githubSshRegex = /^git@github\.com:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\.git$/;
-
     if (!cleanUrl) {
-      return 'Repository link cannot be empty.';
+      return { isValid: false, error: 'Repository link cannot be empty.' };
     }
 
-    if (githubHttpsRegex.test(cleanUrl) || githubSshRegex.test(cleanUrl)) {
-      return null; // URL is valid
+    // Detect platform
+    const platform = detectPlatform(cleanUrl);
+    
+    if (!platform) {
+      return { 
+        isValid: false, 
+        error: 'Unsupported platform. Supported: GitHub, GitLab, Bitbucket' 
+      };
     }
-    return 'Invalid GitHub repository link format. Please use one of these formats:\n'
-                   + '- HTTPS: https://github.com/username/repo or https://github.com/username/repo.git\n'
-                   + '- SSH: git@github.com:username/repo.git';
+
+    // Validate against platform-specific patterns
+    const isHttpsValid = platform.httpsPattern.test(cleanUrl);
+    const isSshValid = platform.sshPattern.test(cleanUrl);
+
+    if (isHttpsValid || isSshValid) {
+      return { isValid: true, platform: platform.name };
+    }
+
+    // Generate helpful error message with examples
+    const examples = platform.key === 'bitbucket' 
+      ? [
+          'https://bitbucket.org/user/repo',
+          'https://bitbucket.org/user/repo.git',
+          'https://username@bitbucket.org/user/repo.git',
+          'git@bitbucket.org:user/repo.git'
+        ]
+      : [
+          `https://${platform.domains[0]}/user/repo`,
+          `https://${platform.domains[0]}/user/repo.git`,
+          `git@${platform.domains[0]}:user/repo.git`
+        ];
+
+    return {
+      isValid: false,
+      error: `Invalid ${platform.name} repository URL format. Examples:\n${examples.map(ex => `- ${ex}`).join('\n')}`,
+      platform: platform.name
+    };
   };
 
   const extractRepoInfo = (url: string): { name: string; owner: string } | null => {
-    // Handle HTTPS URLs
-    if (url.startsWith('https://github.com/')) {
-      const parts = url.replace('https://github.com/', '').replace('.git', '').split('/');
-      if (parts.length === 2) {
-        return { owner: parts[0], name: parts[1] };
+    // Detect platform first
+    const platform = detectPlatform(url);
+    
+    if (!platform) {
+      return null;
+    }
+
+    // Handle HTTPS URLs for all platforms
+    for (const domain of platform.domains) {
+      if (url.startsWith(`https://${domain}/`)) {
+        // Remove username@ from URL if present (common in Bitbucket)
+        const cleanUrl = url.replace(/^https:\/\/[^@]+@/, 'https://');
+        const parts = cleanUrl.replace(`https://${domain}/`, '').replace('.git', '').split('/');
+        if (parts.length === 2) {
+          return { owner: parts[0], name: parts[1] };
+        }
       }
     }
-    
-    // Handle SSH URLs
-    if (url.startsWith('git@github.com:')) {
-      const parts = url.replace('git@github.com:', '').replace('.git', '').split('/');
-      if (parts.length === 2) {
-        return { owner: parts[0], name: parts[1] };
+
+    // Handle SSH URLs for all platforms
+    for (const domain of platform.domains) {
+      if (url.startsWith(`git@${domain}:`)) {
+        const parts = url.replace(`git@${domain}:`, '').replace('.git', '').split('/');
+        if (parts.length === 2) {
+          return { owner: parts[0], name: parts[1] };
+        }
       }
+    }
+
+    // Fallback: Generic pattern matching for any Git URL
+    const httpsMatch = url.match(/^https?:\/\/[^@]*@?[^\/]+\/([^\/]+)\/([^\/]+?)(?:\.git)?$/);
+    if (httpsMatch) {
+      return { owner: httpsMatch[1], name: httpsMatch[2] };
+    }
+
+    const sshMatch = url.match(/^git@[^:]+:([^\/]+)\/([^\/]+?)(?:\.git)?$/);
+    if (sshMatch) {
+      return { owner: sshMatch[1], name: sshMatch[2] };
     }
     
     return null;
   };
 
-  const handleAnalyseClick = async () => {
-    const error = validateRepoUrl(repoUrl);
-    setValidationError(error);
 
-    if (!error) {
+
+  const handleAnalyseClick = async () => {
+    const validation = validateRepoUrl(repoUrl);
+    setValidationError(validation.error || null);
+
+    if (validation.isValid) {
       setIsProcessing(true);
       
       try {
@@ -73,7 +157,7 @@ function GitRepoInputSection() {
           repoUrl,
           repoInfo.name,
           repoInfo.owner,
-          `Repository: ${repoInfo.owner}/${repoInfo.name}`,
+          `${validation.platform} Repository: ${repoInfo.owner}/${repoInfo.name}`,
           (err: any, result: string) => {
             if (err) {
               console.error('Error storing repository:', err);
@@ -87,7 +171,8 @@ function GitRepoInputSection() {
                   repoUrl,
                   repoId: result,
                   repoName: repoInfo.name,
-                  repoOwner: repoInfo.owner
+                  repoOwner: repoInfo.owner,
+                  platform: validation.platform
                 } 
               });
             }
@@ -107,23 +192,30 @@ function GitRepoInputSection() {
     }
   };
 
+  const handleInputChange = (value: string) => {
+    setRepoUrl(value);
+    setValidationError(null);
+  };
+
   return (
     <>
-      <Input
-        type="text"
-        placeholder="Insert git repo link"
-        className={cn(
-          'w-full bg-git-bg-elevated/50 max-w-lg px-4 py-2 border  shadow-xs focus:outline-hidden',
-          validationError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-git-int-primary focus:ring-git-int-primary focus:border-git-int-primary',
-          'mb-4',
-        )}
-        value={repoUrl}
-        onChange={(e) => setRepoUrl(e.target.value)}
-        onKeyPress={handleInputKeyPress}
-        disabled={isProcessing}
-      />
+      <div className="relative w-full max-w-lg mb-4">
+        <Input
+          type="text"
+          placeholder="Insert Git repository URL (GitHub, GitLab, Bitbucket)"
+          className={cn(
+            'w-full bg-git-bg-elevated/50 px-4 py-2 border shadow-xs focus:outline-hidden',
+            validationError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-git-int-primary focus:ring-git-int-primary focus:border-git-int-primary',
+          )}
+          value={repoUrl}
+          onChange={(e) => handleInputChange(e.target.value)}
+          onKeyPress={handleInputKeyPress}
+          disabled={isProcessing}
+        />
+      </div>
+      
       {validationError && (
-        <p className="text-red-500 text-sm mt-1">{validationError}</p>
+        <p className="text-red-500 text-sm mt-1 mb-4">{validationError}</p>
       )}
       <Button
         className={cn(
