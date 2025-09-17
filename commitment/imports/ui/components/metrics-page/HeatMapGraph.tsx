@@ -262,7 +262,7 @@ export default function HeatMapGraph({
   );
 
   const rowHeight = 50;
-  const minHeight = 200;
+  const minHeight = 408;
   const maxHeight = 800;
   const dynamicHeight = Math.max(
     minHeight,
@@ -448,7 +448,7 @@ export default function HeatMapGraph({
   );
 
   return (
-    <GraphCard className="w-full p-0">
+    <GraphCard className="w-full h-full p-0">
       <CardHeader className="pb-0">
         <CardTitle className="flex justify-between text-xl mt-0 font-bold ">
           <div className="flex ">
