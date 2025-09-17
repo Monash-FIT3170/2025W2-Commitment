@@ -103,7 +103,9 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
  * @returns   whether the removal was successful
  */
 export const removeRepo = async (url: string): Promise<boolean> => {
-  const res = await RepoCollection.removeAsync({ url });
+  const doc = await RepoCollection.findOneAsync({ url: url });
+  if (null === doc) return false;
+  const res = await RepoCollection.removeAsync(doc._id);
   return res > 0;
 };
 
