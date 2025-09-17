@@ -24,10 +24,14 @@ import {
 import { Button } from "../ui/button";
 import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
-import type { UserScalingSummary } from "../../../api/types";
+import type {
+  UnmappedContributor,
+  UserScalingSummary,
+} from "../../../api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 import { toast } from "../../hooks/use-toast";
 import InfoButton from "../ui/infoButton";
+import { useNavigate } from "react-router-dom";
 
 interface ScalingConfig {
   metrics: string[];
@@ -49,6 +53,36 @@ function ScalingView(): JSX.Element {
     useState<ParseResult | null>(null);
   const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
   const [repoUrl, setRepoUrl] = useState<string | null>(null);
+
+  // for Alias Mapping
+  const [unmappedUsers, setUnmappedUsers] = useState<
+    { name: string; rawIdentifiers: string[] }[]
+  >([]);
+  const [showAliasDialog, setShowAliasDialog] = useState(false);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!repoUrl) return;
+
+    Meteor.call(
+      "aliasConfigs.validateAllContributors",
+      repoUrl,
+      (err: Meteor.Error | null, res: { unmapped: UnmappedContributor[] }) => {
+        if (err) {
+          console.error("Error validating contributors:", err);
+          return;
+        }
+
+        if (res.unmapped.length > 0) {
+          setUnmappedUsers(res.unmapped);
+          setShowAliasDialog(true);
+        } else {
+          setShowAliasDialog(false);
+        }
+      }
+    );
+  }, [repoUrl]);
 
   // Function to clear all scaling data from localStorage and reset state
   const clearScalingData: () => void = () => {
@@ -297,6 +331,48 @@ function ScalingView(): JSX.Element {
     <div className="w-full m-0 scroll-smooth p-10">
       <div className="flex flex-col gap-32">
         <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
+          {showAliasDialog && (
+            <AlertDialog
+              open={showAliasDialog}
+              onOpenChange={setShowAliasDialog}
+            >
+              <AlertDialogTrigger asChild>
+                <div></div>
+              </AlertDialogTrigger>
+
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Unmapped Contributors</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    The following contributors are not mapped in your alias
+                    config:
+                    <ul className="mt-2 list-disc ml-5">
+                      {unmappedUsers.map((u) => (
+                        <li key={u.name}>
+                          <strong>{u.name}</strong>:{" "}
+                          {u.rawIdentifiers.join(", ")}
+                        </li>
+                      ))}
+                    </ul>
+                    Please upload or update your alias configuration in
+                    settings.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Close</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      setShowAliasDialog(false);
+                      navigate("/settings", { state: { tab: "alias-config" } });
+                    }}
+                  >
+                    Go to Settings
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
           {/* Always render the scaling summary in the background */}
           {config && scaledResults.length > 0 && (
             <div className="mb-6">
