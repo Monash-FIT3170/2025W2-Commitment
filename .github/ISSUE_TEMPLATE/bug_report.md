@@ -2,43 +2,48 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
-assignees: ''
 
 ---
 
-**Describe the bug**
+# Describe the bug #
+
 A clear and concise description of what the bug is.
 
-**Repository details**
-- Repo type: [Public / Private]
-- Repo URL (if shareable):
-- Approx size (commits/contributors):
+# To Reproduce #
 
-**To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
-4. See error
+4. If the bug is to do with repository issues, please include:
+      - Repo type: [Public / Private]
+      - Repo URL (if shareable):
+      - Approx size (commits/contributors) 
+5. See error
 
-**Expected behavior**
+# Expected behavior #
+
 A clear and concise description of what you expected to happen.
 
-**Impact**
+# Impact #
+
 - Does this block analysis, or is it just a display issue?
 - Is there a workaround? [Yes / No]
 
-**Screenshots**
+# Screenshots #
+
 If applicable, add screenshots to help explain your problem.
 
-**Environment (please complete the following information):**
+# Environment (please complete the following information): #
+
  - OS: [e.g. iOS]
  - Browser [e.g. chrome, safari]
  - Version [e.g. 22]
 
- **Error messages / Logs**
+ # Error messages / Logs #
+ 
 Paste any relevant logs, console errors, or screenshots here.
 
-**Additional context**
+# Additional context #
+
 Add any other context about the problem here.
