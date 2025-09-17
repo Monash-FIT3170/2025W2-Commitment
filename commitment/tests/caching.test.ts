@@ -1,7 +1,13 @@
 import { Meteor } from "meteor/meteor";
 import { expect } from "chai";
 
-import { cacheIntoDatabase, isInDatabase, tryFromDatabase } from "../server/api/caching";
+import {
+  cacheIntoDatabase,
+  isInDatabase,
+  removeRepo,
+  tryFromDatabase,
+  voidDatabase,
+} from "../server/api/caching";
 import { meteorCallAsync, suppressError } from "../imports/api/meteor_interface";
 import { RepositoryData } from "/imports/api/types";
 import { RepositoriesCollection } from "/imports/api/repositories";
@@ -19,12 +25,12 @@ describe("Caching Tests", () => {
 
   beforeEach(async () => {
     // Clean up before each test
-    await RepositoriesCollection.removeAsync({});
+    await voidDatabase();
   });
 
   afterEach(async () => {
     // Clean up after each test
-    await RepositoriesCollection.removeAsync({});
+    await voidDatabase();
   });
 
   it("should not find it", async () => {
@@ -58,7 +64,7 @@ describe("Caching Tests", () => {
     expect(await isInDatabase(testUrl)).to.be.true;
 
     // Remove data
-    const removed = await meteorCallAsync("repoCollection.removeRepo")(testUrl);
+    const removed = removeRepo(testUrl);
     expect(removed).to.be.true;
 
     await delay(500); // simulates 500ms of work for the database to actually remove it
