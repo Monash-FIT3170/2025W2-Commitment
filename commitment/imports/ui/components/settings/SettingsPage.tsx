@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import NavBar from '@ui/components/landing-page/NavBar';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@ui/components/ui/tabs';
@@ -312,9 +311,7 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-git-bg-primary">
-      <NavBar isLoggedIn={isLoggedIn} />
-      
-      <div className="max-w-6xl mx-auto px-6 py-8 pt-24">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-4xl font-bold text-git-text-primary mb-4">
           Settings
         </h1>

@@ -226,7 +226,7 @@ function GitRepoInputSection() {
       <div className="relative w-full max-w-lg mb-4">
         <Input
           type="text"
-          placeholder="Insert Git repository URL (GitHub, GitLab, Bitbucket)"
+          placeholder="Insert repository URL (GitHub, GitLab, Bitbucket)"
           className={cn(
             'w-full bg-git-bg-elevated/50 px-4 py-2 border shadow-xs focus:outline-hidden',
             validationError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-git-int-primary focus:ring-git-int-primary focus:border-git-int-primary',
