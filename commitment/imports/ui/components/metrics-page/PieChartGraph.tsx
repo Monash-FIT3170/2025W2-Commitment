@@ -74,7 +74,7 @@ export function ContributionPieChart({ data, title }: Props) {
   return (
     <GraphCard className="w-full max-w-full h-[500px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
-        <div className="flex items-center space-x-2 w-4/5">
+        <div className="flex items-center w-full gap-2">
           <h2 className="text-xl font-bold"> {title}</h2>
           <div className="relative -mt-2">
             <InfoButton description={pieChartDescription} />
