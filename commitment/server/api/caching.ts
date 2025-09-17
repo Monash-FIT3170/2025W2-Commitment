@@ -103,9 +103,9 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
  * @returns   whether the removal was successful
  */
 export const removeRepo = async (url: string): Promise<boolean> => {
-  const existing = await RepoCollection.findOneAsync({ url: url });
+  const existing = await RepoCollection.findOneAsync({ url });
   if (!existing) throw Error(`url ${url} is not in the database`);
-  const res = await RepoCollection.removeAsync({ url: url });
+  const res = await RepoCollection.removeAsync({ url });
   return res > 0;
 };
 
@@ -118,9 +118,8 @@ export const allUrls = (): Promise<string[]> =>
 // -----------------------  WARNING  -----------------------
 // IF I SEE THIS OUTSIDE OF THE TESTCASES
 // YOU WILL BE SENT TO THE GULAG
-export const voidDatabase = async (): Promise<boolean[]> => {
-  const urls: string[] = await allUrls();
-  return await Promise.all(urls.map(removeRepo));
+export const voidDatabase = async (): Promise<void> => {
+  await RepoCollection.removeAsync({});
 };
 
 /**
@@ -135,7 +134,7 @@ export const tryFromDatabaseSerialised = async (
 ): Promise<SerializableRepoData> => {
   if (notifier != null) notifier.next("Checking database for existing data...");
 
-  const repoData = await RepoCollection.findOneAsync({ url: url });
+  const repoData = await RepoCollection.findOneAsync({ url });
   if (!repoData) throw Error("Data not found in database");
   if (notifier != null) notifier.next("Found data in database!");
 
