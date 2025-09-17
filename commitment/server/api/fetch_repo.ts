@@ -4,8 +4,8 @@ import { WebSocket } from "ws";
 import net from "net";
 import dotenv from "dotenv";
 
-import { RepositoryData } from "/imports/api/types";
-import { assertRepoTyping } from "/imports/api/serialisation";
+import { RepositoryData, SerializableRepoData } from "/imports/api/types";
+import { assertRepoTyping, serializeRepoData } from "/imports/api/serialisation";
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "./caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
@@ -84,6 +84,11 @@ export const getRepoData = (
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
   tryFromDatabase(url, notifier).catch((_e1: Error) => fetchRepoData(url, notifier));
+
+export const getSerialisedRepoData = (
+  url: string,
+  notifier: Subject<string> | null
+): Promise<SerializableRepoData> => getRepoData(url, notifier).then(serializeRepoData);
 
 export const fetchRepoData = (
   url: string,

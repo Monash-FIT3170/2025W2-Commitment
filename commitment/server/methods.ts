@@ -19,8 +19,7 @@ import { getContributors } from "./helper_functions";
 
 import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
-import { getRepoData } from "./api/fetch_repo";
-import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation";
+import { getSerialisedRepoData } from "./api/fetch_repo";
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 
@@ -45,8 +44,10 @@ Meteor.methods({
     branch?: string;
     contributor?: string[];
   }): Promise<FilteredData> {
-    // Get full repository data from db
-    const repo: SerializableRepoData = await Meteor.callAsync("repoCollection.getData", repoUrl);
+    // TODO do type checks here if needed
+
+    // Get full repository data from db (fetches from API if not updated or in the database)
+    const repo: SerializableRepoData = await getSerialisedRepoData(repoUrl, null);
 
     // Apply alias mapping if user has config
     const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
@@ -65,7 +66,7 @@ Meteor.methods({
 
   async "repo.getMetadata"(repoUrl: string): Promise<Metadata> {
     // Get full repository data from db
-    const repo: SerializableRepoData = await Meteor.callAsync("repoCollection.getData", repoUrl);
+    const repo: SerializableRepoData = await getSerialisedRepoData(repoUrl, null);
 
     // Apply alias mapping if user has config
     const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
@@ -156,7 +157,7 @@ Meteor.methods({
    */
   async "repo.getAllMetrics"({ repoUrl }: { repoUrl: string }): Promise<AllMetricsData> {
     // Get repository data and apply alias mapping
-    const repo: SerializableRepoData = await Meteor.callAsync("repoCollection.getData", repoUrl);
+    const repo: SerializableRepoData = await getSerialisedRepoData(repoUrl, null);
 
     const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
 

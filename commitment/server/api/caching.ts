@@ -130,7 +130,7 @@ export const voidDatabase = async (): Promise<void> => {
  */
 export const tryFromDatabaseSerialised = async (
   url: string,
-  notifier: Subject<string>
+  notifier: Subject<string> | null
 ): Promise<SerializableRepoData> => {
   if (notifier != null) notifier.next("Checking database for existing data...");
 
@@ -143,7 +143,7 @@ export const tryFromDatabaseSerialised = async (
 
 export const tryFromDatabaseSerialisedViaLatest = async (
   url: string,
-  notifier: Subject<string>
+  notifier: Subject<string> | null
 ): Promise<SerializableRepoData> => {
   const d: SerializableRepoData = await tryFromDatabaseSerialised(url, notifier);
   const upToDate: boolean = await isUpToDate(url, d);
