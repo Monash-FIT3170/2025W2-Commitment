@@ -174,32 +174,34 @@ export function AnalyticsView(): React.JSX.Element {
           <div className="grid grid-cols-3 gap-10">
             {/* Highlight Cards */}
             <div className="flex flex-col gap-10 mb-12 col-start-3 row-end-auto">
-              <HighlightCardWithGraph
-                title="Total Commits"
-                value={analytics.metrics.highlights.totalCommits.total}
-                percentageChange={
-                  analytics.metrics.highlights.totalCommits.percentageChange
-                }
-                isPositive={
-                  analytics.metrics.highlights.totalCommits.isPositive
-                }
-                data={analytics.metrics.highlights.totalCommits.data}
-              />
-              {/* <HighlightCardWithGraph
-                title="Number of Branches"
-                value={analytics.metrics.highlights.numBranches}
-              /> */}
-              <HighlightCardWithGraph
-                title="Total Lines of Code"
-                value={analytics.metrics.highlights.totalLinesOfCode.total}
-                percentageChange={
-                  analytics.metrics.highlights.totalLinesOfCode.percentageChange
-                }
-                isPositive={
-                  analytics.metrics.highlights.totalLinesOfCode.isPositive
-                }
-                data={analytics.metrics.highlights.totalLinesOfCode.data}
-              />
+              <div className="grid grid-cols-1 3xl:grid-cols-2 gap-10">
+                <HighlightCardWithGraph
+                  title="Total Commits"
+                  value={analytics.metrics.highlights.totalCommits.total}
+                  percentageChange={
+                    analytics.metrics.highlights.totalCommits.percentageChange
+                  }
+                  isPositive={
+                    analytics.metrics.highlights.totalCommits.isPositive
+                  }
+                  data={analytics.metrics.highlights.totalCommits.data}
+                />
+                {/* <HighlightCardWithGraph
+                  title="Number of Branches"
+                  value={analytics.metrics.highlights.numBranches}
+                /> */}
+                <HighlightCardWithGraph
+                  title="Total Lines of Code"
+                  value={analytics.metrics.highlights.totalLinesOfCode.total}
+                  percentageChange={
+                    analytics.metrics.highlights.totalLinesOfCode.percentageChange
+                  }
+                  isPositive={
+                    analytics.metrics.highlights.totalLinesOfCode.isPositive
+                  }
+                  data={analytics.metrics.highlights.totalLinesOfCode.data}
+                />
+              </div>
               {/* <HighlightCardWithGraph
                 title="Number of Contributors"
                 value={analytics.metrics.highlights.numContributors}
