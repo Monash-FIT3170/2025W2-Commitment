@@ -73,7 +73,6 @@ Meteor.methods({
  */
 export const isInDatabase = async (url: string): Promise<boolean> => {
   const doc = await RepoCollection.findOneAsync({ url: url });
-  console.log(doc);
   return null !== doc;
 };
 
@@ -104,8 +103,6 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
  * @returns   whether the removal was successful
  */
 export const removeRepo = async (url: string): Promise<boolean> => {
-  const existing = await RepoCollection.findOneAsync({ url });
-  if (!existing) throw Error(`url ${url} is not in the database`);
   const res = await RepoCollection.removeAsync({ url });
   return res > 0;
 };
