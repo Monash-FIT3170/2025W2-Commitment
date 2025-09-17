@@ -216,13 +216,13 @@ export async function getScaledResults(
   repoData: SerializableRepoData,
   config: ScalingConfig,
   repoUrl: string,
-  userId: string
+  userId: string 
 ): Promise<UserScalingSummary[]> {
   const aliasConfig = await Meteor.callAsync("aliasConfigs.getAllForOwner", userId).catch(
     () => null
   );
   // const aliasConfig = await meteorCallAsync<AliasConfig>("aliasConfigs.getAllForOwner")(userId)
-
+    console.log("aliasConfig: ", aliasConfig)
   const mappedData =
     aliasConfig && aliasConfig.length
       ? {
@@ -248,6 +248,10 @@ export async function getScaledResults(
             } as ContributorValueWithAliases,
           })),
         };
+
+    console.log("mappedData: ",mappedData)
+
+
 
   const updatedContributors = await Promise.all(
     mappedData.contributors.map(async (contributor) => {
@@ -281,24 +285,23 @@ export async function getScaledResults(
     })
   );
 
+    console.log("updatedContributors: ",updatedContributors)
   const mappedDataWithAliases: SerializableRepoData = {
     ...mappedData,
     contributors: updatedContributors,
   };
 
-  const validUserNames = new Set(
-    mappedDataWithAliases.contributors.filter((c) => c.value.emails.length > 0).map((c) => c.key)
-  );
-
+    console.log("mappedDataWithAliases: ",mappedDataWithAliases)
   const scaledUsers = await scaleUsers(repoUrl, config);
-  const scaledValidUsers = scaledUsers.filter(({ name }) => validUserNames.has(name));
 
+    console.log("scaledUsers: ",scaledUsers)
   const finalResults: UserScalingSummary[] = mappedDataWithAliases.contributors.map((c) => {
     const contributorValue = c.value as ContributorValueWithAliases;
 
     // Use only the canonical name for scale lookup
     const scaledUser = scaledUsers.find((u) => u.name === c.key);
 
+    console.log("scaledUser: ",scaledUser)
     return {
       name: c.key,
       aliases: contributorValue.aliases,
@@ -306,6 +309,7 @@ export async function getScaledResults(
       scale: scaledUser ? scaledUser.score : 0,
     };
   });
+    console.log("finalResults: ",finalResults)
 
   return finalResults;
 }
