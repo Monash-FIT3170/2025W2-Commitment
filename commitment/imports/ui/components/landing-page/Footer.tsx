@@ -37,9 +37,14 @@ function Support() {
           </span>
         </li>
         <li>
-          <span className="font-mono cursor-pointer hover:underline">
+          <a
+            href="https://github.com/Monash-FIT3170/2025W2-Commitment"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono hover:underline"
+          >
             GitHub Repository
-          </span>
+          </a>
         </li>
       </ul>
     </div>
@@ -52,9 +57,15 @@ function Legal() {
       <h3 className="font-mono font-bold mb-3">Legal</h3>
       <ul>
         <li>
-          <span className="font-mono cursor-pointer hover:underline">
+          <a
+            href="https://github.com/Monash-FIT3170/2025W2-Commitment?tab=Apache-2.0-1-ov-file
+"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono hover:underline"
+          >
             License
-          </span>
+          </a>
         </li>
       </ul>
     </div>
