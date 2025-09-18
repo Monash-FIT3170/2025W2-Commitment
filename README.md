@@ -59,7 +59,7 @@ _If there are any issues please contact an SA for help._
 
 These next steps are required to build and spin up the Docker image that will be used.
 
-1. Create the `.env` file for Mongo connection in the `commitment\server` directory, example show below.
+1. Create the `.env` file for Mongo connection in the `commitment` directory, example show below.
    - You will need to create a database on [Atlas](https://www.mongodb.com/) and set up a URI string for the `MONGO_URL`
 
 ```
