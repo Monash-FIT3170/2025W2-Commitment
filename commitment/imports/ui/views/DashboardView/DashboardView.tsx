@@ -12,6 +12,7 @@ import { Button } from "@ui/components/ui/button";
 import { Bookmark } from "/imports/api/bookmarks";
 import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
+import { useNavigate } from "react-router-dom";
 import ViewToggle from "../../components/dashboard/ViewToggle";
 import RepoRow from "../../components/dashboard/RepoRow";
 import { FiltersState, FilterValue } from "../../components/ui/filter";
@@ -26,8 +27,6 @@ import { Input } from "../../components/ui/input";
 //   userID:"1"
 // }));
 
-const handleView = () => console.log("view metrics");
-
 type SortKey = "createdAt" | "lastViewed" | null;
 type SortDir = "asc" | "desc" | null;
 
@@ -38,6 +37,12 @@ const DashboardView: React.FC = () => {
   const [sortDir, setSortDir] = useState<SortDir>(null);
   const user = useTracker(() => Meteor.user());
   const userName = user?.profile?.name || user?.username || "User";
+  const navigate = useNavigate();
+
+  // Clear repository history when user navigates to dashboard
+  useEffect(() => {
+    localStorage.removeItem('lastRepoUrl');
+  }, []);
 
   const [filters, setFilters] = useState<FiltersState>({
     createdAt: { isUsed: false, value: { from: undefined, to: undefined } },
@@ -134,6 +139,19 @@ const DashboardView: React.FC = () => {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateFilter("titleSearch", e.target.value);
+  };
+
+  const handleViewRepository = (bookmark: Bookmark) => {
+    // Update lastViewed timestamp
+    Meteor.call("bookmarks.updateLastViewed", bookmark.url, (error: any) => {
+      if (error) {
+        console.error("Error updating lastViewed:", error);
+      }
+    });
+
+    navigate("/metrics", {
+      state: { repoUrl: bookmark.url }
+    });
   };
 
   useEffect(() => {
@@ -247,14 +265,14 @@ const DashboardView: React.FC = () => {
           // Gallery
           <div className="flex flex-wrap justify-evenly gap-10">
             {displayed.map((b) => (
-              <GalleryCard bookmark={b} onclick={handleView} />
+              <GalleryCard key={b._id} bookmark={b} onclick={() => handleViewRepository(b)} />
             ))}
           </div>
         ) : (
           // List
           <ul className="space-y-5">
             {displayed.map((b) => (
-              <RepoRow bookmark={b} onclick={handleView} />
+              <RepoRow key={b._id} bookmark={b} onclick={() => handleViewRepository(b)} />
             ))}
           </ul>
         )}

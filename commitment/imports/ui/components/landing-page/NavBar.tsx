@@ -4,7 +4,8 @@ import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
 import { useTheme } from "@ui/hooks/useTheme";
 import ProfileMenu from "../ui/profile-menu";
-import { navigationMenuTriggerStyle ,
+import {
+  navigationMenuTriggerStyle,
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
@@ -38,7 +39,7 @@ export const NavBar: React.FC = () => {
           <div className="flex items-center space-x-3">
             <NavigationMenuItem>
               <NavigationMenuLink>
-                <Link to={isLandingPage ? "/" : "/home"} >
+                <Link to={isLandingPage ? "/" : "/home"}>
                   <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
                 </Link>
               </NavigationMenuLink>
@@ -81,11 +82,11 @@ export const NavBar: React.FC = () => {
                   Dashboard
                 </Link>
               </NavigationMenuItem>
-              <NavigationMenuItem>
+              {/* <NavigationMenuItem>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Docs
                 </NavigationMenuLink>
-              </NavigationMenuItem>
+              </NavigationMenuItem> */}
             </>
           )}
         </NavigationMenuList>
@@ -108,7 +109,7 @@ export const NavBar: React.FC = () => {
 
         {!isLoggedIn && (
           <div>
-            <a href="/login" className={`${navigationMenuTriggerStyle()  }mr-10`}>
+            <a href="/login" className={`${navigationMenuTriggerStyle()}mr-10`}>
               Log in
             </a>
             {/* Sign up button */}
@@ -117,7 +118,8 @@ export const NavBar: React.FC = () => {
               asChild
             >
               <a href="/signup">Sign Up</a>
-            </Button>          </div>
+            </Button>{" "}
+          </div>
         )}
         {isLoggedIn && <ProfileMenu onSignOut={handleSignOut} />}
       </div>
