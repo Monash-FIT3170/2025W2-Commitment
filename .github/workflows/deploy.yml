@@ -21,19 +21,19 @@ jobs:
 
       - name: Build Meteor app image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest -f commitment/Dockerfile.MeteorRun commitment/
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest -f commitment/Dockerfile.MeteorRun commitment/
 
       - name: Push Meteor app image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
 
       - name: Build Haskell API image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest -f api/Dockerfile.haskell api/
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest -f api/Dockerfile.haskell api/
 
       - name: Push Haskell API image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.0
