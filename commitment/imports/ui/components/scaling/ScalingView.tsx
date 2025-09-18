@@ -341,7 +341,10 @@ function ScalingView(): JSX.Element {
       <div className="flex flex-col gap-32">
         <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
           {showAliasDialog && (
-            <AlertDialog open={showAliasDialog}>
+            <AlertDialog
+              open={showAliasDialog}
+              onOpenChange={setShowAliasDialog}
+            >
               <AlertDialogTrigger asChild>
                 <div></div>
               </AlertDialogTrigger>
@@ -372,7 +375,7 @@ function ScalingView(): JSX.Element {
                         });
                       }}
                     >
-                      Go to Settings
+                      Go to Alias Configuration
                     </AlertDialogAction>
                   </div>
                 </AlertDialogFooter>
@@ -380,15 +383,16 @@ function ScalingView(): JSX.Element {
             </AlertDialog>
           )}
 
-          {/* Always render the scaling summary in the background if Aliases are present */}
+          {/* Always render the scaling summary in the background */}
           {config && scaledResults.length > 0 && !showAliasDialog && (
             <div className="mb-6">
+              {/* Header */}
               <div className="mb-10">
                 <div className="flex items-center gap-4">
                   <h1 className="text-5xl text-foreground font-robotoFlex">
                     Scaling
                   </h1>
-                  <InfoButton description="ada" />
+                  <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
                 </div>
                 <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
               </div>
@@ -400,8 +404,8 @@ function ScalingView(): JSX.Element {
           )}
 
           {/* Buttons for grading sheet or regenerate */}
-          {showAliasDialog && (
-            <div>
+          {!showAliasDialog && (
+            <div className="flex justify-center gap-4 flex-wrap p-4">
               <Button
                 className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
                 onClick={() => {
@@ -425,7 +429,6 @@ function ScalingView(): JSX.Element {
                   : "Upload Grading Sheet"}
               </Button>
 
-              {/* Download button - only visible when grading sheet is uploaded */}
               {gradingSheet && gradingSheetParseResult && (
                 <Button
                   className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
@@ -438,37 +441,34 @@ function ScalingView(): JSX.Element {
                 </Button>
               )}
 
-              <div className="flex justify-center gap-6 p-4">
-                {/* Clear button - only visible when there's config or grading sheet data */}
-                {(config || gradingSheet || scaledResults.length > 0) && (
-                  <AlertDialog
-                    open={showClearDialog}
-                    onOpenChange={setShowClearDialog}
-                  >
-                    <AlertDialogTrigger asChild>
-                      <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Clear Scaling</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to clear all scaling data? You
-                          will need to reconfigure scaling settings and
-                          re-upload your grading sheet if you do.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmClear}>
-                          Clear
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-              </div>
+              {(config || gradingSheet || scaledResults.length > 0) && (
+                <AlertDialog
+                  open={showClearDialog}
+                  onOpenChange={setShowClearDialog}
+                >
+                  <AlertDialogTrigger asChild>
+                    <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Clear Scaling</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to clear all scaling data? You
+                        will need to reconfigure scaling settings and re-upload
+                        your grading sheet if you do.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleConfirmClear}>
+                        Clear
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           )}
 
