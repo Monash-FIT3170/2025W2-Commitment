@@ -222,7 +222,7 @@ export async function getScaledResults(
     () => null
   );
   // const aliasConfig = await meteorCallAsync<AliasConfig>("aliasConfigs.getAllForOwner")(userId)
-    console.log("aliasConfig: ", aliasConfig)
+  
   const mappedData =
     aliasConfig && aliasConfig.length
       ? {
@@ -249,7 +249,7 @@ export async function getScaledResults(
           })),
         };
 
-    console.log("mappedData: ",mappedData)
+    
 
 
 
@@ -285,23 +285,20 @@ export async function getScaledResults(
     })
   );
 
-    console.log("updatedContributors: ",updatedContributors)
   const mappedDataWithAliases: SerializableRepoData = {
     ...mappedData,
     contributors: updatedContributors,
   };
 
-    console.log("mappedDataWithAliases: ",mappedDataWithAliases)
+
   const scaledUsers = await scaleUsers(repoUrl, config);
 
-    console.log("scaledUsers: ",scaledUsers)
   const finalResults: UserScalingSummary[] = mappedDataWithAliases.contributors.map((c) => {
     const contributorValue = c.value as ContributorValueWithAliases;
 
     // Use only the canonical name for scale lookup
     const scaledUser = scaledUsers.find((u) => u.name === c.key);
 
-    console.log("scaledUser: ",scaledUser)
     return {
       name: c.key,
       aliases: contributorValue.aliases,
@@ -309,7 +306,6 @@ export async function getScaledResults(
       scale: scaledUser ? scaledUser.score : 0,
     };
   });
-    console.log("finalResults: ",finalResults)
 
   return finalResults;
 }
