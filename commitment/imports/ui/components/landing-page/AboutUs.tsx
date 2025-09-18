@@ -33,8 +33,8 @@ const Description = () => (
 const KeyFeatureImage = () => (
     <div className="mt-6">
       <img
-        src="/about-us-placeholder.png"
-        alt="About us placeholder"
+        src="/feature.png"
+        alt="Features of Commitment."
         className=" rounded-xl max-w-4xl mx-auto"
       />
     </div>
