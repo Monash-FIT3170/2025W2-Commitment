@@ -341,10 +341,7 @@ function ScalingView(): JSX.Element {
       <div className="flex flex-col gap-32">
         <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
           {showAliasDialog && (
-            <AlertDialog
-              open={showAliasDialog}
-              onOpenChange={setShowAliasDialog}
-            >
+            <AlertDialog open={showAliasDialog}>
               <AlertDialogTrigger asChild>
                 <div></div>
               </AlertDialogTrigger>
@@ -359,7 +356,6 @@ function ScalingView(): JSX.Element {
                       {unmappedUsers.map((u) => (
                         <li key={u.name}>
                           <strong>{u.name}</strong>
-                          {/* {u.rawIdentifiers.join(", ")} */}
                         </li>
                       ))}
                     </ul>
@@ -367,25 +363,26 @@ function ScalingView(): JSX.Element {
                     settings.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Close</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => {
-                      setShowAliasDialog(false);
-                      navigate("/settings", { state: { tab: "alias-config" } });
-                    }}
-                  >
-                    Go to Settings
-                  </AlertDialogAction>
+                <AlertDialogFooter className="p-0">
+                  <div className="w-full flex justify-center items-center">
+                    <AlertDialogAction
+                      onClick={() => {
+                        navigate("/settings", {
+                          state: { tab: "alias-config" },
+                        });
+                      }}
+                    >
+                      Go to Settings
+                    </AlertDialogAction>
+                  </div>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           )}
 
-          {/* Always render the scaling summary in the background */}
-          {config && scaledResults.length > 0 && (
+          {/* Always render the scaling summary in the background if Aliases are present */}
+          {config && scaledResults.length > 0 && !showAliasDialog && (
             <div className="mb-6">
-              {/* Header */}
               <div className="mb-10">
                 <div className="flex items-center gap-4">
                   <h1 className="text-5xl text-foreground font-robotoFlex">
@@ -403,71 +400,77 @@ function ScalingView(): JSX.Element {
           )}
 
           {/* Buttons for grading sheet or regenerate */}
-          <div className="flex justify-center gap-6 p-4">
-            <Button
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-              onClick={() => {
-                setStep("config");
-                setShowDialog(true);
-              }}
-            >
-              Create New Scaling
-            </Button>
-
-            <Button
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-              onClick={() => {
-                setStep("sheet");
-                setShowDialog(true);
-              }}
-            >
-              <Upload className="h-4 w-4" />
-              {gradingSheet ? "Replace Grading Sheet" : "Upload Grading Sheet"}
-            </Button>
-
-            {/* Download button - only visible when grading sheet is uploaded */}
-            {gradingSheet && gradingSheetParseResult && (
+          {showAliasDialog && (
+            <div>
               <Button
                 className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
                 onClick={() => {
-                  void handleDownloadScaledSheet();
+                  setStep("config");
+                  setShowDialog(true);
                 }}
               >
-                <Download className="h-4 w-4" />
-                Download Scaled Grading Sheet
+                Create New Scaling
               </Button>
-            )}
 
-            {/* Clear button - only visible when there's config or grading sheet data */}
-            {(config || gradingSheet || scaledResults.length > 0) && (
-              <AlertDialog
-                open={showClearDialog}
-                onOpenChange={setShowClearDialog}
+              <Button
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                onClick={() => {
+                  setStep("sheet");
+                  setShowDialog(true);
+                }}
               >
-                <AlertDialogTrigger asChild>
-                  <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Clear Scaling</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to clear all scaling data? You will
-                      need to reconfigure scaling settings and re-upload your
-                      grading sheet if you do.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirmClear}>
-                      Clear
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
+                <Upload className="h-4 w-4" />
+                {gradingSheet
+                  ? "Replace Grading Sheet"
+                  : "Upload Grading Sheet"}
+              </Button>
+
+              {/* Download button - only visible when grading sheet is uploaded */}
+              {gradingSheet && gradingSheetParseResult && (
+                <Button
+                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                  onClick={() => {
+                    void handleDownloadScaledSheet();
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                  Download Scaled Grading Sheet
+                </Button>
+              )}
+
+              <div className="flex justify-center gap-6 p-4">
+                {/* Clear button - only visible when there's config or grading sheet data */}
+                {(config || gradingSheet || scaledResults.length > 0) && (
+                  <AlertDialog
+                    open={showClearDialog}
+                    onOpenChange={setShowClearDialog}
+                  >
+                    <AlertDialogTrigger asChild>
+                      <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Clear Scaling</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to clear all scaling data? You
+                          will need to reconfigure scaling settings and
+                          re-upload your grading sheet if you do.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmClear}>
+                          Clear
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Multi-Step Dialog */}
           <Dialog
