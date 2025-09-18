@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { HelpCircle, LogOut, User, ChevronDown, Settings } from "lucide-react";
+import { HelpCircle, LogOut, User, ChevronDown, Users } from "lucide-react";
 import { Button } from "./button";
 import { Separator } from "./separator";
 import { useNavigate } from "react-router-dom";
@@ -59,8 +59,8 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
               onClick={handleSettingsClick}
               className="flex items-center gap-2 w-full px-4 py-2 text-sm text-foreground hover:bg-gray-100"
             >
-              <Settings className="h-4 w-4" />
-              <span>Settings</span>
+              <Users className="h-4 w-4" />
+              <span>Alias Configuration</span>
             </button>
 
             <Separator />

@@ -1,8 +1,6 @@
 import React, { useState, useRef } from 'react';
-import NavBar from '@ui/components/landing-page/NavBar';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@ui/components/ui/tabs';
 import { Button } from '@ui/components/ui/button';
 import { Upload, Info, FileText, X, CheckCircle, AlertCircle, Download, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +10,6 @@ export const SettingsPage: React.FC = () => {
   const isLoggedIn = !!user;
   const navigate = useNavigate();
   
-  const [activeTab, setActiveTab] = useState('profile');
   
   // File upload state
   const [isDragOver, setIsDragOver] = useState(false);
@@ -312,82 +309,29 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-git-bg-primary">
-      <NavBar isLoggedIn={isLoggedIn} />
-      
-      <div className="max-w-6xl mx-auto px-6 py-8 pt-24">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-4xl font-bold text-git-text-primary mb-4">
-          Settings
+          Alias Configuration
         </h1>
         <p className="text-git-text-secondary text-lg mb-8">
-          This is the settings page.
+          Manage student alias mappings to consolidate contributions across multiple Git identities.
         </p>
 
-        {/* This is the tab system using same styling as MetricsTab */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full bg-[#FEFEFA] shadow-sm justify-items-start">
-          {/* This creates the tab buttons at the top - same styling as MetricsTab */}
-          <TabsList className="flex bg-[#FEFEFA] border-b">
-            <TabsTrigger 
-              value="profile" 
-              className={`
-                relative px-4 text-lg font-medium text-gray-600
-                bg-[#FEFEFA] hover:bg-[#D0D0B7]
-                data-[state=active]:bg-gray-100
-                data-[state=active]:text-gray-900
-                data-[state=active]:after:content-['']
-                data-[state=active]:after:absolute
-                data-[state=active]:after:bottom-0
-                data-[state=active]:after:left-0
-                data-[state=active]:after:w-full
-                data-[state=active]:after:h-0.5
-                data-[state=active]:after:bg-git
-                rounded-none border-none shadow-none focus:outline-hidden
-                transition-all
-              `}
-            >
-              Profile
-            </TabsTrigger>
-            <TabsTrigger 
-              value="alias-config" 
-              className={`
-                relative px-4 text-lg font-medium text-gray-600
-                bg-[#FEFEFA] hover:bg-[#D0D0B7]
-                data-[state=active]:bg-gray-100
-                data-[state=active]:text-gray-900
-                data-[state=active]:after:content-['']
-                data-[state=active]:after:absolute
-                data-[state=active]:after:bottom-0
-                data-[state=active]:after:left-0
-                data-[state=active]:after:w-full
-                data-[state=active]:after:h-0.5
-                data-[state=active]:after:bg-git
-                rounded-none border-none shadow-none focus:outline-hidden
-                transition-all
-              `}
-            >
-              Alias Configuration
-            </TabsTrigger>
-          </TabsList>
-
-          {/* This is the content for the Profile tab */}
-          <TabsContent value="profile" className="mt-6">
-            <div className="p-6 bg-git-bg-elevated border border-git-stroke-primary rounded-lg">
-              <h2 className="text-2xl font-semibold text-git-text-primary mb-4">Profile Settings</h2>
-              <p className="text-git-text-secondary">Profile settings will go here!</p>
-            </div>
-          </TabsContent>
-
-          {/* This is the content for the Alias Configuration tab */}
-          <TabsContent value="alias-config" className="mt-6">
+        {/* Alias Configuration Section */}
+        <div className="space-y-6">
             {/* Current Config Section */}
             <div className="p-6 bg-git-bg-elevated border border-git-stroke-primary rounded-lg mb-6">
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <h2 className="text-2xl font-semibold text-git-text-primary">Your Alias Configuration</h2>
-                  <Info className="h-5 w-5 text-git-text-secondary" />
+                  <div className="relative group">
+                    <Info className="h-5 w-5 text-git-text-secondary cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      You can have one universal config file that applies to all repositories you analyse.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-git-text-secondary">
-                  You can have one universal config file that applies to all repositories you analyse.
-                </p>
               </div>
 
               {isLoadingConfigs ? (
@@ -401,9 +345,6 @@ export const SettingsPage: React.FC = () => {
                     <FileText className="h-8 w-8 text-git-text-secondary" />
                   </div>
                   <h3 className="text-lg font-medium text-git-text-primary mb-2">No Configuration Set</h3>
-                  <p className="text-git-text-secondary mb-4">
-                    Upload a config file to map multiple Git accounts to single students.
-                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -483,14 +424,14 @@ export const SettingsPage: React.FC = () => {
                   <h2 className="text-2xl font-semibold text-git-text-primary">
                     {currentConfigs.length > 0 ? 'Replace Configuration' : 'Upload Configuration'}
                   </h2>
-                  <Info className="h-5 w-5 text-git-text-secondary" />
+                  <div className="relative group">
+                    <Info className="h-5 w-5 text-git-text-secondary cursor-help" />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      Upload a config file to map multiple Git accounts to single students.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-git-text-secondary">
-                  {currentConfigs.length > 0 
-                    ? 'Upload a new config file to replace your current configuration.'
-                    : 'Upload a config file to map multiple Git accounts to single students.'
-                  }
-                </p>
                 {currentConfigs.length > 0 && (
                   <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-sm text-yellow-800">
@@ -625,11 +566,6 @@ export const SettingsPage: React.FC = () => {
                     <p className="text-git-text-secondary mb-2">
                       <strong>Students:</strong> {parsedAliases?.aliases?.length || 0}
                     </p>
-                    <p className="text-git-text-secondary">
-                      <strong>Total Aliases:</strong> {parsedAliases?.aliases?.reduce((acc: number, alias: any) => 
-                        acc + (alias.gitUsernames?.length || 0) + (alias.emails?.length || 0), 0
-                      ) || 0}
-                    </p>
                   </div>
                   <div className="flex gap-3">
                     <Button 
@@ -679,8 +615,7 @@ export const SettingsPage: React.FC = () => {
                 </p>
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </div>
   );
