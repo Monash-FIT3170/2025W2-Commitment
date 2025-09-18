@@ -171,10 +171,10 @@ export function AnalyticsView(): React.JSX.Element {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-10">
+          <div className="grid grid-cols-3 gap-5">
             {/* Highlight Cards */}
-            <div className="flex flex-col gap-10 mb-12 col-start-3 row-end-auto">
-              <div className="grid grid-cols-1 3xl:grid-cols-2 gap-10">
+            <div className="flex flex-col gap-5 mb-12 col-start-3 row-end-auto">
+              <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5">
                 <HighlightCardWithGraph
                   title="Total Commits"
                   value={analytics.metrics.highlights.totalCommits.total}
@@ -227,7 +227,7 @@ export function AnalyticsView(): React.JSX.Element {
               </div>
             </div>
 
-            <div className="flex flex-col col-span-2 row-start-1 gap-10">
+            <div className="flex flex-col col-span-2 row-start-1 gap-5">
               {/* Graphs */}
               <HeatmapGraph
                 data={analytics.metrics.contributors.heatMap.data}
