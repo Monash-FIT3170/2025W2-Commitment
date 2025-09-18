@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { AliasConfigsCollection, StudentAlias } from './alias_configs';
+import { ContributorData, SerializableRepoData, UnmappedContributor } from './types';
+import { applyAliasMappingIfNeeded } from '/server/alias_mapping';
 
 Meteor.methods({
     /**
@@ -115,4 +117,38 @@ Meteor.methods({
             emails: Array.isArray(match.emails) ? match.emails : [],
         };
     },
+
+    /**
+     * This method returns a set of Unmapped Contributors that don't have their Aliases uploaded yet. 
+     * @param repoUrl the url of the current repo
+     * @returns UnmappedContributor[] the unmapped contributors that need Aliases mapped
+     */
+    async "aliasConfigs.validateAllContributors"(repoUrl: string): Promise<{ unmapped: UnmappedContributor[] }> {
+        if (!this.userId) {
+        throw new Meteor.Error("not-authorized", "You must be logged in.");
+        }
+
+        // Get repo data
+        const repo: SerializableRepoData = await Meteor.callAsync("repoCollection.getData", repoUrl);
+
+        // Apply alias mapping if user has a config
+        const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId);
+
+        // All contributors in repo
+        const repoContributors = mappedRepo.contributors.map((c) => c.value);
+
+        // Get user's alias config
+        const config = await AliasConfigsCollection.findOneAsync({ ownerId: this.userId });
+
+        const unmapped: UnmappedContributor[] = repoContributors
+        .filter((c) => !config?.aliases.find((a) => a.officialName === c.name))
+        .map((c) => ({
+            name: c.name,
+            rawIdentifiers: [...c.emails], // we can only find emails. We can't find Janidu's?
+            }));
+
+
+        return { unmapped };
+    },
+
 });

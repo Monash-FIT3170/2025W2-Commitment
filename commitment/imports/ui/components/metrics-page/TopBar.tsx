@@ -1,8 +1,6 @@
 import React, {  useEffect , useState } from 'react';
-import { Settings } from 'lucide-react';
 import { Meteor } from 'meteor/meteor';
 import { useLocation } from 'react-router-dom';
-import { AnalyticsData, Metadata } from '/imports/api/types';
 import BookmarkButton from '../dashboard/BookmarkButton';
 
 /**
@@ -55,7 +53,6 @@ export default function TopBar() {
           <BookmarkButton url={repoUrl} title={repoName} variant="secondary" />
         )}
       </div>
-      <Settings className="w-5 h-5 text-git-stroke-secondary hover:text-git-stroke-primary cursor-pointer" />
     </div>
   );
 }

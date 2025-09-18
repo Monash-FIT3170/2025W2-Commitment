@@ -51,6 +51,10 @@ export function AnalyticsView(): React.JSX.Element {
   useEffect(() => {
     if (!repoUrl) return;
 
+    // Store the repository URL for navigation back to metrics
+    // This only happens when user is actively viewing metrics
+    localStorage.setItem('lastRepoUrl', repoUrl);
+
     Meteor.call(
       "repo.getAnalyticsData",
       {

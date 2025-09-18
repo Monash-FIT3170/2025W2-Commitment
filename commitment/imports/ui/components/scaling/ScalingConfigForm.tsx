@@ -157,7 +157,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
           />
 
           {/* FILE UPLOAD */}
-          <FormField
+          {/* <FormField
             control={form.control}
             name="customScript"
             render={({ field }) => (
@@ -202,7 +202,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
 
           <div className="flex justify-center">
             <Button
