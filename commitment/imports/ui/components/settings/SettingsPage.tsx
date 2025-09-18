@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Button } from '@ui/components/ui/button';
-import { Upload, Info, FileText, X, CheckCircle, AlertCircle, Download, Play } from 'lucide-react';
+import { Upload, FileText, X, CheckCircle, AlertCircle, Download, Play } from 'lucide-react';
+import InfoButton from '../ui/infoButton';
 import { useNavigate } from 'react-router-dom';
 
 export const SettingsPage: React.FC = () => {
@@ -324,13 +325,7 @@ export const SettingsPage: React.FC = () => {
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <h2 className="text-2xl font-semibold text-git-text-primary">Your Alias Configuration</h2>
-                  <div className="relative group">
-                    <Info className="h-5 w-5 text-git-text-secondary cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      You can have one universal config file that applies to all repositories you analyse.
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
-                    </div>
-                  </div>
+                  <InfoButton description="You can have one universal config file that applies to all repositories you analyse." />
                 </div>
               </div>
 
@@ -424,13 +419,7 @@ export const SettingsPage: React.FC = () => {
                   <h2 className="text-2xl font-semibold text-git-text-primary">
                     {currentConfigs.length > 0 ? 'Replace Configuration' : 'Upload Configuration'}
                   </h2>
-                  <div className="relative group">
-                    <Info className="h-5 w-5 text-git-text-secondary cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      Upload a config file to map multiple Git accounts to single students.
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
-                    </div>
-                  </div>
+                  <InfoButton description="Upload a config file to map multiple Git accounts to single students." />
                 </div>
                 {currentConfigs.length > 0 && (
                   <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
