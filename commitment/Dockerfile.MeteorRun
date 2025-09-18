@@ -39,4 +39,4 @@ RUN meteor npm install
 EXPOSE 3000
 
 # Default: run Meteor in development mode
-CMD ["meteor", "run", "--port", "0.0.0.0:3000"]
+CMD ["meteor", "run", "--port", "3000"]
