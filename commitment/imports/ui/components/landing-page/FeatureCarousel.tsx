@@ -53,36 +53,36 @@ const features: Feature[] = [
     title: "Repository Analytics Dashboard",
     description:
       "View summary analytics for each Git repository, including activity levels and trends.",
-    image: "/feature-placeholder.svg",
+    image: "/dashboard.png",
     alt: "Alt image.",
   },
   {
     title: "Team Comparison View",
     description:
       "Compare multiple users across contribution metrics for peer review or group assessment.",
-    image: "/feature-placeholder.svg",
-    alt: "Alt image.",
+    image: "/comparison.png",
+    alt: "Compare multiple users across a repository.",
   },
   {
     title: "Custom Filtering",
     description:
       "Filter analytics by time frame, contributor or branch to focus on different analytics.",
-    image: "/feature-placeholder.svg",
-    alt: "Alt image.",
+    image: "/filter.png",
+    alt: "Filter analytics by different stats.",
   },
   {
     title: "Moodle Gradebook Integration",
     description:
       "As an educator, upload a gradebook to apply scaling based on metrics for streamlined grading.",
-    image: "/feature-placeholder.svg",
-    alt: "Alt image.",
+    image: "/gradebook.png",
+    alt: "Upload a gradebook to apply scaling for streamlined grading.",
   },
   {
     title: "Per-User Contribution Insights",
     description:
       "Track individual contributions such as commit frequency and lines of code.",
-    image: "/feature-placeholder.svg",
-    alt: "Alt image.",
+    image: "/peruser.png",
+    alt: "Track individual user contributions.",
   },
 ];
 

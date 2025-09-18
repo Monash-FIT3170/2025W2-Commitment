@@ -50,13 +50,13 @@ function PurposeCard() {
         <div className="grid grid-cols-3 gap-4 items-center justify-items-center">
           <img src="/github_logo.svg" alt="Github Logo" className="max-h-32" />
           <img
-            src="/git_search_bar.svg"
+            src="/insert.png"
             alt="Commitment Search Bar"
             className="shadow-md rounded-[52px]"
           />
           <img
-            src="/num_of_commit_box.svg"
-            alt="Number of commit box"
+            src="/graph.png"
+            alt="Graph of contributions."
             className="max-h-32"
           />
         </div>
