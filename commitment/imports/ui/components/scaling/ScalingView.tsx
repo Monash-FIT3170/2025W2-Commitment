@@ -93,6 +93,26 @@ function ScalingView(): JSX.Element {
     );
   }, [repoUrl]);
 
+  useEffect(() => {
+    if (!config || !gradingSheetParseResult) return;
+
+    // Only recalc if there are previously scaled results
+    if (scaledResults.length === 0) return;
+
+    try {
+      const parsedData = gradingSheetParseResult.data;
+      if (parsedData && parsedData.length > 0) {
+        const updatedResults = calculateFinalGrades(scaledResults, parsedData);
+        setScaledResults(updatedResults);
+      }
+    } catch (err) {
+      console.error(
+        "Error recalculating scaled results after alias update",
+        err
+      );
+    }
+  }, [config, gradingSheetParseResult, unmappedUsers]);
+
   // Function to clear all scaling data from localStorage and reset state
   const clearScalingData: () => void = () => {
     localStorage.removeItem("hasVisitedScaling");
