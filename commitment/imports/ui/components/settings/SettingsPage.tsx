@@ -624,9 +624,9 @@ export const AliasConfigPage: React.FC = () => {
 
               {/* Action Buttons Section */}
               <div className="mt-8 mb-8">
-                {/* Back to Repository Metrics Button */}
-                {hasVisitedRepo && lastRepoUrl && (
-                  <div className="mb-6 text-center">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  {/* Back to Repository Metrics Button */}
+                  {hasVisitedRepo && lastRepoUrl && (
                     <div className="relative group inline-block">
                       <Button
                         onClick={handleBackToMetrics}
@@ -643,11 +643,9 @@ export const AliasConfigPage: React.FC = () => {
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-2 border-git-stroke-primary/40 bg-popover w-2.5 h-2.5 rotate-45 -mt-1"></div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Analyse a new repository Button */}
-                <div className="text-center">
+                  {/* Analyse a new repository Button */}
                   <div className="relative group inline-block">
                     <Button 
                       variant="outline"
