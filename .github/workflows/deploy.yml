@@ -13,29 +13,27 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # - name: Log in to Docker Hub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # # Meteor build
-      # - name: Build Meteor app image
-      #   run: |
-      #     docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest -f commitment/Dockerfile.meteor commitment/
+      - name: Build Meteor app image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest -f commitment/Dockerfile.MeteorRun commitment/
 
-      # - name: Push Meteor app image
-      #   run: |
-      #     docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest
+      - name: Push Meteor app image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest
 
-      # # Haskell API build
-      # - name: Build Haskell API image
-      #   run: |
-      #     docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest -f api/Dockerfile.haskell api/
+      - name: Build Haskell API image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest -f api/Dockerfile.haskell api/
 
-      # - name: Push Haskell API image
-      #   run: |
-      #     docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest
+      - name: Push Haskell API image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.0
@@ -57,13 +55,8 @@ jobs:
 
             sudo docker pull commitment3170/haskell-api-img:latest
 
-            sudo docker build -t commitment-img -f commitment/Dockerfile.MeteorRun ~/app/commitment --no-cache
+            sudo docker pull commitment3170/commitment-img:latest
 
             sudo docker-compose -f docker-compose.prod.yml down --volumes
 
             sudo docker-compose -f docker-compose.prod.yml up -d
-      # mup
-      # export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-      # export DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
-      # chmod +x deploy.sh
-      # ./deploy.sh

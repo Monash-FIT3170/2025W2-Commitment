@@ -38,8 +38,6 @@ RUN meteor npm install
 
 # Expose Meteor and MongoDB ports
 EXPOSE 3000
-EXPOSE 27017
 
 # Default: run Meteor in development mode
-# CMD ["meteor", "run", "--port", "3000", "--inspect"]
 CMD ["meteor", "run", "--port", "3000"]

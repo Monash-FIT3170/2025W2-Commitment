@@ -1,10 +1,7 @@
 services:
   build-env:
-    build:
-      context: ./commitment
-      dockerfile: Dockerfile.MeteorRun
-    image: commitment-img
-    container_name: 3170-build
+    image: commitment3170/commitment-img
+    container_name: 3170-prod
     ports:
       - "3000:3000"
     volumes:
@@ -23,6 +20,8 @@ services:
       - ./commitment:/projects/api
     ports:
       - "8081:8081"
+    tty: true
+    stdin_open: true
     networks:
       - app-network
 
