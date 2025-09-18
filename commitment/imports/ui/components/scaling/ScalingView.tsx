@@ -32,6 +32,7 @@ import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 import { toast } from "../../hooks/use-toast";
 import InfoButton from "../ui/infoButton";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 interface ScalingConfig {
   metrics: string[];
@@ -61,6 +62,14 @@ function ScalingView(): JSX.Element {
   const [showAliasDialog, setShowAliasDialog] = useState(false);
 
   const navigate = useNavigate();
+
+  const isLoggedIn = useAuth();
+
+  useEffect(() => {
+    if (isLoggedIn === false) {
+      navigate("/dashboard");
+    }
+  }, [isLoggedIn, navigate]);
 
   useEffect(() => {
     if (!repoUrl) return;
@@ -349,8 +358,8 @@ function ScalingView(): JSX.Element {
                     <ul className="mt-2 list-disc ml-5">
                       {unmappedUsers.map((u) => (
                         <li key={u.name}>
-                          <strong>{u.name}</strong>:{" "}
-                          {u.rawIdentifiers.join(", ")}
+                          <strong>{u.name}</strong>
+                          {/* {u.rawIdentifiers.join(", ")} */}
                         </li>
                       ))}
                     </ul>
