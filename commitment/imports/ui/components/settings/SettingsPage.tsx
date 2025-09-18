@@ -1,16 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Button } from '@ui/components/ui/button';
-import { Upload, FileText, X, CheckCircle, AlertCircle, Download, Play } from 'lucide-react';
+import { Upload, FileText, X, CheckCircle, AlertCircle, Download, Play, ArrowLeft } from 'lucide-react';
 import InfoButton from '../ui/infoButton';
 import { useNavigate } from 'react-router-dom';
 
-export const SettingsPage: React.FC = () => {
+export const AliasConfigPage: React.FC = () => {
   const user = useTracker(() => Meteor.user());
   const isLoggedIn = !!user;
   const navigate = useNavigate();
   
+  // Repository metrics navigation state
+  const [hasVisitedRepo, setHasVisitedRepo] = useState(false);
+  const [lastRepoUrl, setLastRepoUrl] = useState<string | null>(null);
   
   // File upload state
   const [isDragOver, setIsDragOver] = useState(false);
@@ -31,6 +34,31 @@ export const SettingsPage: React.FC = () => {
   
   // Reference to the hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check if user has visited a repository
+  useEffect(() => {
+    const rememberedRepoUrl = localStorage.getItem('lastRepoUrl');
+    if (rememberedRepoUrl) {
+      setHasVisitedRepo(true);
+      setLastRepoUrl(rememberedRepoUrl);
+    } else {
+      setHasVisitedRepo(false);
+      setLastRepoUrl(null);
+    }
+  }, []);
+
+  // Function to navigate back to repository metrics
+  const handleBackToMetrics = () => {
+    if (lastRepoUrl) {
+      navigate("/metrics", { 
+        state: { 
+          repoUrl: lastRepoUrl,
+          tab: "metrics" 
+        } 
+      });
+    }
+  };
+
 
   // Load current configs
   const loadCurrentConfigs = async () => {
@@ -311,9 +339,30 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-git-bg-primary">
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <h1 className="text-4xl font-bold text-git-text-primary mb-4">
-          Alias Configuration
-        </h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-4xl font-bold text-git-text-primary">
+            Alias Configuration
+          </h1>
+          {hasVisitedRepo && lastRepoUrl && (
+            <div className="relative group">
+              <Button
+                onClick={handleBackToMetrics}
+                variant="outline"
+                disabled={currentConfigs.length === 0}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Repository Metrics
+              </Button>
+              {currentConfigs.length === 0 && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                  Upload a config file to enable this feature
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <p className="text-git-text-secondary text-lg mb-8">
           Manage student alias mappings to consolidate contributions across multiple Git identities.
         </p>
@@ -610,4 +659,4 @@ export const SettingsPage: React.FC = () => {
   );
 };
 
-export default SettingsPage;
+export default AliasConfigPage;

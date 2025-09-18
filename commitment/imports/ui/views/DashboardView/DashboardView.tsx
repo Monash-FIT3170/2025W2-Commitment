@@ -39,6 +39,11 @@ const DashboardView: React.FC = () => {
   const user = useTracker(() => Meteor.user());
   const userName = user?.profile?.name || user?.username || "User";
 
+  // Clear repository history when user navigates to dashboard
+  useEffect(() => {
+    localStorage.removeItem('lastRepoUrl');
+  }, []);
+
   const [filters, setFilters] = useState<FiltersState>({
     createdAt: { isUsed: false, value: { from: undefined, to: undefined } },
     lastViewed: { isUsed: false, value: { from: undefined, to: undefined } },

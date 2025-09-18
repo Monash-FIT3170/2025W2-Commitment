@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Logo } from "@ui/components/landing-page/MainPage";
 import LastSavedRepos from "@ui/components/insert-git-repo/LastSavedRepos";
 import GitRepoInputSection from "@ui/components/insert-git-repo/GitRepoInputSection";
@@ -8,6 +8,11 @@ import { useTracker } from "meteor/react-meteor-data";
 const InsertGitRepoView: React.FC = () => {
   const user = useTracker(() => Meteor.user());
   const isLoggedIn = !!user;
+
+  // Clear repository history when user navigates to home page
+  useEffect(() => {
+    localStorage.removeItem('lastRepoUrl');
+  }, []);
 
   return (
     <>
