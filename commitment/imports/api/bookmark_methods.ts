@@ -3,7 +3,7 @@ import { check } from 'meteor/check';
 import { BookmarksCollection, Bookmark } from './bookmarks';
 
 // Import the server-side function instead of the client-side one
-import { isInDatabase } from '../../server/caching';
+import { isInDatabase } from '../../server/api/caching';
 
 Meteor.methods({
   /**
