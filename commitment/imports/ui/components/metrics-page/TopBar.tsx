@@ -2,6 +2,7 @@ import React, {  useEffect , useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useLocation } from 'react-router-dom';
 import BookmarkButton from '../dashboard/BookmarkButton';
+import { useAuth } from '../../hooks/useAuth';
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL
@@ -24,6 +25,7 @@ function getRepoNameFromUrl(url: string): string {
 
 export default function TopBar() {
   // call meteor method to find the name
+  const signedIn = useAuth()
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
   const [repoName, setRepoName] = useState<string>("Loading...");
@@ -48,8 +50,8 @@ export default function TopBar() {
     <div className="flex items-center justify-between px-10 py-3 border-b  border-git-stroke-primary/40 bg-git-bg-elevated">
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-gray-800">{repoName}</h2>
-        {/* Bookmark button */}
-        {repoUrl && (
+        {/* Bookmark button (only shown to signed in users) */}
+        {(repoUrl && signedIn) && (
           <BookmarkButton url={repoUrl} title={repoName} variant="secondary" />
         )}
       </div>
