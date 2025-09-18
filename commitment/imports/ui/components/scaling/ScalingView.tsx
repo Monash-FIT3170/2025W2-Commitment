@@ -468,6 +468,7 @@ function ScalingView(): JSX.Element {
                 >
                   <AlertDialogTrigger asChild>
                     <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
+                      Clear
                       <X className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
