@@ -70,7 +70,7 @@ export function AnalyticsView(): React.JSX.Element {
           setError(err.message);
         } else {
           setAnalyticsData(data);
-          setSelectedContributors(data.selections.selectedContributors);
+          setSelectedContributors(data.metadata.contributors);
           setSelectedBranch(data.selections.selectedBranch);
           setDateRange(data.selections.selectedDateRange);
         }
