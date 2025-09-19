@@ -1,4 +1,4 @@
-import { Meteor } from "meteor/meteor";
+ { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
 import { WebSocket } from "ws";
 import net from "net";
@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import { RepositoryData, SerializableRepoData } from "/imports/api/types";
 import { assertRepoTyping, serializeRepoData } from "/imports/api/serialisation";
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "./caching";
+import { overrideValue } from "/imports/api/meteor_interface";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -70,6 +71,13 @@ const DEV_API_CONN_ENDPOINT = "haskell-api:8081";
 const DEPLOYMENT_API_CONN_ENDPOINT = process.env.API_CONN_ENDPOINT; // "54.66.80.27:8081";
 const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT || DEV_API_CONN_ENDPOINT;
 
+type ApiFetchStruct = {
+  promise: Promise<RepositoryData>,
+  notifier: Subject<string>
+}
+
+const apiFetchPromises: Record<string, ApiFetchStruct | null> = {};
+
 /**
  * Fetches repository data from an external source.
  *
@@ -79,11 +87,36 @@ const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT || DEV_API_CONN_ENDPOINT;
  * @returns {Promise<RepositoryData>} A promise that resolves to the fetched repository data.
  * @throws {Error} If there is an error during the fetch operation.
  */
-export const getRepoData = (
+export const getRepoData = async (
   url: string,
   notifier: Subject<string> | null
-): Promise<RepositoryData> =>
-  tryFromDatabase(url, notifier).catch((_e1: Error) => fetchRepoData(url, notifier));
+): Promise<RepositoryData> => {
+  const entry = await tryFromDatabase(url, notifier).catch(overrideValue(null));  
+  if (entry !== null) return entry;
+  
+  // we know database fetch failed, so lets join all same url requests together
+  // check entry in record
+  const existingPromise = apiFetchPromises[url]
+  if (existingPromise === null) {
+    // put new promise into the record to allow other callers to await this request 
+    // this ensures that API requests are only made once per repo url
+    const sub = new Subject<string>() 
+    apiFetchPromises[url] = {
+      notifier: sub,
+      promise: fetchRepoData(url, sub).then((data: RepositoryData) => {
+      sub.next("Consolidating new data into database...");
+      await cacheIntoDatabase(url, data);
+      return data;
+    })
+    }
+  }
+  
+  apiFetchPromises[url]?.notifier.subscribe((s: string) => notifier ? notifier.next(s): null)
+  const awaitedValue = await apiFetchPromises[url]?.promise
+  // we can safely delete it here for some reason
+  apiFetchPromises[url] = null
+  return awaitedValue!!
+};
 
 export const getSerialisedRepoData = (
   url: string,
@@ -96,11 +129,6 @@ export const fetchRepoData = (
 ): Promise<RepositoryData> =>
   fetchDataFromHaskellAppWS(url, notifier)
     .then(assertRepoTyping) // enforces strong typing for the entire data structure
-    .then((data: RepositoryData) => {
-      if (notifier !== null) notifier.next("Consolidating new data into database...");
-      cacheIntoDatabase(url, data);
-      return data;
-    })
     .catch((e2: Error) => {
       if (notifier !== null) notifier.next(`API fetch failed: ${e2}`);
       throw e2;

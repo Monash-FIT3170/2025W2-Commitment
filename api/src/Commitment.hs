@@ -19,6 +19,8 @@ import System.FilePath
 import System.IO.Unsafe (unsafePerformIO)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import Control.Concurrent (getNumCapabilities)
+import Control.Monad (when)
+import Data.IORef
 
 import Types
 import Threading
@@ -34,6 +36,41 @@ parsingPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool n 
 {-# NOINLINE commandPool #-}
 commandPool :: WorkerPool
 commandPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool (n * 8) "Command Pool"
+
+{-# NOINLINE delegationPool #-}
+delegationPool :: WorkerPool
+delegationPool = unsafePerformIO $ createThreadPool 1 "Resource Delegation Pool"
+
+type DirectoryMap = IORef (Map.Map FilePath Int)
+
+-- Global directory map 
+{-# NOINLINE directoryMap #-}
+directoryMap :: DirectoryMap
+directoryMap = unsafePerformIO (newIORef Map.empty)
+
+-- createDirectory with reference counting
+createDirectory :: FilePath -> IO ()
+createDirectory path = do
+    dirMap <- readIORef directoryMap
+    case Map.lookup path dirMap of
+        Nothing -> do
+            createDirectoryIfMissing True path
+            writeIORef directoryMap (Map.insert path 1 dirMap)
+        Just n ->
+            writeIORef directoryMap (Map.insert path (n + 1) dirMap)
+
+-- deleteDirectory with reference counting
+deleteDirectory :: FilePath -> IO () -> IO ()
+deleteDirectory path f = do
+    dirMap <- readIORef directoryMap
+    case Map.lookup path dirMap of
+        Nothing -> pure () -- nothing to do
+        Just 1 -> do
+            deleteDirectoryIfExists path f  -- perform custom removal (e.g., removeDirectoryRecursive path)
+            writeIORef directoryMap (Map.delete path dirMap)
+        Just n ->
+            when (n > 0) $
+                writeIORef directoryMap (Map.insert path (n - 1) dirMap)
 
 zipWithFunctions :: [[[a]]] -> [[a] -> b] -> [[([a], [a] -> b)]]
 zipWithFunctions = zipWith (\inner f -> map (\x -> (x, f)) inner)
@@ -71,13 +108,12 @@ fetchDataFrom url notifier = (do
             repoRelativePath = "cloned-repos" </> repoNameFromUrl
             repoAbsPath = workingDir </> repoRelativePath
 
-        awaitRepoDirDeletion <- deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
-        awaitCreateRepoDir   <- createDirectoryIfMissing True repoAbsPath
+        awaitCreateRepoDir <- createDirectory repoAbsPath
 
         emit notifier "Cloning repo..."
         awaitCloneResult <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
             (\path -> successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url path))
-            repoAbsPath) 
+            repoAbsPath)
 
         emit notifier "Getting repository data..."
         repoData <- formulateRepoData url repoAbsPath notifier
@@ -89,7 +125,6 @@ fetchDataFrom url notifier = (do
         emit notifier ("Error occurred:\n" ++ errMsg)
         pure (Left errMsg)
     `finally` do
-        
         -- cleanup no matter what
         workingDir <- getCurrentDirectory
         let parts = splitOn '/' url
@@ -97,8 +132,8 @@ fetchDataFrom url notifier = (do
             repoRelativePath = "cloned-repos" </> repoNameFromUrl
             repoAbsPath = workingDir </> repoRelativePath
 
-        deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
-    
+        deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
+
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
 formulateRepoData :: String -> FilePath -> TBQueue String -> IO RepositoryData
@@ -110,7 +145,7 @@ formulateRepoData _url path notifier = do
     collectedBranchNames <- execCmd getBranches parseRepoBranches "Failed to parse git branch names"
     let branchNameFilter = replace "remotes/" "" . replace "origin/" ""
         branchNames = unique collectedBranchNames
-        filteredBranchNames = map branchNameFilter branchNames 
+        filteredBranchNames = map branchNameFilter branchNames
 
     emit notifier "Searching for commit hashes..."
     allCommitHashesListOfList <- execAll (map getAllCommitsFrom branchNames) parseCommitHashes "Failed to parse commit hashes from branches"
@@ -128,7 +163,7 @@ formulateRepoData _url path notifier = do
             pure (r1, r2)
         )
         (\(r1, r2) -> do
-            let msg              = "Failed to formulate all commit data" 
+            let msg              = "Failed to formulate all commit data"
                 checkPass        = parsed msg . successful
                 raw1             = checkPass r1
                 raw2             = checkPass r2
@@ -143,8 +178,8 @@ formulateRepoData _url path notifier = do
                 modifyTVar' commitCounter (+1)
                 readTVar commitCounter
             emit notifier $ "Formulating all commit data (" ++ show count ++ "/" ++ show commitsFound ++ ")..."
-            
-            pure $ CommitData 
+
+            pure $ CommitData
                 (ibCommitHash      ibCommitData ) --commitHash        
                 (ibCommitTitle     ibCommitData ) --commitTitle     
                 (ibContributorName ibCommitData ) --contributorName 
@@ -152,7 +187,7 @@ formulateRepoData _url path notifier = do
                 (ibTimestamp       ibCommitData ) --timestamp       
                 (fileData                       ) --fileData
             )
-        (map (\h -> (getCommitDetails h, getCommitDiff h)) allCommitHashes)    
+        (map (\h -> (getCommitDetails h, getCommitDiff h)) allCommitHashes)
 
     emit notifier "Formulating all contributors..."
     let uniqueNames = unique $ map contributorName allCommitData
