@@ -37,10 +37,6 @@ parsingPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool n 
 commandPool :: WorkerPool
 commandPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool (n * 8) "Command Pool"
 
-{-# NOINLINE delegationPool #-}
-delegationPool :: WorkerPool
-delegationPool = unsafePerformIO $ createThreadPool 1 "Resource Delegation Pool"
-
 type DirectoryMap = IORef (Map.Map FilePath Int)
 
 -- Global directory map 
