@@ -20,5 +20,5 @@ export default function Authorized(props: AuthorizedProps) {
   const isAuthorized = useAuth(predicate);
 
 
-  return isAuthorized ? <>{children}</> : <NotAuthorizedView />;
+  return isAuthorized ? {children} : <NotAuthorizedView />;
 }
