@@ -1,11 +1,11 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LandingPage from "@ui/LandingPage";
-import LoginView from "/imports/ui/views/LoginView";
-import InsertGitRepoView from "/imports/ui/views/InsertGitRepo";
 import Authorized from "@ui/components/shared/Authorized";
-import LoadingPage from "./LoadingPage";
-import MetricsPage from "./MetricsPage";
+import LandingPage from "./views/LandingView";
+import LoginView from "/imports/ui/views/LoginView";
+import InsertGitRepoView from "./views/HomeView";
+import LoadingPage from "./views/LoadingView";
+import MetricsPage from "./views/MetricsView";
 import DashboardView from "./views/DashboardView";
 import SettingsPage from "./components/settings/SettingsPage";
 import Layout from "./components/shared/Layout";
