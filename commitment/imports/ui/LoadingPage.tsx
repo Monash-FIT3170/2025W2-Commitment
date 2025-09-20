@@ -3,8 +3,8 @@ import { Meteor } from "meteor/meteor";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { Subject } from "rxjs";
 
-import LoadingBar from "@ui/components/Loading-page/LoadingBar";
-import TipBox from "@ui/components/Loading-page/TipBox";
+import LoadingBar from "/imports/ui/components/loading/LoadingBar";
+import TipBox from "/imports/ui/components/loading/TipBox";
 import { fetchRepo } from "../api/call_repo";
 
 interface LocationState {
