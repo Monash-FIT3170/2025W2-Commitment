@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { Logo } from "@ui/components/landing-page/MainPage";
-import LastSavedRepos from "@ui/components/insert-git-repo/LastSavedRepos";
-import GitRepoInputSection from "@ui/components/insert-git-repo/GitRepoInputSection";
+import { Logo } from "/imports/ui/components/landing/MainPage";
+import LastSavedRepos from "/imports/ui/components/home/LastSavedRepos";
+import GitRepoInputSection from "/imports/ui/components/home/GitRepoInputSection";
 import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
 

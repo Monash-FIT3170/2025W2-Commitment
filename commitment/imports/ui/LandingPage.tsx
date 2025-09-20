@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import Purpose from "@ui/components/landing-page/PurposePage";
-import MainPage from "@ui/components/landing-page/MainPage";
-import AboutUs from "@ui/components/landing-page/AboutUs";
-import Footer from "@ui/components/landing-page/Footer";
-import Features from "@ui/components/landing-page/Features";
+import Purpose from "/imports/ui/components/landing/PurposePage";
+import MainPage from "/imports/ui/components/landing/MainPage";
+import AboutUs from "/imports/ui/components/landing/AboutUs";
+import Footer from "/imports/ui/components/landing/Footer";
+import Features from "/imports/ui/components/landing/Features";
 
 export default function LandingPage() {
   // Clear repository history when user navigates to landing page
