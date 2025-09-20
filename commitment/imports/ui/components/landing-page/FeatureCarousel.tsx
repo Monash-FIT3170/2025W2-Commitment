@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@ui/components/ui/button";
 
 interface FeatureCardProps {
   title: string;
@@ -144,22 +145,25 @@ export function FeatureCarousel() {
       </div>
 
       {/* Nav buttons */}
-      <button
-        type="button"
+      <Button
         onClick={scrollPrev}
-        className="absolute left-[25%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
+        className="absolute left-[25%] top-1/2 transform -translate-y-1/2"
+        variant="icon"
+        size="icon-xl"
         aria-label="Previous slide"
       >
-        <ChevronLeft size={30} />
-      </button>
-      <button
+        <ChevronLeft className="size-7" />
+      </Button>
+      <Button
         type="button"
         onClick={scrollNext}
-        className="absolute right-[25%] top-1/2 transform -translate-y-1/2 bg-white text-[#F1502F] border-2 border-[#F1502F] rounded-full p-3 z-10"
+        className="absolute right-[25%] top-1/2 transform -translate-y-1/2"
+        variant="icon"
+        size="icon-xl"
         aria-label="Next slide"
       >
-        <ChevronRight size={30} />
-      </button>
+        <ChevronRight className="size-7" />
+      </Button>
 
       {/* Dots */}
       <div className="flex justify-center mt-6 gap-2">
