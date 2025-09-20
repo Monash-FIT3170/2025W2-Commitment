@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "@base/card";
 
 interface HighlightCardWithGraphProps {
   title: string;

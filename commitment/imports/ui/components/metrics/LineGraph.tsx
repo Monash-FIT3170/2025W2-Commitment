@@ -7,16 +7,16 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import InfoButton from "../ui/infoButton";
+import InfoButton from "@base/infoButton";
 
-import { CardContent, CardHeader, CardTitle } from "../ui/card";
+import { CardContent, CardHeader, CardTitle } from "@base/card";
 
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "../ui/chart";
+} from "@base/chart";
 import GraphCard from "./GraphCard";
 
 // Interface for the contributor data point

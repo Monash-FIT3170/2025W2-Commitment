@@ -2,8 +2,8 @@ import React from 'react';
 import { format } from 'date-fns';
 import {
   Card, CardContent, CardHeader, CardTitle,
-} from '../ui/card';
-import { Button } from '../ui/button';
+} from '@base/card';
+import { Button } from '@base/button';
 import { Bookmark } from '/imports/api/bookmarks';
 import BookmarkButton from './BookmarkButton';
 

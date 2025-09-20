@@ -1,6 +1,6 @@
 import React from "react";
-import { Separator } from "@ui/components/ui/separator";
-import { Card, CardContent } from "@ui/components/ui/card";
+import { Separator } from "@base/separator";
+import { Card, CardContent } from "@base/card";
 import GetStartedButton from "./getStartedButton";
 
 const Header = () => (

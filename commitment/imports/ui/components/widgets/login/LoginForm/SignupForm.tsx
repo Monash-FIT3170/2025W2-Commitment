@@ -1,9 +1,9 @@
 import React, {FC} from "react";
-import {Button} from "@ui/components/ui/button";
+import {Button} from "@base/button";
 import { z } from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
-import {Form, FormControl, FormField, FormItem} from "@ui/components/ui/form";
+import {Form, FormControl, FormField, FormItem} from "@base/form";
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";

@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
-import { Input } from '@ui/components/ui/input';
+import { Input } from '@base/input';
 import { cx } from 'class-variance-authority';
-import { useFormField } from '@ui/components/ui/form';
+import { useFormField } from '@base/form';
 
 type InputProps = React.ComponentProps<'input'>;
 export interface FormInputWithErrors extends InputProps {

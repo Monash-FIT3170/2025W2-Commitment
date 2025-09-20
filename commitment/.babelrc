@@ -6,6 +6,7 @@
         "root": ["./"],
         "alias": {
           "@ui": "./imports/ui",
+          "@base": "./imports/ui/components/base",
           "@/": "./"
         }
       }

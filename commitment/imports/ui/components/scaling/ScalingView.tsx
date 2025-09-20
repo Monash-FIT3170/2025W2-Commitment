@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Upload, Download, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import ScalingConfigForm from "./ScalingConfigForm";
-import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogContent } from "@base/dialog";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -15,13 +15,13 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "../ui/alert-dialog";
+} from "@base/alert-dialog";
 import {
   calculateFinalGrades,
   generateScaledGradingSheet,
 } from "./ScalingUtils";
 
-import { Button } from "../ui/button";
+import { Button } from "@base/button";
 import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
 import type {
@@ -30,7 +30,7 @@ import type {
 } from "../../../api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 import { toast } from "../../hooks/use-toast";
-import InfoButton from "../ui/infoButton";
+import InfoButton from "@base/infoButton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 

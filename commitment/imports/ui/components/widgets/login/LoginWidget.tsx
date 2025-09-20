@@ -1,11 +1,11 @@
 import React, { FC, ReactNode, useCallback } from 'react';
 import {
   Card, CardContent, CardHeader, CardTitle,
-} from '@ui/components/ui/card';
+} from '@base/card';
 import LoginForm from '@ui/components/widgets/login/LoginForm/LoginForm';
 import SignupForm from "@ui/components/widgets/login/LoginForm/SignupForm";
 import { cx } from 'class-variance-authority';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@ui/components/ui/tabs";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@base/tabs";
 
 export interface LoginWidgetProps {
   className?: string,

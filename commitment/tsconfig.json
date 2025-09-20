@@ -33,6 +33,7 @@
         ".meteor/local/types/packages.d.ts"
       ],
       "@ui/*": ["imports/ui/*"],
+      "@base/*": ["imports/ui/components/base/*"],
       "@server/*": ["server/*"]
     },
     "moduleResolution": "node",
@@ -45,6 +46,6 @@
     "./.meteor/**",
     "./packages/**",
     "node_modules",
-    "./imports/ui/components/ui/**"
+    "./imports/base/**"
   ]
 }

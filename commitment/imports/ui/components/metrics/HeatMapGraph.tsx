@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import Chart from "react-apexcharts";
 import GraphCard from "./GraphCard";
-import { CardHeader, CardTitle } from "../ui/card";
-import InfoButton from "../ui/infoButton";
+import { CardHeader, CardTitle } from "@base/card";
+import InfoButton from "@base/infoButton";
 import { HeatMapData } from "/imports/api/types";
 import { ModeToggle } from "./ModeToggle";
 

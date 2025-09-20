@@ -2,8 +2,8 @@
 
 import React from "react"
 import { Info } from "lucide-react"
-import { Button } from "../ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
+import { Button } from "@base/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@base/tooltip"
 
 interface InfoButtonProps {
   description: string

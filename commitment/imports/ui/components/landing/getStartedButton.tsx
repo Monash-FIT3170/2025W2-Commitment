@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@ui/components/ui/button";
+import { Button } from "@base/button";
 import { cn } from "@ui/lib/utils";
 import { useNavigate } from "react-router-dom";
 

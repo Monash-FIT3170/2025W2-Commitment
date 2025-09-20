@@ -7,10 +7,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@ui/components/ui/card";
-import InfoButton from "../ui/infoButton";
+} from "@base/card";
+import InfoButton from "@base/infoButton";
 import GraphCard from "./GraphCard";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@base/chart";
 
 export interface ChartEntry {
   user: string;

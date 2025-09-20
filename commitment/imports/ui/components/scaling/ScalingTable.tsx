@@ -14,11 +14,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@ui/components/ui/table";
+} from "@base/table";
 
 import { ChevronRight } from "lucide-react";
 
-import InfoButton from "../ui/infoButton";
+import InfoButton from "@base/infoButton";
 import { AliasEmail } from "/imports/api/types";
 
 interface DataTableProps<TData extends { aliases?: AliasEmail[] }, TValue> {

@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { CalendarDays, Calendar } from "lucide-react";
-import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@base/toggle-group";
 
 type Mode =  "week" | "month";
 

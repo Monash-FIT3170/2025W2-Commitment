@@ -5,8 +5,8 @@ import { cn } from '@ui/lib/utils';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import RepoCard from './RepoCard';
-import { Button } from '../ui/button';
-import { Bookmark, BookmarksCollection } from '/imports/api/bookmarks';
+import { Button } from '@base/button';
+import {  BookmarksCollection } from '/imports/api/bookmarks';
 
 function LastSavedRepos() {
   // Use reactive data from the bookmarks publication (not repositories)

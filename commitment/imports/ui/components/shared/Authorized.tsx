@@ -1,4 +1,4 @@
-import NotAuthorizedView from "/imports/ui/views/NotAuthorizedView";
+import NotAuthorizedView from "@ui/views/NotAuthorizedView";
 import React, {ReactNode} from "react";
 import {Meteor} from "meteor/meteor";
 import { useAuth } from "../../hooks/useAuth";
@@ -20,5 +20,5 @@ export default function Authorized(props: AuthorizedProps) {
   const isAuthorized = useAuth(predicate);
 
 
-  return isAuthorized ? {children} : <NotAuthorizedView />;
+  return isAuthorized ? <>{children}</> : <NotAuthorizedView />;
 }

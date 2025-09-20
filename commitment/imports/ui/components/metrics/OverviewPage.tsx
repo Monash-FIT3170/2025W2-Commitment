@@ -1,5 +1,5 @@
 import React from 'react';
-import InfoButton from '../ui/infoButton';
+import InfoButton from '@base/infoButton';
 import { DateRangePicker } from './DatePickerButton';
 
 const overViewPageDescription = 'This page gives an overview of the overall metrics of the top .';

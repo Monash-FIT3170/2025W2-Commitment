@@ -3,7 +3,7 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
-} from "@ui/components/ui/tabs";
+} from "@base/tabs";
 import React from "react";
 import { AnalyticsView } from "./AnalyticsView";
 import ScalingView from "../scaling/ScalingView";

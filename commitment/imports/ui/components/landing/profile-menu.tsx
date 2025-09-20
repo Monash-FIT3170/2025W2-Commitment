@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HelpCircle, LogOut, User, ChevronDown, Users } from "lucide-react";
-import { Button } from "./button";
-import { Separator } from "./separator";
+import { Button } from "@base/button";
+import { Separator } from "@base/separator";
 import { useNavigate } from "react-router-dom";
 
 interface ProfileMenuProps {

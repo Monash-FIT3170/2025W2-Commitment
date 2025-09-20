@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Button } from "@ui/components/ui/button";
+import { Button } from "@base/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@ui/components/ui/dropdown-menu";
+} from "@base/dropdown-menu";
 
 interface DropdownMenuCheckboxesProps {
   metrics: string[];

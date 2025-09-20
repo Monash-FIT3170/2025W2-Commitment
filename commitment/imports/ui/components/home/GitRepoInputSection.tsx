@@ -2,8 +2,8 @@ import React, { useState, KeyboardEvent } from 'react';
 import { cn } from '@ui/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+import { Button } from '@base/button';
+import { Input } from '@base/input';
 
 function GitRepoInputSection() {
   const navigate = useNavigate();

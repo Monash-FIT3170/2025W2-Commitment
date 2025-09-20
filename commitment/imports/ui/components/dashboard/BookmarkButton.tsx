@@ -1,7 +1,7 @@
 import { Subject } from "rxjs";
 
 import React, { useEffect, useState } from "react";
-import { Button } from "@ui/components/ui/button";
+import { Button } from "@base/button";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -12,7 +12,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@ui/components/ui/alert-dialog";
+} from "@base/alert-dialog";
 import { useToast } from "@ui/hooks/use-toast";
 import { Meteor } from "meteor/meteor";
 import { Bookmark } from "lucide-react";

@@ -1,12 +1,12 @@
 import React from "react";
-import { Button } from "@ui/components/ui/button";
-import { Checkbox } from "@ui/components/ui/checkbox";
+import { Button } from "@base/button";
+import { Checkbox } from "@base/checkbox";
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import {
   Form, FormControl, FormField, FormItem, FormLabel,
-} from '@ui/components/ui/form';
+} from '@base/form';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";

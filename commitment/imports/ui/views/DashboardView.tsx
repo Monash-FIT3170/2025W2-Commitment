@@ -7,17 +7,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuContent,
-} from "@ui/components/ui/dropdown-menu";
-import { Button } from "@ui/components/ui/button";
+} from "@base/dropdown-menu";
+import { Button } from "@base/button";
 import { Bookmark } from "/imports/api/bookmarks";
 import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
 import { useNavigate } from "react-router-dom";
 import ViewToggle from "../components/dashboard/ViewToggle";
 import RepoRow from "../components/dashboard/RepoRow";
-import { FiltersState, FilterValue } from "../../components/ui/filter";
+import { FiltersState, FilterValue } from "@base/filter";
 import BookmarkFilter from "../components/dashboard/BookmarkFilter";
-import { Input } from "../../components/ui/input";
+import { Input } from "@base/input";
 
 // const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
 //   _id: `${i + 1}`,

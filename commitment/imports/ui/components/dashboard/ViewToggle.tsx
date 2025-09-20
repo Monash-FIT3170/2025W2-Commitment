@@ -1,6 +1,6 @@
 import React from 'react';
-import { Switch } from '@ui/components/ui/switch';
-import { Label } from '@radix-ui/react-label';
+import { Switch } from '@base/switch';
+import { Label } from '@base/label';
 
 interface ViewToggleProps {
   value: 'list' | 'gallery';

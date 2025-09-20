@@ -3,16 +3,16 @@ import { Moon, Sun } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
 import { useTheme } from "@ui/hooks/useTheme";
-import ProfileMenu from "../ui/profile-menu";
+import ProfileMenu from "./profile-menu";
 import {
   navigationMenuTriggerStyle,
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "../ui/navigation-menu";
+} from "@base/navigation-menu";
 import { useAuth } from "../../hooks/useAuth";
-import { Button } from "../ui/button";
+import { Button } from "@base/button";
 
 export const NavBar: React.FC = () => {
   const { isDark, toggle } = useTheme();

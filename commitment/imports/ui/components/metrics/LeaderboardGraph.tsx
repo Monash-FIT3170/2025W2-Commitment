@@ -7,10 +7,10 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts";
-import InfoButton from "../ui/infoButton";
+import InfoButton from "@base/infoButton";
 import GraphCard from "./GraphCard";
-import { CardHeader, CardContent, CardTitle } from "../ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
+import { CardHeader, CardContent, CardTitle } from "@base/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@base/chart";
 
 // Type for each contributor's data
 interface TopContributor {

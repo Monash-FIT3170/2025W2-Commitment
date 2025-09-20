@@ -1,4 +1,4 @@
-import {FormMessage} from "@ui/components/ui/form";
+import {FormMessage} from "@base/form";
 import React from "react";
 
 const LoginFormErrorMessage = () => (

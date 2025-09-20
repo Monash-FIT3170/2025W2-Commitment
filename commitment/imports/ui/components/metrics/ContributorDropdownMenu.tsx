@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button } from "@ui/components/ui/button";
+import { Button } from "@base/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -7,9 +7,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@ui/components/ui/dropdown-menu";
+} from "@base/dropdown-menu";
 
-import { ScrollArea } from "@ui/components/ui/scroll-area";
+import { ScrollArea } from "@base/scroll-area";
 
 interface DropdownMenuCheckboxesProps {
   contributors: string[];
