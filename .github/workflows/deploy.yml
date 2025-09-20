@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - "cd/deploy"
+      - "main"
 
 jobs:
   build:
@@ -48,8 +48,8 @@ jobs:
               git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git ~/app
             fi
             cd ~/app
-            git fetch origin cd/deploy
-            git reset --hard origin/cd/deploy
+            git fetch origin main
+            git reset --hard origin/main
 
             sudo docker system prune -a --volumes -f
 
