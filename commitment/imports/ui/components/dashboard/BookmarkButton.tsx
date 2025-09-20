@@ -13,7 +13,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@base/alert-dialog";
-import { useToast } from "@hook/use-toast";
+import { useToast } from "@hook/useToast";
 import { Meteor } from "meteor/meteor";
 import { Bookmark } from "lucide-react";
 // Update the import path to the correct relative location of call_repo

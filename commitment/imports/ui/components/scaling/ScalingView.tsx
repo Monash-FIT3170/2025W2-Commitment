@@ -29,7 +29,7 @@ import type {
   UserScalingSummary,
 } from "../../../api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
-import { toast } from "@hook/use-toast";
+import { toast } from "@hook/useToast";
 import InfoButton from "@base/infoButton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hook/useAuth";
