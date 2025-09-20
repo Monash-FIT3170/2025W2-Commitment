@@ -17,7 +17,11 @@ import {
 import { Button } from "@ui/components/ui/button";
 import { Alert, AlertDescription } from "@ui/components/ui/alert";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
-import { GradingSheetParserService, type GradingSheetRow, type ParseResult } from "../utils/GradingSheetParser";
+import {
+  GradingSheetParserService,
+  type GradingSheetRow,
+  type ParseResult,
+} from "../utils/GradingSheetParser";
 
 // Schema: Accept 0 or 1 file
 const gradingSheetSchema = z.object({
@@ -30,7 +34,11 @@ function GradingSheetForm({
   onSubmit,
   onSkip,
 }: {
-  onSubmit: (gradingSheet: File, parsedData?: GradingSheetRow[], parseResult?: ParseResult) => void;
+  onSubmit: (
+    gradingSheet: File,
+    parsedData?: GradingSheetRow[],
+    parseResult?: ParseResult
+  ) => void;
   onSkip?: () => void;
 }): JSX.Element {
   // CSV parsing state management
@@ -53,26 +61,28 @@ function GradingSheetForm({
     });
 
     // Validate file type is CSV
-    if (files[0] && !files[0].name.toLowerCase().endsWith('.csv')) {
+    if (files[0] && !files[0].name.toLowerCase().endsWith(".csv")) {
       setParseResult({
         success: false,
-        error: 'Please upload a CSV file only'
+        error: "Please upload a CSV file only",
       });
       return;
     }
-    
+
     setParseResult(null);
-    
+
     // Parse CSV file immediately when dropped using Papa Parse
     if (files[0]) {
       setIsLoading(true);
       try {
-        const result = await GradingSheetParserService.parseGradingSheet(files[0]);
+        const result = await GradingSheetParserService.parseGradingSheet(
+          files[0]
+        );
         setParseResult(result);
       } catch {
         setParseResult({
           success: false,
-          error: 'Unexpected error during parsing'
+          error: "Unexpected error during parsing",
         });
       } finally {
         setIsLoading(false);
@@ -80,7 +90,7 @@ function GradingSheetForm({
     }
   };
 
-  // Form submission handler integrating CSV parsing with parent component  
+  // Form submission handler integrating CSV parsing with parent component
   const handleFormSubmit = (data: GradingSheetSchema) => {
     const file = data.sheet?.[0];
     if (file) {
@@ -89,7 +99,7 @@ function GradingSheetForm({
       } catch {
         setParseResult({
           success: false,
-          error: 'Error submitting form'
+          error: "Error submitting form",
         });
       }
     }
@@ -104,7 +114,7 @@ function GradingSheetForm({
 
       <Form {...form}>
         <div className="text-2xl font-bold mb-4 text-center">
-          Generate Scaling
+          Upload Grading Sheet
         </div>
         <p className="text-sm text-center mb-4">
           Want to upload a scaling sheet?
@@ -137,7 +147,7 @@ function GradingSheetForm({
                     onError={() => {
                       setParseResult({
                         success: false,
-                        error: 'Error uploading file'
+                        error: "Error uploading file",
                       });
                     }}
                     src={field.value}
@@ -181,25 +191,23 @@ function GradingSheetForm({
               </AlertDescription>
             </Alert>
           )}
-          
+
           {parseResult?.success === false && (
             <Alert className="border-red-200 bg-red-50" variant="destructive">
               <CircleXIcon className="h-4 w-4" />
-              <AlertDescription>
-                {parseResult.error}
-              </AlertDescription>
+              <AlertDescription>{parseResult.error}</AlertDescription>
             </Alert>
           )}
 
           <div className="flex justify-center mt-6 gap-4">
             <Button
               type="submit"
-              disabled={!form.watch('sheet')?.length || isLoading}
+              disabled={!form.watch("sheet")?.length || isLoading}
               className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-full px-8"
             >
-              {isLoading ? 'Processing...' : 'Generate'}
+              {isLoading ? "Processing..." : "Generate"}
             </Button>
-            
+
             {onSkip && (
               <Button
                 type="button"

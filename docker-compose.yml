@@ -2,7 +2,7 @@ services:
   build-env:
     build:
       context: ./commitment
-      dockerfile: Dockerfile.MeteorRun
+      dockerfile: Dockerfile.MeteorDev
     image: commitment-img
     container_name: 3170-build
     ports:
@@ -10,7 +10,7 @@ services:
     volumes:
       - ./commitment:/projects/commitment
     env_file:
-      - ./commitment/atlas/.env
+      - ./commitment/.env
     tty: true
     stdin_open: true
     networks:
