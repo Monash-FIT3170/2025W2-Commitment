@@ -3,7 +3,6 @@ import { Moon, Sun } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
 import { useTheme } from "@hook/useTheme";
-import ProfileMenu from "./profile-menu";
 import {
   navigationMenuTriggerStyle,
   NavigationMenu,
@@ -13,8 +12,9 @@ import {
 } from "@base/navigation-menu";
 import { useAuth } from "@hook/useAuth";
 import { Button } from "@base/button";
+import ProfileMenu from "./profile-menu";
 
-export const NavBar: React.FC = () => {
+export const NavBar: Rveact.FC = () => {
   const { isDark, toggle } = useTheme();
 
   const location = useLocation();

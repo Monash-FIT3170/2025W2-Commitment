@@ -7,7 +7,7 @@
         "alias": {
           "@ui": "./imports/ui",
           "@base": "./imports/ui/components/base",
-          "@hook": "./imports/ui/components/hooks",
+          "@hook": "./imports/ui/hooks",
           "@/": "./"
         }
       }
