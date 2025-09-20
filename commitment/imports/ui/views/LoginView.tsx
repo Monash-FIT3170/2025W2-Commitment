@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import LoginWidget from '@ui/components/widgets/login/LoginWidget';
+import LoginWidget from '/imports/ui/components/login/LoginWidget';
 
 export interface LoginViewProps {
   defaultTab?: "login" | "signup"

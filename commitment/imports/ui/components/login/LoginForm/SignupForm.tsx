@@ -6,9 +6,9 @@ import {useForm} from "react-hook-form";
 import {Form, FormControl, FormField, FormItem} from "@base/form";
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
-import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
+import LoginFormErrorMessage from "/imports/ui/components/login/LoginForm/LoginFormErrorMessage";
 import { Accounts } from "meteor/accounts-base";
-import FormInputWithErrors from "../../../shared/FormInputWithErrors";
+import FormInputWithErrors from "../../shared/FormInputWithErrors";
 
 
 

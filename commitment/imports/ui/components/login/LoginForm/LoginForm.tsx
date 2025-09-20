@@ -9,9 +9,9 @@ import {
 } from '@base/form';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
-import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
+import LoginFormErrorMessage from "/imports/ui/components/login/LoginForm/LoginFormErrorMessage";
 
-import FormInputWithErrors from '../../../shared/FormInputWithErrors';
+import FormInputWithErrors from '../../shared/FormInputWithErrors';
 
 export interface LoginFormProps {
   className?: string

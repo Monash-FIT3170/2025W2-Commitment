@@ -2,8 +2,8 @@ import React, { FC, ReactNode, useCallback } from 'react';
 import {
   Card, CardContent, CardHeader, CardTitle,
 } from '@base/card';
-import LoginForm from '@ui/components/widgets/login/LoginForm/LoginForm';
-import SignupForm from "@ui/components/widgets/login/LoginForm/SignupForm";
+import LoginForm from '/imports/ui/components/login/LoginForm/LoginForm';
+import SignupForm from "/imports/ui/components/login/LoginForm/SignupForm";
 import { cx } from 'class-variance-authority';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@base/tabs";
 
