@@ -2,7 +2,7 @@ import React, {  useEffect , useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useLocation } from 'react-router-dom';
 import BookmarkButton from '../dashboard/BookmarkButton';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@hook/useAuth';
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL

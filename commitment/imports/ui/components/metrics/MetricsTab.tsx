@@ -7,7 +7,7 @@ import {
 import React from "react";
 import { AnalyticsView } from "./AnalyticsView";
 import ScalingView from "../scaling/ScalingView";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@hook/useAuth";
 
 interface TabData {
   value: string;

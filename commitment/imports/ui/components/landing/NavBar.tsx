@@ -2,7 +2,7 @@ import React from "react";
 import { Moon, Sun } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
-import { useTheme } from "@ui/hooks/useTheme";
+import { useTheme } from "@hook/useTheme";
 import ProfileMenu from "./profile-menu";
 import {
   navigationMenuTriggerStyle,
@@ -11,7 +11,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@base/navigation-menu";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@hook/useAuth";
 import { Button } from "@base/button";
 
 export const NavBar: React.FC = () => {

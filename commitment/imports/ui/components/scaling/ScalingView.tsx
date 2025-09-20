@@ -29,10 +29,10 @@ import type {
   UserScalingSummary,
 } from "../../../api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
-import { toast } from "../../hooks/use-toast";
+import { toast } from "@hook/use-toast";
 import InfoButton from "@base/infoButton";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@hook/useAuth";
 
 interface ScalingConfig {
   metrics: string[];
