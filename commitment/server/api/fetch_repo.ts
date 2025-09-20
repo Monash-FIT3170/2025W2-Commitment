@@ -127,7 +127,7 @@ export const fetchRepoData = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
-  fetchDataFromHaskellAppWS(url, notifier)
+  fetchDataFromHaskellAppIPC(url, notifier)
     .then(assertRepoTyping) // enforces strong typing for the entire data structure
     .catch((e2: Error) => {
       if (notifier !== null) notifier.next(`API fetch failed: ${e2}`);
