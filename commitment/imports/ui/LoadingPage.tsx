@@ -5,7 +5,7 @@ import { Subject } from "rxjs";
 
 import LoadingBar from "/imports/ui/components/loading/LoadingBar";
 import TipBox from "/imports/ui/components/loading/TipBox";
-import { fetchRepo } from "../api/call_repo";
+import { fetchRepo } from "@api/call_repo";
 
 interface LocationState {
   repoUrl?: string;

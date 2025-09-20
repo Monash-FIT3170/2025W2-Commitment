@@ -20,7 +20,7 @@ import {
   FilteredData,
   UserScalingSummary,
   SerialisableMapObject,
-} from "/imports/api/types";
+} from "@api/types";
 import { useLocation } from "react-router-dom";
 import { config } from "process";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "./dropzone";

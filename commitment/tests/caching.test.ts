@@ -2,9 +2,9 @@ import { Meteor } from 'meteor/meteor'
 import { expect } from 'chai'
 
 import { cacheIntoDatabase, isInDatabase, tryFromDatabase } from "../server/caching"
-import { meteorCallAsync, suppressError } from "../imports/api/meteor_interface"
-import { RepositoryData } from '/imports/api/types'
-import { RepositoriesCollection } from '/imports/api/repositories'
+import { meteorCallAsync, suppressError } from "@api/meteor_interface"
+import { RepositoryData } from '@api/types'
+import { RepositoriesCollection } from '@api/repositories'
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 

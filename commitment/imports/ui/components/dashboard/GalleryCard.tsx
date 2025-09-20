@@ -4,7 +4,7 @@ import {
   Card, CardContent, CardHeader, CardTitle,
 } from '@base/card';
 import { Button } from '@base/button';
-import { Bookmark } from '/imports/api/bookmarks';
+import { Bookmark } from '@api/bookmarks';
 import BookmarkButton from './BookmarkButton';
 
 interface GalleryCardProps {

@@ -17,7 +17,7 @@ import { useToast } from "@hook/useToast";
 import { Meteor } from "meteor/meteor";
 import { Bookmark } from "lucide-react";
 // Update the import path to the correct relative location of call_repo
-import { fetchRepo, repoInDatabase } from "../../../api/call_repo";
+import { fetchRepo, repoInDatabase } from "@api/call_repo";
 
 /**
  * BookmarkRepoButton Component

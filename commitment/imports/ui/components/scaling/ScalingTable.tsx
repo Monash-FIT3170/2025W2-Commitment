@@ -19,7 +19,7 @@ import {
 import { ChevronRight } from "lucide-react";
 
 import InfoButton from "@base/infoButton";
-import { AliasEmail } from "/imports/api/types";
+import { AliasEmail } from "@api/types";
 
 interface DataTableProps<TData extends { aliases?: AliasEmail[] }, TValue> {
   columns: ColumnDef<TData, TValue>[];

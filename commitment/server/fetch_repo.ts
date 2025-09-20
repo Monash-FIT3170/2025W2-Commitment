@@ -4,8 +4,8 @@ import { WebSocket } from "ws";
 import net from "net";
 import dotenv from "dotenv";
 
-import { RepositoryData } from "../imports/api/types";
-import { assertRepoTyping } from "../imports/api/serialisation";
+import { RepositoryData } from "@api/types";
+import { assertRepoTyping } from "@api/serialisation";
 import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};

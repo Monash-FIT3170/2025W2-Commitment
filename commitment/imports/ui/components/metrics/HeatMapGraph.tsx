@@ -3,7 +3,7 @@ import Chart from "react-apexcharts";
 import GraphCard from "./GraphCard";
 import { CardHeader, CardTitle } from "@base/card";
 import InfoButton from "@base/infoButton";
-import { HeatMapData } from "/imports/api/types";
+import { HeatMapData } from "@api/types";
 import { ModeToggle } from "./ModeToggle";
 
 // Types

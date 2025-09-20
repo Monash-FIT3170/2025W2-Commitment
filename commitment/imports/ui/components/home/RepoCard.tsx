@@ -1,5 +1,5 @@
 import React from 'react';
-import { Repository } from '/imports/api/repositories';
+import { Repository } from '@api/repositories';
 
 interface RepoCardProps {
   repository: Repository;

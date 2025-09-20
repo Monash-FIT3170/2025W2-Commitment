@@ -27,7 +27,7 @@ import ScalingSummary from "./ScalingSummary";
 import type {
   UnmappedContributor,
   UserScalingSummary,
-} from "../../../api/types";
+} from "@api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 import { toast } from "@hook/useToast";
 import InfoButton from "@base/infoButton";

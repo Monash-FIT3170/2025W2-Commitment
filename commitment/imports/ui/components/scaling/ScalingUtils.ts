@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import type { UserScalingSummary } from "../../../api/types";
+import type { UserScalingSummary } from "@api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 
 /**

@@ -13,7 +13,7 @@ import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import HeatmapGraph from "./HeatMapGraph";
 
-import { AnalyticsData, MetricType, metricNames } from "/imports/api/types";
+import { AnalyticsData, MetricType, metricNames } from "@api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
 
 // -----------------------------

@@ -9,7 +9,7 @@ import {
   DropdownMenuContent,
 } from "@base/dropdown-menu";
 import { Button } from "@base/button";
-import { Bookmark } from "/imports/api/bookmarks";
+import { Bookmark } from "@api/bookmarks";
 import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
 import { useNavigate } from "react-router-dom";

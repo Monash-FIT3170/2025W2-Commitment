@@ -1,4 +1,4 @@
-import { HeatMapData, FilteredData } from "../imports/api/types";
+import { HeatMapData, FilteredData } from "@api/types";
 import {
   getLinesOfCodeFromCommit
 } from "./helper_functions"
