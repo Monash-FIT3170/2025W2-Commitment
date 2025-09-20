@@ -1,6 +1,6 @@
 import React from "react";
-import MetricsTabs from "./components/metrics-page/MetricsTab";
-import TopBar from "./components/metrics-page/TopBar";
+import MetricsTabs from "./components/metrics/MetricsTab";
+import TopBar from "./components/metrics/TopBar";
 
 const MetricsPage: React.FC = () => (
     <div className="m-0 scroll-smooth flex flex-col">
