@@ -13,10 +13,10 @@ import { Bookmark } from "/imports/api/bookmarks";
 import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
 import { useNavigate } from "react-router-dom";
-import ViewToggle from "../../components/dashboard/ViewToggle";
-import RepoRow from "../../components/dashboard/RepoRow";
+import ViewToggle from "../components/dashboard/ViewToggle";
+import RepoRow from "../components/dashboard/RepoRow";
 import { FiltersState, FilterValue } from "../../components/ui/filter";
-import BookmarkFilter from "../../components/dashboard/BookmarkFilter";
+import BookmarkFilter from "../components/dashboard/BookmarkFilter";
 import { Input } from "../../components/ui/input";
 
 // const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
