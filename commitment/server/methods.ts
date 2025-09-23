@@ -71,7 +71,7 @@ Meteor.methods({
    */
   async "repo.getAllMetrics"({ repoUrl }: { repoUrl: string }): Promise<AllMetricsData> {
     // Get repository data and apply alias mapping
-    const repo: SerializableRepoData = await getSerialisedRepoData(repoUrl, null);
+    const repo: SerializableRepoData = await tryFromDatabaseSerialised(repoUrl, null);
 
     const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
 
@@ -105,7 +105,7 @@ export const getFilteredData = async ({
   userId?: string;
 }) => {
   // Get full repository data from db (fetches from API if not updated or in the database)
-  const repo: SerializableRepoData = await getSerialisedRepoData(repoUrl, null);
+  const repo: SerializableRepoData = await tryFromDatabaseSerialised(repoUrl, null);
 
   // Apply alias mapping if user has config
   const mappedRepo = await applyAliasMappingIfNeeded(repo, userId || "");
@@ -123,8 +123,8 @@ export const getFilteredData = async ({
 };
 
 export const getMetaData = async (repoUrl: string, userId?: string): Promise<Metadata> => {
-  // Get full repository data from db
-  const repo: SerializableRepoData = await getSerialisedRepoData(repoUrl, null);
+  // Get full repository data from db (without checking whether its up to date)
+  const repo: SerializableRepoData = await tryFromDatabaseSerialised(repoUrl, null);
 
   // Apply alias mapping if user has config
   const mappedRepo = await applyAliasMappingIfNeeded(repo, userId || "");
