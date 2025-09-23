@@ -176,14 +176,7 @@ export const metricNames: string[] = Object.values(MetricType);
 
 // add a type for getAllMetrics.
 
-export interface AllMetricsData {
-  [contributorName: string]: {
-    "Total No. Commits": number;
-    LOC: number;
-    "LOC Per Commit": number;
-    "Commits Per Day": number;
-  };
-}
+
 
 export type ContributorValueWithAliases = {
   name: string;
@@ -195,3 +188,39 @@ export type UnmappedContributor = {
   name: string;
   rawIdentifiers: string[];
 };
+
+export type AllMetricsData = {
+  contributorName: string;
+  metrics: {
+    "Total No. Commits": number;
+    "LOC": number;
+    "LOC Per Commit": number;
+    "Commits Per Day": number;
+  };
+}
+export type contributorPercentile ={
+  name: string; 
+  percentile: number;
+}
+
+export type contributorZscore = {
+  name: string;
+  zscore: number;
+}
+
+export type repoQuartiles = {
+  min: number;
+  Q1: number;
+  median: number;
+  Q3: number;
+  max: number;
+}
+
+// for contributor metric scaling graph
+export type metricScaling = {
+    contributorMetricData: AllMetricsData;
+    contributorPercentiles: contributorPercentile[];
+    contributorZscores: contributorZscore[];
+    repoQuartiles: repoQuartiles;
+    repoMean: number; 
+}
