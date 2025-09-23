@@ -202,7 +202,7 @@ export type ContributorMetrics = {
   metrics: Record<string, number>; 
 }
 
-export type ContribubtorScaledMetric ={
+export type ContributorScaledMetric ={
   metric: string; 
   value: number; 
   percentile: number ; 
@@ -210,7 +210,7 @@ export type ContribubtorScaledMetric ={
 
 export type ContributorScaledData = {
   contributorName: string;
-  scaledMetrics: ContribubtorScaledMetric[];
+  scaledMetrics: ContributorScaledMetric[];
 }
 
 export type RepoMetricDistribution= {
