@@ -211,6 +211,11 @@ export type ContribubtorScaledMetric ={
   zscore: number;
 }
 
+export type ContributorScaledData = {
+  contributorName: string;
+  scaledMetrics: ContribubtorScaledMetric[];
+}
+
 export type repoQuartiles = {
   min: number;
   Q1: number;
