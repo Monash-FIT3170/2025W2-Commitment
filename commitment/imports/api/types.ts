@@ -189,15 +189,21 @@ export type UnmappedContributor = {
   rawIdentifiers: string[];
 };
 
-export type AllMetricsData = {
-  contributorName: string;
-  metrics: {
-    "Total No. Commits": number;
-    "LOC": number;
-    "LOC Per Commit": number;
-    "Commits Per Day": number;
-  };
+// export type AllMetricsData = {
+//   contributorName: string;
+//   metrics: {
+//     "Total No. Commits": number;
+//     "LOC": number;
+//     "LOC Per Commit": number;
+//     "Commits Per Day": number;
+//   };
+// }
+
+export type ContributorMetrics = {
+  contributorName : string; 
+  metrics: Record<string, number>; 
 }
+
 
 export type contributorPercentile ={
   name: string; 
