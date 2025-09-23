@@ -28,7 +28,7 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
   const fillColor = isPositive ? "#59A14F" : "#E15759";
   return (
     <Card
-      className={`font-mono text-foreground flex flex-col w-full min-w-[220px] gap-2 rounded-xl outline-solid outline-2 outline-git-bg-secondary  bg-git-bg-bottom justify-between ${
+      className={`font-mono text-foreground flex flex-col w-full min-w-[220px] min-h-[168px] gap-2 rounded-xl outline-solid outline-2 outline-git-bg-secondary  bg-git-bg-bottom justify-between ${
         percentageChange ? "justify-between" : "justify-start"
       }`}
     >
