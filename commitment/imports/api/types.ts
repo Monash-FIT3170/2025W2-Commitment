@@ -190,3 +190,8 @@ export type ContributorValueWithAliases = {
   emails: string[];
   aliases: { username: string; email: string | null }[];
 };
+
+export type UnmappedContributor = {
+  name: string;
+  rawIdentifiers: string[];
+};

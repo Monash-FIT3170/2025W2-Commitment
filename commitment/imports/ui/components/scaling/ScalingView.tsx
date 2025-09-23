@@ -24,10 +24,15 @@ import {
 import { Button } from "../ui/button";
 import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
-import type { UserScalingSummary } from "../../../api/types";
+import type {
+  UnmappedContributor,
+  UserScalingSummary,
+} from "../../../api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 import { toast } from "../../hooks/use-toast";
 import InfoButton from "../ui/infoButton";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 interface ScalingConfig {
   metrics: string[];
@@ -49,6 +54,64 @@ function ScalingView(): JSX.Element {
     useState<ParseResult | null>(null);
   const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
   const [repoUrl, setRepoUrl] = useState<string | null>(null);
+
+  // for Alias Mapping
+  const [unmappedUsers, setUnmappedUsers] = useState<
+    { name: string; rawIdentifiers: string[] }[]
+  >([]);
+  const [showAliasDialog, setShowAliasDialog] = useState(false);
+
+  const navigate = useNavigate();
+
+  const isLoggedIn = useAuth();
+
+  useEffect(() => {
+    if (isLoggedIn === false) {
+      navigate("/dashboard");
+    }
+  }, [isLoggedIn, navigate]);
+
+  useEffect(() => {
+    if (!repoUrl) return;
+
+    Meteor.call(
+      "aliasConfigs.validateAllContributors",
+      repoUrl,
+      (err: Meteor.Error | null, res: { unmapped: UnmappedContributor[] }) => {
+        if (err) {
+          console.error("Error validating contributors:", err);
+          return;
+        }
+
+        if (res.unmapped.length > 0) {
+          setUnmappedUsers(res.unmapped);
+          setShowAliasDialog(true);
+        } else {
+          setShowAliasDialog(false);
+        }
+      }
+    );
+  }, [repoUrl]);
+
+  useEffect(() => {
+    if (!config || !gradingSheetParseResult) return;
+
+    // Only recalc if there are previously scaled results
+    if (scaledResults.length === 0) return;
+
+    try {
+      const parsedData = gradingSheetParseResult.data;
+      if (parsedData && parsedData.length > 0) {
+        const updatedResults = calculateFinalGrades(scaledResults, parsedData);
+        setScaledResults(updatedResults);
+      }
+    } catch (err) {
+      console.error(
+        "Error recalculating scaled results after alias update",
+        err
+      );
+    }
+  }, [config, gradingSheetParseResult, unmappedUsers]);
 
   // Function to clear all scaling data from localStorage and reset state
   const clearScalingData: () => void = () => {
@@ -297,11 +360,60 @@ function ScalingView(): JSX.Element {
     <div className="w-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated">
       <div className="flex flex-col gap-32">
         <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-4 rounded-2xl bg-git-bg-elevated">
+          {showAliasDialog && (
+            <AlertDialog
+              open={showAliasDialog}
+              onOpenChange={setShowAliasDialog}
+            >
+              
+
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Unmapped Contributors</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    The following contributors are not mapped in your alias
+                    config:
+                    <ul className="mt-2 list-disc ml-5">
+                      {unmappedUsers.map((u) => (
+                        <li key={u.name}>
+                          <strong>{u.name}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                    Please upload or update your alias configuration in
+                    settings.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="p-0">
+                  <div className="w-full flex justify-center items-center">
+                    <AlertDialogAction
+                      onClick={() => {
+                        navigate("/settings", {
+                          state: { tab: "alias-config" },
+                        });
+                      }}
+                    >
+                      Go to Alias Configuration
+                    </AlertDialogAction>
+                  </div>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
           {/* Always render the scaling summary in the background */}
+          {config && scaledResults.length > 0 && !showAliasDialog && (
+            // <div className="mb-6">
+            //   {/* Header */}
+            //   <div className="mb-10">
 
           <div className="flex mb-4">
             <div className="flex flex-col mr-auto">
                 <div className="flex items-center gap-4">
+                  <h1 className="text-5xl text-foreground font-robotoFlex">
+                    Scaling
+                  </h1>
+                  <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
                 <h1 className="text-3xl text-foreground font-robotoFlex mt-4">
                   Scaling
                 </h1>
@@ -309,7 +421,78 @@ function ScalingView(): JSX.Element {
                 </div>
               <div className="h-[2px] bg-git-stroke-primary mt-2 w-full" />
             </div>
+          </div>
+          )}
 
+          {/* Buttons for grading sheet or regenerate */}
+          {!showAliasDialog && (
+            <div className="flex justify-center gap-4 flex-wrap p-4">
+              <Button
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                onClick={() => {
+                  setStep("config");
+                  setShowDialog(true);
+                }}
+              >
+                Create New Scaling
+              </Button>
+
+              <Button
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                onClick={() => {
+                  setStep("sheet");
+                  setShowDialog(true);
+                }}
+              >
+                <Upload className="h-4 w-4" />
+                {gradingSheet
+                  ? "Replace Grading Sheet"
+                  : "Upload Grading Sheet"}
+              </Button>
+
+              {gradingSheet && gradingSheetParseResult && (
+                <Button
+                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                  onClick={() => {
+                    void handleDownloadScaledSheet();
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                  Download Scaled Grading Sheet
+                </Button>
+              )}
+
+              {(config || gradingSheet || scaledResults.length > 0) && (
+                <AlertDialog
+                  open={showClearDialog}
+                  onOpenChange={setShowClearDialog}
+                >
+                  <AlertDialogTrigger asChild>
+                    <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
+                      Clear
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Clear Scaling</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to clear all scaling data? You
+                        will need to reconfigure scaling settings and re-upload
+                        your grading sheet if you do.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleConfirmClear}>
+                        Clear
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+          )}
             {/* Clear button - only visible when there's config or grading sheet data */}
             {(config || gradingSheet || scaledResults.length > 0) && (
               <AlertDialog
@@ -417,7 +600,7 @@ function ScalingView(): JSX.Element {
           </Dialog>
         </div>
       </div>
-    </div>
+
   );
 }
 

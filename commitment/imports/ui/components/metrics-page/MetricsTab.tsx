@@ -5,13 +5,14 @@ import {
   TabsContent,
 } from "@ui/components/ui/tabs";
 import React from "react";
-import { OverviewPage } from "./OverviewPage";
 import { AnalyticsView } from "./AnalyticsView";
 import ScalingView from "../scaling/ScalingView";
+import { useAuth } from "../../hooks/useAuth";
 
 interface TabData {
   value: string;
   label: string;
+  requiresAuth?: boolean;
 }
 
 const allTabData: TabData[] = [
@@ -22,24 +23,31 @@ const allTabData: TabData[] = [
   {
     value: "scaling",
     label: "Scaling",
+    requiresAuth: true,
   },
 ];
 
 export default function MetricsTabs() {
+  const isLoggedIn = useAuth();
+
+  // Show scaling only if authenticated
+  const visibleTabs = allTabData.filter(
+    (tab) => !tab.requiresAuth || isLoggedIn
+  );
+
   return (
     <Tabs
       defaultValue="metrics"
       className="w-full  bg-git-bg-elevated justify-items-start "
     >
       <TabsList className="w-full flex justify-start bg-git-bg-elevated ">
-        {allTabData.map(({ value, label }) => (
+        {visibleTabs.map(({ value, label }) => (
           <TabsTrigger
             key={value}
             value={value}
             className={`
               relative px-4 text-lg font-medium text-foreground
               bg-git-bg-elevated hover:bg-git-tabs-hovered
-
               border-b border-git-stroke-primary/40
               data-[state=active]:bg-git-tabs-active
               data-[state=active]:git-tabs-hovered
@@ -49,9 +57,7 @@ export default function MetricsTabs() {
               data-[state=active]:after:left-0
               data-[state=active]:after:w-full
               data-[state=active]:after:h-0.5
-              data-[state=active]:after:bg-git
               data-[state=active]:after:bg-orange-500
-              
               rounded-none border-none shadow-none focus:outline-hidden
               transition-all
             `}
@@ -61,19 +67,15 @@ export default function MetricsTabs() {
         ))}
       </TabsList>
 
-      <TabsContent value="metrics" className="">
-        {/* METRICS */}
-        <div className="">
-          <AnalyticsView />
-        </div>
+      <TabsContent value="metrics">
+        <AnalyticsView />
       </TabsContent>
-      <TabsContent
-        value="scaling"
-        className=" w-full"
-      >
-        {/* SCALING */}
-        <ScalingView />
-      </TabsContent>
+
+      {isLoggedIn && (
+        <TabsContent value="scaling" className="w-full">
+          <ScalingView />
+        </TabsContent>
+      )}
     </Tabs>
   );
 }

@@ -1,10 +1,10 @@
 import React, {  useEffect , useState } from 'react';
-import { Settings } from 'lucide-react';
 import { Meteor } from 'meteor/meteor';
 import { useLocation } from 'react-router-dom';
 import { AnalyticsData, Metadata } from '/imports/api/types';
 import { useAuth } from "@ui/hooks/useAuth";
 import BookmarkButton from '../dashboard/BookmarkButton';
+import { useAuth } from '../../hooks/useAuth';
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL
@@ -27,6 +27,7 @@ function getRepoNameFromUrl(url: string): string {
 
 export default function TopBar() {
   // call meteor method to find the name
+  const signedIn = useAuth()
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
   const [repoName, setRepoName] = useState<string>("Loading...");
@@ -52,12 +53,11 @@ export default function TopBar() {
     <div className="flex items-center justify-between px-3 py-3 pr-5 border-b  border-git-stroke-primary/40 bg-git-bg-elevated">
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-foreground">{repoName}</h2>
-        {/* Bookmark button */}
-        {repoUrl && isAuthorized && (
+        {/* Bookmark button (only shown to signed in users) */}
+        {(repoUrl && signedIn) && (
           <BookmarkButton url={repoUrl} title={repoName} variant="secondary" />
         )}
       </div>
-      <Settings className="w-5 h-5 text-git-stroke-secondary hover:text-git-stroke-primary cursor-pointer " />
     </div>
   );
 }

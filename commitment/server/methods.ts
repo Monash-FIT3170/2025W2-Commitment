@@ -12,19 +12,37 @@ import {
   Selections,
   AllMetricsData,
   MetricType,
-  RepositoryData,
 } from "../imports/api/types";
-
-import { getContributors } from "./helper_functions";
 
 import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
-import { getRepoData } from "./fetch_repo";
-import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation";
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
+import { spawn } from "child_process";
 
 Meteor.methods({
+  /**
+   * Check if a repository exists and is accessible
+   * @param repoUrl The repository URL to check
+   * @returns Promise<boolean> True if repository exists and is accessible
+   */
+  async "repo.checkExists"(repoUrl: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      const git = spawn('git', ['ls-remote', repoUrl], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...process.env, GIT_TERMINAL_PROMPT: '0' }
+      });
+      
+      git.on('close', (code) => {
+        resolve(code === 0);
+      });
+      
+      git.on('error', () => {
+        resolve(false);
+      });
+    });
+  },
+
   /**
    * Get filtered repository data from the server
    * @param params.daysBack Number of days to look back (default: 7)
@@ -120,8 +138,7 @@ Meteor.methods({
           : metadata.branches.includes("master")
           ? "master"
           : metadata.branches[0]),
-      selectedContributors:
-        !contributors || contributors.length === 0 ? metadata.contributors : contributors,
+      selectedContributors: contributors ?? [],
       selectedMetrics: metric,
       selectedDateRange: {
         from: startDate || metadata.dateRange.from,

@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - "cd/deploy"
+      - "main"
 
 jobs:
   build:
@@ -13,29 +13,27 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # - name: Log in to Docker Hub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # # Meteor build
-      # - name: Build Meteor app image
-      #   run: |
-      #     docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest -f commitment/Dockerfile.meteor commitment/
+      - name: Build Meteor app image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest -f commitment/Dockerfile.MeteorProd commitment/
 
-      # - name: Push Meteor app image
-      #   run: |
-      #     docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-meteor:latest
+      - name: Push Meteor app image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
 
-      # # Haskell API build
-      # - name: Build Haskell API image
-      #   run: |
-      #     docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest -f api/Dockerfile.haskell api/
+      - name: Build Haskell API image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest -f api/Dockerfile.haskell api/
 
-      # - name: Push Haskell API image
-      #   run: |
-      #     docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api:latest
+      - name: Push Haskell API image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.0
@@ -50,18 +48,15 @@ jobs:
               git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git ~/app
             fi
             cd ~/app
-            git fetch origin cd/deploy
-            git reset --hard origin/cd/deploy
+            git fetch origin main
+            git reset --hard origin/main
+
+            sudo docker system prune -a --volumes -f
 
             sudo docker pull commitment3170/haskell-api-img:latest
 
-            sudo docker build -t commitment-img -f commitment/Dockerfile.MeteorRun ~/app/commitment --no-cache
+            sudo docker pull commitment3170/commitment-img:latest
 
-            sudo docker-compose -f docker-compose.prod.yml down
+            sudo docker-compose -f docker-compose.prod.yml down --volumes
 
             sudo docker-compose -f docker-compose.prod.yml up -d
-      # mup
-      # export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-      # export DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
-      # chmod +x deploy.sh
-      # ./deploy.sh
