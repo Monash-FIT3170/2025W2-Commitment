@@ -210,3 +210,11 @@ export type contributorZscore = {
   zscore: number;
 }
 
+
+export type repoQuartiles = {
+  min: number;
+  Q1: number;
+  median: number;
+  Q3: number;
+  max: number;
+}
