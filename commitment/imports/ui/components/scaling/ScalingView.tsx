@@ -402,22 +402,24 @@ function ScalingView(): JSX.Element {
               </AlertDialogContent>
             </AlertDialog>
           )}
+          
+          <div className="flex">
+            <div className="mb-10 mr-auto">
+              <div className="flex items-center gap-4">
+                <h1 className="text-3xl text-foreground font-robotoFlex mt-4">
+                  Scaling
+                </h1>
+                <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
+              </div>
+              <div className="h-[2px] bg-git-stroke-primary w-full mt-2" />
+            </div>
+          </div>
 
           {/* Always render the scaling summary in the background */}
           {config && scaledResults.length > 0 && !showAliasDialog && (
             <div className="mb-6">
               {/* Header */}
-              <div className="flex">
-                <div className="mb-10 mr-auto">
-                  <div className="flex items-center gap-4">
-                    <h1 className="text-3xl text-foreground font-robotoFlex mt-4">
-                      Scaling
-                    </h1>
-                    <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
-                  </div>
-                  <div className="h-[2px] bg-git-stroke-primary w-full mt-2" />
-                </div>
-              </div>
+
               <ScalingSummary
                 userScalingSummaries={scaledResults}
                 hasGradingSheet={!!gradingSheet}
