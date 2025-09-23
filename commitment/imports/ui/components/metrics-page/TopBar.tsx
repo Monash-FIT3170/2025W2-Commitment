@@ -49,7 +49,7 @@ export default function TopBar() {
   return (
     <div className="flex items-center justify-between px-10 py-3 border-b  border-git-stroke-primary/40 bg-git-bg-elevated">
       <div className="flex items-center gap-3">
-        <h2 className="text-lg font-semibold text-gray-800">{repoName}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{repoName}</h2>
         {/* Bookmark button */}
         {repoUrl && (
           <BookmarkButton url={repoUrl} title={repoName} variant="secondary" />
