@@ -218,3 +218,12 @@ export type repoQuartiles = {
   Q3: number;
   max: number;
 }
+
+// for contributor metric scaling graph
+export type scalingDistribution = {
+    contributorMetricData: AllMetricsData;
+    contributorPercentiles: contributorPercentile[];
+    contributorZscores: contributorZscore[];
+    repoQuartiles: repoQuartiles;
+    repoMean: number; 
+}
