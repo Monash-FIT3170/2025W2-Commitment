@@ -110,14 +110,14 @@ export function AnalyticsView(): React.JSX.Element {
   }, [fetchAnalyticsData]);
 
   // Loading & Error States
-  if (loading) return <div>Loading repo data...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!analytics) return <div>No repo data available</div>;
+  if (loading) return <div className="bg-git-bg-elevated w-full">Loading repo data...</div>;
+  if (error) return <div className="bg-git-bg-elevated">Error: {error}</div>;
+  if (!analytics) return <div className="bg-git-bg-elevated">No repo data available</div>;
 
   return (
-    <div className="w-full m-0 scroll-smooth p-10">
+    <div className="w-full h-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated">
       <div className="flex flex-col gap-32">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-4  bg-git-bg-elevated">
           {/* Header */}
           <div className="mb-6 flex justify-between">
             <div className="flex flex-col pr-20">
@@ -130,7 +130,7 @@ export function AnalyticsView(): React.JSX.Element {
               <div className="h-[2px] bg-git-stroke-primary w-full mt-2" />
             </div>
             {/* Filters */}
-            <div className="flex flex-wrap gap-x-8 gap-y-2">
+            <div className="flex flex-wrap gap-x-8 gap-y-2 pt-4">
               <div className="flex flex-col">
                 <p className="text-sm text-git-text-secondary">Date Range*</p>
                 <DatePicker

@@ -5,7 +5,7 @@ import NavBar from "../landing-page/NavBar";
 
 export default function Layout() {
   return (
-    <div className="w-screen h-screen overflow-scroll bg-bottom ">
+    <div className="w-screen h-screen overflow-scroll bg-git-bg-elevated">
           <NavBar />
 
           <Outlet />
