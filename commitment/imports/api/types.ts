@@ -198,29 +198,8 @@ export type AllMetricsData = {
     "Commits Per Day": number;
   };
 }
+
 export type contributorPercentile ={
   name: string; 
   percentile: number;
-}
-
-export type contributorZscore = {
-  name: string;
-  zscore: number;
-}
-
-export type repoQuartiles = {
-  min: number;
-  Q1: number;
-  median: number;
-  Q3: number;
-  max: number;
-}
-
-// for contributor metric scaling graph
-export type metricScaling = {
-    contributorMetricData: AllMetricsData;
-    contributorPercentiles: contributorPercentile[];
-    contributorZscores: contributorZscore[];
-    repoQuartiles: repoQuartiles;
-    repoMean: number; 
 }
