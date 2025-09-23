@@ -294,64 +294,21 @@ function ScalingView(): JSX.Element {
   };
 
   return (
-    <div className="w-full m-0 scroll-smooth p-10">
+    <div className="w-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated">
       <div className="flex flex-col gap-32">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-4 rounded-2xl bg-git-bg-elevated">
           {/* Always render the scaling summary in the background */}
-          {config && scaledResults.length > 0 && (
-            <div className="mb-6">
-              {/* Header */}
-              <div className="mb-10">
+
+          <div className="flex mb-4">
+            <div className="flex flex-col mr-auto">
                 <div className="flex items-center gap-4">
-                  <h1 className="text-5xl text-foreground font-robotoFlex">
-                    Scaling
-                  </h1>
-                  <InfoButton description="ada" />
+                <h1 className="text-3xl text-foreground font-robotoFlex mt-4">
+                  Scaling
+                </h1>
+                <InfoButton description="The Scaling view allows you to configure grade scaling methods, upload a grading sheet, and generate a scaled grading sheet for your course. Use this tool to apply custom scaling logic to student grades and download the results as a new CSV file." />
                 </div>
-                <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
-              </div>
-              <ScalingSummary
-                userScalingSummaries={scaledResults}
-                hasGradingSheet={!!gradingSheet}
-              />
+              <div className="h-[2px] bg-git-stroke-primary mt-2 w-full" />
             </div>
-          )}
-
-          {/* Buttons for grading sheet or regenerate */}
-          <div className="flex justify-center gap-6 p-4">
-            <Button
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-              onClick={() => {
-                setStep("config");
-                setShowDialog(true);
-              }}
-            >
-              Create New Scaling
-            </Button>
-
-            <Button
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-              onClick={() => {
-                setStep("sheet");
-                setShowDialog(true);
-              }}
-            >
-              <Upload className="h-4 w-4" />
-              {gradingSheet ? "Replace Grading Sheet" : "Upload Grading Sheet"}
-            </Button>
-
-            {/* Download button - only visible when grading sheet is uploaded */}
-            {gradingSheet && gradingSheetParseResult && (
-              <Button
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                onClick={() => {
-                  void handleDownloadScaledSheet();
-                }}
-              >
-                <Download className="h-4 w-4" />
-                Download Scaled Grading Sheet
-              </Button>
-            )}
 
             {/* Clear button - only visible when there's config or grading sheet data */}
             {(config || gradingSheet || scaledResults.length > 0) && (
@@ -360,7 +317,7 @@ function ScalingView(): JSX.Element {
                 onOpenChange={setShowClearDialog}
               >
                 <AlertDialogTrigger asChild>
-                  <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
+                  <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2 self-end mb-2">
                     <X className="h-4 w-4" />
                   </Button>
                 </AlertDialogTrigger>
@@ -382,6 +339,57 @@ function ScalingView(): JSX.Element {
                 </AlertDialogContent>
               </AlertDialog>
             )}
+          </div>
+
+          {config && scaledResults.length > 0 && (
+            <div className="mb-6">
+              <ScalingSummary
+                userScalingSummaries={scaledResults}
+                hasGradingSheet={!!gradingSheet}
+              />
+            </div>
+          )}
+
+          {/* Buttons for grading sheet or regenerate */}
+          <div className="flex flex-col justify-start gap-6 p-4">
+            <div className="flex items-center gap-2">
+              <Button
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                onClick={() => {
+                  setStep("config");
+                  setShowDialog(true);
+                }}
+              >
+                Create New Scaling
+              </Button>
+              <Button
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                onClick={() => {
+                  setStep("sheet");
+                  setShowDialog(true);
+                }}
+              >
+                <Upload className="h-4 w-4" />
+                {gradingSheet
+                  ? "Replace Grading Sheet"
+                  : "Upload Grading Sheet"}
+              </Button>
+            </div>
+
+            {/* Download button - only visible when grading sheet is uploaded */}
+            {gradingSheet && gradingSheetParseResult && (
+              <Button
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                onClick={() => {
+                  void handleDownloadScaledSheet();
+                }}
+              >
+                <Download className="h-4 w-4" />
+                Download Scaled Grading Sheet
+              </Button>
+            )}
+
+            
           </div>
 
           {/* Multi-Step Dialog */}
