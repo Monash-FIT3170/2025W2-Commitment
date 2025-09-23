@@ -236,12 +236,12 @@ export type ScalingDistributionResult = {
  *   {
  *      contributorName: "Alice",
  *      scaledMetrics: [
- *        { metric: "LOC", value: 1500, percentile: 85, zscore: 1.2 },
- *        { metric: "Total No. Commits", value: 50, percentile: 90, zscore: 1.5 },
+ *        { metric: "LOC", value: 1500, percentile: 85},
+ *        { metric: "Total No. Commits", value: 50, percentile: 90 },
  *     // other metrics...
  *      ], 
  *  repoDistributions: [
- *  { metric: "LOC", min: 100, Q1: 500, median: 1000, Q3: 2000, max: 5000, mean: 1200, std: 800 },
- *  { metric: "Total No. Commits", min: 10, Q1: 20, median: 30, Q3: 40, max: 50, mean: 35, std: 10 }]
+ *  { metric: "LOC", min: 100, Q1: 500, median: 1000, Q3: 2000, max: 5000, mean: 1200},
+ *  { metric: "Total No. Commits", min: 10, Q1: 20, median: 30, Q3: 40, max: 50, mean: 35}]
  * ]
  */
