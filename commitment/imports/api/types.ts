@@ -176,8 +176,6 @@ export const metricNames: string[] = Object.values(MetricType);
 
 // add a type for getAllMetrics.
 
-
-
 export type ContributorValueWithAliases = {
   name: string;
   emails: string[];
@@ -208,7 +206,6 @@ export type ContribubtorScaledMetric ={
   metric: string; 
   value: number; 
   percentile: number ; 
-  zscore: number;
 }
 
 export type ContributorScaledData = {
@@ -224,7 +221,6 @@ export type RepoMetricDistribution= {
   Q3: number;
   max: number;
   mean: number; 
-  std: number;
 }
 
 // for contributor metric scaling graph
