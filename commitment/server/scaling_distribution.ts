@@ -2,10 +2,15 @@
  
 // function to produce contributor metrics 
 // need to use get filtered data as the input to do so . 
-import {ContributorMetrics, FilteredData } from "../imports/api/types"
+import {ContributorMetrics, ContributorScaledData, ContributorScaledMetric, FilteredData, MetricType } from "../imports/api/types"
 import { getCommitPerDayPerContributor, getTotalCommitsPerContributor, getLOCperContributor, getLocPerCommitPerContributor } from "./helper_functions";
 
-export function contributorMetrics(data: FilteredData): ContributorMetrics[]{
+/**
+ * This function provides the metrics for each contributor in the filtered data.
+ * @param data 
+ * @returns 
+ */
+export function getContributorMetrics(data: FilteredData): ContributorMetrics[]{
     // for each contributor in the filtered data, find the metric associated to them:
     const { repositoryData, repositoryData: { contributors } } = data;
 
@@ -19,4 +24,16 @@ export function contributorMetrics(data: FilteredData): ContributorMetrics[]{
             "Commits Per Day": getCommitPerDayPerContributor(repositoryData, contributor.value.name),
         },
     })); 
+}
+
+/** 
+ * This function provides the percentile of a contributors metric.
+ */
+export function getContributorScaledMetric(data: FilteredData, selectedMetric: MetricType): ContributorScaledMetric {
+ // things happen here 
+}
+
+export function getContributorScaledData(data: FilteredData, selectedMetric:MetricType): ContributorScaledData[]{
+    // things happen here 
+    // this would iterate through each contributor and getContributorScaledMetric for each contributor
 }
