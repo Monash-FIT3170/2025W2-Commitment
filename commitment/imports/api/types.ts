@@ -216,12 +216,15 @@ export type ContributorScaledData = {
   scaledMetrics: ContribubtorScaledMetric[];
 }
 
-export type repoQuartiles = {
+export type RepoMetricDistribution= {
+  metric: string;
   min: number;
   Q1: number;
   median: number;
   Q3: number;
   max: number;
+  mean: number; 
+  std: number;
 }
 
 // for contributor metric scaling graph
