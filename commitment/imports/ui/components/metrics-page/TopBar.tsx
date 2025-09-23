@@ -49,7 +49,7 @@ export default function TopBar() {
   }, [repoUrl]);
 
   return (
-    <div className="flex items-center justify-between px-10 py-3 border-b  border-git-stroke-primary/40 bg-git-bg-elevated">
+    <div className="flex items-center justify-between px-3 py-3 pr-5 border-b  border-git-stroke-primary/40 bg-git-bg-elevated">
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-foreground">{repoName}</h2>
         {/* Bookmark button */}
@@ -57,7 +57,7 @@ export default function TopBar() {
           <BookmarkButton url={repoUrl} title={repoName} variant="secondary" />
         )}
       </div>
-      <Settings className="w-5 h-5 text-git-stroke-secondary hover:text-git-stroke-primary cursor-pointer" />
+      <Settings className="w-5 h-5 text-git-stroke-secondary hover:text-git-stroke-primary cursor-pointer " />
     </div>
   );
 }
