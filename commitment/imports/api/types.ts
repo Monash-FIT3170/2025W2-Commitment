@@ -203,3 +203,10 @@ export type contributorPercentile ={
   name: string; 
   percentile: number;
 }
+
+
+export type contributorZscore = {
+  name: string;
+  zscore: number;
+}
+
