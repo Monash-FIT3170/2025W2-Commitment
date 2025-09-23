@@ -114,9 +114,9 @@ export function AnalyticsView(): React.JSX.Element {
   }, [fetchAnalyticsData]);
 
   // Loading & Error States
-  if (loading) return <div className="bg-git-bg-elevated w-full">Loading repo data...</div>;
-  if (error) return <div className="bg-git-bg-elevated">Error: {error}</div>;
-  if (!analytics) return <div className="bg-git-bg-elevated">No repo data available</div>;
+  if (loading) return <div >Loading repo data...</div>;
+  if (error) return <div >Error: {error}</div>;
+  if (!analytics) return <div>No repo data available</div>;
 
   return (
     <div className="w-full h-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated">
