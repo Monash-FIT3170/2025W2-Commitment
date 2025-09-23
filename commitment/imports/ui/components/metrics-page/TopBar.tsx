@@ -3,6 +3,7 @@ import { Settings } from 'lucide-react';
 import { Meteor } from 'meteor/meteor';
 import { useLocation } from 'react-router-dom';
 import { AnalyticsData, Metadata } from '/imports/api/types';
+import { useAuth } from "@ui/hooks/useAuth";
 import BookmarkButton from '../dashboard/BookmarkButton';
 
 /**
@@ -29,6 +30,7 @@ export default function TopBar() {
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
   const [repoName, setRepoName] = useState<string>("Loading...");
+  const isAuthorized = useAuth();
 
   useEffect(() => {
     if (!repoUrl) return;
@@ -51,7 +53,7 @@ export default function TopBar() {
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-foreground">{repoName}</h2>
         {/* Bookmark button */}
-        {repoUrl && (
+        {repoUrl && isAuthorized && (
           <BookmarkButton url={repoUrl} title={repoName} variant="secondary" />
         )}
       </div>
