@@ -3,7 +3,7 @@ import { Button } from "@ui/components/ui/button";
 
 export default function NotAuthorizedView() {
   return (
-    <div className="w-screen h-screen  flex flex-col">
+    <div className="w-full h-screen  flex flex-col">
 
       <div className="flex-grow flex flex-row w-full h-full justify-center p-3">
         <div className="flex flex-col gap-3 justify-center">
