@@ -107,10 +107,6 @@ function GradingSheetForm({
 
   return (
     <div className="w-full">
-      <div className="absolute top-2 left-2 flex space-x-1">
-        <span className="w-2 h-2 rounded-full bg-[#F1502F]/30" />
-        <span className="w-2 h-2 rounded-full bg-[#F1502F]/50" />
-      </div>
 
       <Form {...form}>
         <div className="text-2xl font-bold mb-4 text-center">
