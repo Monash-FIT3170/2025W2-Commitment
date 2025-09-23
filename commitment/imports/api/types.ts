@@ -204,18 +204,12 @@ export type ContributorMetrics = {
   metrics: Record<string, number>; 
 }
 
-
-export type contributorPercentile ={
-  name: string; 
-  percentile: number;
-}
-
-
-export type contributorZscore = {
-  name: string;
+export type ContribubtorScaledMetric ={
+  metric: string; 
+  value: number; 
+  percentile: number ; 
   zscore: number;
 }
-
 
 export type repoQuartiles = {
   min: number;
