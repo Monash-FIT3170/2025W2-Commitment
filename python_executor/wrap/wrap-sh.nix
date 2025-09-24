@@ -1,3 +1,4 @@
+# Packages up ./shell.nix into the nix store
 {
   pkgs,
   ...

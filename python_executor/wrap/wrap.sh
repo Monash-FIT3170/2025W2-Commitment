@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # The directory to use data from
-USERNAME="python"
-
-PROCESS_UUID="$(uuidgen)"
+# PROCESS_UUID="$(uuidgen)"
 WORKDIR="/home/python"
 
+# Directory to make available to the container at ~
+# Currently gives access to the directory the container was run in
 OVERLAY_ROSRC="$(pwd)"
 
 bwrap_opts=()
@@ -33,7 +33,6 @@ done
 # paths shared read only by default
 paths_general=(
   /bin
-  /usr
   /lib
   /lib64
 )

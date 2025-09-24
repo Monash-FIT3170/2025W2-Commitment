@@ -1,4 +1,6 @@
 # This produces a function which wraps any given package in an extremely restrictive FHS container.
+# You can treat wrap exactly like pkgs.buildFHSEnv
+# https://ryantm.github.io/nixpkgs/builders/special/fhs-environments/
 {
   pkgs,
   wrap-sh ? throw "Tried to import wrap.nix without required argument 'wrap-sh'.",
@@ -28,7 +30,7 @@ let
   );
 in
   pkgs.buildFHSEnv (buildFHSEnvArgs // {
-    targetPkgs = pkgs: targetPkgs pkgs ++ (if runScript == "bash" then [pkgs.bash] else []);
+    targetPkgs = fhsPkgs: targetPkgs fhsPkgs;
 
     runScript = ''
       ${wrap-sh}/bin/wrap.sh --store-paths ${storePathsFile} ${wrapArgs} ${runScript} $@
