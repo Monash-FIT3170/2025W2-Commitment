@@ -6,7 +6,6 @@ export type BranchData = Readonly<{
   commitHashes: string[];
 }>;
 
-
 export type ContributorData = Readonly<{
   name: string;
   emails: string[];
@@ -40,11 +39,6 @@ export type RepositoryData = Readonly<{
   allCommits: Map<string, CommitData>;
   contributors: Map<string, ContributorData>;
 }>; 
-
-
-
-
-
 
 export type SerialisableMapObject<K, V> = {
   key: K;
