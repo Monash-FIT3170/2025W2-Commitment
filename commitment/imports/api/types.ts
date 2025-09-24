@@ -214,7 +214,7 @@ export type ContributorScaledData = {
 }
 
 export type RepoMetricDistribution= {
-  metric: string;
+  metric: MetricType;
   min: number;
   Q1: number;
   median: number;
