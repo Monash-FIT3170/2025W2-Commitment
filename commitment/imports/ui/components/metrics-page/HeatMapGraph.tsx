@@ -427,8 +427,8 @@ export default function HeatMapGraph({
               w.config.series[seriesIndex]?.data[dataPointIndex]?.raw;
             const total = totals[seriesIndex];
             return rawY !== undefined
-              ? `${rawY} (Total: ${total ?? 0})`
-              : String(value);
+              ? `${rawY.toFixed(2)} (Total: ${(total ?? 0).toFixed(2)})`
+              : Number(value).toFixed(2);
           },
         },
       },
