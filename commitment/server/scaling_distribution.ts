@@ -75,7 +75,7 @@ export function getContributorScaledData(data: FilteredData, selectedMetric:Metr
         const scaledMetric = getContributorScaledMetric(contributor, data, selectedMetric);
         return {
             contributorName: contributor.value.name,
-            scaledMetrics: [scaledMetric],
+            scaledMetric,
         };
     });
 }

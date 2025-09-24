@@ -210,7 +210,7 @@ export type ContributorScaledMetric ={
 
 export type ContributorScaledData = {
   contributorName: string;
-  scaledMetrics: ContributorScaledMetric[];
+  scaledMetric: ContributorScaledMetric;
 }
 
 export type RepoMetricDistribution= {
