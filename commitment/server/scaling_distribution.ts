@@ -1,4 +1,4 @@
-import {ContributorMetrics, ContributorScaledData, ContributorScaledMetric, FilteredData, MetricType, SerialisableMapObject, ContributorData } from "../imports/api/types"
+import {ContributorMetrics, ContributorScaledData, ContributorScaledMetric, FilteredData, MetricType, SerialisableMapObject, ContributorData, RepoMetricDistribution, ScalingDistributionResult } from "../imports/api/types"
 import { getCommitPerDayPerContributor, getTotalCommitsPerContributor, getLOCperContributor, getLocPerCommitPerContributor } from "./helper_functions";
 
 /**
@@ -70,7 +70,7 @@ export function getContributorScaledMetric(passedContributor: SerialisableMapObj
  */
 export function getContributorScaledData(data: FilteredData, selectedMetric:MetricType): ContributorScaledData[]{
     const { repositoryData, repositoryData: { contributors } } = data;
-    
+
     return contributors.map((contributor) => {
         const scaledMetric = getContributorScaledMetric(contributor, data, selectedMetric);
         return {
@@ -78,4 +78,55 @@ export function getContributorScaledData(data: FilteredData, selectedMetric:Metr
             scaledMetrics: [scaledMetric],
         };
     });
+}
+
+/**
+ * This function provides the distribution of a selected metric across all contributors in the filtered data.
+ * @param data The repository filtered data 
+ * @param selectedMetric the metric to get the distribution for
+ * @returns A data structure containing the distribution of the selected metric across all contributors
+ */
+export function getRepoMetricDistribution(data: FilteredData, selectedMetric: MetricType): RepoMetricDistribution {
+    // get all contributor metrics
+    const contributorMetrics = getContributorMetrics(data);
+
+    // get the metric values for all contributors 
+    const metricValues = contributorMetrics.map((contributor) => contributor.metrics[selectedMetric]);
+
+    // sort the metric values
+    metricValues.sort((a, b) => a - b);
+    
+    // calculate min, Q1, median, Q3, max, mean
+    const min = metricValues[0];
+    const max = metricValues[metricValues.length - 1];
+    const mean = metricValues.reduce((acc, val) => acc + val, 0) / metricValues.length;
+    const median = metricValues.length % 2 === 0 ?
+        (metricValues[metricValues.length / 2 - 1] + metricValues[metricValues.length / 2]) / 2 :
+        metricValues[Math.floor(metricValues.length / 2)];
+    const Q1 = metricValues[Math.floor((metricValues.length / 4))];
+    const Q3 = metricValues[Math.floor((metricValues.length * 3) / 4)];
+
+    return {
+        metric: selectedMetric,
+        min,
+        Q1,
+        median,
+        Q3,
+        max,
+        mean,
+    };
+}
+
+/**
+ * This function provides the scaling distribution result for the selected metric across all contributors in the filtered data.
+ * @param data the filtered data
+ * @param selectedMetric the selected metric
+ * @returns the scaling distribution result
+ */
+export function getScalingDistributionResult(data: FilteredData, selectedMetric: MetricType): ScalingDistributionResult{
+    // get scaled data for each selected metric
+    return {
+        contributors: getContributorScaledData(data, selectedMetric),
+        repoDistributions: getRepoMetricDistribution(data, selectedMetric),
+    }
 }
