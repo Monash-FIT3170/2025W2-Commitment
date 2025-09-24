@@ -14,11 +14,12 @@ while [[ $# -gt 0 ]]; do
         --store-paths)
             shift
             STORE_FILE="$1"
-            STORE_PATHS=$(<"$STORE_FILE")
             shift
 
+            echo "Reading store paths file $STORE_FILE"
+
+            STORE_PATHS=$(<"$STORE_FILE")
             for p in $STORE_PATHS; do
-                echo "Binding store path -> $p"
                 bwrap_opts+=(--ro-bind "$p" "$p")
             done
             ;;
@@ -63,9 +64,6 @@ if ! [ -f "$FAKE_PASSWD_FILE" ]; then
   echo "python:x:1001:1001:Fake User:/home/python:/bin/bash" > "$FAKE_PASSWD_FILE"
 fi
 
-echo "Found $PROGRAM at $PROGRAM_PARENT_DIR"
-echo ""
-
 # Function: scan /bin (or any directory) for symlinks and add --ro-bind for linked directories
 bind_symlink_dirs() {
     local dir="$1"
@@ -100,7 +98,7 @@ bind_symlink_dirs() {
                 done
 
                 if ! $already_added; then
-                    echo "Binding symlink -> $store_root"
+#                    echo "Binding symlink -> $store_root"
                     opts_ref+=(--ro-bind "$store_root" "$store_root")
                 fi
             fi
@@ -140,7 +138,7 @@ bind_needed_libraries() {
                 done
 
                 if ! $already_added; then
-                    echo "Binding library -> $store_root"
+#                    echo "Binding library -> $store_root"
                     opts_ref+=(--ro-bind "$store_root" "$store_root")
                 fi
             fi
@@ -148,18 +146,23 @@ bind_needed_libraries() {
     done
 }
 
+# TODO: Find a way to get any store paths found in this step as part of the nix build process instead, to speed up container start times
 bind_symlink_dirs "/bin" bwrap_opts
-bind_symlink_dirs "/usr/bin" bwrap_opts
-bind_symlink_dirs "/lib" bwrap_opts
-bind_symlink_dirs "/lib64" bwrap_opts
-#
-#echo ""
-#
-bind_needed_libraries "/bin" bwrap_opts
-bind_needed_libraries "/usr/bin" bwrap_opts
-bind_needed_libraries "/lib" bwrap_opts
-bind_needed_libraries "/lib64" bwrap_opts
+#bind_symlink_dirs "/usr/bin" bwrap_opts
+#bind_symlink_dirs "/lib" bwrap_opts
+#bind_symlink_dirs "/lib64" bwrap_opts
 
+#bind_needed_libraries "/bin" bwrap_opts
+#bind_needed_libraries "/usr/bin" bwrap_opts
+#bind_needed_libraries "/lib" bwrap_opts
+#bind_needed_libraries "/lib64" bwrap_opts
+
+
+
+echo ""
+echo "Found $PROGRAM at $PROGRAM_PARENT_DIR"
+echo "Running container: " "$@"
+echo ""
 
 exec bwrap \
   --unshare-all \

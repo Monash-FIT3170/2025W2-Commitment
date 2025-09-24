@@ -20,17 +20,17 @@ let
   # Compute all store paths needed by the target packages
   pkgsToBind = targetPkgs pkgs;
   closureStorePathsFile = (pkgs.closureInfo { rootPaths = pkgsToBind; }) + "/store-paths";
-#  closureStorePaths = builtins.readFile closureStorePathsFile;
-#
-#  storePathsFile = pkgs.writeText "${name}-storePathsFile" (
-#    # Combine derivation paths with root paths for the final store paths file
-#    builtins.concatStringsSep "\n" ([closureStorePaths] ++ pkgsToBind)
-#  );
+  closureStorePaths = builtins.readFile closureStorePathsFile;
+
+  storePathsFile = pkgs.writeText "${name}-storePathsFile" (
+    # Combine derivation paths with root paths for the final store paths file
+    builtins.concatStringsSep "\n" (pkgsToBind ++ [closureStorePaths])
+  );
 in
   pkgs.buildFHSEnv (buildFHSEnvArgs // {
     targetPkgs = pkgs: targetPkgs pkgs ++ (if runScript == "bash" then [pkgs.bash] else []);
 
     runScript = ''
-      ${wrap-sh}/bin/wrap.sh --store-paths ${closureStorePathsFile} ${wrapArgs} ${runScript} $@
+      ${wrap-sh}/bin/wrap.sh --store-paths ${storePathsFile} ${wrapArgs} ${runScript} $@
     '';
   })
