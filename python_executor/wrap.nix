@@ -17,7 +17,7 @@ let
     pname = "wrap-sh";
     version = "1.0";
 
-    src = nixwrapSrc;
+    src = ./.;
 
     buildInputs = [ pkgs.bubblewrap pkgs.bash ];
 
@@ -32,23 +32,30 @@ let
     '';
   };
 
-  wrap =
-    {
-      package,
-      wrapArgs ? "",
-      executable ? package.pname,
-    }:
-
-    pkgs.symlinkJoin {
-      name = package.name;
-      paths = [ package ];
-      postBuild = ''
-        mv $out/bin/${executable}{,-nowrap}
-        cat << _EOF > $out/bin/${executable}
-          exec ${wrap-sh}/bin/wrap.sh ${wrapArgs} ${package}/bin/${executable} "\$@"
-        _EOF
-        chmod a+x $out/bin/${executable}
-      '';
-    };
 in
-  wrap
+  {
+    name,
+    wrapArgs ? "",
+    runScript ? "bash",
+    targetPkgs ? x: [],
+    ...
+  }@args:
+
+  let
+    buildFHSEnvArgs = builtins.removeAttrs args ["wrapArgs"];
+    runScriptWritten = pkgs.writeShellScript "${name}-runScript" ''
+      echo "Entering wrap FHS Env Shell"
+      echo ">>>" ${wrap-sh}/bin/wrap.sh ${wrapArgs}
+      echo ""
+      ${runScript} "$@"
+    '';
+  in
+    pkgs.buildFHSEnv (buildFHSEnvArgs // {
+      targetPkgs = pkgs: targetPkgs pkgs ++ [
+        runScriptWritten
+      ] ++ (if runScript == "bash" then [pkgs.bash] else []);
+
+      runScript = ''
+        ${wrap-sh}/bin/wrap.sh ${wrapArgs} ${runScript}
+      '';
+    })

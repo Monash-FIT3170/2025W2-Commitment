@@ -4,10 +4,12 @@
 
 let
   fhs = import ./default.nix { inherit pkgs; };
+  x = throw fhs;
 in
   pkgs.mkShell {
     buildInputs = [
       fhs
+      pkgs.bash
     ];
 
     shellHook = ''
