@@ -199,11 +199,11 @@ export type AllMetricsData = {
 
 export type ContributorMetrics = {
   contributorName : string; 
-  metrics: Record<string, number>; 
+  metrics: Record<MetricType, number>; 
 }
 
 export type ContributorScaledMetric ={
-  metric: string; 
+  metric: MetricType; 
   value: number; 
   percentile: number ; 
 }

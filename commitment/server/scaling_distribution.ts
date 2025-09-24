@@ -58,10 +58,14 @@ export function getContributorScaledMetric(passedContributor: SerialisableMapObj
 }
 
 export function getContributorScaledData(data: FilteredData, selectedMetric:MetricType): ContributorScaledData[]{
-    // things happen here 
     // this would iterate through each contributor and getContributorScaledMetric for each contributor
     const { repositoryData, repositoryData: { contributors } } = data;
 
-
-
+    return contributors.map((contributor) => {
+        const scaledMetric = getContributorScaledMetric(contributor, data, selectedMetric);
+        return {
+            contributorName: contributor.value.name,
+            scaledMetrics: [scaledMetric],
+        };
+    });
 }
