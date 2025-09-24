@@ -15,7 +15,6 @@ import {
 } from "../imports/api/types";
 
 import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
-import { getScalingDistributionResult } from "./scaling_distribution";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
@@ -136,7 +135,7 @@ Meteor.methods({
       selections.selectedBranch,
       selections.selectedContributors
     );
-    const metricsData: MetricsData = await getAllGraphData(filteredRepo, metric);
+    const metricsData: MetricsData = getAllGraphData(filteredRepo, metric);
 
     // NOW WE DO STUFF WITH THE FILTERED REPO TO GET the specific metric!!
     const returnData: AnalyticsData = {
@@ -145,6 +144,7 @@ Meteor.methods({
       metrics: metricsData,
     };
 
+    console.log("checking validity of returned scaling data in analytics data", returnData.metrics.contributors.scalingDistribution);
     return returnData;
   },
 
