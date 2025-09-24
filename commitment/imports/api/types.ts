@@ -142,15 +142,7 @@ export interface PieChart {
   title: string;
 }
 
-export interface MetricsData {
-  highlights: Highlights;
-  contributors: {
-    leaderboard: Leaderboard;
-    lineGraph: LineGraph;
-    pieChart: PieChart;
-    heatMap: Heatmap;
-  };
-}
+
 
 export interface Selections {
   selectedBranch: string;
@@ -230,8 +222,13 @@ export type ScalingDistributionResult = {
   repoDistributions: RepoMetricDistribution;
 }
 
+export type ScalingDistributionGraph = { 
+  data: ScalingDistributionResult;
+  title: string;
+}
+
 /**
- * Example of Scaling Dsitribution Result: 
+ * Example of Scaling Distribution Result: 
  * {
  *  contributors: [
  *   {
@@ -244,3 +241,14 @@ export type ScalingDistributionResult = {
  *  { metric: "LOC", min: 100, Q1: 500, median: 1000, Q3: 2000, max: 5000, mean: 1200},
  * ]
  */
+
+export interface MetricsData {
+  highlights: Highlights;
+  contributors: {
+    leaderboard: Leaderboard;
+    lineGraph: LineGraph;
+    pieChart: PieChart;
+    heatMap: Heatmap;
+    scalingDistribution: ScalingDistributionGraph;
+  };
+}

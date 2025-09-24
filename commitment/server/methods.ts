@@ -15,6 +15,7 @@ import {
 } from "../imports/api/types";
 
 import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
+import { getScalingDistributionResult } from "./scaling_distribution";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
@@ -127,7 +128,7 @@ Meteor.methods({
         to: endDate || metadata.dateRange.to,
       },
     };
-    
+
     const filteredRepo: FilteredData = await getFilteredRepoData(
       repoUrl,
       selections.selectedDateRange.from,
@@ -170,6 +171,5 @@ Meteor.methods({
       repoUrl,
       "" // null string for now as Yoonus is TODO fix this
     );
-  },
-
+  }
 });

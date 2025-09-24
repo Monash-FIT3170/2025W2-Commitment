@@ -17,6 +17,8 @@ import {
   PieChart,
   LineGraph,
   Leaderboard,
+  ScalingDistributionResult,
+  ScalingDistributionGraph
 } from "../imports/api/types";
 
 import {
@@ -55,6 +57,7 @@ import {
   heatMapLOCPerCommit,
   heatMapTotalCommits,
 } from "./heatmap";
+import { getScalingDistributionResult } from "./scaling_distribution";
 
 // -------- THIS FUNCTION NEEDS TO BE CALLED FIRST -----------------------
 export async function getAllGraphData(
@@ -67,6 +70,8 @@ export async function getAllGraphData(
   let lineGraph: LineGraph;
   let pieChart: PieChart;
   let heatMap: Heatmap;
+  let scalingDistribution: ScalingDistributionGraph;
+
 
   switch (selectedMetric) {
     case MetricType.LOC:
@@ -88,6 +93,10 @@ export async function getAllGraphData(
       heatMap = {
         data: heatMapLOC(data),
         title: "Commit Activity (LOC)",
+      };
+      scalingDistribution = {
+        data: getScalingDistributionResult(data, MetricType.LOC),
+        title: "Distribution of Lines of Code per Contributor",
       };
       break;
 
@@ -111,6 +120,10 @@ export async function getAllGraphData(
         data: heatMapLOCPerCommit(data),
         title: "Commit Activity (LOC per Commit)",
       };
+      scalingDistribution = {
+        data: getScalingDistributionResult(data, MetricType.LOC_PER_COMMIT),
+        title: "Distribution of Lines of Code Per Commit per Contributor",
+      };
       break;
 
     case MetricType.COMMITS_PER_DAY:
@@ -132,6 +145,10 @@ export async function getAllGraphData(
       heatMap = {
         data: heatMapTotalCommits(data),
         title: "Commit Activity (Commits per Day)",
+      };
+      scalingDistribution = {
+        data: getScalingDistributionResult(data, MetricType.COMMITS_PER_DAY),
+        title: "Distribution of Commits Per Day per Contributor",
       };
       break;
 
@@ -155,6 +172,10 @@ export async function getAllGraphData(
         data: heatMapTotalCommits(data),
         title: "Commit Activity (Total Commits)",
       };
+      scalingDistribution = {
+        data: getScalingDistributionResult(data, MetricType.TOTAL_COMMITS),
+        title: "Distribution of Total Commits per Contributor",
+      };
       break;
 
     default:
@@ -168,6 +189,7 @@ export async function getAllGraphData(
       lineGraph,
       pieChart,
       heatMap,
+      scalingDistribution,
     },
   };
 }
