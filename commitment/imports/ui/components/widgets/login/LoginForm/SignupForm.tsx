@@ -9,6 +9,7 @@ import { Meteor } from "meteor/meteor";
 import LoginFormErrorMessage from "@ui/components/widgets/login/LoginForm/LoginFormErrorMessage";
 import { Accounts } from "meteor/accounts-base";
 import FormInputWithErrors from "../../../shared/FormInputWithErrors";
+import { Eye, EyeOff } from "lucide-react";
 
 export interface SignupFormProps {
   className?: string;
@@ -41,6 +42,9 @@ const SignupForm: FC<SignupFormProps> = (props) => {
   });
 
   const navigate = useNavigate();
+
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showRetypePassword, setShowRetypePassword] = React.useState(false);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     form.clearErrors();
@@ -156,11 +160,26 @@ const SignupForm: FC<SignupFormProps> = (props) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <FormInputWithErrors
-                  placeholder="Password"
-                  type="password"
-                  {...field}
-                />
+                <div className="relative">
+                  <FormInputWithErrors
+                    {...field}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground focus:outline-none"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </FormControl>
               <LoginFormErrorMessage />
             </FormItem>
@@ -169,19 +188,32 @@ const SignupForm: FC<SignupFormProps> = (props) => {
 
         <FormField
           control={form.control}
-          name="confirmPassword"
+          name="password"
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <FormInputWithErrors
-                  placeholder="Retype Password"
-                  type="password"
-                  {...field}
-                />
+                <div className="relative">
+                  <FormInputWithErrors
+                    {...field}
+                    type={showRetypePassword ? "text" : "password"}
+                    placeholder="Retype Password"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRetypePassword((prev) => !prev)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground focus:outline-none"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </FormControl>
-              <div className="min-h-3">
-                <LoginFormErrorMessage />
-              </div>
+              <LoginFormErrorMessage />
             </FormItem>
           )}
         />
