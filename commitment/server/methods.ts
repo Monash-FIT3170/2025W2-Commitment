@@ -127,14 +127,7 @@ Meteor.methods({
         to: endDate || metadata.dateRange.to,
       },
     };
-
-    // const filteredRepo: FilteredData = await Meteor.callAsync("repo.getFilteredData", {
-    //   repoUrl,
-    //   startDate: selections.selectedDateRange.from,
-    //   endDate: selections.selectedDateRange.to,
-    //   branch: selections.selectedBranch,
-    //   contributor: selections.selectedContributors,
-    // });
+    
     const filteredRepo: FilteredData = await getFilteredRepoData(
       repoUrl,
       selections.selectedDateRange.from,
