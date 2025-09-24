@@ -53,7 +53,7 @@ export function AnalyticsView(): React.JSX.Element {
 
     // Store the repository URL for navigation back to metrics
     // This only happens when user is actively viewing metrics
-    localStorage.setItem('lastRepoUrl', repoUrl);
+    localStorage.setItem("lastRepoUrl", repoUrl);
 
     Meteor.call(
       "repo.getAnalyticsData",
@@ -114,8 +114,8 @@ export function AnalyticsView(): React.JSX.Element {
   }, [fetchAnalyticsData]);
 
   // Loading & Error States
-  if (loading) return <div >Loading repo data...</div>;
-  if (error) return <div >Error: {error}</div>;
+  if (loading) return <div>Loading repo data...</div>;
+  if (error) return <div>Error: {error}</div>;
   if (!analytics) return <div>No repo data available</div>;
 
   return (
@@ -198,7 +198,8 @@ export function AnalyticsView(): React.JSX.Element {
                   title="Total Lines of Code"
                   value={analytics.metrics.highlights.totalLinesOfCode.total}
                   percentageChange={
-                    analytics.metrics.highlights.totalLinesOfCode.percentageChange
+                    analytics.metrics.highlights.totalLinesOfCode
+                      .percentageChange
                   }
                   isPositive={
                     analytics.metrics.highlights.totalLinesOfCode.isPositive
@@ -227,6 +228,9 @@ export function AnalyticsView(): React.JSX.Element {
                 <ContributionPieChart
                   data={analytics.metrics.contributors.pieChart.data}
                   title={analytics.metrics.contributors.pieChart.title}
+                  xAxisLabel={
+                    analytics.metrics.contributors.leaderboard.xAxisLabel
+                  }
                 />
               </div>
             </div>
