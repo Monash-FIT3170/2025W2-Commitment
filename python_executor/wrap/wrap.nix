@@ -7,7 +7,7 @@
 
 {
   wrapArgs ? "",
-  runScript ? "bash",
+  runScript ? "",
   targetPkgs ? x: [],
   ...
 }@args:
@@ -19,6 +19,6 @@ in
     targetPkgs = pkgs: targetPkgs pkgs ++ (if runScript == "bash" then [pkgs.bash] else []);
 
     runScript = ''
-      ${wrap-sh}/bin/wrap.sh ${wrapArgs} ${runScript}
+      ${wrap-sh}/bin/wrap.sh ${wrapArgs} ${runScript} $@
     '';
   })

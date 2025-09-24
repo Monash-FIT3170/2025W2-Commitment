@@ -1,4 +1,5 @@
 {
+  pkgs,
   wrap ? throw "fhs.nix called without required argument 'wrap'.",
   ...
 }:
@@ -14,6 +15,14 @@ in
       pkgs.python311
       pkgs.python311Packages.numpy
       pkgs.bash
-
+      pkgs.coreutils  #< For timeout
+      pkgs.vim
     ];
+
+    runScript = ''
+      bash
+    '';
+#    runScript = ''
+#      timeout --signal=SIGKILL 5s python3
+#    '';
   }
