@@ -22,51 +22,88 @@
     "es2020": true,
     "mocha": true
   },
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "import"],
-  "parserOptions": {
-    "project": "./tsconfig.json",
-    "sourceType": "module"
-  },
+  "parser": "@babel/eslint-parser",
   "settings": {
-    "react": { "version": "detect" },
     "import/resolver": {
-      "typescript": {
-        "project": ["./tsconfig.json"],
-        "alwaysTryTypes": true
+      "babel-module": {}
+    },
+    "plugins": [
+      "@typescript-eslint",
+      "import"
+    ],
+    "parserOptions": {
+      "project": "./tsconfig.json",
+      "sourceType": "module"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
       },
-      "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx", ".d.ts", ".mjs", ".cjs", ".json"]
-      },
-      "meteor": {}
-    }
-  },
-  "overrides": [
-    {
-      "files": ["*.ts", "*.tsx"],
-      "rules": {
-        "consistent-return": "off",
-        "react/require-default-props": "off",
-        "react/function-component-definition": "off",
-        "import/prefer-default-export": "off",
-        "react/jsx-props-no-spreading": "off",
-        // "no-nested-ternary": "off",
-        "no-plusplus": "off",
-        "react/prop-types": "off",
-        "react/no-unused-prop-types": "off",
-        "no-void": ["error", { "allowAsStatement": true }],
-        "react/destructuring-assignment": "off",
-        // "no-use-before-define": ["warn", { "functions": false }],
-        // "@typescript-eslint/explicit-module-boundary-types": "warn",
-        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-        "@typescript-eslint/no-floating-promises": "error",
-        "no-console": "warn",
-        "prefer-const": "error",
-        "import/no-unresolved": "error",
-        "react/react-in-jsx-scope": "off",
-        "import/extensions": "off",
-        "import/no-relative-packages": "off"
+      "import/resolver": {
+        "typescript": {
+          "project": [
+            "./tsconfig.json"
+          ],
+          "alwaysTryTypes": true
+        },
+        "node": {
+          "extensions": [
+            ".js",
+            ".jsx",
+            ".ts",
+            ".tsx",
+            ".d.ts",
+            ".mjs",
+            ".cjs",
+            ".json"
+          ],
+          "moduleDirectory": [
+            "node_modules",
+            "atlas/node_modules"
+          ]
+        },
+        "meteor": {}
       }
-    }
-  ]
-}
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.ts",
+          "*.tsx"
+        ],
+        "rules": {
+          "consistent-return": "off",
+          "react/require-default-props": "off",
+          "react/function-component-definition": "off",
+          "import/prefer-default-export": "off",
+          "react/jsx-props-no-spreading": "off",
+          // "no-nested-ternary": "off",
+          "no-plusplus": "off",
+          "react/prop-types": "off",
+          "react/no-unused-prop-types": "off",
+          "no-void": [
+            "error",
+            {
+              "allowAsStatement": true
+            }
+          ],
+          "react/destructuring-assignment": "off",
+          // "no-use-before-define": ["warn", { "functions": false }],
+          // "@typescript-eslint/explicit-module-boundary-types": "warn",
+          "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+              "argsIgnorePattern": "^_"
+            }
+          ],
+          "@typescript-eslint/no-floating-promises": "error",
+          "no-console": "warn",
+          "prefer-const": "error",
+          "import/no-unresolved": "error",
+          "react/react-in-jsx-scope": "off",
+          "import/extensions": "off",
+          "import/no-relative-packages": "off"
+        }
+      }
+    ]
+  }}
