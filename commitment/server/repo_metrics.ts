@@ -59,11 +59,110 @@ import {
 } from "./heatmap";
 import { getScalingDistributionResult } from "./scaling_distribution";
 
+/**
+ * FUNCTIONS FOR HIGHLIGHTS
+ */
+
+
+/**
+ * Returns the total commits in a repository for a highlight card.
+ * @param data Filtered Repository Data
+ * @returns Highlighted total commits information
+ */
+export const highlightTotalCommits = (unfilteredData: SerializableRepoData): HighlightStruct => {
+  const totalCommits = getTotalCommits(unfilteredData);
+
+  // Sort commits by timestamp
+  const sortedCommits = unfilteredData.allCommits
+    .slice()
+    .sort((a, b) => new Date(a.value.timestamp).getTime() - new Date(b.value.timestamp).getTime());
+
+  // Bucket commits by day
+  const commitsByDay: Record<string, number> = {};
+  sortedCommits.forEach((commit) => {
+    const day = new Date(commit.value.timestamp).toISOString().split("T")[0]; // YYYY-MM-DD
+    commitsByDay[day] = (commitsByDay[day] || 0) + 1;
+  });
+
+  // Turn buckets into cumulative array
+  const days = Object.keys(commitsByDay).sort();
+  const commitsCumulative = days.reduce<{ value: number }[]>((acc, day) => {
+    const prevTotal = acc.length ? acc[acc.length - 1].value : 0;
+    acc.push({ value: prevTotal + commitsByDay[day] });
+    return acc;
+  }, []);
+
+  // calculate percentage change
+  let percentageChange: number = 0;
+  if (commitsCumulative.length >= 2) {
+    const prev = commitsCumulative[commitsCumulative.length - 2].value;
+    const curr = commitsCumulative[commitsCumulative.length - 1].value;
+
+    if (prev !== 0) {
+      percentageChange = Math.round(((curr - prev) / prev) * 100);
+    }
+  }
+
+  return {
+    total: totalCommits,
+    percentageChange,
+    isPositive: percentageChange > 0,
+    data: commitsCumulative,
+  };
+};
+
+/**
+ * Returns the total lines of code(total files changed) in the repository for the highlight card.
+ * @param data Filtered Repository Data
+ * @returns Highlighted total lines of code information
+ */
+export const highlightTotalLinesOfCode = (
+  unfilteredData: SerializableRepoData
+): HighlightStruct => {
+  // number of files changed
+  const sortedCommits = unfilteredData.allCommits
+    .slice()
+    .sort((a, b) => new Date(a.value.timestamp).getTime() - new Date(b.value.timestamp).getTime());
+
+  // Compute lines of code per commit
+  const linesOfCodeOverTime: { value: number }[] = sortedCommits.map((commit) => ({
+    value: commit.value.fileData.reduce(
+      (sum, fileChange) => sum + fileChange.newLines - fileChange.deletedLines,
+      0
+    ),
+  }));
+
+  let percentageChange: number = 0;
+  if (linesOfCodeOverTime.length >= 2) {
+    const prev = linesOfCodeOverTime[linesOfCodeOverTime.length - 2].value;
+    const curr = linesOfCodeOverTime[linesOfCodeOverTime.length - 1].value;
+
+    if (prev !== 0) {
+      percentageChange = Math.round(((curr - prev) / prev) * 100);
+    }
+  }
+
+  return {
+    total: getTotalLinesOfCode(unfilteredData),
+    percentageChange,
+    isPositive: percentageChange > 0,
+    data: linesOfCodeOverTime,
+  };
+};
+
+export const returnHighlightData = (data: SerializableRepoData): Highlights =>
+  ({
+    totalCommits: highlightTotalCommits(data),
+    totalLinesOfCode: highlightTotalLinesOfCode(data),
+    numContributors: getNumberOfContributors(data),
+    numBranches: getTotalBranches(data),
+  } as Highlights);
+
 // -------- THIS FUNCTION NEEDS TO BE CALLED FIRST -----------------------
-export async function getAllGraphData(
+export function getAllGraphData(
   data: FilteredData,
   selectedMetric: MetricType
-): Promise<MetricsData> {
+): MetricsData {
   // get all the metrics based on the AnalyticsData structure
 
   let leaderboard: Leaderboard;
@@ -237,102 +336,6 @@ export const getAllMetricsFromData = (repoData: SerializableRepoData): AllMetric
   return allMetricData;
 };
 
-/**
- * FUNCTIONS FOR HIGHLIGHTS
- */
-export const returnHighlightData = (data: SerializableRepoData): Highlights =>
-  ({
-    totalCommits: highlightTotalCommits(data),
-    totalLinesOfCode: highlightTotalLinesOfCode(data),
-    numContributors: getNumberOfContributors(data),
-    numBranches: getTotalBranches(data),
-  } as Highlights);
-
-/**
- * Returns the total commits in a repository for a highlight card.
- * @param data Filtered Repository Data
- * @returns Highlighted total commits information
- */
-export const highlightTotalCommits = (unfilteredData: SerializableRepoData): HighlightStruct => {
-  const totalCommits = getTotalCommits(unfilteredData);
-
-  // Sort commits by timestamp
-  const sortedCommits = unfilteredData.allCommits
-    .slice()
-    .sort((a, b) => new Date(a.value.timestamp).getTime() - new Date(b.value.timestamp).getTime());
-
-  // Bucket commits by day
-  const commitsByDay: Record<string, number> = {};
-  sortedCommits.forEach((commit) => {
-    const day = new Date(commit.value.timestamp).toISOString().split("T")[0]; // YYYY-MM-DD
-    commitsByDay[day] = (commitsByDay[day] || 0) + 1;
-  });
-
-  // Turn buckets into cumulative array
-  const days = Object.keys(commitsByDay).sort();
-  const commitsCumulative = days.reduce<{ value: number }[]>((acc, day) => {
-    const prevTotal = acc.length ? acc[acc.length - 1].value : 0;
-    acc.push({ value: prevTotal + commitsByDay[day] });
-    return acc;
-  }, []);
-
-  // calculate percentage change
-  let percentageChange: number = 0;
-  if (commitsCumulative.length >= 2) {
-    const prev = commitsCumulative[commitsCumulative.length - 2].value;
-    const curr = commitsCumulative[commitsCumulative.length - 1].value;
-
-    if (prev !== 0) {
-      percentageChange = Math.round(((curr - prev) / prev) * 100);
-    }
-  }
-
-  return {
-    total: totalCommits,
-    percentageChange,
-    isPositive: percentageChange > 0,
-    data: commitsCumulative,
-  };
-};
-
-/**
- * Returns the total lines of code(total files changed) in the repository for the highlight card.
- * @param data Filtered Repository Data
- * @returns Highlighted total lines of code information
- */
-export const highlightTotalLinesOfCode = (
-  unfilteredData: SerializableRepoData
-): HighlightStruct => {
-  // number of files changed
-  const sortedCommits = unfilteredData.allCommits
-    .slice()
-    .sort((a, b) => new Date(a.value.timestamp).getTime() - new Date(b.value.timestamp).getTime());
-
-  // Compute lines of code per commit
-  const linesOfCodeOverTime: { value: number }[] = sortedCommits.map((commit) => ({
-    value: commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.newLines - fileChange.deletedLines,
-      0
-    ),
-  }));
-
-  let percentageChange: number = 0;
-  if (linesOfCodeOverTime.length >= 2) {
-    const prev = linesOfCodeOverTime[linesOfCodeOverTime.length - 2].value;
-    const curr = linesOfCodeOverTime[linesOfCodeOverTime.length - 1].value;
-
-    if (prev !== 0) {
-      percentageChange = Math.round(((curr - prev) / prev) * 100);
-    }
-  }
-
-  return {
-    total: getTotalLinesOfCode(unfilteredData),
-    percentageChange,
-    isPositive: percentageChange > 0,
-    data: linesOfCodeOverTime,
-  };
-};
 
 export function getMetricString(): string[] {
   return ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
