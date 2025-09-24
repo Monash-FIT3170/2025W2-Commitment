@@ -20,6 +20,26 @@ import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 import { spawn } from "child_process";
 
+export async function getFilteredRepoData(  repoUrl:string, startDate:Date, endDate:Date, branch:string, contributor:string[]):Promise<FilteredData>{
+    // Get full repository data from db
+    const repo = await Meteor.callAsync("repoCollection.getData", repoUrl) as SerializableRepoData;
+
+    // Apply alias mapping if user has config
+    const userId = Meteor.userId();
+    const mappedRepo = await applyAliasMappingIfNeeded(repo, userId || "");
+
+    // Apply filtering
+    const filteredData = getFilteredRepoDataServer(
+      repoUrl,
+      startDate,
+      endDate,
+      mappedRepo,
+      branch,
+      contributor
+    );
+    return filteredData;
+}
+
 Meteor.methods({
   /**
    * Check if a repository exists and is accessible
@@ -41,44 +61,6 @@ Meteor.methods({
         resolve(false);
       });
     });
-  },
-
-  /**
-   * Get filtered repository data from the server
-   * @param params.daysBack Number of days to look back (default: 7)
-   * @param params.branch Branch to filter (optional)
-   * @param params.contributor Contributor to filter (optional)
-   * @returns FilteredData structure
-   */
-  async "repo.getFilteredData"({
-    repoUrl,
-    startDate,
-    endDate,
-    branch,
-    contributor,
-  }: {
-    repoUrl: string; // pass the URl from the frontend
-    startDate: Date;
-    endDate: Date;
-    branch?: string;
-    contributor?: string[];
-  }): Promise<FilteredData> {
-    // Get full repository data from db
-    const repo: SerializableRepoData = await Meteor.callAsync("repoCollection.getData", repoUrl);
-
-    // Apply alias mapping if user has config
-    const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
-
-    // Apply filtering
-    const filteredData = getFilteredRepoDataServer(
-      repoUrl,
-      startDate,
-      endDate,
-      mappedRepo,
-      branch,
-      contributor
-    );
-    return filteredData;
   },
 
   async "repo.getMetadata"(repoUrl: string): Promise<Metadata> {
@@ -146,14 +128,20 @@ Meteor.methods({
       },
     };
 
-    const filteredRepo: FilteredData = await Meteor.callAsync("repo.getFilteredData", {
+    // const filteredRepo: FilteredData = await Meteor.callAsync("repo.getFilteredData", {
+    //   repoUrl,
+    //   startDate: selections.selectedDateRange.from,
+    //   endDate: selections.selectedDateRange.to,
+    //   branch: selections.selectedBranch,
+    //   contributor: selections.selectedContributors,
+    // });
+    const filteredRepo: FilteredData = await getFilteredRepoData(
       repoUrl,
-      startDate: selections.selectedDateRange.from,
-      endDate: selections.selectedDateRange.to,
-      branch: selections.selectedBranch,
-      contributor: selections.selectedContributors,
-    });
-
+      selections.selectedDateRange.from,
+      selections.selectedDateRange.to,
+      selections.selectedBranch,
+      selections.selectedContributors
+    );
     const metricsData: MetricsData = await getAllGraphData(filteredRepo, metric);
 
     // NOW WE DO STUFF WITH THE FILTERED REPO TO GET the specific metric!!
@@ -190,4 +178,5 @@ Meteor.methods({
       "" // null string for now as Yoonus is TODO fix this
     );
   },
+
 });
