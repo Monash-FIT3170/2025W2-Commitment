@@ -188,7 +188,7 @@ const SignupForm: FC<SignupFormProps> = (props) => {
 
         <FormField
           control={form.control}
-          name="password"
+          name="confirmPassword"
           render={({ field }) => (
             <FormItem>
               <FormControl>
