@@ -161,7 +161,7 @@ bind_symlink_dirs "/bin" bwrap_opts
 
 echo ""
 echo "Found $PROGRAM at $PROGRAM_PARENT_DIR"
-echo "Running container: " "$@"
+echo "Running container:" "$@"
 echo ""
 
 exec bwrap \
