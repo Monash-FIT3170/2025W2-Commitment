@@ -9,6 +9,25 @@ WORKDIR="/home/python"
 OVERLAY_ROSRC="$(pwd)"
 
 bwrap_opts=()
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --store-paths)
+            shift
+            STORE_FILE="$1"
+            STORE_PATHS=$(<"$STORE_FILE")
+            shift
+
+            for p in $STORE_PATHS; do
+                echo "Binding store path -> $p"
+                bwrap_opts+=(--ro-bind "$p" "$p")
+            done
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 
 # paths shared read only by default
 paths_general=(
@@ -47,6 +66,101 @@ fi
 echo "Found $PROGRAM at $PROGRAM_PARENT_DIR"
 echo ""
 
+# Function: scan /bin (or any directory) for symlinks and add --ro-bind for linked directories
+bind_symlink_dirs() {
+    local dir="$1"
+    local -n opts_ref="$2"  # pass array by reference
+
+    echo "bind_symlink_dirs $dir"
+
+    for f in "$dir"/*; do
+        [ -e "$f" ] || continue  # skip if file doesn't exist
+
+        if [ -L "$f" ]; then
+            # Resolve symlink to the real file
+            local real_path
+            real_path=$(readlink -f "$f")
+
+            if [[ "$real_path" == /nix/store/* ]]; then
+                # extract store root
+                # Strip "/nix/store/" prefix
+                store_tail="${real_path#/nix/store/}"
+                # Extract first component (hash-name folder)
+                store_root="${store_tail%%/*}"
+                # Prepend "/nix/store/"
+                store_root="/nix/store/$store_root"
+
+                # Avoid duplicates
+                local already_added=false
+                for opt in "${opts_ref[@]}"; do
+                    if [[ "$opt" == "--ro-bind $store_root $store_root" ]]; then
+                        already_added=true
+                        break
+                    fi
+                done
+
+                if ! $already_added; then
+                    echo "Binding symlink -> $store_root"
+                    opts_ref+=(--ro-bind "$store_root" "$store_root")
+                fi
+            fi
+
+        fi
+    done
+}
+
+# Function: scan executables for shared libraries and add --ro-bind for needed /nix/store paths
+bind_needed_libraries() {
+    local dir="$1"
+    local -n opts_ref="$2"  # pass array by reference
+
+    echo "bind_needed_libraries $dir"
+
+    # Find all executable files in the directory
+    find "$dir" -type f -executable | while read -r bin; do
+        # Skip non-ldd-compatible files
+        [ -x "$bin" ] || continue
+
+        # Use ldd to list libraries
+        while IFS= read -r lib; do
+            # Only process /nix/store libraries
+            if [[ "$lib" == /nix/store/* ]]; then
+                # Extract store root
+                store_tail="${lib#/nix/store/}"
+                store_root="${store_tail%%/*}"
+                store_root="/nix/store/$store_root"
+
+                # Avoid duplicates
+                already_added=false
+                for opt in "${opts_ref[@]}"; do
+                    if [[ "$opt" == "--ro-bind $store_root $store_root" ]]; then
+                        already_added=true
+                        break
+                    fi
+                done
+
+                if ! $already_added; then
+                    echo "Binding library -> $store_root"
+                    opts_ref+=(--ro-bind "$store_root" "$store_root")
+                fi
+            fi
+        done < <(ldd "$bin" 2>/dev/null | awk '/\/nix\/store/ {print $3}')
+    done
+}
+
+bind_symlink_dirs "/bin" bwrap_opts
+bind_symlink_dirs "/usr/bin" bwrap_opts
+bind_symlink_dirs "/lib" bwrap_opts
+bind_symlink_dirs "/lib64" bwrap_opts
+#
+#echo ""
+#
+bind_needed_libraries "/bin" bwrap_opts
+bind_needed_libraries "/usr/bin" bwrap_opts
+bind_needed_libraries "/lib" bwrap_opts
+bind_needed_libraries "/lib64" bwrap_opts
+
+
 exec bwrap \
   --unshare-all \
   --clearenv \
@@ -68,7 +182,6 @@ exec bwrap \
   --setenv PATH "/bin:/usr/bin:/container/bin" \
   --setenv HOME /home/python \
   --ro-bind "$PROGRAM_PARENT_DIR" /container/bin \
-  --ro-bind /nix /nix \
   --chdir "$WORKDIR" \
   "${bwrap_opts[@]}" \
   "${@}"
