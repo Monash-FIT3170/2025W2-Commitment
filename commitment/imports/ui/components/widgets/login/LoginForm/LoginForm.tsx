@@ -118,7 +118,7 @@ function LoginForm(props: LoginFormProps) {
                     {...field}
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
-                    className="pr-10" // leave space for eye icon
+                    className="pr-10"
                   />
                   <button
                     type="button"
