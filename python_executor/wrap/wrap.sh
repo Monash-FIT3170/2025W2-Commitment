@@ -49,11 +49,13 @@ else
   fi
 fi
 
+# Invent a fake user
+FAKE_PASSWD_FILE="/tmp/fake_wrap_passwd"
+if ! [ -f "$FAKE_PASSWD_FILE" ]; then
+  echo "python:x:1001:1001:Fake User:/home/python:/bin/bash" > "$FAKE_PASSWD_FILE"
+fi
 
-# --tmpfs /hidden/overlay/workdir \
-#  --ro-bind "$OVERLAY_ROSRC" /hidden/overlay/rosrc \
-# --setenv PATH /bin:/usr/bin \
-# --ro-bind /nix/store/ih779chzzag1nm91fgnrndml4mghm3la-coreutils-9.7 /nix/store/ih779chzzag1nm91fgnrndml4mghm3la-coreutils-9.7 \
+# we create /container/bin as the directory that contains the binary we want to run, then read only link that directory
 
 exec bwrap \
   --chdir "$WORKDIR" \
@@ -62,14 +64,18 @@ exec bwrap \
   --dev /dev \
   --proc /proc \
   --tmpfs /tmp \
+  --dir /etc \
   --overlay-src "$OVERLAY_ROSRC" \
   --tmp-overlay "$WORKDIR" \
   --hostname python \
+  --uid 1001 \
+  --gid 1001 \
+  --ro-bind "$FAKE_PASSWD_FILE" /etc/passwd \
   --setenv USERNAME python \
   --die-with-parent \
   --dir /container \
   --chmod 0755 /container \
-  --setenv PATH /container/bin \
+  --setenv PATH /bin:/usr/bin:/container/bin \
   --setenv HOME /home/python \
   --ro-bind "$PROGRAM_PARENT_DIR" /container/bin \
   --ro-bind /nix /nix \

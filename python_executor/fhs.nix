@@ -14,6 +14,6 @@ in
       pkgs.python311
       pkgs.python311Packages.numpy
       pkgs.bash
-      pkgs.bubblewrap
+
     ];
   }
