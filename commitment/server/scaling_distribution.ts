@@ -2,7 +2,7 @@
  
 // function to produce contributor metrics 
 // need to use get filtered data as the input to do so . 
-import {ContributorMetrics, ContributorScaledData, ContributorScaledMetric, FilteredData, MetricType } from "../imports/api/types"
+import {ContributorMetrics, ContributorScaledData, ContributorScaledMetric, FilteredData, MetricType, SerialisableMapObject, ContributorData } from "../imports/api/types"
 import { getCommitPerDayPerContributor, getTotalCommitsPerContributor, getLOCperContributor, getLocPerCommitPerContributor } from "./helper_functions";
 
 /**
@@ -18,10 +18,10 @@ export function getContributorMetrics(data: FilteredData): ContributorMetrics[]{
     return contributors.map((contributor) => ({
         contributorName: contributor.value.name,
         metrics: {
-            "Total No. Commits": getTotalCommitsPerContributor(repositoryData, contributor.value.name),
-            "LOC": getLOCperContributor(repositoryData, contributor.value.name),
-            "LOC Per Commit": getLocPerCommitPerContributor(repositoryData, contributor.value.name),
-            "Commits Per Day": getCommitPerDayPerContributor(repositoryData, contributor.value.name),
+            [MetricType.TOTAL_COMMITS]: getTotalCommitsPerContributor(repositoryData, contributor.value.name),
+            [MetricType.LOC]: getLOCperContributor(repositoryData, contributor.value.name),
+            [MetricType.LOC_PER_COMMIT]: getLocPerCommitPerContributor(repositoryData, contributor.value.name),
+            [MetricType.COMMITS_PER_DAY]: getCommitPerDayPerContributor(repositoryData, contributor.value.name),
         },
     })); 
 }
@@ -29,11 +29,39 @@ export function getContributorMetrics(data: FilteredData): ContributorMetrics[]{
 /** 
  * This function provides the percentile of a contributors metric.
  */
-export function getContributorScaledMetric(data: FilteredData, selectedMetric: MetricType): ContributorScaledMetric {
- // things happen here 
+export function getContributorScaledMetric(passedContributor: SerialisableMapObject<string, ContributorData>, data: FilteredData, selectedMetric: MetricType): ContributorScaledMetric {    // get all contributor metrics 
+    // get all contributor metrics
+    const contributorMetrics = getContributorMetrics(data);
+
+    // get the metric values for all contributors 
+    const metricValues = contributorMetrics.map((contributor) => contributor.metrics[selectedMetric]);
+    // get the value for the passed contributor 
+    const contributorName = passedContributor.value.name;
+    const contributorMetric = contributorMetrics.find((contributor) => contributor.contributorName === contributorName);
+    if (!contributorMetric) {
+        throw new Error(`Contributor ${contributorName} not found in metrics.`);
+    }
+    const contributorValue = contributorMetric.metrics[selectedMetric];
+
+    // calculate the number of values below the contributor's value
+    const numValuesBelow = metricValues.filter((value) => value < contributorValue).length;
+    const totalValues = metricValues.length;
+    
+    // calculate the percentile
+    const percentile = (numValuesBelow / totalValues) * 100;
+    return {
+        metric: selectedMetric,
+        value: contributorValue,
+        percentile,
+    };  
+    
 }
 
 export function getContributorScaledData(data: FilteredData, selectedMetric:MetricType): ContributorScaledData[]{
     // things happen here 
     // this would iterate through each contributor and getContributorScaledMetric for each contributor
+    const { repositoryData, repositoryData: { contributors } } = data;
+
+
+
 }
