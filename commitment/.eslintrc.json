@@ -25,10 +25,10 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "import"],
   "parserOptions": {
-    "project": "./tsconfig.json",
-    "tsconfigRootDir": ".",
-    "sourceType": "module"
-  },
+  "project": "/projects/commitment/tsconfig.json",
+  "tsconfigRootDir": "/projects/commitment",
+  "sourceType": "module"
+},
   "settings": {
     "react": { "version": "detect" }, 
     "import/resolver": {                   
