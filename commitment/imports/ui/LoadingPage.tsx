@@ -22,36 +22,17 @@ function toUserMessage(err: unknown): string {
   }
 }
 
-
-function useServerCrashed(): boolean {
-  const [serverCrashed, setServerCrashed] = useState<boolean>(false);
-
-  useEffect(() => {
-    const comp = Tracker.autorun(() => {
-      const status = Meteor.status().status; // 'connected', 'connecting', 'waiting', 'offline'
-      if (status === "offline" || status === "waiting") {
-        setServerCrashed(true);
-      } else {
-        setServerCrashed(false);
-      }
-    });
-    return () => comp.stop();
-  }, []);
-
-  return serverCrashed;
-}
-
 /** Stage weights (sum ≈ 1.0). No backend changes needed. */
 const STAGE_WEIGHTS = {
-  validate: 0.05,        // "Validating repo exists…", "Found the repo!"
-  parseSetup: 0.03,      // "Formulating parsers..."
-  clone: 0.10,           // "Cloning repo..."
-  branches: 0.05,        // "Searching for branch names..."
-  commitsDiscover: 0.10, // "Searching for commit hashes..."
-  commitData: 0.45,      // "Formulating all commit data (d/t)..."
-  filesDiscover: 0.07,   // "Found N distinct file versions..."
-  fileData: 0.12,        // "Formulating all file data (d/t)..."
-  finalize: 0.03         // joining, contributors, repo name, etc.
+  validate: 0.05,
+  parseSetup: 0.03,
+  clone: 0.1,
+  branches: 0.05,
+  commitsDiscover: 0.1,
+  commitData: 0.45,
+  filesDiscover: 0.07,
+  fileData: 0.12,
+  finalize: 0.03,
 } as const;
 
 type StageKey = keyof typeof STAGE_WEIGHTS;
@@ -69,7 +50,7 @@ const createEmptyModel = (): ProgressModel => ({ seen: {} });
 
 /** Parse a single notifier message into our progress model */
 function updateModelFromMessage(m: string, prev: ProgressModel): ProgressModel {
-  const model = { ...prev, seen: { ...prev.seen } };
+  const model: ProgressModel = { ...prev, seen: { ...prev.seen } };
 
   if (/Validating repo exists/i.test(m)) model.seen.validate = true;
   if (/Found the repo/i.test(m)) model.seen.validate = true;
@@ -78,11 +59,12 @@ function updateModelFromMessage(m: string, prev: ProgressModel): ProgressModel {
   if (/Searching for branch names/i.test(m)) model.seen.branches = true;
   if (/Searching for commit hashes/i.test(m)) model.seen.commitsDiscover = true;
 
-  // "Formulating all commit data (23/240)..."
+  // Commit data progress
   {
     const match = m.match(/Formulating all commit data\s*\((\d+)\s*\/\s*(\d+)\)/i);
     if (match) {
-      const done = Number(match[1]), total = Number(match[2]);
+      const done = Number(match[1]);
+      const total = Number(match[2]);
       if (Number.isFinite(done) && Number.isFinite(total) && total > 0) {
         model.commitTotals = { done, total };
         model.seen.commitData = true;
@@ -90,25 +72,29 @@ function updateModelFromMessage(m: string, prev: ProgressModel): ProgressModel {
     }
   }
 
-  // "Found 123 distinct file versions across all commits"
+  // Files discovery
   {
     const match = m.match(/Found\s+(\d+)\s+distinct file versions/i);
     if (match) {
       const total = Number(match[1]);
       if (Number.isFinite(total) && total > 0) {
         model.filesTotalKnown = true;
-        if (!model.fileTotals) model.fileTotals = { done: 0, total };
-        else model.fileTotals = { done: model.fileTotals.done, total };
+        if (!model.fileTotals) {
+          model.fileTotals = { done: 0, total };
+        } else {
+          model.fileTotals = { done: model.fileTotals.done, total };
+        }
         model.seen.filesDiscover = true;
       }
     }
   }
 
-  // "Formulating all file data (5/123)..."
+ 
   {
     const match = m.match(/Formulating all file data\s*\((\d+)\s*\/\s*(\d+)\)/i);
     if (match) {
-      const done = Number(match[1]), total = Number(match[2]);
+      const done = Number(match[1]);
+      const total = Number(match[2]);
       if (Number.isFinite(done) && Number.isFinite(total) && total > 0) {
         model.fileTotals = { done, total };
         model.filesTotalKnown = true;
@@ -156,7 +142,7 @@ function computeTargetPercent(model: ProgressModel): number {
     percent += STAGE_WEIGHTS.fileData * 100 * 0.05;
   }
 
-  return clamp(percent, 0, 98); // cap until success
+  return clamp(percent, 0, 98);
 }
 
 /** Smoothly ease actual progress toward target using rAF */
@@ -194,22 +180,19 @@ function useSmoothedProgress(target: number) {
   return progress;
 }
 
-
 const LoadingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const { repoUrl } = (state as LocationState) || {};
 
-  const [message, setMessage] = useState<string>("Starting…");
-  const [tipIndex, setTipIndex] = useState<number>(0);
-  const [hadError, setHadError] = useState<boolean>(false);
+  const location = useLocation();
+  const stateMaybe = (location?.state as LocationState | null) ?? null;
+  const repoUrl = stateMaybe?.repoUrl;
 
-  // model derived from notifier text (no backend change)
+  const [message, setMessage] = useState("Starting…");
+  const [tipIndex, setTipIndex] = useState(0);
+  const [hadError, setHadError] = useState(false);
+
   const modelRef = useRef<ProgressModel>(createEmptyModel());
-  const [targetPct, setTargetPct] = useState<number>(0);
-
-  const serverCrashed = useServerCrashed();
-
+  const [targetPct, setTargetPct] = useState(0);
 
   const tips = useMemo(
     () => [
@@ -220,7 +203,6 @@ const LoadingPage: React.FC = () => {
     []
   );
 
-  // Rotate tips every 4s (pause on error)
   useEffect(() => {
     if (hadError) return;
     const id = Meteor.setInterval(() => {
@@ -229,13 +211,8 @@ const LoadingPage: React.FC = () => {
     return () => Meteor.clearInterval(id);
   }, [tips.length, hadError]);
 
-  // If no repo URL provided, redirect immediately
-  if (!repoUrl) return <Navigate to="/insert-git-repo" replace />;
-
-  // Smooth progress follows our computed target
   const progress = useSmoothedProgress(targetPct);
 
-  // Early indeterminate state before any meaningful totals show up
   const indeterminate =
     targetPct < 1 &&
     !modelRef.current.seen.clone &&
@@ -243,7 +220,6 @@ const LoadingPage: React.FC = () => {
     !modelRef.current.seen.commitData &&
     !modelRef.current.seen.fileData;
 
-  // Fetch repository data and stream notifier
   useEffect(() => {
     if (!repoUrl) return;
 
@@ -253,7 +229,6 @@ const LoadingPage: React.FC = () => {
       if (!isMounted) return;
       setMessage(msg);
 
-      // Update progress model from incoming text
       modelRef.current = updateModelFromMessage(msg, modelRef.current);
       const nextTarget = computeTargetPercent(modelRef.current);
       setTargetPct(nextTarget);
@@ -263,17 +238,15 @@ const LoadingPage: React.FC = () => {
       .then((value: boolean) => {
         if (value === false) throw new Error("fetchRepo failed.");
         notifier.next("Repository data loaded!");
-        setTargetPct(100); // final smooth rise to 100
+        setTargetPct(100);
         setTimeout(() => {
           navigate("/metrics", { replace: true, state: { repoUrl } });
         }, 700);
       })
       .catch((err) => {
-        const human = toUserMessage(err);
+        const errMsg = toUserMessage(err);
         setHadError(true);
-        // Always push a string into the notifier
-        notifier.next(`Error: ${human}`);
-        // Humane delay then redirect
+        notifier.next(`Error: ${errMsg}`);
         setTimeout(() => {
           navigate("/home", { replace: true });
         }, 8000);
@@ -289,23 +262,19 @@ const LoadingPage: React.FC = () => {
     };
   }, [repoUrl, navigate]);
 
-  return (
-    <>
-      <div className="fixed top-0 w-full z-10"></div>
-      <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
-        {/* Live notifier message */}
-        <h2 className={`text-3xl font-inconsolata-bold mb-6 ${hadError ? "text-red-500" : ""}`}>
-          {message}
-        </h2>
+  return !repoUrl ? (
+    <Navigate to="/insert-git-repo" replace />
+  ) : (
+    <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
+      <h2 className={`text-3xl font-inconsolata-bold mb-6 ${hadError ? "text-red-500" : ""}`}>
+        {message}
+      </h2>
 
-        <LoadingBar progress={progress} indeterminate={indeterminate} />
+      <LoadingBar progress={progress} indeterminate={indeterminate} />
 
-        {/* Tip box remains as-is (tips only) */}
-        <TipBox tip={tips[tipIndex]} />
-      </div>
-    </>
+      <TipBox tip={tips[tipIndex]} />
+    </div>
   );
 };
-
 
 export default LoadingPage;
