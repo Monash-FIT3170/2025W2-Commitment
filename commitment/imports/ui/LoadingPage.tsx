@@ -23,18 +23,24 @@ function toUserMessage(err: unknown): string {
   }
 }
 
-const [serverCrashed, setServerCrashed] = useState<boolean>(false);
 
-useEffect(() => {
-  const comp = Tracker.autorun(() => {
-    const status = Meteor.status().status; // 'connected', 'connecting', 'waiting', 'offline'
-    if (status === "offline" || status === "waiting") {
-      setServerCrashed(true);
-    }
-  });
-  return () => comp.stop();
-}, []);
+function useServerCrashed(): boolean {
+  const [serverCrashed, setServerCrashed] = useState<boolean>(false);
 
+  useEffect(() => {
+    const comp = Tracker.autorun(() => {
+      const status = Meteor.status().status; // 'connected', 'connecting', 'waiting', 'offline'
+      if (status === "offline" || status === "waiting") {
+        setServerCrashed(true);
+      } else {
+        setServerCrashed(false);
+      }
+    });
+    return () => comp.stop();
+  }, []);
+
+  return serverCrashed;
+}
 
 /** Stage weights (sum ≈ 1.0). No backend changes needed. */
 const STAGE_WEIGHTS = {
@@ -224,6 +230,9 @@ const LoadingPage: React.FC = () => {
   // model derived from notifier text (no backend change)
   const modelRef = useRef<ProgressModel>(createEmptyModel());
   const [targetPct, setTargetPct] = useState<number>(0);
+
+  const serverCrashed = useServerCrashed();
+
 
   const tips = useMemo(
     () => [
