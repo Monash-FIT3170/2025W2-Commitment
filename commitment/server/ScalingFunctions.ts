@@ -6,7 +6,7 @@ import {
   AllMetricsData,
   SerializableRepoData,
   ContributorValueWithAliases,
-} from "../imports/api/types";
+} from "@api/types";
 import {
   applyAliasMapping,
   applyAliasMappingIfNeeded,

@@ -13,10 +13,10 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@ui/components/ui/form";
-import { Button } from "@ui/components/ui/button";
-import { Alert, AlertDescription } from "@ui/components/ui/alert";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
+} from "@base/form";
+import { Button } from "@base/button";
+import { Alert, AlertDescription } from "@base/alert";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@base/dropzone";
 import {
   GradingSheetParserService,
   type GradingSheetRow,
