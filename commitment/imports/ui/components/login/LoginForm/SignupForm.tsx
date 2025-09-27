@@ -14,20 +14,24 @@ import FormInputWithErrors from "../../shared/FormInputWithErrors";
 
 
 export interface SignupFormProps {
-  className?: string
+  className?: string;
 }
 
-
 const formSchema = z.object({
-  username: z.string().min(2).max(50).regex(/^([a-zA-Z0-9]|[_\-+=|$])+$/, "Username can only contain numbers, letters and characters _-+=|$"),
+  username: z
+    .string()
+    .min(2)
+    .max(50)
+    .regex(
+      /^([a-zA-Z0-9]|[_\-+=|$])+$/,
+      "Username can only contain numbers, letters and characters _-+=|$"
+    ),
   email: z.string().email(),
   password: z.string().min(8),
   confirmPassword: z.string(),
-})
-
+});
 
 const SignupForm: FC<SignupFormProps> = (props) => {
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,12 +52,12 @@ const SignupForm: FC<SignupFormProps> = (props) => {
     if (values.password !== values.confirmPassword) {
       form.setError("password", {
         type: "manual",
-        message: " "
+        message: " ",
       });
 
       form.setError("confirmPassword", {
         type: "manual",
-        message: "Passwords do not match. Please retype your password."
+        message: "Passwords do not match. Please retype your password.",
       });
       return;
     }
@@ -65,24 +69,24 @@ const SignupForm: FC<SignupFormProps> = (props) => {
         password: values.password,
         profile: {
           name: values.username,
-        }
+        },
       },
       (err?: Meteor.Error) => {
         if (err) {
           // Handle different types of login errors
-          let errorMessage = `Signup failed: ${  err.reason}`;
+          let errorMessage = `Signup failed: ${err.reason}`;
 
-          if (err.reason === 'User not found') {
+          if (err.reason === "User not found") {
             errorMessage = "No account found with this email address.";
-          } else if (err.reason === 'Incorrect password') {
+          } else if (err.reason === "Incorrect password") {
             errorMessage = "Incorrect password. Please try again.";
-          } else if (err.reason === 'User has no password set') {
+          } else if (err.reason === "User has no password set") {
             errorMessage = "Please reset your password to continue.";
           }
 
           form.setError("username", {
             type: "manual",
-            message: errorMessage
+            message: errorMessage,
           });
 
           // Also set error on password field for better UX
@@ -92,17 +96,16 @@ const SignupForm: FC<SignupFormProps> = (props) => {
           // });
           form.setError("email", {
             type: "manual",
-            message: " " // Empty space to maintain form layout
+            message: " ", // Empty space to maintain form layout
           });
           form.setError("password", {
             type: "manual",
-            message: " " // Empty space to maintain form layout
+            message: " ", // Empty space to maintain form layout
           });
           form.setError("confirmPassword", {
             type: "manual",
-            message: " " // Empty space to maintain form layout
+            message: " ", // Empty space to maintain form layout
           });
-
         } else {
           navigate("/home");
         }
@@ -112,16 +115,23 @@ const SignupForm: FC<SignupFormProps> = (props) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className={`flex flex-col gap-2 ${props.className ?? ""}`}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className={`flex flex-col gap-2 ${props.className ?? ""}`}
+      >
         <FormField
           control={form.control}
           name="username"
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <FormInputWithErrors placeholder="Username" {...field} type="username"/>
+                <FormInputWithErrors
+                  placeholder="Username"
+                  {...field}
+                  type="username"
+                />
               </FormControl>
-              <LoginFormErrorMessage/>
+              <LoginFormErrorMessage />
             </FormItem>
           )}
         />
@@ -132,11 +142,13 @@ const SignupForm: FC<SignupFormProps> = (props) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <FormInputWithErrors placeholder="Email" {...field} type="email"/>
+                <FormInputWithErrors
+                  placeholder="Email"
+                  {...field}
+                  type="email"
+                />
               </FormControl>
-              <div className="min-h-3">
-                <LoginFormErrorMessage/>
-              </div>
+              <LoginFormErrorMessage />
             </FormItem>
           )}
         />
@@ -147,9 +159,13 @@ const SignupForm: FC<SignupFormProps> = (props) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <FormInputWithErrors placeholder="Password" type="password" {...field}/>
+                <FormInputWithErrors
+                  placeholder="Password"
+                  type="password"
+                  {...field}
+                />
               </FormControl>
-              <LoginFormErrorMessage/>
+              <LoginFormErrorMessage />
             </FormItem>
           )}
         />
@@ -160,19 +176,25 @@ const SignupForm: FC<SignupFormProps> = (props) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <FormInputWithErrors placeholder="Retype Password" type="password" {...field}/>
+                <FormInputWithErrors
+                  placeholder="Retype Password"
+                  type="password"
+                  {...field}
+                />
               </FormControl>
               <div className="min-h-3">
-                <LoginFormErrorMessage/>
+                <LoginFormErrorMessage />
               </div>
             </FormItem>
           )}
         />
 
-        <Button type="submit" className="w-full">Submit</Button>
+        <Button type="submit" className="w-full">
+          Submit
+        </Button>
       </form>
     </Form>
   );
-}
+};
 
 export default SignupForm;

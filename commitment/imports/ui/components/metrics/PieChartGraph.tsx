@@ -15,6 +15,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@base/chart";
 export interface ChartEntry {
   user: string;
   contributions: number;
+  xAxisLabel: String;
 }
 
 interface Props {
@@ -45,7 +46,7 @@ const pieChartDescription =
   "Commit distribution by contributor — each slice shows a contributor's share of total commits.";
 
 // Main Pie Chart
-export function ContributionPieChart({ data, title }: Props) {
+export function ContributionPieChart({ data, title, xAxisLabel }: Props) {
   const coloredData = data.map((entry, index) => ({
     ...entry,
     title,
@@ -74,7 +75,7 @@ export function ContributionPieChart({ data, title }: Props) {
   return (
     <GraphCard className="w-full max-w-full h-[500px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
-        <div className="flex items-center space-x-2 w-4/5">
+        <div className="flex items-center w-full gap-2">
           <h2 className="text-xl font-bold"> {title}</h2>
           <div className="relative -mt-2">
             <InfoButton description={pieChartDescription} />
@@ -107,7 +108,7 @@ export function ContributionPieChart({ data, title }: Props) {
           <ChartContainer
             config={{
               contributions: {
-                label: "Contributions",
+                label: xAxisLabel,
               },
               user: {
                 label: "User",
