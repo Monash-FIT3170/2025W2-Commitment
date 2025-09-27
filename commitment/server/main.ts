@@ -11,7 +11,6 @@ import "./caching";
 import "./methods";
 
 Meteor.startup(() => {
-
   Meteor.publish("bookmarks", function () {
     if (!this.userId) {
       return this.ready(); // Return empty cursor if not logged in

@@ -1,7 +1,5 @@
 import { FilteredData, LineGraphData } from "../imports/api/types";
-import {
-  getLinesOfCodeFromCommit
-} from "./helper_functions"
+import { getLinesOfCodeFromCommit } from "./helper_functions";
 
 /**
  * LINEGRAPH FUNCTIONS
@@ -37,7 +35,9 @@ export function linegraphTotalCommits(data: FilteredData): LineGraphData[] {
 
   // Prepare cumulative counts per contributor
   const cumulative: Record<string, number> = {};
-  allContributors.forEach((c) => {cumulative[c] = 0});
+  allContributors.forEach((c) => {
+    cumulative[c] = 0;
+  });
 
   // Build LineGraphData array
   const dataArray: LineGraphData[] = [];
@@ -78,12 +78,12 @@ export function linegraphLOC(data: FilteredData): LineGraphData[] {
 
   // Collect daily LOC
   repoData.allCommits.forEach((p) => {
-    const commit = p.value
+    const commit = p.value;
     const user = commit.contributorName;
     const date = new Date(commit.timestamp).toISOString().split("T")[0];
 
     // LOC snapshot for this commit
-    const locThisCommit = getLinesOfCodeFromCommit(commit)
+    const locThisCommit = getLinesOfCodeFromCommit(commit);
     if (!byDate.has(date)) byDate.set(date, {});
     const bucket = byDate.get(date)!;
     bucket[user] = (bucket[user] ?? 0) + locThisCommit;
@@ -96,7 +96,9 @@ export function linegraphLOC(data: FilteredData): LineGraphData[] {
 
   // Cumulative tracker
   const cumulative: Record<string, number> = {};
-  allContributors.forEach((c) => {cumulative[c] = 0});
+  allContributors.forEach((c) => {
+    cumulative[c] = 0;
+  });
 
   const dataArray: LineGraphData[] = [];
 
@@ -187,12 +189,12 @@ export function linegraphLOCPerCommit(data: FilteredData): LineGraphData[] {
 
   // Collect daily LOC + commit counts
   repoData.allCommits.forEach((p) => {
-    const commit = p.value
+    const commit = p.value;
     const user = commit.contributorName;
     const date = new Date(commit.timestamp).toISOString().split("T")[0];
 
     // LOC snapshot for this commit
-    const locThisCommit = getLinesOfCodeFromCommit(commit)
+    const locThisCommit = getLinesOfCodeFromCommit(commit);
 
     if (!byDate.has(date)) {
       byDate.set(date, { loc: {}, commits: {} });
