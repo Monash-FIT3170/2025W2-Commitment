@@ -1,4 +1,5 @@
 import { Meteor } from "meteor/meteor";
+import { Subject } from "rxjs";
 
 /**
  * A method which properly awaits a meteor method execution, which guarantees in-order operation
@@ -39,3 +40,8 @@ export const overrideValue =
   <T>(value: T) =>
   (_err: Error) =>
     value;
+
+export const emitValue =
+  <T>(n: Subject<T> | null | undefined) =>
+  (v: T): null =>
+    n ? n.next(v) : null;
