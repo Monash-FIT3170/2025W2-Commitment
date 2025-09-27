@@ -19,7 +19,7 @@ export function calculateFinalGrades(
             return true;
         }
         return contributor.aliases.some(alias => 
-            alias.email.toLowerCase().trim() === studentEmail
+            alias.email && alias.email.toLowerCase().trim() === studentEmail
         );
         });
 
@@ -74,7 +74,10 @@ export function generateScaledGradingSheet(
             if (result.finalGrade !== null) {
             finalGradeMap.set(result.name.toLowerCase().trim(), result.finalGrade);
             result.aliases.forEach(alias => {
-                emailToGradeMap.set(alias.email.toLowerCase().trim(), result.finalGrade!);
+                if (alias.email){
+                    emailToGradeMap.set(alias.email.toLowerCase().trim(), result.finalGrade!);
+                }
+                
             });
             }
         });

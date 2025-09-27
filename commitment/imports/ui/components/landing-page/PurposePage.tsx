@@ -3,27 +3,14 @@ import { Separator } from "@ui/components/ui/separator";
 import { Card, CardContent } from "@ui/components/ui/card";
 import GetStartedButton from "./getStartedButton";
 
-const purpose = () => (
-    <div className="flex flex-col justify-center items-center mt-20">
-      <Header />
-
-      <CircleNumber />
-
-      <PurposeCard />
-      <GetStartedButton className="mt-12" />
-    </div>
-  );
-
-export default purpose;
-
 const Header = () => (
-    <div className="flex flex-col justify-center items-center">
-      <h4 className="font-mono text text-git-500 text-lg font-semibold">
-        HOW TO USE?
-      </h4>
-      <h1 className="font-mono text-5xl">Get Started in Three Steps</h1>
-    </div>
-  )
+  <div className="flex flex-col justify-center items-center">
+    <h4 className="font-mono text text-git-500 text-lg font-semibold">
+      HOW TO USE?
+    </h4>
+    <h1 className="font-mono text-5xl">Get Started in Three Steps</h1>
+  </div>
+);
 
 function CircleNumber() {
   return (
@@ -50,13 +37,13 @@ function PurposeCard() {
         <div className="grid grid-cols-3 gap-4 items-center justify-items-center">
           <img src="/github_logo.svg" alt="Github Logo" className="max-h-32" />
           <img
-            src="/git_search_bar.svg"
+            src="/insert.png"
             alt="Commitment Search Bar"
             className="shadow-md rounded-[52px]"
           />
           <img
-            src="/num_of_commit_box.svg"
-            alt="Number of commit box"
+            src="/graph.png"
+            alt="Graph of contributions."
             className="max-h-32"
           />
         </div>
@@ -84,3 +71,19 @@ function PurposeCard() {
     </Card>
   );
 }
+
+const purpose = () => (
+  <div className="flex flex-col justify-center items-center mt-20">
+    <Header />
+
+    <CircleNumber />
+
+    <PurposeCard />
+
+    <div className="mt-20">
+      <GetStartedButton />
+    </div>
+  </div>
+);
+
+export default purpose;

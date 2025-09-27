@@ -108,12 +108,15 @@ export const getCommitPerDayPerContributor = (
   repoData: SerializableRepoData,
   contributorName: string
 ): number => {
-  // get commits filtered according to contributors
   const commits = getCommitsFrom(repoData, contributorName);
-  // count unique days
+
   const uniqueDays = new Set(
-    // extract commit dates as (YYYY-MM-DD)
-    commits.map((commit) => commit.timestamp.toISOString().split("T")[0])
+    commits.map((commit) => {
+      const date = new Date(commit.timestamp); 
+      return date.toISOString().split("T")[0]; 
+    })
   );
+
   return commits.length / uniqueDays.size;
 };
+
