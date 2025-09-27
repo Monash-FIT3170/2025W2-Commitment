@@ -34,7 +34,7 @@ function RepoCard({ repository, onClick }: RepoCardProps) {
 
   return (
     <div
-      className="relative bg-git-bg-elevated p-4 rounded-lg border border-gray-200 hover:border-gray-300 cursor-pointer transition-all duration-200 hover:shadow-md"
+      className="relative bg-git-bg-elevated p-4 rounded-lg border border-git-text-primary cursor-pointer transition-all duration-200 hover:shadow-md"
       onClick={onClick}
     >
       <div className="flex items-start justify-between mb-3">
@@ -54,8 +54,15 @@ function RepoCard({ repository, onClick }: RepoCardProps) {
         {/* <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(repository.analysisStatus)}`}>
           {getStatusText(repository.analysisStatus)}
         </span> */}
-        <span className="flex space-x-2 absolute right-4 top-4">
-          <BookmarkButton url={repository.url} title={repository.name} />
+        <span
+          className="flex space-x-2 absolute right-4 top-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <BookmarkButton
+            url={repository.url}
+            title={repository.name}
+            variant="secondary"
+          />
         </span>
       </div>
 
