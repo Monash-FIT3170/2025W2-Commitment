@@ -4,6 +4,7 @@ import * as React from "react";
 import { addDays, format, parse, subMonths } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { type DateRange } from "react-day-picker";
+import { startOfDay } from "date-fns";
 
 import { cn } from "@ui/lib/utils";
 import { Button } from "@ui/components/ui/button";
@@ -82,24 +83,25 @@ export function DatePicker({ onChange, defaultValue }: Props) {
   };
 
   const last12Weeks = () => {
-    const to = new Date();
-    const from = addDays(to, -84);
+    const to = startOfDay(new Date());
+    const from = startOfDay(addDays(to, -84));
     const range = { from, to };
     setDate(range);
     onChange?.(range);
   };
 
   const lastMonth = () => {
-    const to = new Date();
-    const from = subMonths(to, 1);
+    const to = startOfDay(new Date());
+    const from = startOfDay(subMonths(to, 1));
     const range = { from, to };
+
     setDate(range);
     onChange?.(range);
   };
 
   const lastWeek = () => {
-    const to = new Date();
-    const from = addDays(to, -7);
+    const to = startOfDay(new Date());
+    const from = startOfDay(addDays(to, -7));
     const range = { from, to };
     setDate(range);
     onChange?.(range);
