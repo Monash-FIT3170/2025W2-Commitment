@@ -8,8 +8,8 @@ import "../imports/api/bookmark_methods";
 import "../imports/api/repository_methods";
 import "../imports/api/alias_config_methods";
 
-import "./fetch_repo";
-import "./caching";
+import "/server/api/fetch_repo";
+import "/server/api/caching";
 
 import "./methods";
 

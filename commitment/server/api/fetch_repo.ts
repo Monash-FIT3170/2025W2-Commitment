@@ -4,9 +4,9 @@ import { WebSocket } from "ws";
 import net from "net";
 import dotenv from "dotenv";
 
-import { RepositoryData } from "../imports/api/types";
-import { assertRepoTyping } from "../imports/api/serialisation";
-import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "../server/caching";
+import { RepositoryData, SerializableRepoData } from "/imports/api/types";
+import { assertRepoTyping, serializeRepoData } from "/imports/api/serialisation";
+import { cacheIntoDatabase, tryFromDatabaseViaLatest, isInDatabase } from "./caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -79,23 +79,31 @@ const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT || DEV_API_CONN_ENDPOINT;
  * @returns {Promise<RepositoryData>} A promise that resolves to the fetched repository data.
  * @throws {Error} If there is an error during the fetch operation.
  */
-export const getRepoData = async (
+export const getRepoData = (
   url: string,
-  notifier: Subject<string>
+  notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
-  tryFromDatabase(url, notifier).catch((_e1) =>
-    fetchDataFromHaskellAppWS(url, notifier)
+  tryFromDatabaseViaLatest(url, notifier).catch((_e1: Error) => fetchRepoData(url, notifier));
+
+export const getSerialisedRepoData = (
+  url: string,
+  notifier: Subject<string> | null
+): Promise<SerializableRepoData> => getRepoData(url, notifier).then(serializeRepoData);
+
+export const pipeRepoDataVia =
+  (f: (url: string, notifier: Subject<string> | null) => Promise<RepositoryData>) =>
+  (url: string, notifier: Subject<string> | null): Promise<RepositoryData> =>
+    f(url, notifier)
       .then(assertRepoTyping) // enforces strong typing for the entire data structure
       .then((data: RepositoryData) => {
-        notifier.next("Consolidating new data into database...");
+        if (notifier !== null) notifier.next("Consolidating new data into database...");
         cacheIntoDatabase(url, data);
         return data;
       })
-      .catch((e2) => {
-        notifier.next(`API fetch failed: ${e2}`);
+      .catch((e2: Error) => {
+        if (notifier !== null) notifier.next(`API fetch failed: ${e2}`);
         throw e2;
-      })
-  );
+      });
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -105,9 +113,9 @@ export const getRepoData = async (
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppIPC = async (
+export const fetchDataFromHaskellAppIPC = (
   url: string,
-  notifier: Subject<string>
+  notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
     const path = "/tmp/haskell-ipc.sock";
@@ -130,11 +138,13 @@ const fetchDataFromHaskellAppIPC = async (
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppWS = async (
+export const fetchDataFromHaskellAppWS = (
   url: string,
-  notifier: Subject<string>
+  notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
   fetchDataFromHaskellAppFromSocket(url, notifier, new WebSocket("ws://" + API_CONN_ENDPOINT));
+
+export const fetchRepoData = pipeRepoDataVia(fetchDataFromHaskellAppWS);
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -151,11 +161,11 @@ const fetchDataFromHaskellAppFromSocket = async (
   socket: WebSocket
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
-    notifier.next("Connecting to the API...");
+    if (notifier !== null) notifier.next("Connecting to the API...");
 
     socket.onopen = () => {
       // notify that connection to the api was successful
-      notifier.next("Connected to the API!");
+      if (notifier !== null) notifier.next("Connected to the API!");
       // send data through socket
       socket.send(
         JSON.stringify({
@@ -170,7 +180,7 @@ const fetchDataFromHaskellAppFromSocket = async (
         const { data } = event;
         const parsed = JSON.parse(data);
 
-        if (parsed.type === "text_update") notifier.next(parsed.data);
+        if (parsed.type === "text_update" && notifier !== null) notifier.next(parsed.data);
         else if (parsed.type === "error") reject(parsed.message);
         else if (parsed.type === "value") {
           resolve(parsed.data);
@@ -184,7 +194,7 @@ const fetchDataFromHaskellAppFromSocket = async (
 
     socket.onerror = (_err: WebSocket.ErrorEvent) => {
       const s = "Encountered a Websocket Error";
-      notifier.next(s);
+      if (notifier !== null) notifier.next(s);
       reject(new Error(s));
       socket.close();
     };
@@ -197,7 +207,7 @@ const fetchDataFromHaskellAppFromSocket = async (
  * @param url url to run the API on
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppHTTP = async (url: string): Promise<RepositoryData> =>
+export const fetchDataFromHaskellAppHTTP = (url: string): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) =>
     fetch("http://" + API_CONN_ENDPOINT, {
       method: "POST",
