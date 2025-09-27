@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import LoginFormErrorMessage from "/imports/ui/components/login/LoginForm/LoginFormErrorMessage";
 import { Accounts } from "meteor/accounts-base";
-import FormInputWithErrors from "../../shared/FormInputWithErrors";
+import FormInputWithErrors from "@ui/components/shared/FormInputWithErrors";
 
 
 
