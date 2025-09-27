@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 import { RepositoryData, SerializableRepoData } from "/imports/api/types";
 import { assertRepoTyping, serializeRepoData } from "/imports/api/serialisation";
-import { cacheIntoDatabase, tryFromDatabase, isInDatabase } from "./caching";
+import { cacheIntoDatabase, tryFromDatabaseViaLatest, isInDatabase } from "./caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -83,28 +83,27 @@ export const getRepoData = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
-  tryFromDatabase(url, notifier).catch((_e1: Error) => fetchRepoData(url, notifier));
+  tryFromDatabaseViaLatest(url, notifier).catch((_e1: Error) => fetchRepoData(url, notifier));
 
 export const getSerialisedRepoData = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<SerializableRepoData> => getRepoData(url, notifier).then(serializeRepoData);
 
-export const fetchRepoData = (
-  url: string,
-  notifier: Subject<string> | null
-): Promise<RepositoryData> =>
-  fetchDataFromHaskellAppWS(url, notifier)
-    .then(assertRepoTyping) // enforces strong typing for the entire data structure
-    .then((data: RepositoryData) => {
-      if (notifier !== null) notifier.next("Consolidating new data into database...");
-      cacheIntoDatabase(url, data);
-      return data;
-    })
-    .catch((e2: Error) => {
-      if (notifier !== null) notifier.next(`API fetch failed: ${e2}`);
-      throw e2;
-    });
+export const pipeRepoDataVia =
+  (f: (url: string, notifier: Subject<string> | null) => Promise<RepositoryData>) =>
+  (url: string, notifier: Subject<string> | null): Promise<RepositoryData> =>
+    f(url, notifier)
+      .then(assertRepoTyping) // enforces strong typing for the entire data structure
+      .then((data: RepositoryData) => {
+        if (notifier !== null) notifier.next("Consolidating new data into database...");
+        cacheIntoDatabase(url, data);
+        return data;
+      })
+      .catch((e2: Error) => {
+        if (notifier !== null) notifier.next(`API fetch failed: ${e2}`);
+        throw e2;
+      });
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -114,7 +113,7 @@ export const fetchRepoData = (
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppIPC = (
+export const fetchDataFromHaskellAppIPC = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
@@ -139,11 +138,13 @@ const fetchDataFromHaskellAppIPC = (
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppWS = (
+export const fetchDataFromHaskellAppWS = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
   fetchDataFromHaskellAppFromSocket(url, notifier, new WebSocket("ws://" + API_CONN_ENDPOINT));
+
+export const fetchRepoData = pipeRepoDataVia(fetchDataFromHaskellAppWS);
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -206,7 +207,7 @@ const fetchDataFromHaskellAppFromSocket = async (
  * @param url url to run the API on
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-const fetchDataFromHaskellAppHTTP = (url: string): Promise<RepositoryData> =>
+export const fetchDataFromHaskellAppHTTP = (url: string): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) =>
     fetch("http://" + API_CONN_ENDPOINT, {
       method: "POST",
