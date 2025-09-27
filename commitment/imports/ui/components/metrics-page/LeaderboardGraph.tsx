@@ -21,7 +21,7 @@ interface TopContributor {
 interface LeaderboardChartProps {
   data: TopContributor[];
   title: string;
-  xAxisLabel?: string;
+  xAxisLabel: string;
 }
 
 const staticColorPalette = [
@@ -55,6 +55,7 @@ const YAxisWidth = (labels: string[]): number => {
 export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
   data,
   title,
+  xAxisLabel,
 }) => {
   if (!data || data.length === 0) {
     return (
@@ -79,6 +80,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
   }
 
   const yAxisWidth = YAxisWidth(data.map((d) => d.name));
+  
   return (
     <GraphCard className="w-full h-[500px] min-w-[486px] flex flex-col basis-1/3">
       <CardHeader className="pb-0">
@@ -93,7 +95,7 @@ export const LeaderboardGraph: React.FC<LeaderboardChartProps> = ({
         <ChartContainer
           config={{
             value: {
-              label: "Contributions",
+              label: xAxisLabel,
             },
             name: {
               label: "Contributor",
