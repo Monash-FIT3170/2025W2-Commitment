@@ -1,4 +1,4 @@
-import { MongoClient, Db } from 'mongodb';
+import { MongoClient, Db, Collection, Document } from 'mongodb';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -6,6 +6,17 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = process.env.DB_NAME || 'commitment_db';
+
+// Repository data interface
+export interface RepositoryData {
+  url: string;
+  name?: string;
+  branches?: string[];
+  allCommits?: Record<string, unknown>;
+  contributors?: Record<string, unknown>;
+  updatedAt: Date;
+  createdAt: Date;
+}
 
 let client: MongoClient | null = null;
 let db: Db | null = null;
@@ -64,10 +75,10 @@ export async function closeConnection() {
 /**
  * Cache repository data
  */
-export async function cacheRepositoryData(url: string, data: any) {
+export async function cacheRepositoryData(url: string, data: Partial<RepositoryData>) {
   try {
-    const db = await getDatabase();
-    const collection = db.collection('repositories');
+    const database = await getDatabase();
+    const collection = database.collection<RepositoryData>('repositories');
     
     // Check if repository already exists
     const existing = await collection.findOne({ url });
@@ -86,12 +97,13 @@ export async function cacheRepositoryData(url: string, data: any) {
       console.log(`✅ Updated repository: ${url}`);
     } else {
       // Insert new repository
-      await collection.insertOne({
+      const repositoryData: RepositoryData = {
         url,
         ...data,
         createdAt: new Date(),
         updatedAt: new Date()
-      });
+      } as RepositoryData;
+      await collection.insertOne(repositoryData);
       console.log(`✅ Cached new repository: ${url}`);
     }
     
@@ -105,10 +117,10 @@ export async function cacheRepositoryData(url: string, data: any) {
 /**
  * Get repository data from cache
  */
-export async function getRepositoryData(url: string) {
+export async function getRepositoryData(url: string): Promise<RepositoryData | null> {
   try {
-    const db = await getDatabase();
-    const collection = db.collection('repositories');
+    const database = await getDatabase();
+    const collection = database.collection<RepositoryData>('repositories');
     
     const data = await collection.findOne({ url });
     return data;
@@ -121,10 +133,10 @@ export async function getRepositoryData(url: string) {
 /**
  * Check if repository exists in database
  */
-export async function isRepositoryCached(url: string) {
+export async function isRepositoryCached(url: string): Promise<boolean> {
   try {
-    const db = await getDatabase();
-    const collection = db.collection('repositories');
+    const database = await getDatabase();
+    const collection = database.collection<RepositoryData>('repositories');
     
     const count = await collection.countDocuments({ url });
     return count > 0;
@@ -137,11 +149,11 @@ export async function isRepositoryCached(url: string) {
 /**
  * List all collections in the database
  */
-export async function listCollections() {
+export async function listCollections(): Promise<Collection<Document>[]> {
   try {
-    const db = await getDatabase();
-    const collections = await db.listCollections().toArray();
-    console.log('📋 Available collections:', collections.map((c: any) => c.name));
+    const database = await getDatabase();
+    const collections = await database.listCollections().toArray();
+    console.log('📋 Available collections:', collections.map((c) => c.name));
     return collections;
   } catch (error) {
     console.error('❌ Error listing collections:', error);
@@ -152,10 +164,10 @@ export async function listCollections() {
 /**
  * Get repository statistics
  */
-export async function getRepositoryStats() {
+export async function getRepositoryStats(): Promise<{ totalRepositories: number; recentlyUpdated: number }> {
   try {
-    const db = await getDatabase();
-    const collection = db.collection('repositories');
+    const database = await getDatabase();
+    const collection = database.collection<RepositoryData>('repositories');
     
     const totalRepos = await collection.countDocuments();
     const recentRepos = await collection.countDocuments({
