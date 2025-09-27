@@ -16,7 +16,6 @@ import {
 
 import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
-import { getSerialisedRepoData } from "./api/fetch_repo";
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 import { spawn } from "child_process";
@@ -34,7 +33,7 @@ Meteor.methods({
         env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
       });
 
-      git.on("close", (code) => {
+      git.on("close", (code: number) => {
         resolve(code === 0);
       });
 
@@ -94,7 +93,7 @@ Meteor.methods({
    */
   async "repo.getAllMetrics"({ repoUrl }: { repoUrl: string }): Promise<AllMetricsData> {
     // Get repository data and apply alias mapping
-    const repo: SerializableRepoData = await getSerialisedRepoData(repoUrl, null);
+    const repo: SerializableRepoData = await tryFromDatabaseSerialised(repoUrl, null);
 
     const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
 
@@ -128,7 +127,7 @@ export const getFilteredData = async ({
   userId?: string;
 }) => {
   // Get full repository data from db (fetches from API if not updated or in the database)
-  const repo: SerializableRepoData = await getSerialisedRepoData(repoUrl, null);
+  const repo: SerializableRepoData = await tryFromDatabaseSerialised(repoUrl, null);
 
   // Apply alias mapping if user has config
   const mappedRepo = await applyAliasMappingIfNeeded(repo, userId || "");
@@ -146,8 +145,8 @@ export const getFilteredData = async ({
 };
 
 export const getMetaData = async (repoUrl: string, userId?: string): Promise<Metadata> => {
-  // Get full repository data from db
-  const repo: SerializableRepoData = await getSerialisedRepoData(repoUrl, null);
+  // Get full repository data from db (without checking whether its up to date)
+  const repo: SerializableRepoData = await tryFromDatabaseSerialised(repoUrl, null);
 
   // Apply alias mapping if user has config
   const mappedRepo = await applyAliasMappingIfNeeded(repo, userId || "");

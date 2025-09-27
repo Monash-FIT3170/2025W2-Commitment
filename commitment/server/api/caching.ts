@@ -4,7 +4,8 @@ import { Meteor } from "meteor/meteor";
 import { check } from "meteor/check";
 import { RepositoryData, SerializableRepoData } from "/imports/api/types";
 import { deserializeRepoData, serializeRepoData } from "/imports/api/serialisation";
-import { meteorCallAsync, override, overrideValue } from "/imports/api/meteor_interface";
+import { pipeRepoDataVia, fetchDataFromHaskellAppHTTP } from "./fetch_repo";
+import { overrideValue } from "/imports/api/meteor_interface";
 import { isUpToDate } from "./update";
 
 /**
@@ -63,6 +64,22 @@ Meteor.methods({
     }
 
     return await RepoCollection.updateAsync({ url }, { $set: { lastViewed: new Date() } });
+  },
+
+  /**
+   * checks whether the entry into the database is the most up to date
+   * if not, automatically refreshes it
+   *
+   * @method repoCollection.isUpToDate
+   * @param {string} url         The URL of the repo to check.
+   * @returns {Promise<boolean>} Whether the url is up to date with GIT or not
+   */
+  async "repoCollection.isUpToDate"(url: string) {
+    check(url, String);
+    const d = await tryFromDatabaseSerialised(url, null);
+    const upToDate = await isUpToDate(url, d);
+    if (!upToDate) pipeRepoDataVia(fetchDataFromHaskellAppHTTP);
+    return upToDate;
   },
 });
 
@@ -153,21 +170,22 @@ export const tryFromDatabaseSerialisedViaLatest = async (
 };
 
 /**
- * checks the database, ensuring the data is the most up to date on git
- * @param url a url to search for
- * @param notifier a notifier to notify messages to
- * @returns Promise<RepositoryData> where it found the result, rejected results are search misses
- */
-export const tryFromDatabase = (url: string, notifier: Subject<string>): Promise<RepositoryData> =>
-  tryFromDatabaseSerialisedViaLatest(url, notifier).then(deserializeRepoData);
-
-/**
  * checks the database without checking whether its up to date
  * @param url a url to search for
  * @param notifier a notifier to notify messages to
  * @returns Promise<RepositoryData> where it found the result, rejected results are search misses
  */
-export const tryFromDatabaseNoCheck = (
+export const tryFromDatabase = (url: string, notifier: Subject<string>): Promise<RepositoryData> =>
+  tryFromDatabaseSerialised(url, notifier).then(deserializeRepoData);
+
+/**
+ * checks the database, ensuring the data is the most up to date on git
+ * @param url a url to search for
+ * @param notifier a notifier to notify messages to
+ * @returns Promise<RepositoryData> where it found the result, rejected results are search misses
+ */
+export const tryFromDatabaseViaLatest = (
   url: string,
   notifier: Subject<string>
-): Promise<RepositoryData> => tryFromDatabaseSerialised(url, notifier).then(deserializeRepoData);
+): Promise<RepositoryData> =>
+  tryFromDatabaseSerialisedViaLatest(url, notifier).then(deserializeRepoData);
