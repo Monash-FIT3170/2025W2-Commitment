@@ -5,7 +5,7 @@
 }:
 
 let
-  wrap = import ./wrap { inherit pkgs lib; };
-  fhs = pkgs.callPackage ./fhs.nix { inherit pkgs wrap; };
+  wrap = import ./nix/wrap { inherit pkgs lib; };
+  fhs = pkgs.callPackage ./nix/fhs.nix { inherit pkgs wrap; };
 in
   fhs

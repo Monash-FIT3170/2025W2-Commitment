@@ -29,6 +29,17 @@ services:
     networks:
       - app-network
 
+  python-executor:
+    build:
+      context: ./python_executor
+      dockerfile: Dockerfile
+    image: python-executor-img
+    container_name: python-executor
+    security_opt:
+      - seccomp=unconfined   # or better: a custom seccomp profile
+      - apparmor=unconfined  # needed if AppArmor blocks unshare
+#    user: "8000:8000"
+
 networks:
   app-network:
     driver: bridge

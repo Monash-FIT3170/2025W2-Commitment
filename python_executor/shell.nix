@@ -4,7 +4,6 @@
 
 let
   fhs = import ./default.nix { inherit pkgs; };
-  x = throw fhs;
 in
   pkgs.mkShell {
     buildInputs = [
@@ -14,6 +13,7 @@ in
 
     shellHook = ''
       echo "Running shell ${fhs}"
+      echo ""
       exec ${fhs}/bin/python-executor-env bash
     '';
   }
