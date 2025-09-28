@@ -36,9 +36,11 @@ services:
     image: python-executor-img
     container_name: python-executor
     security_opt:
-      - seccomp=unconfined   # or better: a custom seccomp profile
-      - apparmor=unconfined  # needed if AppArmor blocks unshare
-#    user: "8000:8000"
+      - seccomp:./python_executor/seccomp-bwrap.json
+    tty: true
+    stdin_open: true
+    networks:
+      - app-network
 
 networks:
   app-network:
