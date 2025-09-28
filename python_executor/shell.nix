@@ -14,6 +14,6 @@ in
 
     shellHook = ''
       echo "Running shell ${fhs}"
-      exec ${fhs}/bin/python-executor-env
+      exec ${fhs}/bin/python-executor-env bash
     '';
   }

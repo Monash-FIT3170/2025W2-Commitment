@@ -9,6 +9,10 @@ WORKDIR="/home/python"
 OVERLAY_ROSRC="$(pwd)"
 
 bwrap_opts=()
+ignored=()
+
+ROOT_FS=""
+
 while [[ $# -gt 0 ]]; do
     case $1 in
         --store-paths)
@@ -20,8 +24,42 @@ while [[ $# -gt 0 ]]; do
 
             STORE_PATHS=$(<"$STORE_FILE")
             for p in $STORE_PATHS; do
-                bwrap_opts+=(--ro-bind "$p" "$p")
+                bwrap_opts+=(--ro-bind-try "$p" "$p")
             done
+            ;;
+        --root-fs)
+            shift
+            ROOT_FS="$1"
+            shift
+
+            echo "Using $ROOT_FS as root filesystem"
+
+            for i in "${ROOT_FS}"/*; do
+                path="${i##*/}"
+#                if [[ $path == '/etc' ]]; then
+#                    :
+#                elif [[ -L $i ]]; then
+                if [[ -L $i ]]; then
+                    bwrap_opts+=(--symlink "$(readlink "$i")" "$path")
+                    ignored+=("$path")
+                else
+                    bwrap_opts+=(--ro-bind "$i" "$path")
+                    ignored+=("$path")
+                fi
+            done
+            ;;
+        --)
+            shift
+            while [[ $# -gt 0 ]] && [[ "$1" != "--" ]]; do
+                EXTRA_COMMAND="$1"
+                shift
+                echo "  -- $EXTRA_COMMAND"
+                bwrap_opts+=("$EXTRA_COMMAND")
+            done
+
+            if [[ "$1" == "--" ]]; then
+              shift
+            fi
             ;;
         *)
             break
@@ -31,24 +69,31 @@ done
 
 
 # paths shared read only by default
-paths_general=(
-  /bin
-  /lib
-  /lib64
-)
-for p in "${paths_general[@]}"; do
-  if [ -d "$p" ]; then
-    bwrap_opts+=(--ro-bind "$p" "$p")
-  fi
-done
+#paths_general=(
+#  /bin
+#  /lib
+#  /lib64
+#)
+#for p in "${paths_general[@]}"; do
+#  if [ -d "$p" ] && [[ ! "''${ignored[@]}" =~ "$p" ]]; then
+#    echo "Adding path $p"
+#    bwrap_opts+=(--ro-bind-try "$ROOT_FS$p" "$p")
+#  fi
+#done
 
 # Get the executable to run, so we can symlink it to the container filesystem
 
+PROGRAM_NAME="$1"
 PROGRAM="$1"
 PROGRAM_PARENT_DIR="${PROGRAM%/*}"
 
 if ! [ -f "$PROGRAM" ]; then
   PROGRAM="$(which "$1")"
+
+  if [[ -L $PROGRAM ]]; then
+    PROGRAM="$(readlink "$PROGRAM")"
+  fi
+
   PROGRAM_PARENT_DIR="${PROGRAM%/*}"
 
   if ! [ -f "$PROGRAM" ]; then
@@ -63,7 +108,7 @@ if ! [ -f "$FAKE_PASSWD_FILE" ]; then
   echo "python:x:1001:1001:Fake User:/home/python:/bin/bash" > "$FAKE_PASSWD_FILE"
 fi
 
-# Function: scan /bin (or any directory) for symlinks and add --ro-bind for linked directories
+# Function: scan /bin (or any directory) for symlinks and add --ro-bind-try for linked directories
 bind_symlink_dirs() {
     local dir="$1"
     local -n opts_ref="$2"  # pass array by reference
@@ -90,7 +135,7 @@ bind_symlink_dirs() {
                 # Avoid duplicates
                 local already_added=false
                 for opt in "${opts_ref[@]}"; do
-                    if [[ "$opt" == "--ro-bind $store_root $store_root" ]]; then
+                    if [[ "$opt" == "--ro-bind-try $store_root $store_root" ]]; then
                         already_added=true
                         break
                     fi
@@ -98,7 +143,7 @@ bind_symlink_dirs() {
 
                 if ! $already_added; then
 #                    echo "Binding symlink -> $store_root"
-                    opts_ref+=(--ro-bind "$store_root" "$store_root")
+                    opts_ref+=(--ro-bind-try "$store_root" "$store_root")
                 fi
             fi
 
@@ -106,7 +151,7 @@ bind_symlink_dirs() {
     done
 }
 
-# Function: scan executables for shared libraries and add --ro-bind for needed /nix/store paths
+# Function: scan executables for shared libraries and add --ro-bind-try for needed /nix/store paths
 bind_needed_libraries() {
     local dir="$1"
     local -n opts_ref="$2"  # pass array by reference
@@ -130,7 +175,7 @@ bind_needed_libraries() {
                 # Avoid duplicates
                 already_added=false
                 for opt in "${opts_ref[@]}"; do
-                    if [[ "$opt" == "--ro-bind $store_root $store_root" ]]; then
+                    if [[ "$opt" == "--ro-bind-try $store_root $store_root" ]]; then
                         already_added=true
                         break
                     fi
@@ -138,7 +183,7 @@ bind_needed_libraries() {
 
                 if ! $already_added; then
 #                    echo "Binding library -> $store_root"
-                    opts_ref+=(--ro-bind "$store_root" "$store_root")
+                    opts_ref+=(--ro-bind-try "$store_root" "$store_root")
                 fi
             fi
         done < <(ldd "$bin" 2>/dev/null | awk '/\/nix\/store/ {print $3}')
@@ -146,7 +191,7 @@ bind_needed_libraries() {
 }
 
 # TODO: Find a way to get any store paths found in this step as part of the nix build process instead, to speed up container start times
-bind_symlink_dirs "/bin" bwrap_opts
+#bind_symlink_dirs "/bin" bwrap_opts
 #bind_symlink_dirs "/usr/bin" bwrap_opts
 #bind_symlink_dirs "/lib" bwrap_opts
 #bind_symlink_dirs "/lib64" bwrap_opts
@@ -156,34 +201,38 @@ bind_symlink_dirs "/bin" bwrap_opts
 #bind_needed_libraries "/lib" bwrap_opts
 #bind_needed_libraries "/lib64" bwrap_opts
 
-
-
 echo ""
-echo "Found $PROGRAM at $PROGRAM_PARENT_DIR"
+echo "Found $PROGRAM_NAME at $PROGRAM_PARENT_DIR"
 echo "Running container:" "$@"
 echo ""
 
+# Run bwrap to create/enter a sandbox environment
+# Notes:
+#   - Docker doesn't support: --proc /proc
+#   - --dev /dev \
+#  --uid 1001 \
+#  --gid 1001 \
+
+# --unshare-uts --hostname python \
+
+#  --unshare-cgroup-try \
 exec bwrap \
-  --unshare-all \
   --clearenv \
-  --dev /dev \
-  --proc /proc \
   --tmpfs /tmp \
   --dir /etc \
   --dir /usr \
   --overlay-src "$OVERLAY_ROSRC" \
   --tmp-overlay "$WORKDIR" \
-  --hostname python \
-  --uid 1001 \
-  --gid 1001 \
-  --ro-bind "$FAKE_PASSWD_FILE" /etc/passwd \
+  --ro-bind-try "$FAKE_PASSWD_FILE" /etc/passwd \
   --setenv USERNAME python \
   --die-with-parent \
   --dir /container \
   --chmod 0755 /container \
   --setenv PATH "/bin:/usr/bin:/container/bin" \
   --setenv HOME /home/python \
-  --ro-bind "$PROGRAM_PARENT_DIR" /container/bin \
+  --ro-bind-try "$PROGRAM_PARENT_DIR" /container/bin \
   --chdir "$WORKDIR" \
   "${bwrap_opts[@]}" \
   "${@}"
+
+# ./result/bin/python-executor-env -- --unshare-all --uid 1000 --gid 1000 -- bash
