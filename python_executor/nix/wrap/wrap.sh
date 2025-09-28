@@ -93,8 +93,6 @@ exec bwrap \
   --ro-bind-try "$FAKE_PASSWD_FILE" /etc/passwd \
   --setenv USERNAME python \
   --die-with-parent \
-  --dir /container \
-  --chmod 0755 /container \
   --setenv PATH "$CONTAINER_PATH" \
   --setenv HOME /home/python \
   --chdir "$WORKDIR" \
