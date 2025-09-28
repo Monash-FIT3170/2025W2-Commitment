@@ -9,7 +9,7 @@ WORKDIR="/home/python"
 OVERLAY_ROSRC="$(pwd)"
 
 bwrap_opts=()
-ignored=()
+# ignored=()
 
 ROOT_FS=""
 
@@ -36,15 +36,14 @@ while [[ $# -gt 0 ]]; do
 
             for i in "${ROOT_FS}"/*; do
                 path="${i##*/}"
-#                if [[ $path == '/etc' ]]; then
-#                    :
-#                elif [[ -L $i ]]; then
-                if [[ -L $i ]]; then
+                if [[ $path == '/etc' ]]; then
+                    :
+                elif [[ -L $i ]]; then
                     bwrap_opts+=(--symlink "$(readlink "$i")" "$path")
-                    ignored+=("$path")
+                    # ignored+=("$path")
                 else
                     bwrap_opts+=(--ro-bind "$i" "$path")
-                    ignored+=("$path")
+                    # ignored+=("$path")
                 fi
             done
             ;;
@@ -67,156 +66,24 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
-# paths shared read only by default
-#paths_general=(
-#  /bin
-#  /lib
-#  /lib64
-#)
-#for p in "${paths_general[@]}"; do
-#  if [ -d "$p" ] && [[ ! "''${ignored[@]}" =~ "$p" ]]; then
-#    echo "Adding path $p"
-#    bwrap_opts+=(--ro-bind-try "$ROOT_FS$p" "$p")
-#  fi
-#done
-
 # Get the executable to run, so we can symlink it to the container filesystem
-
-PROGRAM_NAME="$1"
-PROGRAM="$1"
-PROGRAM_PARENT_DIR="${PROGRAM%/*}"
-
-if ! [ -f "$PROGRAM" ]; then
-  PROGRAM="$(which "$1")"
-
-  if [[ -L $PROGRAM ]]; then
-    PROGRAM="$(readlink "$PROGRAM")"
-  fi
-
-  PROGRAM_PARENT_DIR="${PROGRAM%/*}"
-
-  if ! [ -f "$PROGRAM" ]; then
-    echo "$1 is not a directory, nor an executable"
-    exit 1
-  fi
-fi
-
-# Invent a fake user
-FAKE_PASSWD_FILE="/tmp/fake_wrap_passwd"
-if ! [ -f "$FAKE_PASSWD_FILE" ]; then
-  echo "python:x:1001:1001:Fake User:/home/python:/bin/bash" > "$FAKE_PASSWD_FILE"
-fi
-
-# Function: scan /bin (or any directory) for symlinks and add --ro-bind-try for linked directories
-bind_symlink_dirs() {
-    local dir="$1"
-    local -n opts_ref="$2"  # pass array by reference
-
-    echo "bind_symlink_dirs $dir"
-
-    for f in "$dir"/*; do
-        [ -e "$f" ] || continue  # skip if file doesn't exist
-
-        if [ -L "$f" ]; then
-            # Resolve symlink to the real file
-            local real_path
-            real_path=$(readlink -f "$f")
-
-            if [[ "$real_path" == /nix/store/* ]]; then
-                # extract store root
-                # Strip "/nix/store/" prefix
-                store_tail="${real_path#/nix/store/}"
-                # Extract first component (hash-name folder)
-                store_root="${store_tail%%/*}"
-                # Prepend "/nix/store/"
-                store_root="/nix/store/$store_root"
-
-                # Avoid duplicates
-                local already_added=false
-                for opt in "${opts_ref[@]}"; do
-                    if [[ "$opt" == "--ro-bind-try $store_root $store_root" ]]; then
-                        already_added=true
-                        break
-                    fi
-                done
-
-                if ! $already_added; then
-#                    echo "Binding symlink -> $store_root"
-                    opts_ref+=(--ro-bind-try "$store_root" "$store_root")
-                fi
-            fi
-
-        fi
-    done
-}
-
-# Function: scan executables for shared libraries and add --ro-bind-try for needed /nix/store paths
-bind_needed_libraries() {
-    local dir="$1"
-    local -n opts_ref="$2"  # pass array by reference
-
-    echo "bind_needed_libraries $dir"
-
-    # Find all executable files in the directory
-    find "$dir" -type f -executable | while read -r bin; do
-        # Skip non-ldd-compatible files
-        [ -x "$bin" ] || continue
-
-        # Use ldd to list libraries
-        while IFS= read -r lib; do
-            # Only process /nix/store libraries
-            if [[ "$lib" == /nix/store/* ]]; then
-                # Extract store root
-                store_tail="${lib#/nix/store/}"
-                store_root="${store_tail%%/*}"
-                store_root="/nix/store/$store_root"
-
-                # Avoid duplicates
-                already_added=false
-                for opt in "${opts_ref[@]}"; do
-                    if [[ "$opt" == "--ro-bind-try $store_root $store_root" ]]; then
-                        already_added=true
-                        break
-                    fi
-                done
-
-                if ! $already_added; then
-#                    echo "Binding library -> $store_root"
-                    opts_ref+=(--ro-bind-try "$store_root" "$store_root")
-                fi
-            fi
-        done < <(ldd "$bin" 2>/dev/null | awk '/\/nix\/store/ {print $3}')
-    done
-}
-
-# TODO: Find a way to get any store paths found in this step as part of the nix build process instead, to speed up container start times
-#bind_symlink_dirs "/bin" bwrap_opts
-#bind_symlink_dirs "/usr/bin" bwrap_opts
-#bind_symlink_dirs "/lib" bwrap_opts
-#bind_symlink_dirs "/lib64" bwrap_opts
-
-#bind_needed_libraries "/bin" bwrap_opts
-#bind_needed_libraries "/usr/bin" bwrap_opts
-#bind_needed_libraries "/lib" bwrap_opts
-#bind_needed_libraries "/lib64" bwrap_opts
+CONTAINER_PATH="/bin:/usr/bin"
 
 echo ""
-echo "Found $PROGRAM_NAME at $PROGRAM_PARENT_DIR"
 echo "Running container:" "$@"
 echo ""
 
 # Run bwrap to create/enter a sandbox environment
 # Notes:
-#   - Docker doesn't support: --proc /proc
-#   - --dev /dev \
-#  --uid 1001 \
-#  --gid 1001 \
+#   - Docker doesn't support:
+#       --proc /proc
+#       --dev /dev
 
-# --unshare-uts --hostname python \
-
-#  --unshare-cgroup-try \
 exec bwrap \
+  --unshare-all \
+  --cap-drop all \
+  --uid 1000 \
+  --gid 1000 \
   --clearenv \
   --tmpfs /tmp \
   --dir /etc \
@@ -228,11 +95,8 @@ exec bwrap \
   --die-with-parent \
   --dir /container \
   --chmod 0755 /container \
-  --setenv PATH "/bin:/usr/bin:/container/bin" \
+  --setenv PATH "$CONTAINER_PATH" \
   --setenv HOME /home/python \
-  --ro-bind-try "$PROGRAM_PARENT_DIR" /container/bin \
   --chdir "$WORKDIR" \
   "${bwrap_opts[@]}" \
   "${@}"
-
-# ./result/bin/python-executor-env -- --unshare-all --uid 1000 --gid 1000 -- bash
