@@ -1,7 +1,8 @@
 import time
 
-print("Counting to 5!")
-for i in range(5):
+print("Counting to 100!")
+i = 0
+while True:
   print(i+1)
-  time.sleep(0.1)
+  i+=1
 print("Done!")
