@@ -82,6 +82,7 @@ echo ""
 exec bwrap \
   --unshare-all \
   --cap-drop all \
+  --new-session \
   --uid 1000 \
   --gid 1000 \
   --clearenv \

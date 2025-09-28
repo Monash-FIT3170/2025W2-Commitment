@@ -1,4 +1,4 @@
-import time
+#!/usr/bin/python3
 
 print("Counting to 100!")
 i = 0

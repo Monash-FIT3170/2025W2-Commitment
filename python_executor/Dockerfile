@@ -3,8 +3,6 @@
 
 FROM nixos/nix
 
-RUN #nix-channel --update
-
 # Add dependencies to the environment
 RUN nix-env -iA nixpkgs.bubblewrap nixpkgs.bash
 
@@ -13,10 +11,10 @@ WORKDIR /home/python
 # Copy application files
 COPY . .
 
-# Build your nix project
+# Build the nix project
 RUN nix-build
 
 EXPOSE 8000
 
-# Keep container interactive
+# Keep container interactive for testing
 CMD ["bash"]
