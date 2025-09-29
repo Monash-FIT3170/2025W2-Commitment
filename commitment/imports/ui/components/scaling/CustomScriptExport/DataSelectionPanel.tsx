@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../../ui/checkbox';
 import { Calendar } from '../../ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../ui/dropdown-menu';
 
 export interface MetricOption {
   id: string;
@@ -124,21 +125,27 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
         {/* Branch Selection */}
         <div className="space-y-2">
           <Label htmlFor="branch" className="text-git-text-primary">Branch</Label>
-          <Select
-            value={config.branch}
-            onValueChange={(value) => setConfig(prev => ({ ...prev, branch: value }))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a branch" />
-            </SelectTrigger>
-            <SelectContent>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40"
+              >
+                {config.branch || 'Select a branch'}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" sideOffset={4} className="w-[280px] focus:ring-0 border-2 border-git-stroke-primary/40">
               {availableBranches.map((branch) => (
-                <SelectItem key={branch} value={branch}>
+                <DropdownMenuCheckboxItem
+                  key={branch}
+                  checked={config.branch === branch}
+                  onCheckedChange={() => setConfig(prev => ({ ...prev, branch }))}
+                >
                   {branch}
-                </SelectItem>
+                </DropdownMenuCheckboxItem>
               ))}
-            </SelectContent>
-          </Select>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Date Range Selection */}

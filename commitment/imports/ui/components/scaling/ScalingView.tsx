@@ -28,9 +28,7 @@ import ScalingSummary from "./ScalingSummary";
 import type {
   UnmappedContributor,
   UserScalingSummary,
-  Metadata,
 } from "../../../api/types";
-import { meteorCallAsync } from "../../../api/meteor_interface";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 import { toast } from "../../hooks/use-toast";
 import InfoButton from "../ui/infoButton";
@@ -100,23 +98,27 @@ function ScalingView(): JSX.Element {
     );
   }, [repoUrl]);
 
-  // Load available branches for the current repo (matches Metrics page behavior)
+  // Fetch available branches from server metadata when repoUrl is set
   useEffect(() => {
-    if (!repoUrl) {
-      setAvailableBranches([]);
-      return;
-    }
+    if (!repoUrl) return;
 
-    void (async () => {
-      try {
-        const metadata = await meteorCallAsync<Metadata>("repo.getMetadata")(repoUrl);
-        setAvailableBranches(metadata.branches ?? []);
-      } catch (err) {
-        console.error("Failed to load branches", err);
-        // Fallback to common defaults
-        setAvailableBranches(["main", "master"]);
-      }
-    })();
+    try {
+      Meteor.call(
+        "repo.getMetadata",
+        repoUrl,
+        (err: Meteor.Error | null, res: { branches: string[] } | undefined) => {
+          if (err) {
+            console.error("Error fetching repo metadata:", err);
+            return;
+          }
+          if (res && Array.isArray(res.branches)) {
+            setAvailableBranches(res.branches);
+          }
+        }
+      );
+    } catch (e) {
+      console.error("Failed to load branches", e);
+    }
   }, [repoUrl]);
 
   useEffect(() => {
@@ -381,6 +383,8 @@ function ScalingView(): JSX.Element {
       });
     }
   };
+
+  // availableBranches is now fetched from repo metadata
 
   // Handle data request for export
   const handleDataRequest = async (config: any) => {
