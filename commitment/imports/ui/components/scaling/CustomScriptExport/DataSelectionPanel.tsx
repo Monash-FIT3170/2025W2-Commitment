@@ -129,7 +129,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40"
+                className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
               >
                 {config.branch || 'Select a branch'}
               </Button>
@@ -303,14 +303,14 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
 
           <div className="space-y-2">
             <Label htmlFor="groupBy" className="text-git-text-primary">Group By</Label>
-            <Select
+             <Select
               value={config.groupBy}
               onValueChange={(value: 'contributor' | 'date' | 'none') => 
                 setConfig(prev => ({ ...prev, groupBy: value }))
               }
             >
-              <SelectTrigger>
-                <SelectValue />
+               <SelectTrigger className="text-git-text-primary">
+                 <SelectValue placeholder="Group by" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="contributor">Contributor</SelectItem>
