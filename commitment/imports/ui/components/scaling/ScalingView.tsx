@@ -28,7 +28,9 @@ import ScalingSummary from "./ScalingSummary";
 import type {
   UnmappedContributor,
   UserScalingSummary,
+  Metadata,
 } from "../../../api/types";
+import { meteorCallAsync } from "../../../api/meteor_interface";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 import { toast } from "../../hooks/use-toast";
 import InfoButton from "../ui/infoButton";
@@ -57,6 +59,7 @@ function ScalingView(): JSX.Element {
     useState<ParseResult | null>(null);
   const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
   const [repoUrl, setRepoUrl] = useState<string | null>(null);
+  const [availableBranches, setAvailableBranches] = useState<string[]>([]);
 
   // for Alias Mapping
   const [unmappedUsers, setUnmappedUsers] = useState<
@@ -95,6 +98,25 @@ function ScalingView(): JSX.Element {
         }
       }
     );
+  }, [repoUrl]);
+
+  // Load available branches for the current repo (matches Metrics page behavior)
+  useEffect(() => {
+    if (!repoUrl) {
+      setAvailableBranches([]);
+      return;
+    }
+
+    void (async () => {
+      try {
+        const metadata = await meteorCallAsync<Metadata>("repo.getMetadata")(repoUrl);
+        setAvailableBranches(metadata.branches ?? []);
+      } catch (err) {
+        console.error("Failed to load branches", err);
+        // Fallback to common defaults
+        setAvailableBranches(["main", "master"]);
+      }
+    })();
   }, [repoUrl]);
 
   useEffect(() => {
@@ -360,13 +382,6 @@ function ScalingView(): JSX.Element {
     }
   };
 
-  // Get available branches for export
-  const getAvailableBranches = (): string[] => {
-    // This would typically come from your API
-    // For now, return common branch names
-    return ['main', 'master', 'develop', 'feature/scaling', 'hotfix/bug-fix'];
-  };
-
   // Handle data request for export
   const handleDataRequest = async (config: any) => {
     if (!repoUrl) {
@@ -548,7 +563,7 @@ function ScalingView(): JSX.Element {
 
             <TabsContent value="export" className="space-y-6">
               <CustomScriptExport
-                availableBranches={getAvailableBranches()}
+                availableBranches={availableBranches}
                 repoUrl={repoUrl || ''}
                 onDataRequest={handleDataRequest}
               />
