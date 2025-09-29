@@ -5,6 +5,7 @@ import { Upload, Download, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import ScalingConfigForm from "./ScalingConfigForm";
 import { Dialog, DialogContent } from "../ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -33,6 +34,8 @@ import { toast } from "../../hooks/use-toast";
 import InfoButton from "../ui/infoButton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import CustomScriptExport from "./CustomScriptExport";
+import { exportDataService } from "./CustomScriptExport/exportDataService";
 
 interface ScalingConfig {
   metrics: string[];
@@ -60,6 +63,7 @@ function ScalingView(): JSX.Element {
     { name: string; rawIdentifiers: string[] }[]
   >([]);
   const [showAliasDialog, setShowAliasDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<"scaling" | "export">("scaling");
 
   const navigate = useNavigate();
 
@@ -356,11 +360,45 @@ function ScalingView(): JSX.Element {
     }
   };
 
+  // Get available branches for export
+  const getAvailableBranches = (): string[] => {
+    // This would typically come from your API
+    // For now, return common branch names
+    return ['main', 'master', 'develop', 'feature/scaling', 'hotfix/bug-fix'];
+  };
+
+  // Handle data request for export
+  const handleDataRequest = async (config: any) => {
+    if (!repoUrl) {
+      throw new Error('No repository URL available');
+    }
+    return await exportDataService.fetchExportData(config, repoUrl);
+  };
+
   return (
     <div className="w-full m-0 scroll-smooth p-10">
       <div className="flex flex-col gap-32">
         <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
-          {showAliasDialog && (
+          {/* Header */}
+          <div className="mb-10">
+            <div className="flex items-center gap-4">
+              <h1 className="text-5xl text-foreground font-robotoFlex">
+                Scaling
+              </h1>
+              <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
+            </div>
+            <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
+          </div>
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "scaling" | "export")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="scaling">Scaling Configuration</TabsTrigger>
+              <TabsTrigger value="export">Custom Script Export</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="scaling" className="space-y-6">
+              {showAliasDialog && (
             <AlertDialog
               open={showAliasDialog}
               onOpenChange={setShowAliasDialog}
@@ -403,25 +441,15 @@ function ScalingView(): JSX.Element {
             </AlertDialog>
           )}
 
-          {/* Always render the scaling summary in the background */}
-          {config && scaledResults.length > 0 && !showAliasDialog && (
-            <div className="mb-6">
-              {/* Header */}
-              <div className="mb-10">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-5xl text-foreground font-robotoFlex">
-                    Scaling
-                  </h1>
-                  <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
+              {/* Always render the scaling summary in the background */}
+              {config && scaledResults.length > 0 && !showAliasDialog && (
+                <div className="mb-6">
+                  <ScalingSummary
+                    userScalingSummaries={scaledResults}
+                    hasGradingSheet={!!gradingSheet}
+                  />
                 </div>
-                <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
-              </div>
-              <ScalingSummary
-                userScalingSummaries={scaledResults}
-                hasGradingSheet={!!gradingSheet}
-              />
-            </div>
-          )}
+              )}
 
           {/* Buttons for grading sheet or regenerate */}
           {!showAliasDialog && (
@@ -516,6 +544,16 @@ function ScalingView(): JSX.Element {
               )}
             </DialogContent>
           </Dialog>
+            </TabsContent>
+
+            <TabsContent value="export" className="space-y-6">
+              <CustomScriptExport
+                availableBranches={getAvailableBranches()}
+                repoUrl={repoUrl || ''}
+                onDataRequest={handleDataRequest}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
