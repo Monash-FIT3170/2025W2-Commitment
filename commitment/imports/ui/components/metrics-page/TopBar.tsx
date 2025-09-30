@@ -1,10 +1,11 @@
-import React, {  useEffect , useState } from 'react';
-import { Meteor } from 'meteor/meteor';
-import { useLocation } from 'react-router-dom';
-import { AnalyticsData, Metadata } from '/imports/api/types';
+import React, { useEffect, useState } from "react";
+import { Meteor } from "meteor/meteor";
+import { useLocation } from "react-router-dom";
+import { AnalyticsData, Metadata } from "/imports/api/types";
 import { useAuth } from "@ui/hooks/useAuth";
-import BookmarkButton from '../dashboard/BookmarkButton';
-import { useAuth } from '../../hooks/useAuth';
+import BookmarkButton from "../dashboard/BookmarkButton";
+import { useAuth } from "../../hooks/useAuth";
+import RefreshButton from "../metrics-page/RefreshButton";
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL
@@ -27,7 +28,7 @@ function getRepoNameFromUrl(url: string): string {
 
 export default function TopBar() {
   // call meteor method to find the name
-  const signedIn = useAuth()
+  const signedIn = useAuth();
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
   const [repoName, setRepoName] = useState<string>("Loading...");
@@ -54,9 +55,10 @@ export default function TopBar() {
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-foreground">{repoName}</h2>
         {/* Bookmark button (only shown to signed in users) */}
-        {(repoUrl && signedIn) && (
+        {repoUrl && signedIn && (
           <BookmarkButton url={repoUrl} title={repoName} variant="secondary" />
         )}
+        {repoUrl && <RefreshButton url={repoUrl} />}
       </div>
     </div>
   );
