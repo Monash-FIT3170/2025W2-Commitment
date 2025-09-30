@@ -11,22 +11,32 @@ type RefreshButtonProps = {
 const RefreshButton: React.FC<RefreshButtonProps> = ({ url }) => {
   const [loading, setLoading] = useState(false);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-    }, 1500);
+    try {
+      const update = await Meteor.call("repoCollection.isUpToDate", url);
+      console.log("Refreshed: ", update);
+    } catch (err) {
+      console.error("Failed to refresh repo:", err);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 1500);
+    }
   };
 
   return (
     <button
       onClick={handleClick}
       disabled={loading}
-      className="inline-flex items-center justify-center px-3 py-2 bg-text-[#F1502F] transition"
+      className="inline-flex items-center justify-center px-3 py-2 text-[#F1502F] transition"
     >
       {loading ? (
-        <Spinner className="w-4 h-4 animate-spin" />
+        <Spinner
+          className="w-4 h-4 animate-spin text-[#F1502F]"
+          variant="circle"
+        />
       ) : (
         <ReloadIcon className="w-4 h-4" />
       )}
