@@ -21,8 +21,8 @@ export const successful = (res: CommandResult): boolean =>
   res.error == null && res.stdError == null;
 
 export const getErrorMsg = (res: CommandResult): string => {
-  if (res.error) return res.error.message;
-  else if (res.stdError) return res.stdError;
+  if (res.stdError) return res.stdError;
+  else if (res.error) return res.error.message;
   throw Error("Command was successful, should not run this function");
 };
 
