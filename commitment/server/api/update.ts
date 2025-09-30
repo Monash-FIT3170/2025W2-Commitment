@@ -49,12 +49,12 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
 
 const getLatestCommit = (url: string): Command => ({
   ...doNotLogData,
-  cmd: `git ls-remote ${url} HEAD`,
+  cmd: `git ls-remote \"${url}\" HEAD`,
 });
 
 const fetchFromHEAD = (url: string, hash: string): Command => ({
   ...doNotLogData,
-  cmd: `git fetch --quiet ${url} ${hash}`,
+  cmd: `git fetch --quiet \"${url}\" ${hash}`,
 });
 
 const getDateFrom = (hash: string): Command => ({
