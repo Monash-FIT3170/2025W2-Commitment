@@ -1,5 +1,4 @@
 import { SerializableRepoData } from "/imports/api/types";
-import { meteorCallAsync, override, overrideValue } from "/imports/api/meteor_interface";
 import { CommitData } from "/imports/api/types";
 import { getAllCommits } from "/server/helper_functions";
 import {
@@ -7,6 +6,7 @@ import {
   assertSuccess,
   doNotLogData,
   executeCommand,
+  createTempDirectory,
   deleteAllFromDirectory,
 } from "./shell";
 
@@ -28,11 +28,11 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   );
 
   const rel_dir = join(takeFromBack(url.split("/"), 2));
+  // ensure directory is created
+  const temp_working_dir = await createTempDirectory(`/clone-dir/${rel_dir}`);
 
-  const temp_working_dir = `/tmp-clone-dir/${rel_dir}`;
-
+  // execute commands in local directory
   const commandLocal = executeCommand(temp_working_dir);
-
   const hash = await commandLocal(getLatestCommit(url)).then(
     assertSuccess(`Failed to fetch HEAD from ${url}`)
   );
@@ -41,20 +41,22 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
     assertSuccess("Failed to fetch the HEAD commit details")
   );
 
+  // delete all contents from the temporary directory
   await deleteAllFromDirectory(temp_working_dir);
 
+  // do actual comparison
   const dateObj = new Date(date);
   return !compareDates(dateObj, lastCommitFromDatabase);
 };
 
 const getLatestCommit = (url: string): Command => ({
   ...doNotLogData,
-  cmd: `git ls-remote ${url} HEAD`,
+  cmd: `git ls-remote \"${url}\" HEAD`,
 });
 
 const fetchFromHEAD = (url: string, hash: string): Command => ({
   ...doNotLogData,
-  cmd: `git fetch --quiet ${url} ${hash}`,
+  cmd: `git fetch --quiet \"${url}\" ${hash}`,
 });
 
 const getDateFrom = (hash: string): Command => ({

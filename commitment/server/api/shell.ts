@@ -1,6 +1,7 @@
-import { exec, spawn } from "child_process";
-import fs from "fs";
+import { exec } from "child_process";
 import * as fs_promise from "fs/promises";
+import fs from "fs";
+import os from "os";
 import path from "path";
 
 export type Command = Readonly<{
@@ -12,6 +13,7 @@ export type Command = Readonly<{
 }>;
 
 export type CommandResult = Readonly<{
+  cmd: Command;
   result: string;
   error: Error | null;
   stdError: string | null;
@@ -20,10 +22,19 @@ export type CommandResult = Readonly<{
 export const successful = (res: CommandResult): boolean =>
   res.error == null && res.stdError == null;
 
+export const getErrorMsg = (res: CommandResult): string => {
+  if (res.stdError) return res.stdError;
+  else if (res.error) return res.error.message;
+  throw Error(`Command was successful: ${res.cmd}`);
+};
+
 export const assertSuccess =
   (errMsg: string) =>
   (res: CommandResult): string => {
-    if (!successful(res)) throw Error(errMsg);
+    if (!successful(res))
+      throw Error(
+        `${errMsg}: \nError when running command "${res.cmd.cmd}": \n${getErrorMsg(res)}`
+      );
     return res.result;
   };
 
@@ -62,6 +73,7 @@ export const executeCommand =
 
           return resolve({
             ...defaultResult,
+            cmd: f,
             result: stdout,
             stdError: stderr,
           });
@@ -70,6 +82,7 @@ export const executeCommand =
 
           return resolve({
             ...defaultResult,
+            cmd: f,
             result: stdout,
             error: error,
             stdError: stderr,
@@ -79,16 +92,31 @@ export const executeCommand =
 
           return resolve({
             ...defaultResult,
+            cmd: f,
             result: stdout,
           });
         }
       });
     });
 
+/**
+ * a function which creates a uniquely named directory with the prefix
+ * @param baseDir the base directory of the path
+ * @param prefix  prefix of the directory after the path
+ * @returns
+ */
+export const createDirectory =
+  (baseDir: string) =>
+  (prefix: string): Promise<string> =>
+    // Ensure the base directory is absolute
+    // mkdtemp requires the prefix to be a full path
+    fs.mkdtemp(path.join(path.resolve(baseDir), prefix));
+
+export const createTempDirectory = createDirectory(os.tmpdir());
+
 export const deleteAllFromDirectory = async (dirPath: string) => {
   const entries: fs.Dirent[] = await fs_promise.readdir(dirPath, { withFileTypes: true });
-
-  await Promise.all(
+  return Promise.all(
     entries.map(async (entry) => {
       const fullPath = path.join(dirPath, entry.name);
 
