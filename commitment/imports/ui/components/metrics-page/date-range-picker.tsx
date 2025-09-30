@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { addDays, format, parse, subMonths } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { type DateRange } from "react-day-picker";
 import { startOfDay } from "date-fns";
 
@@ -72,10 +72,20 @@ export function DatePicker({ onChange, defaultValue }: Props) {
   const handleCalendarSelect = (range: DateRange | undefined) => {
     if (range?.from && range?.to) {
       if (!is12Weeks(range.from, range.to)) {
+        setWarning("You can only select up to 12 weeks.");
+        return;
+      }
+
+      if (
+        date?.from?.getTime() === range.from.getTime() &&
+        date?.to?.getTime() === range.to.getTime()
+      ) {
+        clearDates();
         return;
       }
     }
 
+    setWarning(null);
     setDate(range);
     setFromInput(range?.from ? format(range.from, "yyyy-MM-dd") : "");
     setToInput(range?.to ? format(range.to, "yyyy-MM-dd") : "");
@@ -114,6 +124,8 @@ export function DatePicker({ onChange, defaultValue }: Props) {
     onChange?.(undefined);
   };
 
+  const [warning, setWarning] = React.useState<string | null>(null);
+
   return (
     <div className={cn("grid gap-2 ")}>
       <Popover>
@@ -122,7 +134,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
             id="date"
             variant="outline"
             className={cn(
-              "w-[300px] justify-start text-left font-normal border-2 rounded-lg  border-git-stroke-primary/40 "
+              "w-[300px] justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 "
               // !date && "text-muted-foreground"
             )}
           >
@@ -142,7 +154,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto p-4 border-2 border-git-stroke-primary/40"
+          className="w-auto p-4 border-2 border-git-stroke-primary/30"
           align="start"
         >
           <div className="flex gap-2 mb-4 justify-center items-center">
@@ -182,9 +194,13 @@ export function DatePicker({ onChange, defaultValue }: Props) {
 
               return false;
             }}
-            captionLayout="dropdown"
+            captionLayout="buttons"
             fromYear={2015}
             toYear={new Date().getFullYear()}
+            components={{
+              IconLeft: () => <ChevronLeft className="w-4 h-4" />,
+              IconRight: () => <ChevronRight className="w-4 h-4" />,
+            }}
             classNames={{
               day_today: "text-black font-normal",
               day_selected:
@@ -194,12 +210,17 @@ export function DatePicker({ onChange, defaultValue }: Props) {
                 "rounded-l-md bg-git-int-primary text-white hover:bg-git-int-primary",
               day_range_end:
                 "rounded-r-md bg-git-int-primary text-white hover:bg-git-int-primary",
-              caption_dropdowns: "flex gap-2",
-              caption_label: "text-sm font-medium text-black",
-              dropdown:
-                "px-2 py-1 border-1 border-git-stroke-primary rounded-md text-sm text-black",
+              // caption_dropdowns: "flex gap-2",
+              // caption_label: "text-sm font-medium text-black",
+              // dropdown:
+              //   "px-2 py-1 border-1 border-git-stroke-primary rounded-md text-sm text-black",
             }}
           />
+          {warning && (
+            <p className="text-sm text-git-int-primary mt-2 border-accent">
+              {warning}
+            </p>
+          )}
         </PopoverContent>
       </Popover>
     </div>
