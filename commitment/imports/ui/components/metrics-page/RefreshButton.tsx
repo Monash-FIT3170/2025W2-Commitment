@@ -15,7 +15,7 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({ url }) => {
     setLoading(true);
 
     try {
-      const update = await Meteor.call("repoCollection.isUpToDate", url);
+      const update = await Meteor.callAsync("repoCollection.isUpToDate", url);
       console.log("Refreshed: ", update);
     } catch (err) {
       console.error("Failed to refresh repo:", err);
