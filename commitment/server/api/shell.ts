@@ -1,4 +1,4 @@
-import { exec, spawn } from "child_process";
+import { exec } from "child_process";
 import fs from "fs";
 import * as fs_promise from "fs/promises";
 import path from "path";
@@ -12,6 +12,7 @@ export type Command = Readonly<{
 }>;
 
 export type CommandResult = Readonly<{
+  cmd: Command;
   result: string;
   error: Error | null;
   stdError: string | null;
@@ -23,13 +24,16 @@ export const successful = (res: CommandResult): boolean =>
 export const getErrorMsg = (res: CommandResult): string => {
   if (res.stdError) return res.stdError;
   else if (res.error) return res.error.message;
-  throw Error("Command was successful, should not run this function");
+  throw Error(`Command was successful: ${res.cmd}`);
 };
 
 export const assertSuccess =
   (errMsg: string) =>
   (res: CommandResult): string => {
-    if (!successful(res)) throw Error(`${errMsg}: \n${getErrorMsg(res)}`);
+    if (!successful(res))
+      throw Error(
+        `${errMsg}: \nError when running command "${res.cmd.cmd}": \n${getErrorMsg(res)}`
+      );
     return res.result;
   };
 
@@ -68,6 +72,7 @@ export const executeCommand =
 
           return resolve({
             ...defaultResult,
+            cmd: f,
             result: stdout,
             stdError: stderr,
           });
@@ -76,6 +81,7 @@ export const executeCommand =
 
           return resolve({
             ...defaultResult,
+            cmd: f,
             result: stdout,
             error: error,
             stdError: stderr,
@@ -85,6 +91,7 @@ export const executeCommand =
 
           return resolve({
             ...defaultResult,
+            cmd: f,
             result: stdout,
           });
         }
