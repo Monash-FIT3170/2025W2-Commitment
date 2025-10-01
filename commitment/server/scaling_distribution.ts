@@ -100,7 +100,6 @@ export function getRepoMetricDistribution(data: FilteredData, selectedMetric: Me
 
     // sort the metric values
     metricValues.sort((a, b) => a - b);
-    console.log("Sorted Metric Values: ", metricValues);
     
     // calculate min, Q1, median, Q3, max, mean
     const min = roundToTwoDecimal(metricValues[0]);
