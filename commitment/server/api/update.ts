@@ -27,16 +27,28 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
     new Date(0) // git didn't exist here so its fine :D
   );
 
+  // works out a relative directory to work with based on the
+  // publisher of the repo and the repo name
   const rel_dir = join(takeFromBack(url.split("/"), 2));
+
   // ensure directory is created
   const temp_working_dir = await createTempDirectory(`/clone-dir/${rel_dir}`);
 
   // execute commands in local directory
   const commandLocal = executeCommand(temp_working_dir);
-  const hash = await commandLocal(getLatestCommit(url)).then(
-    assertSuccess(`Failed to fetch HEAD from ${url}`)
+
+  // checks whether the repository exists
+  const output1 = await commandLocal(checkIfExists(url)).then(
+    assertSuccess("Repository does not exist")
   );
-  await commandLocal(fetchFromHEAD(url, hash)).then(assertSuccess("Failed to clone the repo"));
+  const hash = output1.split("\t")[0];
+
+  // attempts to clone the repository to a local temp directory (that is unique)
+  await commandLocal(cloneToLocal(url, temp_working_dir)).then(
+    assertSuccess("Failed to clone the repo")
+  );
+
+  // gets the date that HEAD was pushed
   const date = await commandLocal(getDateFrom(hash)).then(
     assertSuccess("Failed to fetch the HEAD commit details")
   );
@@ -49,14 +61,14 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   return !compareDates(dateObj, lastCommitFromDatabase);
 };
 
-const getLatestCommit = (url: string): Command => ({
+const checkIfExists = (url: string): Command => ({
   ...doNotLogData,
-  cmd: `git ls-remote \"${url}\" HEAD`,
+  cmd: `git ls-remote \"${url}\"`,
 });
 
-const fetchFromHEAD = (url: string, hash: string): Command => ({
+const cloneToLocal = (url: string, path: string): Command => ({
   ...doNotLogData,
-  cmd: `git fetch --quiet \"${url}\" ${hash}`,
+  cmd: `git -c credential.helper= -c core.askPass=true clone --bare \"${url}\" \"${path}\"`,
 });
 
 const getDateFrom = (hash: string): Command => ({
