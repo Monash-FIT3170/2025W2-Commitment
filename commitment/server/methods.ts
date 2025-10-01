@@ -144,7 +144,6 @@ Meteor.methods({
       metrics: metricsData,
     };
 
-    console.log("checking validity of returned scaling data in analytics data", returnData.metrics.contributors.scalingDistribution);
     return returnData;
   },
 
