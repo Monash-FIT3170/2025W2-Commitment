@@ -69,7 +69,6 @@ export const executeCommand =
   (cwd: string) =>
   (f: Command): Promise<CommandResult> =>
     new Promise((resolve, reject) => {
-      console.log("Current working directory:", cwd);
       exec(
         f.cmd,
         { cwd: cwd },
@@ -118,9 +117,16 @@ export const createDirectory =
     // Ensure the base directory is absolute
     // mkdtemp requires the prefix to be a full path
     await fs_promise.mkdir(baseDir, { recursive: true });
+<<<<<<< HEAD
     const tmpDir = await fs_promise.mkdtemp(
       path.join(path.resolve(baseDir), prefix)
     );
+=======
+    console.log("directory created: ", baseDir);
+    console.log("directory: ", path.join(path.resolve(baseDir), prefix));
+    const tmpDir = await fs_promise.mkdtemp(path.join(path.resolve(baseDir), prefix));
+    console.log("temp directory created: ", baseDir, prefix);
+>>>>>>> b43f12b79751205878904e87890f67218dcc103e
     return tmpDir;
   };
 
