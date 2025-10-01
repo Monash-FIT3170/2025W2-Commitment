@@ -71,12 +71,17 @@ export const getTotalLocDataSerializable = (
 // FUNCTIONS THAT USE SerializableRepoData + contributorName (for targeted metrics)
 
 export const getCommitsFrom = (data: SerializableRepoData, name: string): CommitData[] =>
-  data.allCommits.filter((p) => p.value.contributorName == name).map((p) => p.value);
+  data.allCommits.filter((p) => p.value.contributorName === name).map((p) => p.value);
 
 export const getTotalCommitsPerContributor = (
   repoData: SerializableRepoData,
   contributorName: string
-): number => getCommitsFrom(repoData, contributorName).length;
+): number => {
+  const commits = getCommitsFrom(repoData, contributorName);
+  const count = Number(commits.length ?? 0);
+  return Number.isNaN(count) ? 0 : count;
+
+}
 
 export const getLOCperContributor = (
   repoData: SerializableRepoData,
