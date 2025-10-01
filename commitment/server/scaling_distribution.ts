@@ -52,7 +52,7 @@ export function getContributorScaledMetric(passedContributor: SerialisableMapObj
     const totalValues = metricValues.length;
     
     // calculate the percentile
-    const percentile = (numValuesBelow / totalValues) * 100;
+    const percentile = parseFloat(Number((numValuesBelow / totalValues) * 100).toFixed(2));
 
     return {
         metric: selectedMetric,
