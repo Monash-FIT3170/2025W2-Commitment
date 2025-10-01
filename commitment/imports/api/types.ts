@@ -235,8 +235,7 @@ export type ScalingDistributionGraph = {
  *      contributorName: "Alice",
  *      scaledMetrics: [
  *        { metric: "LOC", value: 1500, percentile: 85},
- *     // other metrics...
- *      ], 
+ *      ... other contributors
  *  repoDistributions: [
  *  { metric: "LOC", min: 100, Q1: 500, median: 1000, Q3: 2000, max: 5000, mean: 1200},
  * ]
