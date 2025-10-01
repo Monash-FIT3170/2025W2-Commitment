@@ -1,6 +1,11 @@
 import {ContributorMetrics, ContributorScaledData, ContributorScaledMetric, FilteredData, MetricType, SerialisableMapObject, ContributorData, RepoMetricDistribution, ScalingDistributionResult } from "../imports/api/types"
 import { getCommitPerDayPerContributor, getTotalCommitsPerContributor, getLOCperContributor, getLocPerCommitPerContributor } from "./helper_functions";
 
+const roundToTwoDecimal = (num: number): number => {
+  if (num == null || !Number.isFinite(Number(num))) return 0;
+  return Number(Number(num).toFixed(2));
+};
+
 /**
  * This function provides the metrics for each contributor in the filtered data.
  * @param data 
@@ -56,7 +61,7 @@ export function getContributorScaledMetric(passedContributor: SerialisableMapObj
 
     return {
         metric: selectedMetric,
-        value: contributorValue,
+        value: Number(contributorValue).toFixed(2) === 'NaN' ? 0 : Math.round(contributorValue),
         percentile,
     };  
     
@@ -95,12 +100,13 @@ export function getRepoMetricDistribution(data: FilteredData, selectedMetric: Me
 
     // sort the metric values
     metricValues.sort((a, b) => a - b);
+    console.log("Sorted Metric Values: ", metricValues);
     
     // calculate min, Q1, median, Q3, max, mean
-    const min = metricValues[0];
-    const max = metricValues[metricValues.length - 1];
-    const mean = metricValues.reduce((acc, val) => acc + val, 0) / metricValues.length;
-    const median = metricValues.length % 2 === 0 ?
+    const min = roundToTwoDecimal(metricValues[0]);
+    const max = roundToTwoDecimal(metricValues[metricValues.length - 1]);
+    const mean = roundToTwoDecimal(metricValues.reduce((acc, val) => acc + val, 0) / metricValues.length);
+    const median = roundToTwoDecimal(metricValues.length % 2 === 0 ?
         (metricValues[metricValues.length / 2 - 1] + metricValues[metricValues.length / 2]) / 2 :
         metricValues[Math.floor(metricValues.length / 2)];
     const Q1 = metricValues[Math.floor((metricValues.length / 4))];
