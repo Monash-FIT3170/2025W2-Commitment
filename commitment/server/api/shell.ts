@@ -19,12 +19,11 @@ export type CommandResult = Readonly<{
   stdError: string | null;
 }>;
 
-export const successful = (res: CommandResult): boolean =>
-  res.error == null && res.stdError == null;
+export const successful = (res: CommandResult): boolean => res.error == null;
 
 export const getErrorMsg = (res: CommandResult): string => {
-  if (res.stdError) return res.stdError;
-  else if (res.error) return res.error.message;
+  if (res.error) return res.error.message;
+  else if (res.stdError) return res.stdError;
   throw Error(`Command was successful: ${res.cmd}`);
 };
 
@@ -107,17 +106,21 @@ export const executeCommand =
  */
 export const createDirectory =
   (baseDir: string) =>
-  (prefix: string): Promise<string> =>
+  async (prefix: string): Promise<string> => {
     // Ensure the base directory is absolute
     // mkdtemp requires the prefix to be a full path
-    fs.mkdtemp(path.join(path.resolve(baseDir), prefix));
+    await fs_promise.mkdir(baseDir, { recursive: true });
+    return await fs_promise.mkdtemp(path.join(path.resolve(baseDir), prefix));
+  };
 
 export const createTempDirectory = createDirectory(os.tmpdir());
 
 export const deleteAllFromDirectory = async (dirPath: string) => {
-  const entries: fs.Dirent[] = await fs_promise.readdir(dirPath, { withFileTypes: true });
-  return Promise.all(
-    entries.map(async (entry) => {
+  const entries: fs.Dirent[] = await fs_promise.readdir(dirPath, {
+    withFileTypes: true,
+  });
+  return Promise.all([
+    ...entries.map(async (entry) => {
       const fullPath = path.join(dirPath, entry.name);
 
       if (entry.isDirectory()) {
@@ -127,6 +130,7 @@ export const deleteAllFromDirectory = async (dirPath: string) => {
         // just a file, so delete
         return fs_promise.unlink(fullPath);
       }
-    })
-  );
+    }),
+    fs_promise.rmdir(dirPath, { recursive: true }), // removes dirPath as well as all subdirectories
+  ]);
 };
