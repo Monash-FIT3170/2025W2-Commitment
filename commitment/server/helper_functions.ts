@@ -9,6 +9,10 @@ import {
 } from "../imports/api/types";
 
 // HELPER GRANULAR FUNCTIONS
+const safeNumber = (value: unknown): number => {
+  const n = Number(value);
+  return Number.isNaN(n) ? 0 : n;
+};
 
 export const zip = <T extends any[][]>(...lists: T): { [K in keyof T]: T[K][number] }[] =>
   Array.from(
@@ -87,15 +91,15 @@ export const getLOCperContributor = (
   repoData: SerializableRepoData,
   contributorName: string
 ): number =>
-  getCommitsFrom(repoData, contributorName).reduce(
-    (acc, commit) =>
-      acc +
-      commit.fileData.reduce(
-        (acc, fileChange) => acc + fileChange.newLines - fileChange.deletedLines,
-        0
-      ),
-    0
-  );
+  getCommitsFrom(repoData, contributorName).reduce((acc, commit) => {
+    const fileLOC = (commit.fileData ?? []).reduce((innerAcc, fileChange) => {
+      const added = safeNumber(fileChange?.newLines);
+      const deleted = safeNumber(fileChange?.deletedLines);
+      return innerAcc + (added - deleted);
+    }, 0);
+    return acc + fileLOC;
+  }, 0);
+
 
 export const getLocPerCommitPerContributor = (
   repoData: SerializableRepoData,
