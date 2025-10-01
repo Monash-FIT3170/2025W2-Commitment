@@ -20,12 +20,10 @@ export type CommandResult = Readonly<{
   stdError: string | null;
 }>;
 
-export const successful = (res: CommandResult): boolean =>
-  res.error == null && res.stdError == null;
+export const successful = (res: CommandResult): boolean => res.error == null;
 
 export const getErrorMsg = (res: CommandResult): string => {
-  if (res.stdError) return res.stdError;
-  else if (res.error) return res.error.message;
+  if (res.error) return res.error.message;
   throw Error(`Command was successful: ${res.cmd}`);
 };
 
