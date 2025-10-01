@@ -11,7 +11,7 @@ import {
 // HELPER GRANULAR FUNCTIONS
 const safeNumber = (value: unknown): number => {
   const n = Number(value);
-  return Number.isNaN(n) ? 0 : n;
+  return Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
 };
 
 export const zip = <T extends any[][]>(...lists: T): { [K in keyof T]: T[K][number] }[] =>
@@ -107,7 +107,8 @@ export const getLocPerCommitPerContributor = (
 ): number => {
   const totalLOC = getLOCperContributor(repoData, contributorName);
   const commits = getCommitsFrom(repoData, contributorName);
-  return commits.length === 0 ? 0 : totalLOC / commits.length;
+  const commitCount = safeNumber(commits.length);
+  return commitCount === 0 ? 0 : safeNumber(totalLOC / commitCount);
 };
 
 export const getCommitPerDayPerContributor = (
@@ -123,6 +124,6 @@ export const getCommitPerDayPerContributor = (
     })
   );
 
-  return commits.length / uniqueDays.size;
+  return safeNumber(commits.length / uniqueDays.size);
 };
 
