@@ -2,9 +2,9 @@ import { Subject } from "rxjs"
 import { Mongo } from "meteor/mongo"
 import { Meteor } from "meteor/meteor"
 
-import { RepositoryData, SerializableRepoData } from "../imports/api/types"
-import { deserializeRepoData, serializeRepoData } from "../imports/api/serialisation"
-import { meteorCallAsync } from "../imports/api/meteor_interface"
+import { RepositoryData, SerializableRepoData } from "@api/types"
+import { deserializeRepoData, serializeRepoData } from "@api/serialisation"
+import { meteorCallAsync } from "@api/meteor_interface"
 
 /**
  * COLLECTION OF REPOSITORY METHODS
