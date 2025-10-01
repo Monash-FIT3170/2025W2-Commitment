@@ -114,17 +114,19 @@ export const createTempDirectory = createDirectory(os.tmpdir());
 
 export const deleteAllFromDirectory = async (dirPath: string) => {
   const entries: fs.Dirent[] = await fs_promise.readdir(dirPath, { withFileTypes: true });
-  return Promise.all(
-    entries.map(async (entry) => {
+  const selfP = async () => fs_promise.rmdir(dirPath, { recursive: true });
+  return Promise.all([
+    ...entries.map(async (entry) => {
       const fullPath = path.join(dirPath, entry.name);
 
       if (entry.isDirectory()) {
         // is a subdirectory, so delete this as well
-        return fs_promise.rm(fullPath, { recursive: true, force: true });
+        fs_promise.rm(fullPath, { recursive: true, force: true });
       } else {
         // just a file, so delete
-        return fs_promise.unlink(fullPath);
+        fs_promise.unlink(fullPath);
       }
-    })
-  );
+    }),
+    selfP(),
+  ]);
 };
