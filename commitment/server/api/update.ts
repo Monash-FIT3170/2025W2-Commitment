@@ -10,7 +10,8 @@ import {
   deleteAllFromDirectory,
 } from "./shell";
 
-const compareDates = (d1: Date, d2: Date): boolean => d1.valueOf() > d2.valueOf();
+const compareDates = (d1: Date, d2: Date): boolean =>
+  d1.valueOf() > d2.valueOf();
 
 const takeFromBack = <T>(arr: T[], num: number): T[] => arr.slice(-num);
 
@@ -21,9 +22,13 @@ const join = (arr: string[]): string => arr.reduce((acc, i) => acc + i, "");
  * @param data the data to check whether it is up to date or not
  * @returns whether the data is up to date
  */
-export const isUpToDate = async (url: string, data: SerializableRepoData): Promise<boolean> => {
+export const isUpToDate = async (
+  url: string,
+  data: SerializableRepoData
+): Promise<boolean> => {
   const lastCommitFromDatabase: Date = getAllCommits(data).reduce(
-    (acc: Date, c: CommitData) => (compareDates(acc, c.timestamp) ? acc : c.timestamp),
+    (acc: Date, c: CommitData) =>
+      compareDates(acc, c.timestamp) ? acc : c.timestamp,
     new Date(0) // git didn't exist here so its fine :D
   );
 
@@ -32,7 +37,9 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   const rel_dir = join(takeFromBack(url.split("/"), 2));
 
   // ensure directory is created
-  const temp_working_dir = await createTempDirectory(`/clone-dir/${rel_dir}`);
+  const temp_working_dir = await createTempDirectory(
+    `/tmp-clone-dir/${rel_dir}`
+  );
 
   // execute commands in local directory
   const commandLocal = executeCommand(temp_working_dir);

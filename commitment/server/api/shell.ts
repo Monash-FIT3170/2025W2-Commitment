@@ -3,6 +3,7 @@ import * as fs_promise from "fs/promises";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { log } from "console";
 
 export type Command = Readonly<{
   cmd: string;
@@ -65,6 +66,7 @@ export const executeCommand =
   (cwd: string) =>
   (f: Command): Promise<CommandResult> =>
     new Promise((resolve, reject) => {
+      console.log("Current working directory:", cwd);
       exec(f.cmd, { cwd: cwd }, (error: Error | null, stdout: string, stderr: string) => {
         if (stderr) {
           if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr));
@@ -105,10 +107,16 @@ export const executeCommand =
  */
 export const createDirectory =
   (baseDir: string) =>
-  (prefix: string): Promise<string> =>
+  async (prefix: string): Promise<string> => {
     // Ensure the base directory is absolute
     // mkdtemp requires the prefix to be a full path
-    fs.mkdtemp(path.join(path.resolve(baseDir), prefix));
+    await fs_promise.mkdir(baseDir, { recursive: true });
+    console.log("directory created: ", baseDir);
+    console.log("directory: ", path.join(path.resolve(baseDir), prefix));
+    const tmpDir = await fs_promise.mkdtemp(path.join(path.resolve(baseDir), prefix));
+    console.log("temp directory created: ", baseDir, prefix);
+    return tmpDir;
+  };
 
 export const createTempDirectory = createDirectory(os.tmpdir());
 
