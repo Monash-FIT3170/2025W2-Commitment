@@ -1,4 +1,5 @@
-import { FilteredData, LineGraphData } from "/imports/api/types";
+import { FilteredData, LineGraphData } from "../imports/api/types";
+import { getLinesOfCodeFromCommit } from "./helper_functions";
 
 /**
  * LINEGRAPH FUNCTIONS
@@ -34,7 +35,9 @@ export function linegraphTotalCommits(data: FilteredData): LineGraphData[] {
 
   // Prepare cumulative counts per contributor
   const cumulative: Record<string, number> = {};
-  allContributors.forEach((c) => (cumulative[c] = 0));
+  allContributors.forEach((c) => {
+    cumulative[c] = 0;
+  });
 
   // Build LineGraphData array
   const dataArray: LineGraphData[] = [];
@@ -74,15 +77,13 @@ export function linegraphLOC(data: FilteredData): LineGraphData[] {
   });
 
   // Collect daily LOC
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value;
+    const user = commit.contributorName;
+    const date = new Date(commit.timestamp).toISOString().split("T")[0];
 
     // LOC snapshot for this commit
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
+    const locThisCommit = getLinesOfCodeFromCommit(commit);
     if (!byDate.has(date)) byDate.set(date, {});
     const bucket = byDate.get(date)!;
     bucket[user] = (bucket[user] ?? 0) + locThisCommit;
@@ -95,7 +96,9 @@ export function linegraphLOC(data: FilteredData): LineGraphData[] {
 
   // Cumulative tracker
   const cumulative: Record<string, number> = {};
-  allContributors.forEach((c) => (cumulative[c] = 0));
+  allContributors.forEach((c) => {
+    cumulative[c] = 0;
+  });
 
   const dataArray: LineGraphData[] = [];
 
@@ -128,44 +131,38 @@ export function linegraphCommitsPerDay(data: FilteredData): LineGraphData[] {
   const { dateRange, repositoryData } = data;
   const { allCommits, contributors } = repositoryData;
 
-  // get contributor names
   const contributorNames = contributors.map((c) => c.value.name);
 
-  // Format date as YYYY-MM-DD
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
 
-  // build a map: date -> {contributorName -> count}
   const commitMap: Record<string, Record<string, number>> = {};
 
-  for (const commitObj of allCommits) {
+  allCommits.forEach((commitObj) => {
     const commit = commitObj.value;
-    const commitDate = formatDate(new Date(commit.timestamp));
+    const ts = new Date(commit.timestamp);
 
-    if (
-      new Date(commit.timestamp) < dateRange.start ||
-      new Date(commit.timestamp) > dateRange.end
-    ) {
-      continue;
-    }
+    if (ts >= dateRange.start && ts <= dateRange.end) {
+      const commitDate = formatDate(ts);
 
-    // Initialize commitMap for this date
-    if (!commitMap[commitDate]) {
-      commitMap[commitDate] = {};
+      if (!commitMap[commitDate]) {
+        commitMap[commitDate] = {};
+      }
+
+      commitMap[commitDate][commit.contributorName] =
+        (commitMap[commitDate][commit.contributorName] || 0) + 1;
     }
-    if (!commitMap[commitDate][commit.contributorName]) {
-      commitMap[commitDate][commit.contributorName] = 0;
-    }
-    commitMap[commitDate][commit.contributorName]++;
-  }
+  });
+
   const result: LineGraphData[] = [];
   const current = new Date(dateRange.start);
   while (current <= dateRange.end) {
     const dateStr = formatDate(current);
     const entry: LineGraphData = { date: dateStr };
 
-    for (const name of contributorNames) {
+    contributorNames.forEach((name) => {
       entry[name] = commitMap[dateStr]?.[name] || 0;
-    }
+    });
+
     result.push(entry);
     current.setDate(current.getDate() + 1);
   }
@@ -191,15 +188,13 @@ export function linegraphLOCPerCommit(data: FilteredData): LineGraphData[] {
   });
 
   // Collect daily LOC + commit counts
-  repoData.allCommits.forEach((commit) => {
-    const user = commit.value.contributorName;
-    const date = new Date(commit.value.timestamp).toISOString().split("T")[0];
+  repoData.allCommits.forEach((p) => {
+    const commit = p.value;
+    const user = commit.contributorName;
+    const date = new Date(commit.timestamp).toISOString().split("T")[0];
 
     // LOC snapshot for this commit
-    const locThisCommit = commit.value.fileData.reduce(
-      (sum, fileChange) => sum + fileChange.file.contents.split("\n").length,
-      0
-    );
+    const locThisCommit = getLinesOfCodeFromCommit(commit);
 
     if (!byDate.has(date)) {
       byDate.set(date, { loc: {}, commits: {} });

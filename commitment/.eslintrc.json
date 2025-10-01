@@ -3,10 +3,10 @@
     "@meteorjs/eslint-config-meteor",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:import/recommended",         
+    "plugin:import/recommended",
     "plugin:import/typescript",
     "plugin:react-hooks/recommended",
-    "prettier"  
+    "prettier"
   ],
   "ignorePatterns": [
     "node_modules/",
@@ -26,20 +26,20 @@
   "plugins": ["@typescript-eslint", "import"],
   "parserOptions": {
     "project": "./tsconfig.json",
-    "tsconfigRootDir": ".",
     "sourceType": "module"
   },
   "settings": {
-    "react": { "version": "detect" }, 
-    "import/resolver": {                   
+    "react": { "version": "detect" },
+    "import/resolver": {
       "typescript": {
         "project": ["./tsconfig.json"],
         "alwaysTryTypes": true
       },
       "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx", ".d.ts", ".mjs", ".cjs", ".json"]
+        "extensions": [".js", ".jsx", ".ts", ".tsx", ".d.ts", ".mjs", ".cjs", ".json"],
+        "moduleDirectory": ["node_modules", "atlas/node_modules"]
       },
-      "meteor": {} 
+      "meteor": {}
     }
   },
   "overrides": [
@@ -48,24 +48,62 @@
       "rules": {
         "consistent-return": "off",
         "react/require-default-props": "off",
-        "react/function-component-definition":"off",
+        "react/function-component-definition": "off",
         "import/prefer-default-export": "off",
         "react/jsx-props-no-spreading": "off",
-        "no-nested-ternary": "off",
+        // "no-nested-ternary": "off",
         "no-plusplus": "off",
         "react/prop-types": "off",
         "react/no-unused-prop-types": "off",
         "no-void": ["error", { "allowAsStatement": true }],
         "react/destructuring-assignment": "off",
-        "no-use-before-define": ["warn", { "functions": false }],
-        "@typescript-eslint/explicit-module-boundary-types": "warn",
+        // "no-use-before-define": ["warn", { "functions": false }],
+        // "@typescript-eslint/explicit-module-boundary-types": "warn",
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
         "@typescript-eslint/no-floating-promises": "error",
         "no-console": "warn",
-        "prefer-const": "warn",
+        "prefer-const": "error",
         "import/no-unresolved": "error",
-        "react/react-in-jsx-scope": "off",    
+        "react/react-in-jsx-scope": "off",
+        "import/extensions": "off",
+        "import/no-relative-packages": "off"
+      }
+    },
+    {
+      "files": ["*.js", "*.mjs"],
+      "rules": {
+        // Disable TypeScript-specific rules for JavaScript files
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-misused-promises": "off",
+        "@typescript-eslint/require-await": "off",
+        // Allow __filename and __dirname in Node.js
+        "no-underscore-dangle": ["error", { "allow": ["__filename", "__dirname"] }],
+        // Allow console in server files, but warn for others
+        "no-console": ["warn", { "allow": ["warn", "error", "log"] }],
+        // Keep import resolution enabled
+        "import/no-unresolved": "error",
         "import/extensions": "off"
+      }
+    },
+    {
+      "files": ["atlas/**/*.ts", "atlas/**/*.js"],
+      "rules": {
+        // Allow console statements in server files
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["atlas/**/*.js"],
+      "rules": {
+        // Disable TypeScript rules for JavaScript files in atlas
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-argument": "off"
       }
     }
   ]

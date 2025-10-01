@@ -154,11 +154,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
               disabled={loading}
               className={`${variantOptions[variant]}`}
             >
-              <Bookmark
-           size={24} 
-           fill="currentColor"
-                stroke="currentColor"
-              />
+              <Bookmark size={24} fill="currentColor" stroke="currentColor" />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -186,10 +182,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
           disabled={loading}
           className={`${variantOptions[variant]}`}
         >
-          <Bookmark 
-           size={24} 
-          fill="none" 
-          stroke="currentColor" />
+          <Bookmark size={24} fill="none" stroke="currentColor" />
         </Button>
       )}
     </>

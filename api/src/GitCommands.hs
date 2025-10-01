@@ -1,15 +1,15 @@
 --{-# LANGUAGE OverloadedStrings #-}
 
 module GitCommands (
+  quote, 
+  delim,
   checkIfRepoExists,
   cloneRepo,
   getBranches,
   getAllCommitsFrom,
   getContributorEmails,
   getCommitDetails,
-  getFileContents,
-  getFileDataFromCommit,
-  getOldFileDataFromCommit,
+  getCommitDiff,
   getRepoName
 ) where
 
@@ -18,6 +18,9 @@ import Control.Concurrent.STM ( TBQueue )
 
 quote :: String -> String
 quote s = "\"" ++ s ++ "\""
+
+delim :: String
+delim  = "\\n|||END|||"
 
 checkIfRepoExists :: String -> Command
 checkIfRepoExists url = doNotLogData
@@ -28,14 +31,18 @@ checkIfRepoExists url = doNotLogData
 
 cloneRepo :: String -> FilePath -> Command
 cloneRepo url targetDirectory = doNotLogData
-  { command = "git clone --no-checkout " ++ quote url ++ " " ++ quote targetDirectory
+  { command =
+      "git -c credential.helper= -c core.askPass=true clone --bare "
+      ++ quote url ++ " " ++ quote targetDirectory
+  , env_vars = Just [("GIT_TERMINAL_PROMPT", "0")]
+  , env_clean = ["GIT_ASKPASS","GCM_INTERACTIVE"]
   , onSuccess = \_ _ -> url ++ " successfully cloned to " ++ targetDirectory
   , onFail = \c e -> "Error cloning repo:\nCommand:\n" ++ c ++ "\nError Message:\n" ++ e
   }
 
 getBranches :: Command
 getBranches = doNotLogData
-  { command = "git branch -a --format=" ++ quote "%(refname:short)"
+  { command = "git --no-pager branch -a --format=" ++ quote "%(refname:short)"
   }
 
 getAllCommitsFrom :: String -> Command
@@ -50,21 +57,12 @@ getContributorEmails name = doNotLogData
 
 getCommitDetails :: String -> Command
 getCommitDetails hash = doNotLogData
-  { command = "git show \"--pretty=format:%H\\n|||END|||%an\\n|||END|||%ad\\n|||END|||%s\\n|||END|||%b\\n|||END|||\" \"--name-status\" " ++ hash 
+  { command = "git show \"--pretty=format:%H" ++ delim ++ "%an" ++ delim ++ "%ad" ++ delim ++ "%s" ++ delim ++ "%b" ++ delim ++ "\" \"--name-status\" " ++ hash 
   }
 
-getFileContents :: TBQueue String -> FilePath -> String -> (String -> String -> Command) -> String -> IO String
-getFileContents notifier path hash cmd_f file =
-  getParsableStringFromCmd <$> executeCommand notifier path (cmd_f hash file)
-
-getFileDataFromCommit :: String -> FilePath -> Command
-getFileDataFromCommit hash path = doNotLogData
-  { command = "git show " ++ hash ++ ":" ++ path
-  }
-
-getOldFileDataFromCommit :: String -> FilePath -> Command
-getOldFileDataFromCommit hash path = doNotLogData
-  { command = "git show " ++ hash ++ "~1:" ++ path
+getCommitDiff :: String -> Command
+getCommitDiff hash = doNotLogData
+  { command = "git --no-pager diff-tree -p " ++ hash 
   }
 
 getRepoName :: Command

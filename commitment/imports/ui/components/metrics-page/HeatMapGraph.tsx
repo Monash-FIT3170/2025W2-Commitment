@@ -133,10 +133,10 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
     if ( mode === "week-fill") {
       const monday = alignToMonday(d);
       return { key: getWeekLabel(dateStr), first: monday };
-    } else {
+    } 
       const first = startOfMonth(d);
       return { key: getMonthLabel(dateStr), first };
-    }
+    
   };
 
   for (const r of data) {
@@ -262,7 +262,7 @@ export default function HeatMapGraph({
   );
 
   const rowHeight = 50;
-  const minHeight = 200;
+  const minHeight = 408;
   const maxHeight = 800;
   const dynamicHeight = Math.max(
     minHeight,
@@ -375,6 +375,7 @@ export default function HeatMapGraph({
           },
 
           formatter: (label: string) => {
+            if (typeof label !== "string") return ""; // handle missing label
             // If label has a dash, only keep the part before it
             const dashIndex = label.indexOf(" -");
             return dashIndex !== -1 ? label.substring(0, dashIndex) : label;
@@ -426,8 +427,8 @@ export default function HeatMapGraph({
               w.config.series[seriesIndex]?.data[dataPointIndex]?.raw;
             const total = totals[seriesIndex];
             return rawY !== undefined
-              ? `${rawY} (Total: ${total ?? 0})`
-              : String(value);
+              ? `${rawY.toFixed(2)} (Total: ${(total ?? 0).toFixed(2)})`
+              : Number(value).toFixed(2);
           },
         },
       },
@@ -449,10 +450,10 @@ export default function HeatMapGraph({
   return (
     <GraphCard className="w-full p-0">
       <CardHeader className="pb-0">
-        <CardTitle className="flex justify-between text-xl mt-0 font-bold ">
-          <div className="flex ">
-            {title ?? "Contributions Heatmap"}
-            <div className="relative -mt-3 ml-2">
+        <CardTitle className="flex justify-between flex-wrap text-xl mt-0 font-bold gap-2">
+          <div className="flex gap-2">
+            <span className="whitespace-nowrap">{title ?? "Contributions Heatmap"}</span>
+            <div className="relative -mt-3">
               <InfoButton description="Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period" />
             </div>
           </div>

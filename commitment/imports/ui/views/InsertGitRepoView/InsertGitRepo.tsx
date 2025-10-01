@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Logo } from "@ui/components/landing-page/MainPage";
 import LastSavedRepos from "@ui/components/insert-git-repo/LastSavedRepos";
 import GitRepoInputSection from "@ui/components/insert-git-repo/GitRepoInputSection";
@@ -9,14 +9,18 @@ const InsertGitRepoView: React.FC = () => {
   const user = useTracker(() => Meteor.user());
   const isLoggedIn = !!user;
 
+  // Clear repository history when user navigates to home page
+  useEffect(() => {
+    localStorage.removeItem('lastRepoUrl');
+  }, []);
+
   return (
     <>
 
       {isLoggedIn ? (
         <div className="flex flex-col items-center pt-20">
           <h1 className="text-6xl text-foreground mb-8">
-            Welcome Back,
-            {user?.profile?.name || "User"}
+            Welcome Back, {user?.profile?.name || "User"}
           </h1>
           <GitRepoInputSection />
           <LastSavedRepos />
