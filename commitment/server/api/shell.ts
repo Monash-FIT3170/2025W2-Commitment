@@ -3,7 +3,6 @@ import * as fs_promise from "fs/promises";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { log } from "console";
 
 export type Command = Readonly<{
   cmd: string;
@@ -24,6 +23,7 @@ export const successful = (res: CommandResult): boolean => res.error == null;
 
 export const getErrorMsg = (res: CommandResult): string => {
   if (res.error) return res.error.message;
+  else if (res.stdError) return res.stdError;
   throw Error(`Command was successful: ${res.cmd}`);
 };
 
@@ -32,9 +32,7 @@ export const assertSuccess =
   (res: CommandResult): string => {
     if (!successful(res))
       throw Error(
-        `${errMsg}: \nError when running command "${
-          res.cmd.cmd
-        }": \n${getErrorMsg(res)}`
+        `${errMsg}: \nError when running command "${res.cmd.cmd}": \n${getErrorMsg(res)}`
       );
     return res.result;
   };
@@ -45,8 +43,7 @@ const defaultResult = {
   stdError: null,
 };
 
-export const defaultSuccess = (command: string) =>
-  `✅  Command succeeded: ${command}`;
+export const defaultSuccess = (command: string) => `✅  Command succeeded: ${command}`;
 export const defaultFail = (command: string, e: Error) =>
   `❌  Command failed: ${command}\n Error: ${e.message}`;
 export const defaultStdFail = (command: string, stderr: string) =>
@@ -69,40 +66,36 @@ export const executeCommand =
   (cwd: string) =>
   (f: Command): Promise<CommandResult> =>
     new Promise((resolve, reject) => {
-      exec(
-        f.cmd,
-        { cwd: cwd },
-        (error: Error | null, stdout: string, stderr: string) => {
-          if (stderr) {
-            if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr));
+      exec(f.cmd, { cwd: cwd }, (error: Error | null, stdout: string, stderr: string) => {
+        if (stderr) {
+          if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr));
 
-            return resolve({
-              ...defaultResult,
-              cmd: f,
-              result: stdout,
-              stdError: stderr,
-            });
-          } else if (error) {
-            if (f.shouldLog) console.error(f.onFail(f.cmd, error));
+          return resolve({
+            ...defaultResult,
+            cmd: f,
+            result: stdout,
+            stdError: stderr,
+          });
+        } else if (error) {
+          if (f.shouldLog) console.error(f.onFail(f.cmd, error));
 
-            return resolve({
-              ...defaultResult,
-              cmd: f,
-              result: stdout,
-              error: error,
-              stdError: stderr,
-            });
-          } else {
-            if (f.shouldLog) console.log(f.onSuccess(f.cmd));
+          return resolve({
+            ...defaultResult,
+            cmd: f,
+            result: stdout,
+            error: error,
+            stdError: stderr,
+          });
+        } else {
+          if (f.shouldLog) console.log(f.onSuccess(f.cmd));
 
-            return resolve({
-              ...defaultResult,
-              cmd: f,
-              result: stdout,
-            });
-          }
+          return resolve({
+            ...defaultResult,
+            cmd: f,
+            result: stdout,
+          });
         }
-      );
+      });
     });
 
 /**
@@ -117,17 +110,7 @@ export const createDirectory =
     // Ensure the base directory is absolute
     // mkdtemp requires the prefix to be a full path
     await fs_promise.mkdir(baseDir, { recursive: true });
-<<<<<<< HEAD
-    const tmpDir = await fs_promise.mkdtemp(
-      path.join(path.resolve(baseDir), prefix)
-    );
-=======
-    console.log("directory created: ", baseDir);
-    console.log("directory: ", path.join(path.resolve(baseDir), prefix));
-    const tmpDir = await fs_promise.mkdtemp(path.join(path.resolve(baseDir), prefix));
-    console.log("temp directory created: ", baseDir, prefix);
->>>>>>> b43f12b79751205878904e87890f67218dcc103e
-    return tmpDir;
+    return await fs_promise.mkdtemp(path.join(path.resolve(baseDir), prefix));
   };
 
 export const createTempDirectory = createDirectory(os.tmpdir());
@@ -136,8 +119,8 @@ export const deleteAllFromDirectory = async (dirPath: string) => {
   const entries: fs.Dirent[] = await fs_promise.readdir(dirPath, {
     withFileTypes: true,
   });
-  return Promise.all(
-    entries.map(async (entry) => {
+  return Promise.all([
+    ...entries.map(async (entry) => {
       const fullPath = path.join(dirPath, entry.name);
 
       if (entry.isDirectory()) {
@@ -147,6 +130,7 @@ export const deleteAllFromDirectory = async (dirPath: string) => {
         // just a file, so delete
         return fs_promise.unlink(fullPath);
       }
-    })
-  );
+    }),
+    fs_promise.rmdir(dirPath, { recursive: true }), // removes dirPath as well as all subdirectories
+  ]);
 };
