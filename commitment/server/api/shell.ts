@@ -3,6 +3,7 @@ import * as fs_promise from "fs/promises";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { log } from "console";
 
 export type Command = Readonly<{
   cmd: string;
@@ -33,7 +34,9 @@ export const assertSuccess =
   (res: CommandResult): string => {
     if (!successful(res))
       throw Error(
-        `${errMsg}: \nError when running command "${res.cmd.cmd}": \n${getErrorMsg(res)}`
+        `${errMsg}: \nError when running command "${
+          res.cmd.cmd
+        }": \n${getErrorMsg(res)}`
       );
     return res.result;
   };
@@ -44,7 +47,8 @@ const defaultResult = {
   stdError: null,
 };
 
-export const defaultSuccess = (command: string) => `✅  Command succeeded: ${command}`;
+export const defaultSuccess = (command: string) =>
+  `✅  Command succeeded: ${command}`;
 export const defaultFail = (command: string, e: Error) =>
   `❌  Command failed: ${command}\n Error: ${e.message}`;
 export const defaultStdFail = (command: string, stderr: string) =>
@@ -67,36 +71,41 @@ export const executeCommand =
   (cwd: string) =>
   (f: Command): Promise<CommandResult> =>
     new Promise((resolve, reject) => {
-      exec(f.cmd, { cwd: cwd }, (error: Error | null, stdout: string, stderr: string) => {
-        if (stderr) {
-          if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr));
+      console.log("Current working directory:", cwd);
+      exec(
+        f.cmd,
+        { cwd: cwd },
+        (error: Error | null, stdout: string, stderr: string) => {
+          if (stderr) {
+            if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr));
 
-          return resolve({
-            ...defaultResult,
-            cmd: f,
-            result: stdout,
-            stdError: stderr,
-          });
-        } else if (error) {
-          if (f.shouldLog) console.error(f.onFail(f.cmd, error));
+            return resolve({
+              ...defaultResult,
+              cmd: f,
+              result: stdout,
+              stdError: stderr,
+            });
+          } else if (error) {
+            if (f.shouldLog) console.error(f.onFail(f.cmd, error));
 
-          return resolve({
-            ...defaultResult,
-            cmd: f,
-            result: stdout,
-            error: error,
-            stdError: stderr,
-          });
-        } else {
-          if (f.shouldLog) console.log(f.onSuccess(f.cmd));
+            return resolve({
+              ...defaultResult,
+              cmd: f,
+              result: stdout,
+              error: error,
+              stdError: stderr,
+            });
+          } else {
+            if (f.shouldLog) console.log(f.onSuccess(f.cmd));
 
-          return resolve({
-            ...defaultResult,
-            cmd: f,
-            result: stdout,
-          });
+            return resolve({
+              ...defaultResult,
+              cmd: f,
+              result: stdout,
+            });
+          }
         }
-      });
+      );
     });
 
 /**
@@ -107,15 +116,25 @@ export const executeCommand =
  */
 export const createDirectory =
   (baseDir: string) =>
-  (prefix: string): Promise<string> =>
+  async (prefix: string): Promise<string> => {
     // Ensure the base directory is absolute
     // mkdtemp requires the prefix to be a full path
-    fs.mkdtemp(path.join(path.resolve(baseDir), prefix));
+    await fs_promise.mkdir(baseDir, { recursive: true });
+    console.log("directory created: ", baseDir);
+    console.log("directory: ", path.join(path.resolve(baseDir), prefix));
+    const tmpDir = await fs_promise.mkdtemp(
+      path.join(path.resolve(baseDir), prefix)
+    );
+    console.log("temp directory created: ", baseDir, prefix);
+    return tmpDir;
+  };
 
 export const createTempDirectory = createDirectory(os.tmpdir());
 
 export const deleteAllFromDirectory = async (dirPath: string) => {
-  const entries: fs.Dirent[] = await fs_promise.readdir(dirPath, { withFileTypes: true });
+  const entries: fs.Dirent[] = await fs_promise.readdir(dirPath, {
+    withFileTypes: true,
+  });
   return Promise.all(
     entries.map(async (entry) => {
       const fullPath = path.join(dirPath, entry.name);
