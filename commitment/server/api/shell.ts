@@ -1,6 +1,7 @@
 import { exec } from "child_process";
-import fs from "fs";
 import * as fs_promise from "fs/promises";
+import fs from "fs";
+import os from "os";
 import path from "path";
 
 export type Command = Readonly<{
@@ -98,10 +99,24 @@ export const executeCommand =
       });
     });
 
+/**
+ * a function which creates a uniquely named directory with the prefix
+ * @param baseDir the base directory of the path
+ * @param prefix  prefix of the directory after the path
+ * @returns
+ */
+export const createDirectory =
+  (baseDir: string) =>
+  (prefix: string): Promise<string> =>
+    // Ensure the base directory is absolute
+    // mkdtemp requires the prefix to be a full path
+    fs.mkdtemp(path.join(path.resolve(baseDir), prefix));
+
+export const createTempDirectory = createDirectory(os.tmpdir());
+
 export const deleteAllFromDirectory = async (dirPath: string) => {
   const entries: fs.Dirent[] = await fs_promise.readdir(dirPath, { withFileTypes: true });
-
-  await Promise.all(
+  return Promise.all(
     entries.map(async (entry) => {
       const fullPath = path.join(dirPath, entry.name);
 
