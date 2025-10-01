@@ -273,7 +273,6 @@
     --git-heat-700: #bb1c13; /* darker red */
     --git-heat-800: #951917; /* wine red */
     --git-heat-900: #781816; /* darkest */
-
   }
 
   .dark {
@@ -309,9 +308,9 @@
     --git-tabs-hovered: var(--git-bg-secondary);
     --git-tabs-active: var(--git-bg-primary);
 
-    --git-int-destructive: #951917;
+    --git-int-destructive: #c54846;
     --git-int-primary-hover: #e12a15;
-    --git-int-destructive-hover: #781816;
+    --git-int-destructive-hover: #ad3836;
 
     /* Shadcn Variables */
     --background: var(--git-bg-primary);
