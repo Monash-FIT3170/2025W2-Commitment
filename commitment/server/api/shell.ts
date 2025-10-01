@@ -118,12 +118,9 @@ export const createDirectory =
     // Ensure the base directory is absolute
     // mkdtemp requires the prefix to be a full path
     await fs_promise.mkdir(baseDir, { recursive: true });
-    console.log("directory created: ", baseDir);
-    console.log("directory: ", path.join(path.resolve(baseDir), prefix));
     const tmpDir = await fs_promise.mkdtemp(
       path.join(path.resolve(baseDir), prefix)
     );
-    console.log("temp directory created: ", baseDir, prefix);
     return tmpDir;
   };
 
