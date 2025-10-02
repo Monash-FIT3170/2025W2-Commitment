@@ -33,7 +33,7 @@ Meteor.methods({
         env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
       });
 
-      git.on("close", (code) => {
+      git.on("close", (code: number) => {
         resolve(code === 0);
       });
 
@@ -203,8 +203,7 @@ export const getAnalyticsData = async ({
         : metadata.branches.includes("master")
         ? "master"
         : metadata.branches[0]),
-    selectedContributors:
-      !contributors || contributors.length === 0 ? metadata.contributors : contributors,
+    selectedContributors: contributors ?? [],
     selectedMetrics: metric,
     selectedDateRange: {
       from: startDate || metadata.dateRange.from,

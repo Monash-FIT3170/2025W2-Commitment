@@ -6,7 +6,7 @@ import { check } from "meteor/check";
 import { RepositoryData, SerializableRepoData } from "@api/types";
 import { deserializeRepoData, serializeRepoData } from "@api/serialisation";
 import { overrideValue } from "@api/meteor_interface";
-import { pipeRepoDataVia, fetchDataFromHaskellAppHTTP } from "./fetch_repo";
+import { fetchRepoData } from "./fetch_repo";
 import { isUpToDate } from "./update";
 
 /**
@@ -77,9 +77,8 @@ Meteor.methods({
    */
   async "repoCollection.isUpToDate"(url: string) {
     check(url, String);
-    const d = await tryFromDatabaseSerialised(url, null);
-    const upToDate = await isUpToDate(url, d);
-    if (!upToDate) pipeRepoDataVia(fetchDataFromHaskellAppHTTP);
+    const upToDate = await isUpToDate(url, await tryFromDatabaseSerialised(url, null));
+    if (!upToDate) fetchRepoData(url, null);
     return upToDate;
   },
 });
