@@ -17,7 +17,7 @@ import {
   PieChart,
   LineGraph,
   Leaderboard,
-} from "../imports/api/types";
+} from "@api/types";
 
 import {
   getContributors,
