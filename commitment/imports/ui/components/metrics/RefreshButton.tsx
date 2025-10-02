@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import { Spinner } from "@ui/components/ui/spinner";
+import { Spinner } from "@ui/components/base/spinner";
 
 type RefreshButtonProps = {
   url: string;

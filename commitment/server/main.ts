@@ -7,8 +7,8 @@ import "@api/bookmark_methods";
 import "@api/repository_methods";
 import "@api/alias_config_methods";
 
-import "./fetch_repo";
-import "./caching";
+import "./api/fetch_repo";
+import "./api/caching";
 import "./methods";
 
 Meteor.startup(() => {
