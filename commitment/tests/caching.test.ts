@@ -1,17 +1,16 @@
-import { Meteor } from "meteor/meteor";
 import { expect } from "chai";
+
+import { meteorCallAsync } from "@api/meteor_interface";
+import { RepositoryData } from "@api/types";
 
 import {
   cacheIntoDatabase,
   isInDatabase,
   removeRepo,
-  tryFromDatabaseNoCheck,
+  tryFromDatabase,
   allUrls,
   voidDatabase,
 } from "../server/api/caching";
-
-import { meteorCallAsync } from "../imports/api/meteor_interface";
-import { RepositoryData } from "/imports/api/types";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -47,7 +46,7 @@ describe("Caching Tests", () => {
     expect(await isInDatabase(testUrl)).to.be.true;
 
     // Retrieve data
-    expect(await tryFromDatabaseNoCheck(testUrl, null)).to.deep.equal(testData);
+    expect(await tryFromDatabase(testUrl, null)).to.deep.equal(testData);
   });
 
   it("should return all URLs", async () => {

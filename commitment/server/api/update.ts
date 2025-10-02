@@ -1,5 +1,5 @@
-import { SerializableRepoData } from "/imports/api/types";
-import { CommitData } from "/imports/api/types";
+import { SerializableRepoData } from "@api/types";
+import { CommitData } from "@api/types";
 import { getAllCommits } from "/server/helper_functions";
 import {
   Command,

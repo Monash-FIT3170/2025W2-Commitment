@@ -2,7 +2,7 @@ import {
   FilteredData,
   PieChartData,
   SerializableRepoData,
-} from "../imports/api/types";
+} from "@api/types";
 
 import {
   getLinesOfCodeFromCommit
