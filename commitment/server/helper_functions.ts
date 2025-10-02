@@ -6,7 +6,7 @@ import {
   FileChanges,
   ChangeType,
   ContributorData,
-} from "../imports/api/types";
+} from "@api/types";
 
 // HELPER GRANULAR FUNCTIONS
 

@@ -12,7 +12,7 @@ import {
   Selections,
   AllMetricsData,
   MetricType,
-} from "../imports/api/types";
+} from "@api/types";
 
 import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";

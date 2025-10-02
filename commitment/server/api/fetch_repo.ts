@@ -1,13 +1,14 @@
- { Meteor } from "meteor/meteor";
+import { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
 import { WebSocket } from "ws";
 import net from "net";
 import dotenv from "dotenv";
 
-import { RepositoryData, SerializableRepoData } from "/imports/api/types";
-import { assertRepoTyping, serializeRepoData } from "/imports/api/serialisation";
+import { RepositoryData, SerializableRepoData } from "@api/types";
+import { serializeRepoData, assertRepoTyping } from "@api/serialisation";
+import { emitValue } from "@api/meteor_interface";
+
 import { cacheIntoDatabase, isInDatabase, tryFromDatabaseViaLatest } from "./caching";
-import { overrideValue, emitValue } from "/imports/api/meteor_interface";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -72,9 +73,9 @@ const DEPLOYMENT_API_CONN_ENDPOINT = process.env.API_CONN_ENDPOINT; // "54.66.80
 const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT || DEV_API_CONN_ENDPOINT;
 
 type ApiFetchStruct = {
-  promise: Promise<RepositoryData>,
-  notifier: Subject<string>
-}
+  promise: Promise<RepositoryData>;
+  notifier: Subject<string>;
+};
 
 const apiFetchPromises: Record<string, ApiFetchStruct> = {};
 
@@ -85,33 +86,34 @@ const apiFetchPromises: Record<string, ApiFetchStruct> = {};
  */
 export const pipeRepoDataViaCache =
   (f: (url: string, notifier: Subject<string> | null) => Promise<RepositoryData>) =>
-  async (url: string, notifier: Subject<string> | null): Promise<RepositoryData> => {  
-  // we know database fetch failed, so lets join all same url requests together
-  // check entry in record
-  const existingPromise = apiFetchPromises[url]
-  if (existingPromise === null) {
-    // put new promise into the record to allow other callers to await this request 
-    // this ensures that API requests are only made once per repo url
-    const sub = new Subject<string>() 
-    const p = f(url, sub)
+  async (url: string, notifier: Subject<string> | null): Promise<RepositoryData> => {
+    // we know database fetch failed, so lets join all same url requests together
+    // check entry in record
+    const existingPromise = apiFetchPromises[url];
+    if (existingPromise === null) {
+      // put new promise into the record to allow other callers to await this request
+      // this ensures that API requests are only made once per repo url
+      const sub = new Subject<string>();
+      const p = f(url, sub)
+        .then(assertRepoTyping)
         .catch((e2: Error) => {
-        sub.next(`API fetch failed: ${e2}`);
-        throw e2;
-      })      
-    apiFetchPromises[url] = {
-      notifier: sub,
-      promise: p
+          sub.next(`API fetch failed: ${e2}`);
+          throw e2;
+        });
+      apiFetchPromises[url] = {
+        notifier: sub,
+        promise: p,
+      };
     }
-  }
-  
-  notifier ? apiFetchPromises[url].notifier.subscribe(notifier.next) : null;
-  const localPromise = apiFetchPromises[url].promise;
-  const awaitedValue = await localPromise;
-  // we can safely delete it here from the record to ensure that any other promises will fetch fresh data
-  // if it is out of date from the database :3
-  delete apiFetchPromises[url];
-  return awaitedValue;
-};
+
+    notifier ? apiFetchPromises[url].notifier.subscribe(notifier.next) : null;
+    const localPromise = apiFetchPromises[url].promise;
+    const awaitedValue = await localPromise;
+    // we can safely delete it here from the record to ensure that any other promises will fetch fresh data
+    // if it is out of date from the database :3
+    delete apiFetchPromises[url];
+    return awaitedValue;
+  };
 
 /**
  * Fetches repository data from the external source APi.
@@ -125,15 +127,14 @@ export const pipeRepoDataViaCache =
 export const getRepoData = (
   url: string,
   notifier: Subject<string> | null
-): Promise<RepositoryData> => 
-  tryFromDatabaseViaLatest(url, notifier).catch((_err1: Error) => 
-    fetchRepoData(url, notifier)
-      .then(async (data: RepositoryData) => {
-        emitValue(notifier)("Consolidating new data into database...");
-        await cacheIntoDatabase(url, data);
-        return data;
-      })
-  )
+): Promise<RepositoryData> =>
+  tryFromDatabaseViaLatest(url, notifier).catch((_err1: Error) =>
+    fetchRepoData(url, notifier).then(async (data: RepositoryData) => {
+      emitValue(notifier)("Consolidating new data into database...");
+      await cacheIntoDatabase(url, data);
+      return data;
+    })
+  );
 
 export const getSerialisedRepoData = (
   url: string,
@@ -194,12 +195,12 @@ const fetchDataFromHaskellAppFromSocket = async (
   socket: WebSocket
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
-    const emit = emitValue(notifier)
-    emit("Connecting to the API...")
+    const emit = emitValue(notifier);
+    emit("Connecting to the API...");
 
     socket.onopen = () => {
       // notify that connection to the api was successful
-      emit("Connected to the API!")
+      emit("Connected to the API!");
       // send data through socket
       socket.send(
         JSON.stringify({
@@ -214,7 +215,7 @@ const fetchDataFromHaskellAppFromSocket = async (
         const { data } = event;
         const parsed = JSON.parse(data);
 
-        if (parsed.type === "text_update") emit(parsed.data)
+        if (parsed.type === "text_update") emit(parsed.data);
         else if (parsed.type === "error") reject(parsed.message);
         else if (parsed.type === "value") {
           resolve(parsed.data);
@@ -228,7 +229,7 @@ const fetchDataFromHaskellAppFromSocket = async (
 
     socket.onerror = (_err: WebSocket.ErrorEvent) => {
       const s = "Encountered a Websocket Error";
-      emit(s)
+      emit(s);
       reject(new Error(s));
       socket.close();
     };
@@ -241,19 +242,22 @@ const fetchDataFromHaskellAppFromSocket = async (
  * @param url url to run the API on
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-export const fetchDataFromHaskellAppHTTP = (url: string, notifier: Subject<string> | null): Promise<RepositoryData> =>
+export const fetchDataFromHaskellAppHTTP = (
+  url: string,
+  notifier: Subject<string> | null
+): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
-    emitValue(notifier)("Fetching from the API...")
+    emitValue(notifier)("Fetching from the API...");
     fetch("http://" + API_CONN_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     }).then((response) => {
-      const errMsg = `Haskell API returned status ${response.status}`
-      emitValue(notifier)(errMsg)
+      const errMsg = `Haskell API returned status ${response.status}`;
+      emitValue(notifier)(errMsg);
       if (!response.ok) reject(Error(errMsg));
       response.json().then((d) => resolve(d.data));
-    })
+    });
   });
 
 export const fetchRepoData = pipeRepoDataViaCache(fetchDataFromHaskellAppIPC);

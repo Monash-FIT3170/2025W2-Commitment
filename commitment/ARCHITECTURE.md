@@ -136,7 +136,7 @@ Meteor.call('bookmarks.updateLastViewed', url, (err, result) => {
 
 #### Repository Data Access
 ```typescript
-import { fetchRepo, repoInDatabase } from '/imports/api/call_repo';
+import { fetchRepo, repoInDatabase } from '@api/call_repo';
 
 // Check if repository exists in database
 const exists = await repoInDatabase(githubUrl);

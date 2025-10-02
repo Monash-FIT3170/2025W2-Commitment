@@ -108,9 +108,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@ui/*": ["imports/ui/*"],
+      "@base/*": ["imports/ui/components/base/*"],
+      "@hook/*": ["imports/ui/hooks/*"],
+      "@api/*": ["imports/api/*"],
+      "@server/*": ["server/*"]
     }
   }
 }

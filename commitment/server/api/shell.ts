@@ -108,9 +108,9 @@ export const createDirectory =
   (baseDir: string) =>
   async (prefix: string): Promise<string> => {
     // Ensure the base directory is absolute
-    // mkdtemp requires the prefix to be a full path
-    await fs_promise.mkdir(baseDir, { recursive: true });
-    return await fs_promise.mkdtemp(path.join(path.resolve(baseDir), prefix));
+    // mkdir requires the prefix to be a full path
+    const absBase = path.resolve(baseDir);
+    return await fs_promise.mkdir(path.join(absBase, prefix), { recursive: true });
   };
 
 export const createTempDirectory = createDirectory(os.tmpdir());
