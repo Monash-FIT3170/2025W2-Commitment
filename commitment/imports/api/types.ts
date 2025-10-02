@@ -195,3 +195,10 @@ export type UnmappedContributor = {
   name: string;
   rawIdentifiers: string[];
 };
+
+export type ScoreFn = (
+  scales: number[],
+  idx: number,
+  users: { name: string; values: (number | null)[] }[],
+  selectedMetrics: string[]
+) => number;

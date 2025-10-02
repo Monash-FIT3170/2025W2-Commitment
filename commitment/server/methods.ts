@@ -186,8 +186,7 @@ Meteor.methods({
     return getScaledResults(
       await tryFromDatabaseSerialised(repoUrl, n),
       data,
-      repoUrl,
-      "" // null string for now as Yoonus is TODO fix this
+      repoUrl
     );
   },
 });
