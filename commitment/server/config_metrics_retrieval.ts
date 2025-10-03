@@ -1,5 +1,5 @@
-import { CommitData, SerializableRepoData } from "../imports/api/types";
-import { AliasConfig, StudentAlias } from "../imports/api/alias_configs";
+import { CommitData, SerializableRepoData } from "@api/types";
+import { AliasConfig, StudentAlias } from "@api/alias_configs";
 import { zip, getAllContributorsCommitCounts } from "./helper_functions"
 
 // Helper function to get commit counts for all contributors

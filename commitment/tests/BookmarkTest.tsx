@@ -1,6 +1,6 @@
 // /imports/ui/widgets/BookmarkButtonTest.tsx
-import React from 'react';
-import BookmarkButton from '../imports/ui/components/dashboard/BookmarkButton';
+import React from "react";
+import BookmarkButton from "../imports/ui/components/dashboard/BookmarkButton";
 
 /**
  * BookmarkButtonTest is a manual visual test component that demonstrates how
@@ -17,10 +17,10 @@ import BookmarkButton from '../imports/ui/components/dashboard/BookmarkButton';
  * 3. Run meteor and click the three buttons to see the behavior
  */
 function BookmarkButtonTest() {
-  const mockUrl1 = 'https://example.com/repo';
-  const mockTitle1 = 'Example Repo: Valid';
-  const mockUrl2 = 'htts://example.com/repo';
-  const mockUserID = 'testUser123';
+  const mockUrl1 = "https://example.com/repo";
+  const mockTitle1 = "Example Repo: Valid";
+  const mockUrl2 = "htts://example.com/repo";
+  const mockUserID = "testUser123";
 
   return (
     <div className="p-4">
