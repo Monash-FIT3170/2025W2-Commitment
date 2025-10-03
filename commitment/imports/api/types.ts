@@ -202,7 +202,7 @@ export type ContributorScaledMetric ={
 }
 
 export type ContributorScaledData = {
-  contributorName: string;
+  contributor: ContributorData;
   scaledMetric: ContributorScaledMetric;
 }
 

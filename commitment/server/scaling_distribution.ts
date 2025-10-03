@@ -86,7 +86,7 @@ export function getContributorScaledData(data: FilteredData, selectedMetric:Metr
     return contributors.map((contributor) => {
         const scaledMetric = getContributorScaledMetric(contributor, data, selectedMetric);
         return {
-            contributorName: contributor.value.name,
+            contributor: contributor.value,
             scaledMetric,
         };
     });
