@@ -12,6 +12,7 @@ import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import HeatmapGraph from "./HeatMapGraph";
+import PercentileGraph from "./PercentileGraph";
 
 import { AnalyticsData, MetricType, metricNames } from "@api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
@@ -237,6 +238,9 @@ export function AnalyticsView(): React.JSX.Element {
 
             <div className="flex flex-col col-span-2 row-start-1 gap-5">
               {/* Graphs */}
+
+              <PercentileGraph />
+              
               <HeatmapGraph
                 data={analytics.metrics.contributors.heatMap.data}
                 title={analytics.metrics.contributors.heatMap.title}
