@@ -26,9 +26,8 @@ export function getContributorMetrics(data: FilteredData): ContributorMetrics[]{
         },
     })); 
 }
-
 /** 
- * This function provides the percentile of a contributors metric.
+ * This function provides the percentile of a contributors metric by utilsing the mid rank method. 
  * @param passedContributor the contributor to get the percentile for
  * @param data the filtered data
  * @param selectedMetric the metric to get the percentile for
@@ -52,12 +51,20 @@ export function getContributorScaledMetric(passedContributor: SerialisableMapObj
     // get the contributor's value for the selected metric
     const contributorValue = contributorMetric.metrics[selectedMetric];
 
-    // calculate the number of values below the contributor's value
+    // calculate the number of values strictly below the contributor's value
     const numValuesBelow = metricValues.filter((value) => value < contributorValue).length;
-    const totalValues = metricValues.length;
+
+    // calculate the numbe rof values equal to the contirbutor's value 
+    const numValuesEqual = metricValues.filter((value) => value === contributorValue).length;
+
+    // calculate the mid rank 
+    const midRank = numValuesBelow + (numValuesEqual + 1) / 2;
+
+        
     
     // calculate the percentile
-    const percentile = parseFloat(Number((numValuesBelow / totalValues) * 100).toFixed(2));
+    const totalValues = metricValues.length;
+    const percentile = parseFloat(Number((midRank / totalValues) * 100).toFixed(2));
 
     return {
         metric: selectedMetric,
