@@ -19,7 +19,6 @@ import {
   Leaderboard,
   ScalingDistributionResult,
   ScalingDistributionGraph
-} from "../imports/api/types";
 } from "@api/types";
 
 import {
