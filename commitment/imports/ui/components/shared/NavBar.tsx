@@ -1,5 +1,6 @@
 import React from "react";
 import { Moon, Sun } from "lucide-react";
+import { Github } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
 import { useTheme } from "@hook/useTheme";
@@ -106,6 +107,17 @@ export const NavBar: React.FC = () => {
             <Moon className="h-6 w-6" />
           )}
         </button>
+
+        {/* Project's Github link */}  
+        <a
+          href="https://github.com/Monash-FIT3170/2025W2-Commitment"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-2 rounded-full transition-colors hover:bg-accent hover:text-accent-foreground"
+          aria-label="Project GitHub"
+        >
+          <Github className="h-6 w-6" />
+        </a>
 
         {!isLoggedIn && (
           <div>
