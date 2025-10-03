@@ -97,13 +97,13 @@ export const NavBar: React.FC = () => {
         <button
           type="button"
           onClick={handleToggleDarkMode}
-          className="p-2 rounded-full hover:bg-git-bg-bottom/30 transition-colors"
+          className="p-2 rounded-full transition-colors hover:bg-accent hover:text-accent-foreground"
           aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
           {isDark ? (
             <Sun className="h-6 w-6 text-yellow-400" />
           ) : (
-            <Moon className="h-6 w-6 text-gray-600" />
+            <Moon className="h-6 w-6" />
           )}
         </button>
 
