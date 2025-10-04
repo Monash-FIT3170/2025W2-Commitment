@@ -1,9 +1,4 @@
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@base/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@base/tabs";
 import React from "react";
 import { AnalyticsView } from "./AnalyticsView";
 import ScalingView from "../scaling/ScalingView";
@@ -27,7 +22,11 @@ const allTabData: TabData[] = [
   },
 ];
 
-export default function MetricsTabs() {
+type MetricsTabsProps = {
+  refreshTrigger: number;
+};
+
+export default function MetricsTabs({ refreshTrigger }: MetricsTabsProps) {
   const isLoggedIn = useAuth();
 
   // Show scaling only if authenticated
@@ -68,7 +67,7 @@ export default function MetricsTabs() {
       </TabsList>
 
       <TabsContent value="metrics">
-        <AnalyticsView />
+        <AnalyticsView refreshTrigger={refreshTrigger} />
       </TabsContent>
 
       {isLoggedIn && (

@@ -6,9 +6,10 @@ import { Spinner } from "@ui/components/base/spinner";
 
 type RefreshButtonProps = {
   url: string;
+  onRefresh?: (url: string) => void;
 };
 
-const RefreshButton: React.FC<RefreshButtonProps> = ({ url }) => {
+const RefreshButton: React.FC<RefreshButtonProps> = ({ url, onRefresh }) => {
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
@@ -17,6 +18,10 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({ url }) => {
     try {
       const update = await Meteor.callAsync("repoCollection.isUpToDate", url);
       console.log("Refreshed: ", update);
+      if (onRefresh) {
+        console.log("refreshing");
+        onRefresh(url);
+      }
     } catch (err) {
       console.error("Failed to refresh repo:", err);
     } finally {
