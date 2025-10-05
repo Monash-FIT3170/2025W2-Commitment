@@ -6,7 +6,7 @@ import {
   FileChanges,
   ChangeType,
   ContributorData,
-} from "../imports/api/types";
+} from "@api/types";
 
 // HELPER GRANULAR FUNCTIONS
 
@@ -23,6 +23,9 @@ export const getLinesOfCodeFromCommit = (commit: CommitData): number =>
 
 export const getBranchNames = (data: SerializableRepoData): string[] =>
   data.branches.map((b) => b.branchName);
+
+export const getAllCommits = (data: SerializableRepoData): CommitData[] =>
+  data.allCommits.map((p) => p.value);
 
 export const getTotalBranches = (data: SerializableRepoData): number => data.branches.length;
 
