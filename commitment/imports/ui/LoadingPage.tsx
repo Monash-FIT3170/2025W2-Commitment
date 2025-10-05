@@ -114,35 +114,47 @@ function updateModelFromMessage(m: string, prev: ProgressModel): ProgressModel {
 
   return model;
 }
+const MIN_SEEN_FRACTION = 0.05; // tiny credit if a stage is seen but totals unknown
+const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 
-/** Compute a target percentage from the model using weights */
+type FractionResolver = (m: ProgressModel) => number;
+
+const stageFraction: Record<StageKey, FractionResolver> = {
+  validate:        (m) => (m.seen.validate ? 1 : 0),
+  parseSetup:      (m) => (m.seen.parseSetup ? 1 : 0),
+  clone:           (m) => (m.seen.clone ? 1 : 0),
+  branches:        (m) => (m.seen.branches ? 1 : 0),
+  commitsDiscover: (m) => (m.seen.commitsDiscover ? 1 : 0),
+
+  commitData:      (m) => {
+    if (m.commitTotals && m.commitTotals.total > 0) {
+      return clamp01(m.commitTotals.done / m.commitTotals.total);
+    }
+    return m.seen.commitData ? MIN_SEEN_FRACTION : 0;
+  },
+
+  filesDiscover:   (m) => (m.seen.filesDiscover ? 1 : 0),
+
+  fileData:        (m) => {
+    if (m.fileTotals && m.fileTotals.total > 0) {
+      return clamp01(m.fileTotals.done / m.fileTotals.total);
+    }
+    return m.seen.fileData ? MIN_SEEN_FRACTION : 0;
+  },
+
+  finalize:        (m) => (m.seen.finalize ? 1 : 0),
+};
+
+/** Compute a target percentage from the model using weights (pure, no +=) */
 function computeTargetPercent(model: ProgressModel): number {
-  let percent = 0;
+  const weightedSum = (Object.keys(STAGE_WEIGHTS) as StageKey[]).reduce((acc, key) => {
+    const w = STAGE_WEIGHTS[key];        // weight in [0..1]
+    const f = stageFraction[key](model); // fraction in [0..1]
+    return acc + w * f;
+  }, 0);
 
-  (Object.keys(STAGE_WEIGHTS) as StageKey[]).forEach((k) => {
-    if (k === "commitData" || k === "fileData" || k === "filesDiscover") return;
-    if (model.seen[k]) percent += STAGE_WEIGHTS[k] * 100;
-  });
-
-  if (model.commitTotals && model.commitTotals.total > 0) {
-    const { done, total } = model.commitTotals;
-    percent += STAGE_WEIGHTS.commitData * clamp((done / total) * 100);
-  } else if (model.seen.commitData) {
-    percent += STAGE_WEIGHTS.commitData * 100 * 0.05;
-  }
-
-  if (model.seen.filesDiscover) {
-    percent += STAGE_WEIGHTS.filesDiscover * 100;
-  }
-
-  if (model.fileTotals && model.fileTotals.total > 0) {
-    const { done, total } = model.fileTotals;
-    percent += STAGE_WEIGHTS.fileData * clamp((done / total) * 100);
-  } else if (model.seen.fileData) {
-    percent += STAGE_WEIGHTS.fileData * 100 * 0.05;
-  }
-
-  return clamp(percent, 0, 98);
+  // Convert to percent and cap (avoid hitting full 100% before success)
+  return clamp(weightedSum * 100, 0, 98);
 }
 
 /** Smoothly ease actual progress toward target using rAF */
@@ -187,6 +199,7 @@ const LoadingPage: React.FC = () => {
   const stateMaybe = (location?.state as LocationState | null) ?? null;
   const repoUrl = stateMaybe?.repoUrl;
 
+  const [model, setModel] = useState<ProgressModel>(createEmptyModel());
   const [message, setMessage] = useState("Starting…");
   const [tipIndex, setTipIndex] = useState(0);
   const [hadError, setHadError] = useState(false);
@@ -215,24 +228,30 @@ const LoadingPage: React.FC = () => {
 
   const indeterminate =
     targetPct < 1 &&
-    !modelRef.current.seen.clone &&
-    !modelRef.current.seen.commitsDiscover &&
-    !modelRef.current.seen.commitData &&
-    !modelRef.current.seen.fileData;
+    !model.seen.clone &&
+    !model.seen.commitsDiscover &&
+    !model.seen.commitData &&
+    !model.seen.fileData;
 
   useEffect(() => {
     if (!repoUrl) return;
 
     let isMounted = true;
     const notifier = new Subject<string>();
+    
     const sub = notifier.subscribe((msg) => {
-      if (!isMounted) return;
-      setMessage(msg);
+    if (!isMounted) return;
+    setMessage(msg);
 
-      modelRef.current = updateModelFromMessage(msg, modelRef.current);
-      const nextTarget = computeTargetPercent(modelRef.current);
+    // Functional state update: derive next model from prev, and compute next target from next model
+    setModel((prev) => {
+      const next = updateModelFromMessage(msg, prev);
+      const nextTarget = computeTargetPercent(next);
       setTargetPct(nextTarget);
+      return next;
     });
+  });
+
 
     fetchRepo(repoUrl, notifier)
       .then((value: boolean) => {
