@@ -19,7 +19,7 @@ export default function MetricDropdownMenu({
   onChange,
 }: DropdownMenuCheckboxesProps): React.JSX.Element {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
