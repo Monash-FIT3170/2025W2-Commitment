@@ -6,6 +6,13 @@ import InfoButton from "@base/infoButton";
 import { HeatMapData } from "@api/types";
 import { ModeToggle } from "./ModeToggle";
 import type { ApexOptions } from "apexcharts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@base/select";
 
 // Types
 interface HeatmapPoint<X extends string | number = string> {
@@ -29,6 +36,7 @@ interface NormalizedSeries<X extends string | number = string> {
 interface Props {
   data: HeatMapData[];
   title?: string;
+  setGraphType?: (v: "percentile" | "heatmap") => void;
 }
 
 type Mode = "week" | "month";
@@ -239,6 +247,7 @@ function getLevels() {
 export default function HeatMapGraph({
   data,
   title,
+  setGraphType,
 }: Props): React.ReactElement {
   const [mode, setMode] = React.useState<Mode>("week");
   const { series, categories, users } = useMemo(
@@ -464,7 +473,20 @@ export default function HeatMapGraph({
               <InfoButton description="Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period" />
             </div>
           </div>
-          <ModeToggle value={mode} onChange={(v: Mode) => setMode(v)} />
+            <ModeToggle value={mode} onChange={(v: Mode) => setMode(v)} />
+          <div>
+            <Select defaultValue="heatmap"
+              onValueChange={setGraphType ? (v: "percentile" | "heatmap") => setGraphType(v) : undefined}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="heatmap">Heatmap</SelectItem>
+                <SelectItem value="percentile">Percentile</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardTitle>
       </CardHeader>
 

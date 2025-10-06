@@ -13,6 +13,13 @@ import { CardHeader, CardTitle } from "@base/card";
 import InfoButton from "@base/infoButton";
 import { ScalingDistributionResult, ContributorScaledData } from "@api/types";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@base/chart";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@base/select";
 
 /** ---------------- Example data ----------------
  * Matches your shape: { contributorName, scaledMetric: { metric, value, percentile } }
@@ -186,9 +193,10 @@ const AvatarDot = (props) => {
 interface PercentileGraphProps {
   data: ScalingDistributionResult;
   title?: string;
+  setGraphType?: (v: "percentile" | "heatmap") => void;
 }
 
-export default function PercentileGraph({ data, title }: PercentileGraphProps) {
+export default function PercentileGraph({ data, title, setGraphType }: PercentileGraphProps) {
   const { data: plotData, maxStack } = useMemo(
     () => makePlotData(data.contributors),
     [data]
@@ -203,6 +211,15 @@ export default function PercentileGraph({ data, title }: PercentileGraphProps) {
               <InfoButton description="Each circle is a contributor. X groups by quartile (or exact percentile), Y is a stack index so overlapping values pile upward." />
             </div>
           </div>
+          <Select defaultValue="percentile" onValueChange={setGraphType ? (v: "percentile" | "heatmap") => setGraphType(v) : undefined}>
+            <SelectTrigger className="w-[180px] ">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="heatmap">Heatmap</SelectItem>
+              <SelectItem value="percentile">Percentile</SelectItem>
+            </SelectContent>
+          </Select>
         </CardTitle>
       </CardHeader>
 
@@ -219,6 +236,7 @@ export default function PercentileGraph({ data, title }: PercentileGraphProps) {
             <XAxis
               type="number"
               dataKey="x"
+              domain={[0, 100]}
               allowDuplicatedCategory={false}
               ticks={undefined}
               label={{
@@ -243,12 +261,14 @@ export default function PercentileGraph({ data, title }: PercentileGraphProps) {
                     if (name === "y")
                       return (
                         <div className="flex w-full items-center justify-between gap-2">
-                          <span className="text-muted-foreground">{data.repoDistributions.metric}</span>
+                          <span className="text-muted-foreground">
+                            {data.repoDistributions.metric}
+                          </span>
                           <span className="font-mono font-medium tabular-nums text-foreground">
                             {item?.payload?.value}
                           </span>
                         </div>
-                      ); 
+                      );
                     return (
                       <div className="flex w-full items-center justify-between gap-2">
                         <span className="text-muted-foreground">

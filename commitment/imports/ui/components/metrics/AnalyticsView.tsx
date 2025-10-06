@@ -17,6 +17,9 @@ import PercentileGraph from "./PercentileGraph";
 import { AnalyticsData, MetricType, metricNames } from "@api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
 
+// Main graph state
+type MainGraphType = "heatmap" | "percentile";
+
 // -----------------------------
 // Main Component
 // -----------------------------
@@ -26,6 +29,7 @@ export function AnalyticsView(): React.JSX.Element {
   const metricsPageDescription =
     "This page gives an overview of key metrics and performance trends.";
 
+  const [mainGraph, setMainGraph] = useState<MainGraphType>("percentile");
   // setting up filters
   const [analytics, setAnalyticsData] = useState<AnalyticsData | null>(null);
   // set default date range to last 12 weeks
@@ -238,13 +242,21 @@ export function AnalyticsView(): React.JSX.Element {
 
             <div className="flex flex-col col-span-2 row-start-1 gap-5">
               {/* Graphs */}
-
-              <PercentileGraph data={analytics.metrics.contributors.scalingDistribution.data} title={analytics.metrics.contributors.scalingDistribution.title}/>
-              
-              <HeatmapGraph
-                data={analytics.metrics.contributors.heatMap.data}
-                title={analytics.metrics.contributors.heatMap.title}
-              />
+              {mainGraph === "percentile" ? (
+                <PercentileGraph
+                  data={analytics.metrics.contributors.scalingDistribution.data}
+                  title={
+                    analytics.metrics.contributors.scalingDistribution.title
+                  }
+                  setGraphType={setMainGraph}
+                />
+              ) : (
+                <HeatmapGraph
+                  data={analytics.metrics.contributors.heatMap.data}
+                  title={analytics.metrics.contributors.heatMap.title}
+                  setGraphType={setMainGraph}
+                />
+              )}
 
               {/* <div className="w-full min-h-[300px] h-full ">
                 <LeaderboardGraph
