@@ -466,7 +466,7 @@ export default function HeatMapGraph({
       <CardHeader className="pb-0">
         <CardTitle className="flex justify-between flex-wrap text-xl mt-0 font-bold gap-2">
           <div className="flex gap-2">
-            <span className="whitespace-nowrap">
+            <span className="">
               {title ?? "Contributions Heatmap"}
             </span>
             <div className="relative -mt-3">
@@ -474,11 +474,12 @@ export default function HeatMapGraph({
             </div>
           </div>
             <ModeToggle value={mode} onChange={(v: Mode) => setMode(v)} />
-          <div>
+          <div >
             <Select defaultValue="heatmap"
               onValueChange={setGraphType ? (v: "percentile" | "heatmap") => setGraphType(v) : undefined}
+             
             >
-              <SelectTrigger className="w-[180px] bg-git-bg-elevated">
+              <SelectTrigger className="w-[180px] bg-git-bg-elevated text-git-foreground font-normal shadow-none"  >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

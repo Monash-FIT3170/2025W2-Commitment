@@ -206,13 +206,13 @@ export default function PercentileGraph({ data, title, setGraphType }: Percentil
       <CardHeader className="pb-0">
         <CardTitle className="flex justify-between flex-wrap text-xl mt-0 font-bold gap-2">
           <div className="flex gap-2">
-            <span className="whitespace-nowrap">{title}</span>
+            <span className="">{title}</span>
             <div className="relative -mt-3">
               <InfoButton description="Each circle is a contributor. X groups by quartile (or exact percentile), Y is a stack index so overlapping values pile upward." />
             </div>
           </div>
           <Select defaultValue="percentile" onValueChange={setGraphType ? (v: "percentile" | "heatmap") => setGraphType(v) : undefined}>
-            <SelectTrigger className="w-[180px] bg-git-bg-elevated">
+            <SelectTrigger className="w-[180px] bg-git-bg-elevated text-git-foreground font-normal shadow-none">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
