@@ -206,7 +206,7 @@ export default function PercentileGraph({ data, title }: PercentileGraphProps) {
         </CardTitle>
       </CardHeader>
 
-      <div className="h-[380px]  w-full px-4 pb-4">
+      <div className="h-[600px]  w-full px-4 pb-4">
         <ChartContainer
           config={{
             x: { label: "Percentile" },
@@ -264,7 +264,7 @@ export default function PercentileGraph({ data, title }: PercentileGraphProps) {
               }
             />
 
-            <Scatter data={plotData} shape={<AvatarDot r={20} />} />
+            <Scatter data={plotData} shape={<AvatarDot r={23} />} />
           </ScatterChart>
         </ChartContainer>
       </div>

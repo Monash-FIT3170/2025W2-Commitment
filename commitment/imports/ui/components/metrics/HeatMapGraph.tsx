@@ -261,7 +261,7 @@ export default function HeatMapGraph({
   );
 
   const rowHeight = 50;
-  const minHeight = 408;
+  const minHeight = 594;
   const maxHeight = 800;
   const dynamicHeight = Math.max(
     minHeight,
