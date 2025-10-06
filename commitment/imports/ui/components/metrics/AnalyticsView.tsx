@@ -239,7 +239,7 @@ export function AnalyticsView(): React.JSX.Element {
             <div className="flex flex-col col-span-2 row-start-1 gap-5">
               {/* Graphs */}
 
-              <PercentileGraph />
+              <PercentileGraph data={analytics.metrics.contributors.scalingDistribution.data} title={analytics.metrics.contributors.scalingDistribution.title}/>
               
               <HeatmapGraph
                 data={analytics.metrics.contributors.heatMap.data}
