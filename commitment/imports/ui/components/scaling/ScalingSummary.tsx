@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ScalingTable";
 import { ScalingRadialChart } from "./ScalingRadialChart";
-import { UserScalingSummary } from "/imports/api/types";
+import { UserScalingSummary } from "@api/types";
 
 interface ScalingSummaryProps {
   userScalingSummaries: UserScalingSummary[]; // IF A GRADING SHEET IS PROVIDED, THE VALUES OF THIS PARAMETER MUST REFLECT THE FINAL GRADE, THUS CALCULATIONS ARE DONE AT THE GradingSheetForm STAGE

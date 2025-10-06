@@ -91,7 +91,7 @@ parsed :: String -> ParseResult a -> a
 parsed _ (Result r)   = r
 parsed "" (Error "")  = error "Got blank string"
 parsed "" (Error msg) = error msg
-parsed msg (Error e)  = error $ msg ++ ":\n" ++ e
+parsed msg (Error e)  = error $ msg 
 --                    = error $ msg 
 --                    = error $ msg ++ ":\n" ++ e
 
