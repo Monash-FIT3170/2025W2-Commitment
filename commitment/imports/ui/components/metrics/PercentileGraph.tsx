@@ -193,8 +193,6 @@ export default function PercentileGraph({ data, title }: PercentileGraphProps) {
     () => makePlotData(data.contributors),
     [data]
   );
-
-  console.log(data);
   return (
     <GraphCard className="w-full p-0">
       <CardHeader className="pb-0">
