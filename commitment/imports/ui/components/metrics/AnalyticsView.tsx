@@ -246,7 +246,7 @@ export function AnalyticsView(): React.JSX.Element {
                 title={analytics.metrics.contributors.heatMap.title}
               />
 
-              <div className="w-full min-h-[300px] h-full ">
+              {/* <div className="w-full min-h-[300px] h-full ">
                 <LeaderboardGraph
                   data={analytics.metrics.contributors.leaderboard.data}
                   title={analytics.metrics.contributors.leaderboard.title}
@@ -254,7 +254,7 @@ export function AnalyticsView(): React.JSX.Element {
                     analytics.metrics.contributors.leaderboard.xAxisLabel
                   }
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
