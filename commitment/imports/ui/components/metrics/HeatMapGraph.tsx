@@ -478,7 +478,7 @@ export default function HeatMapGraph({
             <Select defaultValue="heatmap"
               onValueChange={setGraphType ? (v: "percentile" | "heatmap") => setGraphType(v) : undefined}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] bg-git-bg-elevated">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

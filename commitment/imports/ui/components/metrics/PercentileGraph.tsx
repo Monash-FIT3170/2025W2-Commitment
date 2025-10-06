@@ -212,7 +212,7 @@ export default function PercentileGraph({ data, title, setGraphType }: Percentil
             </div>
           </div>
           <Select defaultValue="percentile" onValueChange={setGraphType ? (v: "percentile" | "heatmap") => setGraphType(v) : undefined}>
-            <SelectTrigger className="w-[180px] ">
+            <SelectTrigger className="w-[180px] bg-git-bg-elevated">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
