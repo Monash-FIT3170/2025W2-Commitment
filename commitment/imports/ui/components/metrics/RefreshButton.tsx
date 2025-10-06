@@ -33,6 +33,9 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({ url, onRefresh }: Refresh
     const updated = new Subject<boolean>();
     const $updated = updated.subscribe((updated: boolean) => {
       // TODO can show that the repo is up to date or not
+      updated
+        ? handleToast("Repo is up to date!")
+        : handleToast("Repo is out of sync, updating...");
     });
 
     updateRepo(url, updated, msgHandler)
