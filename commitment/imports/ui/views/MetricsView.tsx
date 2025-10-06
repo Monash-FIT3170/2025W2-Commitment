@@ -5,13 +5,8 @@ import TopBar from "../components/metrics/TopBar";
 const MetricsPage: React.FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const handleRefresh = async (repoUrl: string) => {
-    try {
-      await Meteor.callAsync("repoCollection.isUpToDate", repoUrl);
-      setRefreshTrigger((prev) => prev + 1);
-    } catch (error) {
-      console.error("Failed to refresh repo:", error);
-    }
+  const handleRefresh = () => {
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   return (
