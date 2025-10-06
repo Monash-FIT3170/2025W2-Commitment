@@ -39,9 +39,9 @@ export const updateRepo = async (
   url: string,
   notifier: Subject<boolean>,
   msgs: Subject<string> | null
-): Promise<Error | null> => {
+): Promise<boolean> => {
   const upToDate = await meteorCallAsync<boolean>("repoCollection.isUpToDate")(url);
   notifier.next(upToDate);
-  if (upToDate) return await fetchRepo(url, msgs).then((_) => null);
-  return null;
+  if (!upToDate) return await fetchRepo(url, msgs);
+  return false;
 };

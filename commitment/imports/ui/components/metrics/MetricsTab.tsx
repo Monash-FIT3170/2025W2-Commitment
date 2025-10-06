@@ -30,15 +30,10 @@ export default function MetricsTabs({ refreshTrigger }: MetricsTabsProps) {
   const isLoggedIn = useAuth();
 
   // Show scaling only if authenticated
-  const visibleTabs = allTabData.filter(
-    (tab) => !tab.requiresAuth || isLoggedIn
-  );
+  const visibleTabs = allTabData.filter((tab) => !tab.requiresAuth || isLoggedIn);
 
   return (
-    <Tabs
-      defaultValue="metrics"
-      className="w-full  bg-git-bg-elevated justify-items-start "
-    >
+    <Tabs defaultValue="metrics" className="w-full  bg-git-bg-elevated justify-items-start ">
       <TabsList className="w-full flex justify-start bg-git-bg-elevated ">
         {visibleTabs.map(({ value, label }) => (
           <TabsTrigger
