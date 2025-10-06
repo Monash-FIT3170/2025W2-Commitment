@@ -11,6 +11,8 @@ import {
 import GraphCard from "./GraphCard";
 import { CardHeader, CardTitle } from "@base/card";
 import InfoButton from "@base/infoButton";
+import { ScalingDistributionResult, ContributorScaledData } from "@api/types";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@base/chart";
 
 /** ---------------- Example data ----------------
  * Matches your shape: { contributorName, scaledMetric: { metric, value, percentile } }
@@ -83,49 +85,32 @@ const exampleContributors = [
 
 /** ---------------- Helpers ---------------- */
 
-const Q_ORDER = ["Q1", "Q2", "Q3", "Q4"];
-
-const getQuartile = (p: number) =>
-  p <= 25 ? "Q1" : p <= 50 ? "Q2" : p <= 75 ? "Q3" : "Q4";
-
 // Build plot data with stacking per (quartile, roundedPercentile)
-function makePlotData(
-  contributors: any[],
-  mode: "quartile" | "percentile" = "quartile"
-) {
+function makePlotData(contributors: ContributorScaledData[]) {
   // counters[q][roundedPct] = current stack height (1..n)
   const counters: Record<string, Record<number, number>> = {};
   const data: any[] = [];
 
   for (const c of contributors) {
-    const pct = Number(c.scaledMetric?.percentile ?? 0);
-    const q = mode === "quartile" ? getQuartile(pct) : String(Math.round(pct)); // x bucket
+    const pct = Number(c.scaledMetric.percentile ?? 0);
+    const q = String(Math.round(pct)); // x bucket
     const sub = Math.round(pct); // sub-bucket used for stacking within a quartile
 
-    const qKey = mode === "quartile" ? q : getQuartile(pct); // keep for tooltip if mode=percentile
     counters[q] ||= {};
-    counters[q][sub] = (counters[q][sub] || 0) + 1;
+    counters[q][sub] = (counters[q][sub] || 0) + 0.5;
 
     data.push({
-      x: mode === "quartile" ? q : q, // category x (Q1..Q4 or "0".."100")
+      x: q, // category x (Q1..Q4 or "0".."100")
       y: counters[q][sub], // stack index so dots pile up
-      name: c.contributorName,
+      name: c.contributor.name,
       percentile: pct,
-      value: Number(c.scaledMetric?.value ?? 0),
-      avatarUrl: c.avatarUrl || "",
-      quartile: qKey,
+      value: Number(c.scaledMetric.value ?? 0),
     });
   }
 
   // Sort data so categories are stable (Q1→Q4) and then by percentile
-  if (mode === "quartile") {
-    data.sort((a, b) => {
-      const dx = Q_ORDER.indexOf(a.x) - Q_ORDER.indexOf(b.x);
-      return dx !== 0 ? dx : a.percentile - b.percentile;
-    });
-  } else {
-    data.sort((a, b) => Number(a.x) - Number(b.x));
-  }
+
+  data.sort((a, b) => Number(a.x) - Number(b.x));
 
   const maxStack = Math.max(
     1,
@@ -198,21 +183,24 @@ const AvatarDot = (props) => {
   );
 };
 
-export default function PercentileGraph({
-  data = exampleContributors,
-  mode = "percentile", // "quartile" | "percentile"
-}) {
+interface PercentileGraphProps {
+  data: ScalingDistributionResult;
+  title?: string;
+}
+
+export default function PercentileGraph({ data, title }: PercentileGraphProps) {
   const { data: plotData, maxStack } = useMemo(
-    () => makePlotData(data, mode),
-    [data, mode]
+    () => makePlotData(data.contributors),
+    [data]
   );
 
+  console.log(data);
   return (
     <GraphCard className="w-full p-0">
       <CardHeader className="pb-0">
         <CardTitle className="flex justify-between flex-wrap text-xl mt-0 font-bold gap-2">
           <div className="flex gap-2">
-            <span className="whitespace-nowrap">Percentile Graph</span>
+            <span className="whitespace-nowrap">{title}</span>
             <div className="relative -mt-3">
               <InfoButton description="Each circle is a contributor. X groups by quartile (or exact percentile), Y is a stack index so overlapping values pile upward." />
             </div>
@@ -221,16 +209,22 @@ export default function PercentileGraph({
       </CardHeader>
 
       <div className="h-[380px]  w-full px-4 pb-4">
-        <ResponsiveContainer width="100%" height="100%">
+        <ChartContainer
+          config={{
+            x: { label: "Percentile" },
+            value: { label: "Percentile" },
+          }}
+          className="w-full h-full"
+        >
           <ScatterChart margin={{ top: 16, right: 24, bottom: 8, left: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
             <XAxis
-              type="category"
+              type="number"
               dataKey="x"
               allowDuplicatedCategory={false}
-              ticks={mode === "quartile" ? Q_ORDER : undefined}
+              ticks={undefined}
               label={{
-                value: mode === "quartile" ? "Quartiles" : "Percentile",
+                value: "Percentile",
                 position: "insideBottom",
                 offset: -6,
               }}
@@ -243,20 +237,38 @@ export default function PercentileGraph({
               hide // stack height is internal; hide for cleaner look
             />
             <Tooltip
-              cursor={{ strokeDasharray: "3 3" }}
-              formatter={(v, _name, { payload }) => [
-                `${payload.name}`,
-                `Pct: ${payload.percentile} • Value: ${payload.value}`,
-              ]}
-              labelFormatter={(label) =>
-                mode === "quartile"
-                  ? `Quartile: ${label}`
-                  : `Percentile: ${label}`
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  labelFormatter={(_, payload) => payload?.[0]?.payload?.name}
+                  formatter={(val, name, item, _idx, raw) => {
+                    if (name === "y")
+                      return (
+                        <div className="flex w-full items-center justify-between gap-2">
+                          <span className="text-muted-foreground">{data.repoDistributions.metric}</span>
+                          <span className="font-mono font-medium tabular-nums text-foreground">
+                            {item?.payload?.value}
+                          </span>
+                        </div>
+                      ); 
+                    return (
+                      <div className="flex w-full items-center justify-between gap-2">
+                        <span className="text-muted-foreground">
+                          Percentile
+                        </span>
+                        <span className="font-mono font-medium tabular-nums text-foreground">
+                          {val}
+                        </span>
+                      </div>
+                    );
+                  }}
+                />
               }
             />
+
             <Scatter data={plotData} shape={<AvatarDot r={20} />} />
           </ScatterChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </div>
     </GraphCard>
   );
