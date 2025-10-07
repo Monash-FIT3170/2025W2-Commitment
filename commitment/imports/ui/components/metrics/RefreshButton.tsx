@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Subject } from "rxjs";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { Spinner } from "@ui/components/base/spinner";
-import { useToast } from "../../hooks/useToast";
+import { useToast } from "@hook/useToast";
 
 import { updateRepo } from "@api/call_repo";
 
@@ -11,34 +11,48 @@ type RefreshButtonProps = {
   onRefresh?: (url: string) => void;
 };
 
-const RefreshButton: React.FC<RefreshButtonProps> = ({ url, onRefresh }: RefreshButtonProps) => {
+const RefreshButton: React.FC<RefreshButtonProps> = ({
+  url,
+  onRefresh,
+}: RefreshButtonProps) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const handleToast = (msg: string) => {
     // update toast msg with a timeout of 1s
     toast({
-      title: "toast message for reactive update of refreshing repo",
+      title: "Repository Status",
       description: msg,
-      variant: "destructive",
+      variant: "default",
     });
   };
 
-  const msgHandler = new Subject<string>();
-  const $toastMsg = msgHandler.subscribe(handleToast);
+  const msgHandlerRef = useRef(new Subject<string>());
+  const updatedRef = useRef(new Subject<boolean>());
 
-  const handleClick = async () => {
-    setLoading(true);
-
-    const updated = new Subject<boolean>();
-    const $updated = updated.subscribe((updated: boolean) => {
-      // TODO can show that the repo is up to date or not
+  useEffect(() => {
+    const toastSub = msgHandlerRef.current.subscribe(handleToast);
+    const updatedSub = updatedRef.current.subscribe((updated: boolean) => {
       updated
         ? handleToast("Repo is up to date!")
         : handleToast("Repo is out of sync, updating...");
     });
 
-    updateRepo(url, updated, msgHandler)
+    return () => {
+      toastSub.unsubscribe();
+      updatedSub.unsubscribe();
+    };
+  }, []);
+
+  const handleClick = async () => {
+    setLoading(true);
+
+    // const updated = new Subject<boolean>();
+    // const $updated = updated.subscribe((updated: boolean) => {
+    //   // TODO can show that the repo is up to date or not
+    // });
+
+    updateRepo(url, updatedRef.current, msgHandlerRef.current)
       .then((proceed: boolean) => {
         setLoading(false);
         // call to update the metrics here with a callback / notification
@@ -46,12 +60,8 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({ url, onRefresh }: Refresh
         if (proceed && onRefresh) onRefresh(url);
       })
       .catch((_e: Error) => {
-        // something went wrong here we dont know
-        // ideally we want to emit this message as this is
-        // an unawaited promise so
-        // no error will be propagated forward
-        // so we need to let them know an erorr occured
-        // TODO not by me :D
+        setLoading(false);
+        handleToast(`An unexpected error occurred: ${_e.message}`);
       });
   };
 
@@ -62,7 +72,10 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({ url, onRefresh }: Refresh
       className="inline-flex items-center justify-center px-3 py-2 text-[#F1502F] transition"
     >
       {loading ? (
-        <Spinner className="w-4 h-4 animate-spin text-[#F1502F]" variant="circle" />
+        <Spinner
+          className="w-4 h-4 animate-spin text-[#F1502F]"
+          variant="circle"
+        />
       ) : (
         <ReloadIcon className="w-4 h-4" />
       )}
