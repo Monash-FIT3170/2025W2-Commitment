@@ -70,5 +70,5 @@ const cloneToLocal = (url: string, path: string): Command => ({
 
 const getLastCommitDate = (): Command => ({
   ...doNotLogData,
-  cmd: `git log -1 --format=%cd`,
+  cmd: `git log -1 --format=%cI`,
 });
