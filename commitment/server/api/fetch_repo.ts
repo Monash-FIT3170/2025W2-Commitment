@@ -100,9 +100,9 @@ export const pipeRepoDataVia =
   (url: string, notifier: Subject<string> | null): Promise<RepositoryData> =>
     f(url, notifier)
       .then(assertRepoTyping) // enforces strong typing for the entire data structure
-      .then((data: RepositoryData) => {
+      .then(async (data: RepositoryData) => {
         if (notifier !== null) notifier.next("Consolidating new data into database...");
-        cacheIntoDatabase(url, data);
+        await cacheIntoDatabase(url, data);
         return data;
       })
       .catch((e2: Error) => {
