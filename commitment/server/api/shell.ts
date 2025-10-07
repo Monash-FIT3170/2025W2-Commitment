@@ -19,7 +19,21 @@ export type CommandResult = Readonly<{
   stdError: string | null;
 }>;
 
-export const successful = (res: CommandResult): boolean => res.error == null;
+export const anyFailedOuptut = (msg: string): boolean =>
+  [
+    "fatal:",
+    "error:",
+    "could not",
+    "not a git repository",
+    "Process exited with code",
+    "Encountered error",
+    "Process timed out",
+  ]
+    .map(msg.startsWith)
+    .reduce((acc: boolean, b: boolean) => acc || b, false);
+
+export const successful = (res: CommandResult): boolean =>
+  res.stdError !== null ? anyFailedOuptut(res.stdError) : false && res.error !== null;
 
 export const getErrorMsg = (res: CommandResult): string => {
   if (res.error) return res.error.message;
