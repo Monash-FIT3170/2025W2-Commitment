@@ -38,10 +38,7 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   const commandLocal = executeCommand(temp_working_dir);
 
   // checks whether the repository exists
-  const output1 = await commandLocal(checkIfExists(url)).then(
-    assertSuccess("Repository does not exist")
-  );
-  const hash = output1.split("\t")[0];
+  await commandLocal(checkIfExists(url)).then(assertSuccess("Repository does not exist"));
 
   // attempts to clone the repository to a local temp directory (that is unique)
   await commandLocal(cloneToLocal(url, temp_working_dir)).then(
@@ -49,7 +46,7 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   );
 
   // gets the date that HEAD was pushed
-  const date = await commandLocal(getDateFrom(hash)).then(
+  const date = await commandLocal(getLastCommitDate()).then(
     assertSuccess("Failed to fetch the HEAD commit details")
   );
 
@@ -71,7 +68,7 @@ const cloneToLocal = (url: string, path: string): Command => ({
   cmd: `git -c credential.helper= -c core.askPass=true clone --bare \"${url}\" \"${path}\"`,
 });
 
-const getDateFrom = (hash: string): Command => ({
+const getLastCommitDate = (): Command => ({
   ...doNotLogData,
-  cmd: `git show -s --format=%ci ${hash}`,
+  cmd: `git log -1 --format=%cd`,
 });
