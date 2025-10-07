@@ -33,7 +33,7 @@ export const anyFailedOuptut = (msg: string): boolean =>
     .reduce((acc: boolean, b: boolean) => acc || b, false);
 
 export const successful = (res: CommandResult): boolean =>
-  res.stdError !== null ? anyFailedOuptut(res.stdError) : false && res.error !== null;
+  res.stdError !== null ? !anyFailedOuptut(res.stdError) : true && res.error !== null;
 
 export const getErrorMsg = (res: CommandResult): string => {
   if (res.error) return res.error.message;
