@@ -11,7 +11,9 @@ interface PersonalServerResponse {
   createdAt?: Date;
 }
 
-const ServerResponses = new Mongo.Collection<PersonalServerResponse>("fetchRepoMessagesCollection");
+const ServerResponses = new Mongo.Collection<PersonalServerResponse>(
+  "fetchRepoMessagesCollection"
+);
 
 export const fetchRepo = (
   url: string,
@@ -27,7 +29,9 @@ export const fetchRepo = (
       {},
       { sort: { createdAt: -1 } }
     ).fetch();
-    messages.forEach((m: PersonalServerResponse) => (subject ? subject.next(m.text) : null));
+    messages.forEach((m: PersonalServerResponse) =>
+      subject ? subject.next(m.text) : null
+    );
   });
 
   return meteorCallAsync("getGitHubRepoData")(url, queryDatabase);
@@ -44,7 +48,9 @@ export const updateRepo = async (
   notifier: Subject<boolean>,
   msgs: Subject<string> | null
 ): Promise<boolean> => {
-  const upToDate = await meteorCallAsync<boolean>("repoCollection.isUpToDate")(url);
+  const upToDate = await meteorCallAsync<boolean>("repoCollection.isUpToDate")(
+    url
+  );
   notifier.next(upToDate);
   if (!upToDate) return await fetchRepo(url, msgs, false);
   return false;
