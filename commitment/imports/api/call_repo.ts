@@ -13,7 +13,11 @@ interface PersonalServerResponse {
 
 const ServerResponses = new Mongo.Collection<PersonalServerResponse>("fetchRepoMessagesCollection");
 
-export const fetchRepo = (url: string, subject: Subject<string> | null): Promise<boolean> => {
+export const fetchRepo = (
+  url: string,
+  subject: Subject<string> | null,
+  queryDatabase: boolean = true
+): Promise<boolean> => {
   // Subscribe to your personal message stream
   Meteor.subscribe("fetchRepoMessages");
 
@@ -26,7 +30,7 @@ export const fetchRepo = (url: string, subject: Subject<string> | null): Promise
     messages.forEach((m: PersonalServerResponse) => (subject ? subject.next(m.text) : null));
   });
 
-  return meteorCallAsync("getGitHubRepoData")(url);
+  return meteorCallAsync("getGitHubRepoData")(url, queryDatabase);
 };
 
 export const repoInDatabase = (url: string): Promise<boolean> =>
@@ -42,6 +46,6 @@ export const updateRepo = async (
 ): Promise<boolean> => {
   const upToDate = await meteorCallAsync<boolean>("repoCollection.isUpToDate")(url);
   notifier.next(upToDate);
-  if (!upToDate) return await fetchRepo(url, msgs);
+  if (!upToDate) return await fetchRepo(url, msgs, false);
   return false;
 };
