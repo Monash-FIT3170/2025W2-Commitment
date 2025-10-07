@@ -44,6 +44,8 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
   const repoUrl: string = location.state?.repoUrl ?? null;
 
+  //   Make a repo call here to get the number of contributors
+
   const [script, setScript] = useState<File[] | undefined>();
 
   const form = useForm<ScalingConfig>({
@@ -54,7 +56,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     },
   });
 
-  const handleDrop = (files: File[]) => setScript(files);
   const handleSubmit = async (data: ScalingConfig) => {
     try {
       const result = await Meteor.callAsync("getScalingResults", data, repoUrl);
@@ -65,6 +66,36 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     }
   };
 
+  const [methodOptions, setMethodOptions] = useState<string[]>([
+    "Percentiles",
+    "Mean +/- Std",
+    "Quartiles",
+  ]);
+
+  useEffect(() => {
+    const isSmallGroup = async () => {
+      try {
+        const result = (await Meteor.callAsync(
+          "isSmallContributorGroup",
+          repoUrl,
+          15
+        )) as boolean;
+
+        if (result) {
+          // If small group -> use limited or modified metrics
+          setMethodOptions(["Scale for small group"]);
+        } else {
+          // Otherwise -> use full set of metrics
+          setMethodOptions(["Percentiles", "Mean +/- Std", "Quartiles"]);
+        }
+      } catch (err) {
+        console.error("Error checking contributor group size:", err);
+      }
+    };
+
+    if (repoUrl) void isSmallGroup();
+  }, [repoUrl]);
+
   const metricOptions = [
     "Total No. Commits",
     // "Use AI to filter out commits",
@@ -72,7 +103,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     "LOC Per Commit",
     "Commits Per Day",
   ];
-  const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
 
   return (
     <div className="w-full">

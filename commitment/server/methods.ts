@@ -19,6 +19,7 @@ import { applyAliasMappingIfNeeded } from "./alias_mapping";
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 import { spawn } from "child_process";
+import { getNumberOfContributors } from "./helper_functions";
 
 Meteor.methods({
   /**
@@ -189,4 +190,19 @@ Meteor.methods({
       repoUrl
     );
   },
+
+
+  async isSmallContributorGroup(repoUrl: string = "", largestSize: number = 4): Promise<boolean> {
+
+    const n = new Subject<string>();
+
+    const result = getNumberOfContributors(await tryFromDatabaseSerialised(repoUrl, n));
+
+    console.log("result: ",result);
+    
+    if (result <= largestSize)
+      return true;
+
+    return false;
+  }
 });
