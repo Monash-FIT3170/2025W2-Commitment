@@ -20,6 +20,26 @@ import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 import { spawn } from "child_process";
 
+export async function getFilteredRepoData(  repoUrl:string, startDate:Date, endDate:Date, branch:string, contributor:string[]):Promise<FilteredData>{
+    // Get full repository data from db
+    const repo = await Meteor.callAsync("repoCollection.getData", repoUrl) as SerializableRepoData;
+
+    // Apply alias mapping if user has config
+    const userId = Meteor.userId();
+    const mappedRepo = await applyAliasMappingIfNeeded(repo, userId || "");
+
+    // Apply filtering
+    const filteredData = getFilteredRepoDataServer(
+      repoUrl,
+      startDate,
+      endDate,
+      mappedRepo,
+      branch,
+      contributor
+    );
+    return filteredData;
+}
+
 Meteor.methods({
   /**
    * Check if a repository exists and is accessible
