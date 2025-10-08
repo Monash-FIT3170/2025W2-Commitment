@@ -146,6 +146,59 @@ export const getSerialisedRepoData = (
   notifier: Subject<string> | null
 ): Promise<SerializableRepoData> => getRepoData(url, notifier).then(serializeRepoData);
 
+/**
+ * Fetches the repository data structure from the Haskell API
+ * Uses Websockets to recieve reactive messages from the app
+ *
+ * @param socket a WebSocket to send the messages over
+ * @param url url to run the API on
+ * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses*
+ * @returns Promise<RepositoryData>: a promise of the API completion
+ */
+const fetchDataFromHaskellAppFromSocket =
+  (socket: WebSocket) =>
+  (url: string, notifier: Subject<string> | null): Promise<RepositoryData> =>
+    new Promise<RepositoryData>((resolve, reject) => {
+      const emit = emitValue(notifier);
+      emit("Connecting to the API...");
+
+      socket.onopen = () => {
+        // notify that connection to the api was successful
+        emit("Connected to the API!");
+        // send data through socket
+        socket.send(
+          JSON.stringify({
+            url,
+          })
+        );
+      };
+
+      socket.onmessage = (event: WebSocket.MessageEvent) => {
+        // Step 2: Await response from haskell app
+        try {
+          const { data } = event;
+          const parsed = JSON.parse(data);
+
+          if (parsed.type === "text_update") emit(parsed.data);
+          else if (parsed.type === "error") reject(parsed.message);
+          else if (parsed.type === "value") {
+            resolve(parsed.data);
+            socket.close();
+          }
+        } catch (err) {
+          reject(err);
+          socket.close();
+        }
+      };
+
+      socket.onerror = (_err: WebSocket.ErrorEvent) => {
+        const s = "Encountered a Websocket Error";
+        emit(s);
+        reject(s);
+        socket.close();
+      };
+    });
+
 const SOCKET_PATH = "/tmp/haskell-ipc.sock";
 const MAX_PAYLOAD_SIZE_MB = 100;
 
@@ -157,19 +210,13 @@ const MAX_PAYLOAD_SIZE_MB = 100;
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-export const fetchDataFromHaskellAppIPC = (
-  url: string,
-  notifier: Subject<string> | null
-): Promise<RepositoryData> =>
-  fetchDataFromHaskellAppFromSocket(
-    url,
-    notifier,
-    new WebSocket("ws://" + API_CONN_ENDPOINT, {
-      socketPath: SOCKET_PATH,
-      perMessageDeflate: false, // optional, disables compression
-      maxPayload: MAX_PAYLOAD_SIZE_MB * 1024 * 1024, // optional, large messages support
-    })
-  );
+export const fetchDataFromHaskellAppIPC = fetchDataFromHaskellAppFromSocket(
+  new WebSocket("ws://" + API_CONN_ENDPOINT, {
+    socketPath: SOCKET_PATH,
+    perMessageDeflate: false, // optional, disables compression
+    maxPayload: MAX_PAYLOAD_SIZE_MB * 1024 * 1024, // optional, large messages support
+  })
+);
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -179,66 +226,9 @@ export const fetchDataFromHaskellAppIPC = (
  * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-export const fetchDataFromHaskellAppWS = (
-  url: string,
-  notifier: Subject<string> | null
-): Promise<RepositoryData> =>
-  fetchDataFromHaskellAppFromSocket(url, notifier, new WebSocket("ws://" + API_CONN_ENDPOINT));
-
-/**
- * Fetches the repository data structure from the Haskell API
- * Uses Websockets to recieve reactive messages from the app
- *
- * @param url url to run the API on
- * @param notifier a message sender, so that responsive messages can be sent from the API regarding errors and statuses
- * @param socket a WebSocket to send the messages over
- * @returns Promise<RepositoryData>: a promise of the API completion
- */
-const fetchDataFromHaskellAppFromSocket = async (
-  url: string,
-  notifier: Subject<string> | null,
-  socket: WebSocket
-): Promise<RepositoryData> =>
-  new Promise<RepositoryData>((resolve, reject) => {
-    const emit = emitValue(notifier);
-    emit("Connecting to the API...");
-
-    socket.onopen = () => {
-      // notify that connection to the api was successful
-      emit("Connected to the API!");
-      // send data through socket
-      socket.send(
-        JSON.stringify({
-          url,
-        })
-      );
-    };
-
-    socket.onmessage = (event: WebSocket.MessageEvent) => {
-      // Step 2: Await response from haskell app
-      try {
-        const { data } = event;
-        const parsed = JSON.parse(data);
-
-        if (parsed.type === "text_update") emit(parsed.data);
-        else if (parsed.type === "error") reject(parsed.message);
-        else if (parsed.type === "value") {
-          resolve(parsed.data);
-          socket.close();
-        }
-      } catch (err) {
-        reject(err);
-        socket.close();
-      }
-    };
-
-    socket.onerror = (_err: WebSocket.ErrorEvent) => {
-      const s = "Encountered a Websocket Error";
-      emit(s);
-      reject(new Error(s));
-      socket.close();
-    };
-  });
+export const fetchDataFromHaskellAppWS = fetchDataFromHaskellAppFromSocket(
+  new WebSocket("ws://" + API_CONN_ENDPOINT)
+);
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -252,14 +242,15 @@ export const fetchDataFromHaskellAppHTTP = (
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
-    emitValue(notifier)("Fetching from the API...");
+    const emit = emitValue(notifier);
+    emit("Fetching from the API...");
     fetch("http://" + API_CONN_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     }).then((response) => {
       const errMsg = `Haskell API returned status ${response.status}`;
-      emitValue(notifier)(errMsg);
+      emit(errMsg);
       if (!response.ok) reject(Error(errMsg));
       response.json().then((d) => resolve(d.data));
     });

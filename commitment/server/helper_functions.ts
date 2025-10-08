@@ -9,10 +9,6 @@ import {
 } from "@api/types";
 
 // HELPER GRANULAR FUNCTIONS
-const safeNumber = (value: unknown): number => {
-  const n = Number(value);
-  return Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
-};
 
 export const zip = <T extends any[][]>(...lists: T): { [K in keyof T]: T[K][number] }[] =>
   Array.from(
@@ -20,10 +16,15 @@ export const zip = <T extends any[][]>(...lists: T): { [K in keyof T]: T[K][numb
     (_, i) => lists.map((list) => list[i]) as { [K in keyof T]: T[K][number] }
   );
 
+const safeNumber = (value: unknown): number => {
+  const n = Number(value);
+  return Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
+};
+
+// FUNCTIONS THAT USE SerializableRepoData or any other type from Types.ts
+
 export const getLinesOfCodeFromCommit = (commit: CommitData): number =>
   commit.fileData.reduce((acc, f) => acc + f.newLines - f.deletedLines, 0);
-
-// FUNCTIONS THAT USE SerializableRepoData
 
 export const getBranchNames = (data: SerializableRepoData): string[] =>
   data.branches.map((b) => b.branchName);
@@ -87,8 +88,7 @@ export const getTotalCommitsPerContributor = (
   const commits = getCommitsFrom(repoData, contributorName);
   const count = Number(commits.length ?? 0);
   return Number.isNaN(count) ? 0 : count;
-
-}
+};
 
 export const getLOCperContributor = (
   repoData: SerializableRepoData,
@@ -102,7 +102,6 @@ export const getLOCperContributor = (
     }, 0);
     return acc + fileLOC;
   }, 0);
-
 
 export const getLocPerCommitPerContributor = (
   repoData: SerializableRepoData,
@@ -122,11 +121,10 @@ export const getCommitPerDayPerContributor = (
 
   const uniqueDays = new Set(
     commits.map((commit) => {
-      const date = new Date(commit.timestamp); 
-      return date.toISOString().split("T")[0]; 
+      const date = new Date(commit.timestamp);
+      return date.toISOString().split("T")[0];
     })
   );
 
   return safeNumber(commits.length / uniqueDays.size);
 };
-
