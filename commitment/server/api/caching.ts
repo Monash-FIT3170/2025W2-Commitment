@@ -5,7 +5,7 @@ import { check } from "meteor/check";
 
 import { RepositoryData, SerializableRepoData } from "@api/types";
 import { deserializeRepoData, serializeRepoData } from "@api/serialisation";
-import { overrideValue } from "@api/meteor_interface";
+import { overrideValue, emitValue } from "@api/meteor_interface";
 import { isUpToDate } from "./update";
 
 /**
@@ -108,7 +108,7 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
   ).catch(overrideValue({ numberAffected: 0 }));
 
   // res is an object like { numberAffected, insertedId }
-  return res.numberAffected > 0;
+  return res.numberAffected! > 0;
 };
 /**
  * removes a repo inside the database
@@ -118,16 +118,10 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
  */
 export const removeRepo = async (url: string): Promise<boolean> => {
   const doc = await RepoCollection.findOneAsync({ url: url });
-  if (null === doc) return false;
-  const res = await RepoCollection.removeAsync(doc._id);
+  if (null === doc || undefined == doc) return false;
+  const res = await RepoCollection.removeAsync(doc._id as string);
   return res > 0;
 };
-
-// should be used carefully as this exposes all data in the database
-export const allUrls = (): Promise<string[]> =>
-  RepoCollection.find()
-    .fetch()
-    .then((d: ServerRepoData[]) => d.map((d: ServerRepoData) => d.url));
 
 // -----------------------  WARNING  -----------------------
 // IF I SEE THIS OUTSIDE OF THE TESTCASES
@@ -146,11 +140,12 @@ export const tryFromDatabaseSerialised = async (
   url: string,
   notifier: Subject<string> | null
 ): Promise<SerializableRepoData> => {
-  if (notifier != null) notifier.next("Checking database for existing data...");
+  const emit = emitValue(notifier);
+  emit("Checking database for existing data...");
 
   const repoData = await RepoCollection.findOneAsync({ url });
   if (!repoData) throw Error("Data not found in database");
-  if (notifier != null) notifier.next("Found data in database!");
+  emit("Found data in database!");
 
   return repoData.data;
 };
@@ -172,8 +167,10 @@ export const tryFromDatabaseSerialisedViaLatest = async (
  * @param notifier a notifier to notify messages to
  * @returns Promise<RepositoryData> where it found the result, rejected results are search misses
  */
-export const tryFromDatabase = (url: string, notifier: Subject<string>): Promise<RepositoryData> =>
-  tryFromDatabaseSerialised(url, notifier).then(deserializeRepoData);
+export const tryFromDatabase = (
+  url: string,
+  notifier: Subject<string> | null
+): Promise<RepositoryData> => tryFromDatabaseSerialised(url, notifier).then(deserializeRepoData);
 
 /**
  * checks the database, ensuring the data is the most up to date on git

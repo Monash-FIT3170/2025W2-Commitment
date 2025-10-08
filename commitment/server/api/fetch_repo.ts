@@ -1,7 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
 import { WebSocket } from "ws";
-import net from "net";
 import dotenv from "dotenv";
 
 import { RepositoryData, SerializableRepoData } from "@api/types";
@@ -113,11 +112,12 @@ export const pipeRepoDataViaCache =
     }
 
     const entry = apiFetchPromises[url];
-    notifier ? entry.notifier.subscribe(emitValue(notifier)) : null;
+    const $sub = notifier ? entry.notifier.subscribe(emitValue(notifier)) : null;
     const awaitedValue = await entry.promise;
     // we can safely delete it here from the record to ensure that any other promises will fetch fresh data
     // if it is out of date from the database :3
     delete apiFetchPromises[url];
+    $sub ? $sub.unsubscribe() : null;
     return awaitedValue;
   };
 
