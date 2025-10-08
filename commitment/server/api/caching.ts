@@ -183,6 +183,6 @@ export const tryFromDatabase = (url: string, notifier: Subject<string>): Promise
  */
 export const tryFromDatabaseViaLatest = (
   url: string,
-  notifier: Subject<string>
+  notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
   tryFromDatabaseSerialisedViaLatest(url, notifier).then(deserializeRepoData);

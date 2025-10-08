@@ -90,31 +90,31 @@ export const pipeRepoDataViaCache =
     // we know database fetch failed, so lets join all same url requests together
     // check entry in record
     const existingPromise = apiFetchPromises[url];
-    if (existingPromise === null) {
+    if (existingPromise === null || existingPromise === undefined) {
       // put new promise into the record to allow other callers to await this request
       // this ensures that API requests are only made once per repo url
       const sub = new Subject<string>();
       const emitSub = emitValue(sub);
-      const p = f(url, sub)
-        .then(assertRepoTyping)
-        .then(async (d: RepositoryData) => {
-          emitSub("Caching data into the database...");
-          await cacheIntoDatabase(url, d);
-          return d;
-        })
-        .catch((e2: Error) => {
-          emitSub(`API fetch failed: ${e2}`);
-          throw e2;
-        });
-      apiFetchPromises[url] = {
+      const newEntry = {
+        promise: f(url, sub)
+          .then(assertRepoTyping)
+          .then(async (d: RepositoryData) => {
+            emitSub("Caching data into the database...");
+            await cacheIntoDatabase(url, d);
+            return d;
+          })
+          .catch((e2: Error) => {
+            emitSub(`API fetch failed: ${e2}`);
+            throw e2;
+          }),
         notifier: sub,
-        promise: p,
-      };
+      } as ApiFetchStruct;
+      apiFetchPromises[url] = newEntry;
     }
 
-    notifier ? apiFetchPromises[url].notifier.subscribe(notifier.next) : null;
-    const localPromise = apiFetchPromises[url].promise;
-    const awaitedValue = await localPromise;
+    const entry = apiFetchPromises[url];
+    notifier ? entry.notifier.subscribe(emitValue(notifier)) : null;
+    const awaitedValue = await entry.promise;
     // we can safely delete it here from the record to ensure that any other promises will fetch fresh data
     // if it is out of date from the database :3
     delete apiFetchPromises[url];
@@ -146,6 +146,9 @@ export const getSerialisedRepoData = (
   notifier: Subject<string> | null
 ): Promise<SerializableRepoData> => getRepoData(url, notifier).then(serializeRepoData);
 
+const SOCKET_PATH = "/tmp/haskell-ipc.sock";
+const MAX_PAYLOAD_SIZE_MB = 100;
+
 /**
  * Fetches the repository data structure from the Haskell API
  * Using Unix IPC mechanisms to bypass the network layer
@@ -158,18 +161,15 @@ export const fetchDataFromHaskellAppIPC = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
-  new Promise<RepositoryData>((resolve, reject) => {
-    const path = "/tmp/haskell-ipc.sock";
-
-    // Connect to Unix socket
-    const socket = net.createConnection(path, () => {
-      const ws = new WebSocket(null);
-      ws.setSocket(socket, null, 100 * 1024 * 1024); // hijack underlying socket (sets max msg size to 100MB)
-      fetchDataFromHaskellAppFromSocket(url, notifier, ws)
-        .then((d) => resolve(d))
-        .catch((e) => reject(e));
-    });
-  });
+  fetchDataFromHaskellAppFromSocket(
+    url,
+    notifier,
+    new WebSocket("ws://" + API_CONN_ENDPOINT, {
+      socketPath: SOCKET_PATH,
+      perMessageDeflate: false, // optional, disables compression
+      maxPayload: MAX_PAYLOAD_SIZE_MB * 1024 * 1024, // optional, large messages support
+    })
+  );
 
 /**
  * Fetches the repository data structure from the Haskell API
@@ -196,7 +196,7 @@ export const fetchDataFromHaskellAppWS = (
  */
 const fetchDataFromHaskellAppFromSocket = async (
   url: string,
-  notifier: Subject<string>,
+  notifier: Subject<string> | null,
   socket: WebSocket
 ): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) => {
