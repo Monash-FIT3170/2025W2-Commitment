@@ -10,18 +10,31 @@ import {
 
 // HELPER GRANULAR FUNCTIONS
 
+export const compareDates = (d1: Date, d2: Date): boolean => d1.valueOf() > d2.valueOf();
+
+export const takeFromBack = <T>(arr: T[], num: number): T[] => arr.slice(-num);
+
+export const join = (arr: string[]): string => arr.reduce((acc, i) => acc + i, "");
+
 export const zip = <T extends any[][]>(...lists: T): { [K in keyof T]: T[K][number] }[] =>
   Array.from(
     { length: Math.min(...lists.map((list) => list.length)) },
     (_, i) => lists.map((list) => list[i]) as { [K in keyof T]: T[K][number] }
   );
 
-const safeNumber = (value: unknown): number => {
+export const safeNumber = (value: unknown): number => {
   const n = Number(value);
   return Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
 };
 
 // FUNCTIONS THAT USE SerializableRepoData or any other type from Types.ts
+
+export const getLatestCommit = (data: SerializableRepoData): Date =>
+  getAllCommits(data).reduce(
+    (acc: Date, c: CommitData) =>
+      compareDates(acc, new Date(c.timestamp)) ? acc : new Date(c.timestamp),
+    new Date(0)
+  );
 
 export const getLinesOfCodeFromCommit = (commit: CommitData): number =>
   commit.fileData.reduce((acc, f) => acc + f.newLines - f.deletedLines, 0);

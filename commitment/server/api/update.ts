@@ -1,6 +1,5 @@
 import { SerializableRepoData } from "@api/types";
-import { CommitData } from "@api/types";
-import { getAllCommits } from "/server/helper_functions";
+import { join, takeFromBack, getLatestCommit } from "/server/helper_functions";
 import {
   Command,
   assertSuccess,
@@ -10,23 +9,13 @@ import {
   deleteAllFromDirectory,
 } from "./shell";
 
-const compareDates = (d1: Date, d2: Date): boolean => d1.valueOf() > d2.valueOf();
-
-const takeFromBack = <T>(arr: T[], num: number): T[] => arr.slice(-num);
-
-const join = (arr: string[]): string => arr.reduce((acc, i) => acc + i, "");
-
 /**
  * checks whether a repository splat is up to date with the real version on github (doesn't need to clone anything to the server, can just use remote query)
  * @param data the data to check whether it is up to date or not
  * @returns whether the data is up to date
  */
 export const isUpToDate = async (url: string, data: SerializableRepoData): Promise<boolean> => {
-  const lastCommitFromDatabase: Date = getAllCommits(data).reduce(
-    (acc: Date, c: CommitData) =>
-      compareDates(acc, new Date(c.timestamp)) ? acc : new Date(c.timestamp),
-    new Date(0)
-  );
+  const lastCommitFromDatabase: Date = getLatestCommit(data);
 
   // works out a relative directory to work with based on the
   // publisher of the repo and the repo name
