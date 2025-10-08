@@ -19,12 +19,30 @@ export type CommandResult = Readonly<{
   stdError: string | null;
 }>;
 
-export const successful = (res: CommandResult): boolean => res.error == null;
+export const anyFailedOuptut = (msg: string): boolean =>
+  [
+    "fatal:",
+    "error:",
+    "could not",
+    "not a git repository",
+    "Process exited with code",
+    "Encountered error",
+    "Process timed out",
+  ]
+    .map(msg.startsWith)
+    .reduce((acc: boolean, b: boolean) => acc || b, false);
+
+const successful = (res: CommandResult): boolean => {
+  const stderr = res.stdError?.toLowerCase() || "";
+  const isFatal = stderr.includes("fatal") || stderr.includes("error");
+
+  return !res.error && !isFatal;
+};
 
 export const getErrorMsg = (res: CommandResult): string => {
   if (res.error) return res.error.message;
   else if (res.stdError) return res.stdError;
-  throw Error(`Command was successful: ${res.cmd}`);
+  throw Error(`Command was successful: ${JSON.stringify(res, null, 2)}`);
 };
 
 export const assertSuccess =
@@ -32,7 +50,9 @@ export const assertSuccess =
   (res: CommandResult): string => {
     if (!successful(res))
       throw Error(
-        `${errMsg}: \nError when running command "${res.cmd.cmd}": \n${getErrorMsg(res)}`
+        `${errMsg}: \nError when running command "${
+          res.cmd.cmd
+        }": \n${getErrorMsg(res)}`
       );
     return res.result;
   };
@@ -43,7 +63,8 @@ const defaultResult = {
   stdError: null,
 };
 
-export const defaultSuccess = (command: string) => `✅  Command succeeded: ${command}`;
+export const defaultSuccess = (command: string) =>
+  `✅  Command succeeded: ${command}`;
 export const defaultFail = (command: string, e: Error) =>
   `❌  Command failed: ${command}\n Error: ${e.message}`;
 export const defaultStdFail = (command: string, stderr: string) =>
@@ -66,36 +87,40 @@ export const executeCommand =
   (cwd: string) =>
   (f: Command): Promise<CommandResult> =>
     new Promise((resolve, reject) => {
-      exec(f.cmd, { cwd: cwd }, (error: Error | null, stdout: string, stderr: string) => {
-        if (stderr) {
-          if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr));
+      exec(
+        f.cmd,
+        { cwd: cwd },
+        (error: Error | null, stdout: string, stderr: string) => {
+          if (stderr) {
+            if (f.shouldLog) console.error(f.onStdFail(f.cmd, stderr));
 
-          return resolve({
-            ...defaultResult,
-            cmd: f,
-            result: stdout,
-            stdError: stderr,
-          });
-        } else if (error) {
-          if (f.shouldLog) console.error(f.onFail(f.cmd, error));
+            return resolve({
+              ...defaultResult,
+              cmd: f,
+              result: stdout,
+              stdError: stderr,
+            });
+          } else if (error) {
+            if (f.shouldLog) console.error(f.onFail(f.cmd, error));
 
-          return resolve({
-            ...defaultResult,
-            cmd: f,
-            result: stdout,
-            error: error,
-            stdError: stderr,
-          });
-        } else {
-          if (f.shouldLog) console.log(f.onSuccess(f.cmd));
+            return resolve({
+              ...defaultResult,
+              cmd: f,
+              result: stdout,
+              error: error,
+              stdError: stderr,
+            });
+          } else {
+            if (f.shouldLog) console.log(f.onSuccess(f.cmd));
 
-          return resolve({
-            ...defaultResult,
-            cmd: f,
-            result: stdout,
-          });
+            return resolve({
+              ...defaultResult,
+              cmd: f,
+              result: stdout,
+            });
+          }
         }
-      });
+      );
     });
 
 /**
@@ -110,7 +135,11 @@ export const createDirectory =
     // Ensure the base directory is absolute
     // mkdir requires the prefix to be a full path
     const absBase = path.resolve(baseDir);
-    return await fs_promise.mkdir(path.join(absBase, prefix), { recursive: true });
+    const tmpPath = path.join(absBase, prefix);
+    await fs_promise.mkdir(tmpPath, {
+      recursive: true,
+    });
+    return tmpPath;
   };
 
 export const createTempDirectory = createDirectory(os.tmpdir());

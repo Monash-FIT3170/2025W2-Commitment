@@ -8,7 +8,6 @@ import BranchDropdownMenu from "./BranchDropdownMenu";
 // import { dark2 } from "./colors";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
-import { ContributorLineGraph } from "./LineGraph";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import HeatmapGraph from "./HeatMapGraph";
@@ -16,12 +15,19 @@ import HeatmapGraph from "./HeatMapGraph";
 import { AnalyticsData, MetricType, metricNames } from "@api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
 
+type AnalyticsViewProps = {
+  refreshTrigger: number;
+};
+
 // -----------------------------
 // Main Component
 // -----------------------------
-export function AnalyticsView(): React.JSX.Element {
+export function AnalyticsView({
+  refreshTrigger,
+}: AnalyticsViewProps): React.JSX.Element {
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
+  var analytics1: number;
   const metricsPageDescription =
     "This page gives an overview of key metrics and performance trends.";
 
@@ -81,6 +87,7 @@ export function AnalyticsView(): React.JSX.Element {
 
   const fetchAnalyticsData = React.useCallback(() => {
     if (!repoUrl) return;
+    console.log("fetching data");
     Meteor.call(
       "repo.getAnalyticsData",
       {
@@ -111,7 +118,7 @@ export function AnalyticsView(): React.JSX.Element {
   // Fetch when component mounts or filters change
   useEffect(() => {
     fetchAnalyticsData();
-  }, [fetchAnalyticsData]);
+  }, [fetchAnalyticsData, refreshTrigger]);
 
   // Loading & Error States
   if (loading) return <div>Loading repo data...</div>;

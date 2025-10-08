@@ -45,7 +45,7 @@ Meteor.publish("fetchRepoMessages", function () {
 });
 
 Meteor.methods({
-  async getGitHubRepoData(repoUrl: string) {
+  async getGitHubRepoData(repoUrl: string, queryDatabase: boolean = true) {
     // gets the current connection id to identify the stream the updates should be sent to
     const connectionId = this.connection!.id;
     const sub = clientMessageStreams[connectionId];
@@ -54,7 +54,7 @@ Meteor.methods({
     const subject = sub || new Subject<string>();
 
     // returns whether it was successful in caching to the database or not
-    return await getRepoData(repoUrl.trim(), subject).then((_) => true);
+    return await getRepoData(repoUrl.trim(), subject, queryDatabase).then((_) => true);
   },
 });
 
@@ -126,15 +126,14 @@ export const pipeRepoDataViaCache =
  */
 export const getRepoData = (
   url: string,
-  notifier: Subject<string> | null
-): Promise<RepositoryData> =>
-  tryFromDatabaseViaLatest(url, notifier).catch((_err1: Error) =>
-    fetchRepoData(url, notifier).then(async (data: RepositoryData) => {
-      emitValue(notifier)("Consolidating new data into database...");
-      await cacheIntoDatabase(url, data);
-      return data;
-    })
-  );
+  notifier: Subject<string> | null,
+  queryDatabase: boolean = true
+): Promise<RepositoryData> => {
+  const getRepo = () => fetchRepoData(url, notifier);
+  return queryDatabase
+    ? tryFromDatabaseViaLatest(url, notifier).catch((_e: Error) => getRepo())
+    : getRepo();
+};
 
 export const getSerialisedRepoData = (
   url: string,

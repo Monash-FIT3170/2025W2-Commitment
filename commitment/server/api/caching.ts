@@ -6,7 +6,6 @@ import { check } from "meteor/check";
 import { RepositoryData, SerializableRepoData } from "@api/types";
 import { deserializeRepoData, serializeRepoData } from "@api/serialisation";
 import { overrideValue } from "@api/meteor_interface";
-import { fetchRepoData } from "./fetch_repo";
 import { isUpToDate } from "./update";
 
 /**
@@ -69,7 +68,6 @@ Meteor.methods({
 
   /**
    * checks whether the entry into the database is the most up to date
-   * if not, automatically refreshes it
    *
    * @method repoCollection.isUpToDate
    * @param {string} url         The URL of the repo to check.
@@ -77,9 +75,8 @@ Meteor.methods({
    */
   async "repoCollection.isUpToDate"(url: string) {
     check(url, String);
-    const upToDate = await isUpToDate(url, await tryFromDatabaseSerialised(url, null));
-    if (!upToDate) fetchRepoData(url, null);
-    return upToDate;
+    const d = await tryFromDatabaseSerialised(url, null);
+    return await isUpToDate(url, d);
   },
 });
 

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Meteor } from "meteor/meteor";
 import { useLocation } from "react-router-dom";
-import { AnalyticsData, Metadata } from "/imports/api/types";
 import { useAuth } from "@ui/hooks/useAuth";
 import BookmarkButton from "../dashboard/BookmarkButton";
-import { useAuth } from "@hook/useAuth";
 import RefreshButton from "./RefreshButton";
+import { useToast } from "../../hooks/useToast";
 
 /**
  * JANKY METHOD FOR NOW taken from chatgpt: Extracts the repository name from a Git URL
@@ -26,7 +25,11 @@ function getRepoNameFromUrl(url: string): string {
   return repoNameWithGit.replace(/\.git$/, "");
 }
 
-export default function TopBar() {
+type TopBarProps = {
+  onRefresh: (url: string) => void;
+};
+
+export default function TopBar({ onRefresh }: TopBarProps) {
   // call meteor method to find the name
   const signedIn = useAuth();
   const location = useLocation();
@@ -57,7 +60,7 @@ export default function TopBar() {
         {repoUrl && signedIn && (
           <BookmarkButton url={repoUrl} title={repoName} variant="secondary" />
         )}
-        {repoUrl && <RefreshButton url={repoUrl} />}
+        {repoUrl && <RefreshButton url={repoUrl} onRefresh={onRefresh} />}
       </div>
     </div>
   );
