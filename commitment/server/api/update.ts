@@ -1,5 +1,11 @@
 import { SerializableRepoData } from "@api/types";
-import { join, takeFromBack, compareDates, getLatestCommit } from "/server/helper_functions";
+import {
+  join,
+  takeFromBack,
+  compareDates,
+  getLatestCommit,
+  getAllCommits,
+} from "/server/helper_functions";
 import {
   Command,
   assertSuccess,
@@ -15,7 +21,7 @@ import {
  * @returns whether the data is up to date
  */
 export const isUpToDate = async (url: string, data: SerializableRepoData): Promise<boolean> => {
-  const latestCommit = getLatestCommit(data);
+  const latestCommit = getLatestCommit(getAllCommits(data));
   if (latestCommit === null) return false;
   const lastDate: Date = latestCommit.timestamp;
 
@@ -63,5 +69,6 @@ const cloneToLocal = (url: string, path: string): Command => ({
 
 const getLastCommitDate = (): Command => ({
   ...doNotLogData,
-  cmd: `git log -1 --format=%cI`,
+  // gets all branches and get the latest commit from each one, then getting the latest among those
+  cmd: `git for-each-ref --sort=-committerdate --count=1 --format='%(committerdate:iso8601)' refs/heads/ refs/remotes/`,
 });
