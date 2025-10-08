@@ -15,7 +15,9 @@ import {
  * @returns whether the data is up to date
  */
 export const isUpToDate = async (url: string, data: SerializableRepoData): Promise<boolean> => {
-  const lastCommitFromDatabase: Date = getLatestCommit(data);
+  const latestCommit = getLatestCommit(data);
+  if (latestCommit === null) return false;
+  const lastDate: Date = latestCommit.timestamp;
 
   // works out a relative directory to work with based on the
   // publisher of the repo and the repo name
@@ -46,7 +48,7 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   // do actual comparison
   const cleanedDate = date.trim();
   const dateObj = new Date(cleanedDate);
-  return !compareDates(dateObj, lastCommitFromDatabase);
+  return !compareDates(dateObj, lastDate);
 };
 
 const checkIfExists = (url: string): Command => ({
