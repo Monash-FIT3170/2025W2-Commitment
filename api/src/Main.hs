@@ -38,6 +38,8 @@ cleanEnvironment = do
 
     pure ()
 
+socketPath :: String
+socketPath = "/tmp/haskell-ipc.sock"
 
 main :: IO ()
 main = do
@@ -54,7 +56,7 @@ main = do
     -- On Unix: TCP + Unix socket
     _ <- forkIO $ runSettings tcpSettings app
 
-    bracket (setupUnixSocket "/tmp/haskell-ipc.sock") close $ \unixSock ->
+    bracket (setupUnixSocket socketPath) close $ \unixSock ->
         runSettingsSocket defaultSettings unixSock app
 #endif
 
