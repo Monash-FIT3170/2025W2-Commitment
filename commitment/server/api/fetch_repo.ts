@@ -94,10 +94,16 @@ export const pipeRepoDataViaCache =
       // put new promise into the record to allow other callers to await this request
       // this ensures that API requests are only made once per repo url
       const sub = new Subject<string>();
+      const emitSub = emitValue(sub);
       const p = f(url, sub)
         .then(assertRepoTyping)
+        .then(async (d: RepositoryData) => {
+          emitSub("Caching data into the database...");
+          await cacheIntoDatabase(url, d);
+          return d;
+        })
         .catch((e2: Error) => {
-          sub.next(`API fetch failed: ${e2}`);
+          emitSub(`API fetch failed: ${e2}`);
           throw e2;
         });
       apiFetchPromises[url] = {
