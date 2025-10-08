@@ -1,12 +1,4 @@
-import {
-  SerializableRepoData,
-  RepositoryData,
-  BranchData,
-  CommitData,
-  FileChanges,
-  ChangeType,
-  ContributorData,
-} from "@api/types";
+import { SerializableRepoData, CommitData } from "@api/types";
 
 // HELPER GRANULAR FUNCTIONS
 
@@ -29,11 +21,23 @@ export const safeNumber = (value: unknown): number => {
 
 // FUNCTIONS THAT USE SerializableRepoData or any other type from Types.ts
 
-export const getLatestCommit = (data: SerializableRepoData): Date =>
+export const sortCommitsByDate = (data: SerializableRepoData): CommitData[] =>
+  getAllCommits(data).sort(
+    (d1: CommitData, d2: CommitData) => d1.timestamp.valueOf() - d2.timestamp.valueOf()
+  );
+
+export const getEarliestCommit = (data: SerializableRepoData): CommitData | null =>
   getAllCommits(data).reduce(
-    (acc: Date, c: CommitData) =>
-      compareDates(acc, new Date(c.timestamp)) ? acc : new Date(c.timestamp),
-    new Date(0)
+    (acc: CommitData | null, c: CommitData) =>
+      acc && compareDates(acc.timestamp, new Date(c.timestamp)) ? c : acc,
+    null
+  );
+
+export const getLatestCommit = (data: SerializableRepoData): CommitData | null =>
+  getAllCommits(data).reduce(
+    (acc: CommitData | null, c: CommitData) =>
+      acc && compareDates(acc.timestamp, new Date(c.timestamp)) ? acc : c,
+    null
   );
 
 export const getLinesOfCodeFromCommit = (commit: CommitData): number =>
