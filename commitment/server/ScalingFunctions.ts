@@ -27,14 +27,14 @@ GENERAL FLOW OF SCALING:
     - only include selected metrics, convert invalid values to null
 6. Normalize metrics (or apply small-group percentile ranking if ≤ 3 users)
     - consider creating a separate method for this in Milestone 4
-7. Score users based on the selected method (Percentiles, Mean +/- Std, Quartiles, Default)
+7. Score users based on the selected method (Percentiles, Mean +/- Std, Quartiles, Compact Scaling, Default)
 8. Combine scores with contributor metadata
 9. Return final array of UserScalingSummary
 */
 
 
 
-const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
+const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day", "Compact Scaling"];
 
 //
 // ---------- Normalization helpers! ----------
@@ -110,16 +110,43 @@ const scoringStrategies: Record<string, ScoreFn> = {
   },
 
   "Mean +/- Std": (scales) => {
-    const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
-    const std = Math.sqrt(scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length);
-    return mean + std;
-  },
+  const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
+  const std = Math.sqrt(scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length);
+  const max = Math.max(...scales);
+  const min = Math.min(...scales);
+  const cappedStd = Math.min(std, (max - min) / 2); // cap at half range
+  return mean + cappedStd;
+},
 
   Quartiles: (scales) => {
     const sorted = [...scales].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
   },
+
+   "Compact Scaling": (scales: number[]) => {
+
+   console.log("scales",scales)
+        const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
+        const std = Math.sqrt(
+            scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length
+        );
+
+        const min = Math.min(...scales);
+        const max = Math.max(...scales);
+
+        const smoothScale = (x: number) => {
+            const normalized = (x - mean) / (std || 1); // normalize by std
+            // Use a soft cap instead of hard 1.2
+            return 1 + Math.tanh(normalized) * 0.2; 
+        };
+
+        // Map all values and take the **mean as the score**
+        const scaledValues = scales.map(smoothScale);
+        const averageScaled = scaledValues.reduce((a, b) => a + b, 0) / scaledValues.length;
+
+        return averageScaled;
+    },
 
   Default: (scales) => scales.reduce((a, b) => a + b, 0) / scales.length, // just calculates the mean (average) of the user’s normalized metric values
 };

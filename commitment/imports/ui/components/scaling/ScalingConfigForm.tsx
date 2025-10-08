@@ -83,7 +83,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
         if (result) {
           // If small group -> use limited or modified metrics
-          setMethodOptions(["Scale for small group"]);
+          setMethodOptions(["Compact Scaling"]);
         } else {
           // Otherwise -> use full set of metrics
           setMethodOptions(["Percentiles", "Mean +/- Std", "Quartiles"]);
