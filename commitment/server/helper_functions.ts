@@ -19,6 +19,12 @@ export const safeNumber = (value: unknown): number => {
   return Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
 };
 
+export const minValue = <T>(arr: T[], f: (v1: T, v2: T) => boolean): T =>
+  arr.reduce((v1, v2) => (f(v1, v2) ? v1 : v2), arr[0]);
+
+export const maxValue = <T>(arr: T[], f: (v1: T, v2: T) => boolean): T =>
+  arr.reduce((v1, v2) => (f(v1, v2) ? v2 : v1), arr[0]);
+
 // FUNCTIONS THAT USE SerializableRepoData or any other type from Types.ts
 
 export const sortCommitsByDate = (data: SerializableRepoData): CommitData[] =>
@@ -26,19 +32,19 @@ export const sortCommitsByDate = (data: SerializableRepoData): CommitData[] =>
     (d1: CommitData, d2: CommitData) => d1.timestamp.valueOf() - d2.timestamp.valueOf()
   );
 
-export const getEarliestCommit = (data: SerializableRepoData): CommitData | null =>
-  getAllCommits(data).reduce(
-    (acc: CommitData | null, c: CommitData) =>
-      acc && compareDates(acc.timestamp, new Date(c.timestamp)) ? c : acc,
-    null
-  );
+export const getCommitDates = (data: CommitData[]): Date[] => data.map((d) => d.timestamp);
 
-export const getLatestCommit = (data: SerializableRepoData): CommitData | null =>
-  getAllCommits(data).reduce(
-    (acc: CommitData | null, c: CommitData) =>
-      acc && compareDates(acc.timestamp, new Date(c.timestamp)) ? acc : c,
-    null
-  );
+export const getEarliestCommit = (data: CommitData[]): CommitData | null =>
+  data.length !== 0 ? minValue(data, (d1, d2) => compareDates(d1.timestamp, d2.timestamp)) : null;
+
+export const getLatestCommit = (data: CommitData[]): CommitData | null =>
+  data.length !== 0 ? maxValue(data, (d1, d2) => compareDates(d1.timestamp, d2.timestamp)) : null;
+
+export const getEarliestDate = (data: Date[]): Date =>
+  data.length !== 0 ? minValue(data, compareDates) : new Date(0);
+
+export const getLatestDate = (data: Date[]): Date =>
+  data.length !== 0 ? maxValue(data, compareDates) : new Date(0);
 
 export const getLinesOfCodeFromCommit = (commit: CommitData): number =>
   commit.fileData.reduce((acc, f) => acc + f.newLines - f.deletedLines, 0);
