@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DateRange } from "react-day-picker";
 import { useLocation } from "react-router-dom";
 import { subWeeks } from "date-fns";
@@ -11,23 +11,20 @@ import { HighlightCardWithGraph } from "./HighlightCard";
 import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import HeatmapGraph from "./HeatMapGraph";
+import { useToast } from "@hook/useToast";
+import { Subject } from "rxjs";
+
+import { updateRepo } from "@api/call_repo";
 
 import { AnalyticsData, MetricType, metricNames } from "@api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
 
-type AnalyticsViewProps = {
-  refreshTrigger: number;
-};
-
 // -----------------------------
 // Main Component
 // -----------------------------
-export function AnalyticsView({
-  refreshTrigger,
-}: AnalyticsViewProps): React.JSX.Element {
+export function AnalyticsView(): React.JSX.Element {
   const location = useLocation();
   const repoUrl: string | null = location.state?.repoUrl ?? null;
-  var analytics1: number;
   const metricsPageDescription =
     "This page gives an overview of key metrics and performance trends.";
 
@@ -52,6 +49,34 @@ export function AnalyticsView({
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { toast } = useToast();
+
+  const handleToast = (msg: string) => {
+    // update toast msg with a timeout of 1s
+    toast({
+      title: "Repository Status",
+      description: msg,
+      variant: "default",
+    });
+  };
+
+  const msgHandlerRef = useRef(new Subject<string>());
+  const updatedRef = useRef(new Subject<boolean>());
+
+  useEffect(() => {
+    const toastSub = msgHandlerRef.current.subscribe(handleToast);
+    const updatedSub = updatedRef.current.subscribe((updated: boolean) => {
+      updated
+        ? handleToast("Repo is up to date!")
+        : handleToast("Repo is out of sync, updating...");
+    });
+
+    return () => {
+      toastSub.unsubscribe();
+      updatedSub.unsubscribe();
+    };
+  }, []);
 
   // Initial fetch only once
   useEffect(() => {
@@ -87,26 +112,37 @@ export function AnalyticsView({
 
   const fetchAnalyticsData = React.useCallback(() => {
     if (!repoUrl) return;
-    console.log("fetching data");
-    Meteor.call(
-      "repo.getAnalyticsData",
-      {
-        repoUrl,
-        startDate: dateRange?.from,
-        endDate: dateRange?.to,
-        branch: selectedBranch,
-        contributors: selectedContributors,
-        metric: selectedMetrics,
-      },
-      (err: Error, data: AnalyticsData) => {
-        if (err) {
-          setError(err.message);
+
+    updateRepo(repoUrl, updatedRef.current, msgHandlerRef.current)
+      .then((proceed: boolean) => {
+        if (proceed) {
+          Meteor.call(
+            "repo.getAnalyticsData",
+            {
+              repoUrl,
+              startDate: dateRange?.from,
+              endDate: dateRange?.to,
+              branch: selectedBranch,
+              contributors: selectedContributors,
+              metric: selectedMetrics,
+            },
+            (err: Error, data: AnalyticsData) => {
+              if (err) {
+                setError(err.message);
+              } else {
+                setAnalyticsData(data);
+              }
+              setLoading(false);
+            }
+          );
         } else {
-          setAnalyticsData(data);
+          setLoading(false);
         }
+      })
+      .catch((_e: Error) => {
         setLoading(false);
-      }
-    );
+        handleToast(`An unexpected error occurred: ${_e.message}`);
+      });
   }, [
     repoUrl,
     selectedBranch,
@@ -118,7 +154,7 @@ export function AnalyticsView({
   // Fetch when component mounts or filters change
   useEffect(() => {
     fetchAnalyticsData();
-  }, [fetchAnalyticsData, refreshTrigger]);
+  }, [fetchAnalyticsData]);
 
   // Loading & Error States
   if (loading) return <div>Loading repo data...</div>;
