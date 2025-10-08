@@ -156,9 +156,10 @@ export const getSerialisedRepoData = (
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
 const fetchDataFromHaskellAppFromSocket =
-  (socket: WebSocket) =>
+  (f: () => WebSocket) =>
   (url: string, notifier: Subject<string> | null): Promise<RepositoryData> =>
     new Promise<RepositoryData>((resolve, reject) => {
+      const socket = f();
       const emit = emitValue(notifier);
       emit("Connecting to the API...");
 
@@ -211,11 +212,12 @@ const MAX_PAYLOAD_SIZE_MB = 100;
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
 export const fetchDataFromHaskellAppIPC = fetchDataFromHaskellAppFromSocket(
-  new WebSocket("ws://" + API_CONN_ENDPOINT, {
-    socketPath: SOCKET_PATH,
-    perMessageDeflate: false, // optional, disables compression
-    maxPayload: MAX_PAYLOAD_SIZE_MB * 1024 * 1024, // optional, large messages support
-  })
+  () =>
+    new WebSocket("ws://" + API_CONN_ENDPOINT, {
+      socketPath: SOCKET_PATH,
+      perMessageDeflate: false, // optional, disables compression
+      maxPayload: MAX_PAYLOAD_SIZE_MB * 1024 * 1024, // optional, large messages support
+    })
 );
 
 /**
@@ -227,7 +229,7 @@ export const fetchDataFromHaskellAppIPC = fetchDataFromHaskellAppFromSocket(
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
 export const fetchDataFromHaskellAppWS = fetchDataFromHaskellAppFromSocket(
-  new WebSocket("ws://" + API_CONN_ENDPOINT)
+  () => new WebSocket("ws://" + API_CONN_ENDPOINT)
 );
 
 /**
