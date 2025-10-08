@@ -67,9 +67,9 @@ export function AnalyticsView(): React.JSX.Element {
   useEffect(() => {
     const toastSub = msgHandlerRef.current.subscribe(handleToast);
     const updatedSub = updatedRef.current.subscribe((updated: boolean) => {
-      updated
-        ? handleToast("Repo is up to date!")
-        : handleToast("Repo is out of sync, updating...");
+      if (!updated) {
+        handleToast("Repo is out of sync, updating...");
+      }
     });
 
     return () => {
@@ -141,7 +141,8 @@ export function AnalyticsView(): React.JSX.Element {
       })
       .catch((_e: Error) => {
         setLoading(false);
-        handleToast(`An unexpected error occurred: ${_e.message}`);
+        // handleToast(`An unexpected error occurred: ${_e.message}`);
+        console.log("Fetch error: ", _e.message);
       });
   }, [
     repoUrl,
