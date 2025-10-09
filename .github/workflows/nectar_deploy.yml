@@ -114,39 +114,39 @@ jobs:
           username: ${{ env.NECTAR_USER }}
           key: ${{ env.SSH_KEY }}
           source: "${{ env.BUILD_DIR }}/*.tar.gz"
-          target: "/build/"
+          target: "/home/ubuntu/build/"
 
-      # - name: Deploy on instance
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ env.NECTAR_HOST }}
-      #     username: ${{ env.NECTAR_USER }}
-      #     key: ${{ env.SSH_KEY }}
-      #     script: |
-      #       set -e
+      - name: Deploy on instance
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.NECTAR_HOST }}
+          username: ${{ env.NECTAR_USER }}
+          key: ${{ env.SSH_KEY }}
+          script: |
+            set -e
 
-      #       echo "--- Unpacking Meteor build ---"
-      #       sudo rm -rf ${DEPLOY_PATH_METEOR}
-      #       sudo mkdir -p ${DEPLOY_PATH_METEOR}
-      #       tar -xzf /home/ubuntu/build/meteor-bundle.tar.gz -C /tmp
-      #       sudo cp -r /tmp/bundle/* ${DEPLOY_PATH_METEOR}/
-      #       sudo chown -R ubuntu:ubuntu ${DEPLOY_PATH_METEOR}
+            echo "--- Unpacking Meteor build ---"
+            sudo rm -rf ${DEPLOY_PATH_METEOR}
+            sudo mkdir -p ${DEPLOY_PATH_METEOR}
+            tar -xzf /home/ubuntu/build/meteor-bundle.tar.gz -C /tmp
+            sudo cp -r /tmp/bundle/* ${DEPLOY_PATH_METEOR}/
+            sudo chown -R ubuntu:ubuntu ${DEPLOY_PATH_METEOR}
 
-      #       echo "--- Installing Meteor server dependencies ---"
-      #       cd ${DEPLOY_PATH_METEOR}/programs/server
-      #       npm install --production
+            echo "--- Installing Meteor server dependencies ---"
+            cd ${DEPLOY_PATH_METEOR}/programs/server
+            npm install --production
 
-      #       echo "--- Updating Haskell binary ---"
-      #       tar -xzf /home/ubuntu/build/haskell-api.tar.gz -C /home/ubuntu
-      #       sudo mv /home/ubuntu/commitment-api ${DEPLOY_PATH_HASKELL}/commitment-api
-      #       sudo chmod +x ${DEPLOY_PATH_HASKELL}/commitment-api
+            echo "--- Updating Haskell binary ---"
+            tar -xzf /home/ubuntu/build/haskell-api.tar.gz -C /home/ubuntu
+            sudo mv /home/ubuntu/commitment-api ${DEPLOY_PATH_HASKELL}/commitment-api
+            sudo chmod +x ${DEPLOY_PATH_HASKELL}/commitment-api
 
-      #       echo "--- Restarting services ---"
-      #       sudo systemctl daemon-reload
-      #       sudo systemctl restart meteor.service haskell-api.service || true
+            echo "--- Restarting services ---"
+            sudo systemctl daemon-reload
+            sudo systemctl restart meteor.service haskell-api.service || true
 
-      #       echo "--- Checking service statuses ---"
-      #       sudo systemctl status meteor.service --no-pager || true
-      #       sudo systemctl status haskell-api.service --no-pager || true
+            echo "--- Checking service statuses ---"
+            sudo systemctl status meteor.service --no-pager || true
+            sudo systemctl status haskell-api.service --no-pager || true
 
-      #       echo "Deployment complete"
+            echo "Deployment complete"
