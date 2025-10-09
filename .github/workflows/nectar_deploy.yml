@@ -54,7 +54,7 @@ jobs:
           meteor build ../../${BUILD_DIR} --directory
 
           # Verify bundle exists
-          ls -la ../../${BUILD_DIR}
+          ls -l ../../${BUILD_DIR}
           test -d ../../${BUILD_DIR}/bundle || (echo "Meteor did not produce bundle directory" && exit 1)
 
           # Install server dependencies
