@@ -62,11 +62,13 @@ jobs:
           cd ../../..
           tar -czf meteor-bundle.tar.gz bundle
 
+          echo "Meteor build complete"
+
       ####################################################
       #  HASKELL BUILD
       ####################################################
       - name: Set up Haskell
-        uses: haskell/actions/setup@v2
+        uses: haskell-actions/setup
         with:
           enable-stack: true
 
