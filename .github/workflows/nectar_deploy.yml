@@ -53,18 +53,14 @@ jobs:
           npm install
           meteor build ../../${BUILD_DIR} --directory
 
-          # Verify bundle exists
-          ls -l ../../${BUILD_DIR}
-          test -d ../../${BUILD_DIR}/bundle || (echo "Meteor did not produce bundle directory" && exit 1)
-
           # Install server dependencies
           cd ../../${BUILD_DIR}/bundle/programs/server
           npm install --production
 
           # Compress the entire bundle folder
-          cd ../..
+          cd ../../..
           tar -czf meteor-bundle.tar.gz bundle
-          mv meteor-bundle.tar.gz ../${BUILD_DIR}/
+          ls
 
       ####################################################
       #  HASKELL BUILD (via Docker)
