@@ -24,10 +24,7 @@ import {
 import { Button } from "@base/button";
 import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
-import type {
-  UnmappedContributor,
-  UserScalingSummary,
-} from "@api/types";
+import type { UnmappedContributor, UserScalingSummary } from "@api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
 import { toast } from "@hook/useToast";
 import InfoButton from "@base/infoButton";
@@ -65,11 +62,11 @@ function ScalingView(): JSX.Element {
 
   const isLoggedIn = useAuth();
 
-  useEffect(() => {
-    if (isLoggedIn === false) {
-      navigate("/dashboard");
-    }
-  }, [isLoggedIn, navigate]);
+  // useEffect(() => {
+  //   if (isLoggedIn === false) {
+  //     navigate("/dashboard");
+  //   }
+  // }, [isLoggedIn, navigate]);
 
   useEffect(() => {
     if (!repoUrl) return;
@@ -440,18 +437,21 @@ function ScalingView(): JSX.Element {
                 Create New Scaling
               </Button>
 
-              <Button
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                onClick={() => {
-                  setStep("sheet");
-                  setShowDialog(true);
-                }}
-              >
-                <Upload className="h-4 w-4" />
-                {gradingSheet
-                  ? "Replace Grading Sheet"
-                  : "Upload Grading Sheet"}
-              </Button>
+              {/* Display the grading sheet only to logged in users */}
+              {isLoggedIn && (
+                <Button
+                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                  onClick={() => {
+                    setStep("sheet");
+                    setShowDialog(true);
+                  }}
+                >
+                  <Upload className="h-4 w-4" />
+                  {gradingSheet
+                    ? "Replace Grading Sheet"
+                    : "Upload Grading Sheet"}
+                </Button>
+              )}
 
               {gradingSheet && gradingSheetParseResult && (
                 <Button
