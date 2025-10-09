@@ -4,6 +4,7 @@ import {
   takeFromBack,
   compareDates,
   getLatestCommit,
+  getLatestDate,
   getAllCommits,
 } from "/server/helper_functions";
 import {
@@ -43,18 +44,29 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
     assertSuccess("Failed to clone the repo")
   );
 
-  // gets the date that HEAD was pushed
-  const date = await commandLocal(getLastCommitDate()).then(
-    assertSuccess("Failed to fetch the HEAD commit details")
+  const filteredBranches = await commandLocal(getAllBranches())
+    .then(assertSuccess("Failed to fetch branches"))
+    .then((s: string) =>
+      s
+        .split("\n")
+        .filter((b: string) => b.includes("remote"))
+        .map((b: string) => b.replace("remote", ""))
+    );
+
+  const dates = await Promise.all(
+    filteredBranches.map((branch: string) =>
+      commandLocal(getLastCommitDate(branch))
+        .then(assertSuccess(`Failed to fetch head commit from branch: ${branch}`))
+        .then((s: string) => new Date(s.trim()))
+    )
   );
 
   // delete all contents from the temporary directory
   await deleteAllFromDirectory(temp_working_dir);
 
   // do actual comparison
-  const cleanedDate = date.trim();
-  const dateObj = new Date(cleanedDate);
-  return !compareDates(dateObj, lastDate);
+  const mostRecentDate = getLatestDate(dates);
+  return !compareDates(mostRecentDate, lastDate);
 };
 
 const checkIfExists = (url: string): Command => ({
@@ -67,8 +79,13 @@ const cloneToLocal = (url: string, path: string): Command => ({
   cmd: `git -c credential.helper= -c core.askPass=true clone --bare \"${url}\" \"${path}\"`,
 });
 
-const getLastCommitDate = (): Command => ({
+const getAllBranches = (): Command => ({
   ...doNotLogData,
-  // gets all branches and get the latest commit from each one, then getting the latest among those
-  cmd: `git for-each-ref --sort=-committerdate --count=1 --format='%(committerdate:iso8601)' refs/heads/ refs/remotes/`,
+  cmd: `git --no-pager branch -a --format=\"%(refname:short)\"`,
+});
+
+const getLastCommitDate = (branch: string): Command => ({
+  ...doNotLogData,
+  // gets the timestamp of the last commit from the branch
+  cmd: `git log -1 --format=%ci ${branch}`,
 });
