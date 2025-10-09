@@ -13,6 +13,7 @@ import {
   createAliasMapping,
 } from "./alias_mapping";
 import { StudentAlias } from "/imports/api/alias_configs";
+import { composeVisitors } from "lightningcss";
 
 
 /**
@@ -124,29 +125,42 @@ const scoringStrategies: Record<string, ScoreFn> = {
     return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
   },
 
-   "Compact Scaling": (scales: number[]) => {
+"Compact Scaling": (scales: number[]) => {
+    console.log("scales", scales);
 
-   console.log("scales",scales)
-        const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
-        const std = Math.sqrt(
-            scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length
-        );
+    if (!scales.length) return 1;
 
-        const min = Math.min(...scales);
-        const max = Math.max(...scales);
+    const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
+    const variance = scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length;
+    const std = Math.sqrt(variance);
 
-        const smoothScale = (x: number) => {
-            const normalized = (x - mean) / (std || 1); // normalize by std
-            // Use a soft cap instead of hard 1.2
-            return 1 + Math.tanh(normalized) * 0.2; 
-        };
 
-        // Map all values and take the **mean as the score**
-        const scaledValues = scales.map(smoothScale);
-        const averageScaled = scaledValues.reduce((a, b) => a + b, 0) / scaledValues.length;
+    
+    const min = 0;
+    const max = 1.2;
 
-        return averageScaled;
-    },
+    if (std < 1e-6) {   // If the std dev is close to zero, treat it as if there is NO variation in the data
+        const avg = scales.reduce((a, b) => a + b, 0) / scales.length;
+        
+        // Smoothly map value from [0,1] to [min, max] range
+        const scaled = min + avg * (max-min);
+        return scaled;
+    }
+
+    const smoothScale = (x: number) => {
+        const normalized = (x - mean) / std;
+        // Logistic curve to maintain smoothness but preserve contrast
+        const scale = 1 / (1 + Math.exp(-normalized * 2)); // between 0 and 1
+        // Map to 0.85–1.25 range for visible differences
+        return min + scale * (max-min);
+    };
+
+    const scaledValues = scales.map(smoothScale);
+    const avgScaled = scaledValues.reduce((a, b) => a + b, 0) / scaledValues.length;
+
+    return avgScaled;
+},
+
 
   Default: (scales) => scales.reduce((a, b) => a + b, 0) / scales.length, // just calculates the mean (average) of the user’s normalized metric values
 };
