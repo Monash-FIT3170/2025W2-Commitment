@@ -1,4 +1,4 @@
-import { SerializableRepoData, CommitData } from "@api/types";
+import { SerializableRepoData, CommitData, Maybe } from "@api/types";
 
 // HELPER GRANULAR FUNCTIONS
 
@@ -14,9 +14,9 @@ export const zip = <T extends any[][]>(...lists: T): { [K in keyof T]: T[K][numb
     (_, i) => lists.map((list) => list[i]) as { [K in keyof T]: T[K][number] }
   );
 
-export const safeNumber = (value: unknown): number => {
+export const safeNumber = (value: unknown): Maybe<number> => {
   const n = Number(value);
-  return Number.isNaN(n) || !Number.isFinite(n) ? 0 : n;
+  return Number.isNaN(n) || !Number.isFinite(n) ? null : n;
 };
 
 export const minValue = <T>(arr: T[], f: (v1: T, v2: T) => boolean): T =>
@@ -34,17 +34,17 @@ export const sortCommitsByDate = (data: SerializableRepoData): CommitData[] =>
 
 export const getCommitDates = (data: CommitData[]): Date[] => data.map((d) => d.timestamp);
 
-export const getEarliestCommit = (data: CommitData[]): CommitData | null =>
+export const getEarliestCommit = (data: CommitData[]): Maybe<CommitData> =>
   data.length !== 0 ? minValue(data, (d1, d2) => compareDates(d1.timestamp, d2.timestamp)) : null;
 
-export const getLatestCommit = (data: CommitData[]): CommitData | null =>
+export const getLatestCommit = (data: CommitData[]): Maybe<CommitData> =>
   data.length !== 0 ? maxValue(data, (d1, d2) => compareDates(d1.timestamp, d2.timestamp)) : null;
 
-export const getEarliestDate = (data: Date[]): Date =>
-  data.length !== 0 ? minValue(data, compareDates) : new Date(0);
+export const getEarliestDate = (data: Date[]): Maybe<Date> =>
+  data.length !== 0 ? minValue(data, compareDates) : null;
 
-export const getLatestDate = (data: Date[]): Date =>
-  data.length !== 0 ? maxValue(data, compareDates) : new Date(0);
+export const getLatestDate = (data: Date[]): Maybe<Date> =>
+  data.length !== 0 ? maxValue(data, compareDates) : null;
 
 export const getLinesOfCodeFromCommit = (commit: CommitData): number =>
   commit.fileData.reduce((acc, f) => acc + f.newLines - f.deletedLines, 0);
@@ -67,13 +67,12 @@ export const getRepoName = (data: SerializableRepoData): string => data.name;
 
 export const getTotalCommits = (data: SerializableRepoData): number => data.allCommits.length;
 
-export const getTotalFilesChanged = (repoData: SerializableRepoData): number =>
-  repoData.allCommits.reduce((sum, p) => sum + p.value.fileData.length, 0);
+export const getTotalFilesChanged = (data: CommitData[]): number =>
+  data.reduce((sum, p) => sum + p.fileData.length, 0);
 
-export const getTotalLinesOfCode = (repoData: SerializableRepoData): number =>
-  repoData.allCommits.reduce(
-    (sum, p) =>
-      sum + p.value.fileData.reduce((fileSum, f) => fileSum + f.newLines - f.deletedLines, 0),
+export const getTotalLinesOfCode = (data: CommitData[]): number =>
+  data.reduce(
+    (sum, p) => sum + p.fileData.reduce((fileSum, f) => fileSum + f.newLines - f.deletedLines, 0),
     0
   );
 
@@ -116,15 +115,7 @@ export const getTotalCommitsPerContributor = (
 export const getLOCperContributor = (
   repoData: SerializableRepoData,
   contributorName: string
-): number =>
-  getCommitsFrom(repoData, contributorName).reduce((acc, commit) => {
-    const fileLOC = (commit.fileData ?? []).reduce((innerAcc, fileChange) => {
-      const added = safeNumber(fileChange?.newLines);
-      const deleted = safeNumber(fileChange?.deletedLines);
-      return innerAcc + (added - deleted);
-    }, 0);
-    return acc + fileLOC;
-  }, 0);
+): number => getTotalLinesOfCode(getCommitsFrom(repoData, contributorName));
 
 export const getLocPerCommitPerContributor = (
   repoData: SerializableRepoData,
@@ -132,8 +123,8 @@ export const getLocPerCommitPerContributor = (
 ): number => {
   const totalLOC = getLOCperContributor(repoData, contributorName);
   const commits = getCommitsFrom(repoData, contributorName);
-  const commitCount = safeNumber(commits.length);
-  return commitCount === 0 ? 0 : safeNumber(totalLOC / commitCount);
+  const commitCount = commits.length;
+  return commitCount > 0 && totalLOC !== null ? totalLOC / commitCount : 0;
 };
 
 export const getCommitPerDayPerContributor = (
@@ -149,5 +140,5 @@ export const getCommitPerDayPerContributor = (
     })
   );
 
-  return safeNumber(commits.length / uniqueDays.size);
+  return uniqueDays.size > 0 ? commits.length / uniqueDays.size : 0;
 };

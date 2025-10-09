@@ -1,25 +1,15 @@
 import { DateRange } from "react-day-picker";
 
+export type RepositoryData = Readonly<{
+  name: string;
+  branches: BranchData[];
+  allCommits: Map<string, CommitData>;
+  contributors: Map<string, ContributorData>;
+}>;
+
 export type BranchData = Readonly<{
   branchName: string;
   commitHashes: string[];
-}>;
-
-export type ContributorData = Readonly<{
-  name: string;
-  emails: string[];
-}>;
-
-export type ChangeType = "A" | "M" | "D" | "R" | "C";
-
-export type FileChanges = Readonly<{
-  filepath: string;
-  oldFilePath: string;
-  char: ChangeType;
-  likeness: number;
-  newLines: number;
-  deletedLines: number;
-  diff: string[];
 }>;
 
 // make a kind of commit where you hazve a snapshot of all contributors per line
@@ -32,12 +22,24 @@ export type CommitData = Readonly<{
   fileData: FileChanges[];
 }>;
 
-export type RepositoryData = Readonly<{
-  name: string;
-  branches: BranchData[];
-  allCommits: Map<string, CommitData>;
-  contributors: Map<string, ContributorData>;
+export type FileChanges = Readonly<{
+  filepath: string;
+  oldFilePath: string;
+  char: ChangeType;
+  likeness: number;
+  newLines: number;
+  deletedLines: number;
+  diff: string[];
 }>;
+
+export type ChangeType = "A" | "M" | "D" | "R" | "C";
+
+export type ContributorData = Readonly<{
+  name: string;
+  emails: string[];
+}>;
+
+export type Maybe<T> = T | null;
 
 export type SerialisableMapObject<K, V> = {
   key: K;

@@ -4,6 +4,7 @@ import {
   takeFromBack,
   compareDates,
   getLatestCommit,
+  getLatestDate,
   getAllCommits,
 } from "/server/helper_functions";
 import {
@@ -21,10 +22,6 @@ import {
  * @returns whether the data is up to date
  */
 export const isUpToDate = async (url: string, data: SerializableRepoData): Promise<boolean> => {
-  const latestCommit = getLatestCommit(getAllCommits(data));
-  if (latestCommit === null) return false;
-  const lastDate: Date = latestCommit.timestamp;
-
   // works out a relative directory to work with based on the
   // publisher of the repo and the repo name
   const rel_dir = join(takeFromBack(url.split("/"), 2));
@@ -32,29 +29,47 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   // ensure directory is created
   const temp_working_dir = await createTempDirectory(`/tmp-clone-dir/${rel_dir}`);
 
-  // execute commands in local directory
-  const commandLocal = executeCommand(temp_working_dir);
+  try {
+    const latestCommit = getLatestCommit(getAllCommits(data));
+    if (latestCommit === null) return false;
+    const lastDate: Date = new Date(latestCommit.timestamp);
 
-  // checks whether the repository exists
-  await commandLocal(checkIfExists(url)).then(assertSuccess("Repository does not exist"));
+    // execute commands in local directory
+    const commandLocal = executeCommand(temp_working_dir);
 
-  // attempts to clone the repository to a local temp directory (that is unique)
-  await commandLocal(cloneToLocal(url, temp_working_dir)).then(
-    assertSuccess("Failed to clone the repo")
-  );
+    // checks whether the repository exists
+    await commandLocal(checkIfExists(url)).then(assertSuccess("Repository does not exist"));
 
-  // gets the date that HEAD was pushed
-  const date = await commandLocal(getLastCommitDate()).then(
-    assertSuccess("Failed to fetch the HEAD commit details")
-  );
+    // attempts to clone the repository to a local temp directory (that is unique)
+    await commandLocal(cloneToLocal(url, temp_working_dir)).then(
+      assertSuccess("Failed to clone the repo")
+    );
 
-  // delete all contents from the temporary directory
-  await deleteAllFromDirectory(temp_working_dir);
+    const foundBranches = await commandLocal(getAllBranches())
+      .then(assertSuccess("Failed to fetch branches"))
+      .then((s: string) =>
+        s
+          .split("\n")
+          .map((s: string) => s.trim())
+          .filter((s: string) => s !== "")
+      );
 
-  // do actual comparison
-  const cleanedDate = date.trim();
-  const dateObj = new Date(cleanedDate);
-  return !compareDates(dateObj, lastDate);
+    const dates = await Promise.all(
+      foundBranches.map((branch: string) =>
+        commandLocal(getLastCommitDate(branch))
+          .then(assertSuccess(`Failed to fetch head commit from branch: ${branch}`))
+          .then((d: string) => new Date(d.trim()))
+      )
+    );
+    const mostRecentDate = getLatestDate(dates);
+
+    // do actual comparison
+    if (mostRecentDate === null) throw Error("dates is empty");
+    return !compareDates(mostRecentDate, lastDate);
+  } finally {
+    // always delete all contents from the temporary directory
+    await deleteAllFromDirectory(temp_working_dir);
+  }
 };
 
 const checkIfExists = (url: string): Command => ({
@@ -67,8 +82,13 @@ const cloneToLocal = (url: string, path: string): Command => ({
   cmd: `git -c credential.helper= -c core.askPass=true clone --bare \"${url}\" \"${path}\"`,
 });
 
-const getLastCommitDate = (): Command => ({
+const getAllBranches = (): Command => ({
   ...doNotLogData,
-  // gets all branches and get the latest commit from each one, then getting the latest among those
-  cmd: `git for-each-ref --sort=-committerdate --count=1 --format='%(committerdate:iso8601)' refs/heads/ refs/remotes/`,
+  cmd: `git --no-pager branch -a --format=\"%(refname:short)\"`,
+});
+
+const getLastCommitDate = (branch: string): Command => ({
+  ...doNotLogData,
+  // gets the timestamp of the last commit from the branch
+  cmd: `git log -1 --format=%cI \"${branch}\"`,
 });
