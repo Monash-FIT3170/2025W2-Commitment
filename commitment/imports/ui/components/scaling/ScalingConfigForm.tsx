@@ -58,7 +58,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
   const handleSubmit = async (data: ScalingConfig) => {
     try {
-      const result = await Meteor.callAsync("getScalingResults", data, repoUrl);
+      const result = await Meteor.callAsync("getScalingResults", data, repoUrl) as UserScalingSummary[];
 
       onSubmit(data, result); // this is where all the scaling starts from
     } catch (err) {
@@ -111,6 +111,13 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
     void fetchSmallGroup();
   }, [repoUrl, isSmallGroupCache]);
+
+  // Automatically select the first method option whenever it changes
+  useEffect(() => {
+    if (methodOptions.length > 0) {
+      form.setValue("method", methodOptions[0]);
+    }
+  }, [methodOptions, form]);
 
   const metricOptions = [
     "Total No. Commits",
@@ -182,7 +189,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     {methodOptions.map((m) => (
                       <FormItem
@@ -253,6 +260,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
           <div className="flex justify-center">
             <Button
               type="submit"
+              disabled={!form.watch("method")}
               className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-full px-8"
             >
               Next

@@ -13,7 +13,6 @@ import {
   createAliasMapping,
 } from "./alias_mapping";
 import { StudentAlias } from "/imports/api/alias_configs";
-import { composeVisitors } from "lightningcss";
 
 
 /**
@@ -33,7 +32,20 @@ GENERAL FLOW OF SCALING:
 9. Return final array of UserScalingSummary
 */
 
+/**
+SCALING METHODS
 
+Percentiles	- Rank contributors relative to others, average across metrics	
+
+Mean +/- Std - Average metrics + some extra credit for spread
+
+Quartiles - Use median metric value
+
+Compact Scaling - Smooth values using tanh, floor 0.5 ceiling 1.2 (tries to give higher marks and a bit of leniancy)
+
+Default	- Simple mean of normalized metrics	
+ */
+//
 
 const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day", "Compact Scaling"];
 
@@ -60,16 +72,15 @@ function percentileRank(values: number[], value: number): number {
   return index === -1 ? 0.5 : index / (sorted.length - 1 || 1);
 }
 
-function smallGroupPercentileRank(values: number[], value: number): number {
-  const sorted = [...values].sort((a, b) => a - b);
-  const idx = sorted.indexOf(value);
-  return idx === -1 ? 0.5 : (idx + 1) / (values.length + 1);
-}
-
 //
 // ---------- User building ----------
 //
-
+/**
+ * Will essentially convert raw metric data to structured array in the format {name:... , values:{12,13,...}}
+ * @param allMetrics 
+ * @param selectedMetrics 
+ * @returns the built users containing their relevant metrics
+ */
 function buildUsers(
   allMetrics: AllMetricsData,
   selectedMetrics: string[]
@@ -88,8 +99,12 @@ function buildUsers(
 // ---------- Scoring strategies ----------
 //
 
+
+/**
+ * This method stores the mathematical logic for each scaling method.
+ */
 const scoringStrategies: Record<string, ScoreFn> = {
-  Percentiles: (_, idx, users, selectedMetrics) => {
+    Percentiles: (_, idx, users, selectedMetrics) => {
         const percentileScores = selectedMetrics.map((_metric, colIdx) => {
             const colValues = users
                 .map((u) => u.values[colIdx])
@@ -98,102 +113,88 @@ const scoringStrategies: Record<string, ScoreFn> = {
             return users.map((u) => {
                 const val = u.values[colIdx];
                 if (val == null) return 0.5;
-
-                if (users.length <= 3) {
-                    return smallGroupPercentileRank(colValues, val);
-                }
                 
                 return percentileRank(colValues, val);
             });
         });
 
     return percentileScores.reduce((sum, col) => sum + col[idx], 0) / selectedMetrics.length;
-  },
+    },
 
-  "Mean +/- Std": (scales) => {
-  const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
-  const std = Math.sqrt(scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length);
-  const max = Math.max(...scales);
-  const min = Math.min(...scales);
-  const cappedStd = Math.min(std, (max - min) / 2); // cap at half range
-  return mean + cappedStd;
-},
+    "Mean +/- Std": (scales) => {
+        const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
+        const std = Math.sqrt(scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length);
+        const max = Math.max(...scales);
+        const min = Math.min(...scales);
+        const cappedStd = Math.min(std, (max - min) / 2); // cap at half range
+        return mean + cappedStd;
+    },
 
-  Quartiles: (scales) => {
-    const sorted = [...scales].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-  },
+    Quartiles: (scales) => {
+        const sorted = [...scales].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    },
 
-"Compact Scaling": (scales: number[]) => {
-    if (!scales.length) return 1;
+    "Compact Scaling": (scales: number[]) => {
+        if (!scales.length) return 1;
 
-    const minScale = 0;
-    const maxScale = 1.2;
+        const maxScale = 1.2;
 
-    // Compute mean and std
-    const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
-    const variance = scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length;
-    const std = Math.sqrt(variance);
+        // Compute mean and std
+        const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
+        const variance = scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length;
+        const std = Math.sqrt(variance);
 
-    // Handle tiny variance or single value
-    if (std < 1e-6) {
-        // Map single or identical values proportionally to [0.5, 1.2] baseline
-        const value = scales[0];
-        return 0.5 + value * 0.7; // ensures floor at 0.5, max at 1.2
-    }
+        // Handle tiny variance or single value
+        if (std < 1e-6) {
+            // Map single or identical values proportionally to [0.5, 1.2] baseline
+            const value = scales[0];
+            return 0.5 + value * 0.7; // ensures floor at 0.5, max at 1.2
+        }
 
-    // Smooth scaling using tanh
-    const smoothScale = (x: number) => {
-        const normalized = (x - mean) / std;
-        const scale = 0.5 + Math.tanh(normalized * 0.8) * 0.5; // between 0 and 1
-        return 0.5 + scale * 0.7; // floor 0.5, max ~1.2
-    };
+        // Smooth scaling using tanh
+        const smoothScale = (x: number) => {
+            const normalized = (x - mean) / std;
+            const scale = 0.5 + Math.tanh(normalized * 0.8) * 0.5; // between 0 and 1
+            return 0.5 + scale * 0.7; // floor 0.5, max ~1.2
+        };
 
-    const scaledValues = scales.map(smoothScale);
-    const avgScaled = scaledValues.reduce((a, b) => a + b, 0) / scaledValues.length;
+        const scaledValues = scales.map(smoothScale);
+        const avgScaled = scaledValues.reduce((a, b) => a + b, 0) / scaledValues.length;
 
-    return Math.min(avgScaled, maxScale);
-},
+        return Math.min(avgScaled, maxScale);
+    },
 
-
-
-  Default: (scales) => scales.reduce((a, b) => a + b, 0) / scales.length, // just calculates the mean (average) of the user’s normalized metric values
+    Default: (scales) => scales.reduce((a, b) => a + b, 0) / scales.length, // just calculates the mean (average) of the user’s normalized metric values
 };
 
 //
 // ---------- Scaling ----------
 //
 
+/**
+ * Builds a matrix of users and their metrics and then uses the chosen scoring method to compute their final scale.
+ It rounds to 2 decimal places for the scale
+ * @param repoUrl 
+ * @param config 
+ * @returns array of {name, scale} 
+ */
 async function scaleUsers(repoUrl: string, config: ScalingConfig) {
 
-  const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // IS CASTING LIKE THIS OKAY?
+    const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // IS CASTING LIKE THIS OKAY?
 
-  const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
-  const method = config.method ?? "Percentiles";
+    const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
+    const method = config.method ?? "Percentiles";
 
-  const users = buildUsers(allMetrics, selectedMetrics);
-  if (!users.length) return [];
+    const users = buildUsers(allMetrics, selectedMetrics);
+    if (!users.length) return [];
 
-  const metricsValues =
-  users.length <= 3
-    ? selectedMetrics.map((_, i) => {
-        const colValues = users
-          .map((u) => u.values[i])
-          .filter((v): v is number => v !== null);
-
-        return users.map((u) => {
-          const val = u.values[i];
-          if (val == null) return 0.5;
-          return smallGroupPercentileRank(colValues, val);
-        });
-      })
-    : selectedMetrics.map((_, i) =>
+    const metricsValues = selectedMetrics.map((_, i) =>
         normaliseMetric(users.map((u) => u.values[i]))
-      );
-
-
-  const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
+        );
+        
+    const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
 
   return users.map((user, idx) => {
     const scales = metricsValues.map((col) => col[idx]);
