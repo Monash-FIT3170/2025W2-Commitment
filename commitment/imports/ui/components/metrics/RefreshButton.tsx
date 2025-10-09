@@ -11,10 +11,7 @@ type RefreshButtonProps = {
   onRefresh?: (url: string) => void;
 };
 
-const RefreshButton: React.FC<RefreshButtonProps> = ({
-  url,
-  onRefresh,
-}: RefreshButtonProps) => {
+const RefreshButton: React.FC<RefreshButtonProps> = ({ url, onRefresh }: RefreshButtonProps) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -72,10 +69,7 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({
       className="inline-flex items-center justify-center px-3 py-2 text-[#F1502F] transition"
     >
       {loading ? (
-        <Spinner
-          className="w-4 h-4 animate-spin text-[#F1502F]"
-          variant="circle"
-        />
+        <Spinner className="w-4 h-4 animate-spin text-[#F1502F]" variant="circle" />
       ) : (
         <ReloadIcon className="w-4 h-4" />
       )}

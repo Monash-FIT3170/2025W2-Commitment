@@ -37,15 +37,9 @@ export function AnalyticsView(): React.JSX.Element {
     return { from, to };
   });
 
-  const [selectedBranch, setSelectedBranch] = useState<string | undefined>(
-    undefined
-  );
-  const [selectedContributors, setSelectedContributors] = useState<string[]>(
-    []
-  );
-  const [selectedMetrics, setSelectedMetrics] = useState<MetricType>(
-    MetricType.TOTAL_COMMITS
-  );
+  const [selectedBranch, setSelectedBranch] = useState<string | undefined>(undefined);
+  const [selectedContributors, setSelectedContributors] = useState<string[]>([]);
+  const [selectedMetrics, setSelectedMetrics] = useState<MetricType>(MetricType.TOTAL_COMMITS);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,47 +104,43 @@ export function AnalyticsView(): React.JSX.Element {
     );
   }, []); // only runs once on mount
 
+  const fetchAnalyticsDataMeteorCall = () => {
+    Meteor.call(
+      "repo.getAnalyticsData",
+      {
+        repoUrl,
+        startDate: dateRange?.from,
+        endDate: dateRange?.to,
+        branch: selectedBranch,
+        contributors: selectedContributors,
+        metric: selectedMetrics,
+      },
+      (err: Error, data: AnalyticsData) => {
+        if (err) {
+          setError(err.message);
+        } else {
+          setAnalyticsData(data);
+        }
+      }
+    );
+  };
+
   const fetchAnalyticsData = React.useCallback(() => {
     if (!repoUrl) return;
 
     updateRepo(repoUrl, updatedRef.current, msgHandlerRef.current)
       .then((proceed: boolean) => {
         if (proceed) {
-          Meteor.call(
-            "repo.getAnalyticsData",
-            {
-              repoUrl,
-              startDate: dateRange?.from,
-              endDate: dateRange?.to,
-              branch: selectedBranch,
-              contributors: selectedContributors,
-              metric: selectedMetrics,
-            },
-            (err: Error, data: AnalyticsData) => {
-              if (err) {
-                setError(err.message);
-              } else {
-                setAnalyticsData(data);
-              }
-              setLoading(false);
-            }
-          );
-        } else {
-          setLoading(false);
+          fetchAnalyticsDataMeteorCall();
         }
+        setLoading(false);
       })
       .catch((_e: Error) => {
         setLoading(false);
         // handleToast(`An unexpected error occurred: ${_e.message}`);
         console.log("Fetch error: ", _e.message);
       });
-  }, [
-    repoUrl,
-    selectedBranch,
-    selectedContributors,
-    dateRange,
-    selectedMetrics,
-  ]);
+  }, [repoUrl, selectedBranch, selectedContributors, dateRange, selectedMetrics]);
 
   // Fetch when component mounts or filters change
   useEffect(() => {
@@ -170,9 +160,7 @@ export function AnalyticsView(): React.JSX.Element {
           <div className="mb-6 flex justify-between">
             <div className="flex flex-col pr-20">
               <div className="flex items-center gap-4 ">
-                <h1 className="text-3xl text-foreground font-robotoFlex mt-4">
-                  Metrics
-                </h1>
+                <h1 className="text-3xl text-foreground font-robotoFlex mt-4">Metrics</h1>
                 <InfoButton description={metricsPageDescription} />
               </div>
               <div className="h-[2px] bg-git-stroke-primary w-full mt-2" />
@@ -197,9 +185,7 @@ export function AnalyticsView(): React.JSX.Element {
                 />
               </div>
               <div className="flex flex-col">
-                <div className="text-sm text-git-text-secondary">
-                  Contributors*
-                </div>
+                <div className="text-sm text-git-text-secondary">Contributors*</div>
                 <ContributorDropdownMenu
                   contributors={analytics.metadata.contributors}
                   selected={selectedContributors}
@@ -211,9 +197,7 @@ export function AnalyticsView(): React.JSX.Element {
                 <MetricDropdownMenu
                   metrics={metricNames}
                   selected={selectedMetrics}
-                  onChange={(value: string) =>
-                    setSelectedMetrics(value as MetricType)
-                  }
+                  onChange={(value: string) => setSelectedMetrics(value as MetricType)}
                 />
               </div>
             </div>
@@ -226,12 +210,8 @@ export function AnalyticsView(): React.JSX.Element {
                 <HighlightCardWithGraph
                   title="Total Commits"
                   value={analytics.metrics.highlights.totalCommits.total}
-                  percentageChange={
-                    analytics.metrics.highlights.totalCommits.percentageChange
-                  }
-                  isPositive={
-                    analytics.metrics.highlights.totalCommits.isPositive
-                  }
+                  percentageChange={analytics.metrics.highlights.totalCommits.percentageChange}
+                  isPositive={analytics.metrics.highlights.totalCommits.isPositive}
                   data={analytics.metrics.highlights.totalCommits.data}
                 />
                 {/* <HighlightCardWithGraph
@@ -241,13 +221,8 @@ export function AnalyticsView(): React.JSX.Element {
                 <HighlightCardWithGraph
                   title="Total Lines of Code"
                   value={analytics.metrics.highlights.totalLinesOfCode.total}
-                  percentageChange={
-                    analytics.metrics.highlights.totalLinesOfCode
-                      .percentageChange
-                  }
-                  isPositive={
-                    analytics.metrics.highlights.totalLinesOfCode.isPositive
-                  }
+                  percentageChange={analytics.metrics.highlights.totalLinesOfCode.percentageChange}
+                  isPositive={analytics.metrics.highlights.totalLinesOfCode.isPositive}
                   data={analytics.metrics.highlights.totalLinesOfCode.data}
                 />
               </div>
@@ -272,9 +247,7 @@ export function AnalyticsView(): React.JSX.Element {
                 <ContributionPieChart
                   data={analytics.metrics.contributors.pieChart.data}
                   title={analytics.metrics.contributors.pieChart.title}
-                  xAxisLabel={
-                    analytics.metrics.contributors.leaderboard.xAxisLabel
-                  }
+                  xAxisLabel={analytics.metrics.contributors.leaderboard.xAxisLabel}
                 />
               </div>
             </div>
@@ -290,9 +263,7 @@ export function AnalyticsView(): React.JSX.Element {
                 <LeaderboardGraph
                   data={analytics.metrics.contributors.leaderboard.data}
                   title={analytics.metrics.contributors.leaderboard.title}
-                  xAxisLabel={
-                    analytics.metrics.contributors.leaderboard.xAxisLabel
-                  }
+                  xAxisLabel={analytics.metrics.contributors.leaderboard.xAxisLabel}
                 />
               </div>
             </div>

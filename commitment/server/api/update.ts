@@ -53,20 +53,26 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
         .map((b: string) => b.replace("remote", ""))
     );
 
-  const dates = await Promise.all(
-    filteredBranches.map((branch: string) =>
-      commandLocal(getLastCommitDate(branch))
-        .then(assertSuccess(`Failed to fetch head commit from branch: ${branch}`))
-        .then((s: string) => new Date(s.trim()))
+  const branchPromises = filteredBranches.map((branch: string) =>
+    commandLocal(getLastCommitDate(branch)).then(
+      assertSuccess(`Failed to fetch head commit from branch: ${branch}`)
     )
   );
+
+  const dateStrings = await Promise.all(branchPromises);
+
+  const dates = dateStrings.map((d: string) => new Date(d.trim()));
 
   // delete all contents from the temporary directory
   await deleteAllFromDirectory(temp_working_dir);
 
   // do actual comparison
   const mostRecentDate = getLatestDate(dates);
-  return !compareDates(mostRecentDate, lastDate);
+  console.log(`date strings: ${dateStrings}`);
+  console.log(`most recent date: ${mostRecentDate}`);
+  const value = !compareDates(mostRecentDate, lastDate);
+  console.log(`${url} is up to date: ${value}`);
+  return value;
 };
 
 const checkIfExists = (url: string): Command => ({
