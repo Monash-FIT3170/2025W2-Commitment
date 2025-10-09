@@ -66,6 +66,9 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     }
   };
 
+  const [isSmallGroupCache, setIsSmallGroupCache] = useState<
+    Record<string, boolean>
+  >({});
   const [methodOptions, setMethodOptions] = useState<string[]>([
     "Percentiles",
     "Mean +/- Std",
@@ -73,7 +76,19 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   ]);
 
   useEffect(() => {
-    const isSmallGroup = async () => {
+    const fetchSmallGroup = async () => {
+      if (!repoUrl) return;
+
+      // check cache first
+      if (isSmallGroupCache[repoUrl] !== undefined) {
+        setMethodOptions(
+          isSmallGroupCache[repoUrl]
+            ? ["Compact Scaling"]
+            : ["Percentiles", "Mean +/- Std", "Quartiles"]
+        );
+        return;
+      }
+
       try {
         const result = (await Meteor.callAsync(
           "isSmallContributorGroup",
@@ -81,20 +96,21 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
           15
         )) as boolean;
 
-        if (result) {
-          // If small group -> use limited or modified metrics
-          setMethodOptions(["Compact Scaling"]);
-        } else {
-          // Otherwise -> use full set of metrics
-          setMethodOptions(["Percentiles", "Mean +/- Std", "Quartiles"]);
-        }
+        // update cache
+        setIsSmallGroupCache((prev) => ({ ...prev, [repoUrl]: result }));
+
+        setMethodOptions(
+          result
+            ? ["Compact Scaling"]
+            : ["Percentiles", "Mean +/- Std", "Quartiles"]
+        );
       } catch (err) {
         console.error("Error checking contributor group size:", err);
       }
     };
 
-    if (repoUrl) void isSmallGroup();
-  }, [repoUrl]);
+    void fetchSmallGroup();
+  }, [repoUrl, isSmallGroupCache]);
 
   const metricOptions = [
     "Total No. Commits",
