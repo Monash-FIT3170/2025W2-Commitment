@@ -68,7 +68,7 @@ jobs:
       - name: Build Haskell binary via Docker
         working-directory: ./api
         run: |
-          docker build -t commitment-api .
+          docker build -t commitment-api -f Dockerfile.haskell .
           container=$(docker create commitment-api)
           docker cp $container:/usr/local/bin/commitment-api ./commitment-api
           docker rm $container
