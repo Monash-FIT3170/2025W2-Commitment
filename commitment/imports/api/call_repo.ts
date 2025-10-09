@@ -2,7 +2,7 @@ import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { Tracker } from "meteor/tracker";
 import { Subject } from "rxjs";
-import { meteorCallAsync } from "./meteor_interface";
+import { meteorCallAsync, emitValue } from "./meteor_interface";
 
 // Define the schema for documents in the collection
 interface PersonalServerResponse {
@@ -46,6 +46,10 @@ export const updateRepo = async (
 ): Promise<boolean> => {
   const upToDate = await meteorCallAsync<boolean>("repoCollection.isUpToDate")(url);
   notifier.next(upToDate);
-  if (!upToDate) return await fetchRepo(url, msgs, false);
+  if (!upToDate) {
+    const ret = await fetchRepo(url, msgs, false);
+    msgs !== null ? msgs.next("Data is ready for viewing!") : null;
+    return ret;
+  }
   return false;
 };
