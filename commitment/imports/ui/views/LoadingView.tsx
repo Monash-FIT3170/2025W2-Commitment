@@ -280,18 +280,28 @@ const LoadingPage: React.FC = () => {
       notifier.complete();
     };
   }, [repoUrl, navigate]);
-
+    
   return !repoUrl ? (
     <Navigate to="/insert-git-repo" replace />
   ) : (
-    <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
-      <h2 className={`text-3xl font-inconsolata-bold mb-6 ${hadError ? "text-red-500" : ""}`}>
-        {message}
-      </h2>
+    <div className="min-h-screen flex items-center justify-center px-6 pt-24">
+      <div className="w-full max-w-2xl flex flex-col items-center gap-6 bg-git-bg-elevated/0">
+        <h2
+          className={[
+            "text-git-text-primary",
+            "text-2xl md:text-3xl font-mono font-semibold text-center",
+            hadError ? "text-red-500" : "",
+          ].join(" ")}
+        >
+          {message}
+        </h2>
 
-      <LoadingBar progress={progress} indeterminate={indeterminate} />
+        <div className="w-full">
+          <LoadingBar progress={progress} indeterminate={indeterminate} />
+        </div>
 
-      <TipBox tip={tips[tipIndex]} />
+        <TipBox tip={tips[tipIndex]} />
+      </div>
     </div>
   );
 };
