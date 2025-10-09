@@ -1,0 +1,117 @@
+name: Deploy to Nectar
+
+on:
+  push:
+    branches: [ "cd/nectar-deploy" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      NECTAR_HOST: ${{ secrets.NECTAR_HOST }}
+      NECTAR_USER: ${{ secrets.NECTAR_USER }}
+      SSH_KEY: ${{ secrets.NECTAR_KEY }}
+      DEPLOY_PATH_METEOR: /opt/meteor/app
+      DEPLOY_PATH_HASKELL: /usr/local/bin
+      BUILD_DIR: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      ####################################################
+      #  METEOR BUILD
+      ####################################################
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache Meteor installation
+        uses: actions/cache@v4
+        with:
+          path: ~/.meteor
+          key: meteor-${{ runner.os }}-${{ hashFiles('commitment/package-lock.json') }}
+
+      - name: Cache Node modules
+        uses: actions/cache@v4
+        with:
+          path: commitment/node_modules
+          key: node-${{ runner.os }}-${{ hashFiles('commitment/package-lock.json') }}
+
+      - name: Install Meteor
+        run: |
+          curl https://install.meteor.com/ | sh
+          meteor --version
+
+      - name: Build Meteor bundle
+        working-directory: ./commitment
+        run: |
+          npm ci
+          meteor build ../../${BUILD_DIR} --directory
+          cd ../../${BUILD_DIR}/bundle/programs/server
+          npm ci --production
+          cd ../../
+          tar -czf meteor-bundle.tar.gz bundle
+
+      ####################################################
+      #  HASKELL BUILD (via Docker)
+      ####################################################
+      - name: Build Haskell binary via Docker
+        working-directory: ./api
+        run: |
+          docker build -t commitment-api .
+          container=$(docker create commitment-api)
+          docker cp $container:/usr/local/bin/commitment-api ./commitment-api
+          docker rm $container
+          chmod +x ./commitment-api
+          tar -czf ../${BUILD_DIR}/haskell-api.tar.gz ./commitment-api
+
+      ####################################################
+      #  DEPLOYMENT TO NECTAR
+      ####################################################
+      - name: Copy build artifacts to Nectar
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.NECTAR_HOST }}
+          username: ${{ env.NECTAR_USER }}
+          key: ${{ env.SSH_KEY }}
+          source: "${{ env.BUILD_DIR }}/*.tar.gz"
+          target: "/home/ubuntu/build/"
+
+      - name: Deploy on instance
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.NECTAR_HOST }}
+          username: ${{ env.NECTAR_USER }}
+          key: ${{ env.SSH_KEY }}
+          script: |
+            set -e
+
+            echo "--- Unpacking Meteor build ---"
+            sudo rm -rf ${DEPLOY_PATH_METEOR}
+            sudo mkdir -p ${DEPLOY_PATH_METEOR}
+            tar -xzf /home/ubuntu/build/meteor-bundle.tar.gz -C /tmp
+            sudo cp -r /tmp/bundle/* ${DEPLOY_PATH_METEOR}/
+            sudo chown -R ubuntu:ubuntu ${DEPLOY_PATH_METEOR}
+
+            echo "--- Installing Meteor server dependencies ---"
+            cd ${DEPLOY_PATH_METEOR}/programs/server
+            npm ci --omit=dev || npm install --production
+
+            echo "--- Updating Haskell binary ---"
+            tar -xzf /home/ubuntu/build/haskell-api.tar.gz -C /home/ubuntu
+            sudo mv /home/ubuntu/commitment-api ${DEPLOY_PATH_HASKELL}/commitment-api
+            sudo chmod +x ${DEPLOY_PATH_HASKELL}/commitment-api
+
+            echo "--- Restarting services ---"
+            sudo systemctl daemon-reload
+            sudo systemctl restart meteor.service haskell-api.service || true
+
+            echo "--- Checking service statuses ---"
+            sudo systemctl status meteor.service --no-pager || true
+            sudo systemctl status haskell-api.service --no-pager || true
+
+            echo "Deployment complete"
