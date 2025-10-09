@@ -54,6 +54,7 @@ jobs:
           cd ../../${BUILD_DIR}/bundle/programs/server
           npm install --production
           cd ../../
+          ls 
           tar -czf meteor-bundle.tar.gz bundle
 
       ####################################################
