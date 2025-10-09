@@ -87,5 +87,5 @@ const getAllBranches = (): Command => ({
 const getLastCommitDate = (branch: string): Command => ({
   ...doNotLogData,
   // gets the timestamp of the last commit from the branch
-  cmd: `git log -1 --format=%ci ${branch}`,
+  cmd: `git log -1 --format=%cI \"${branch}\"`,
 });
