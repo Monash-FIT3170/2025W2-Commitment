@@ -58,9 +58,10 @@ jobs:
           cd ../../${BUILD_DIR}/bundle/programs/server
           npm install --production
 
-          echo "===  Compress the entire bundle folder ==="
+          echo "=== Compress the entire bundle folder ==="
           cd ../../..
           tar -czf meteor-bundle.tar.gz bundle
+          mv meteor-bundle.tar.gz ../${BUILD_DIR}/
 
           echo "Meteor build complete"
 
@@ -93,10 +94,10 @@ jobs:
           set -e
           echo "=== Setting up Stack ==="
           stack setup
-          
+
           echo "=== Building Commitment API ==="
           stack build --copy-bins --local-bin-path ./bin
-          
+
           echo "=== Packaging build ==="
           mkdir -p ../${BUILD_DIR}
           chmod +x ./bin/commitment-api
@@ -114,7 +115,7 @@ jobs:
           username: ${{ env.NECTAR_USER }}
           key: ${{ env.SSH_KEY }}
           source: "${{ env.BUILD_DIR }}/*.tar.gz"
-          target: "/home/ubuntu/build/"
+          target: "/build/"
 
       # - name: Deploy on instance
       #   uses: appleboy/ssh-action@v1.0.3
