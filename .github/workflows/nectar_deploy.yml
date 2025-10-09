@@ -49,10 +49,10 @@ jobs:
       - name: Build Meteor bundle
         working-directory: ./commitment
         run: |
-          npm ci
+          npm install
           meteor build ../../${BUILD_DIR} --directory
           cd ../../${BUILD_DIR}/bundle/programs/server
-          npm ci --production
+          npm install --production
           cd ../../
           tar -czf meteor-bundle.tar.gz bundle
 
@@ -99,7 +99,7 @@ jobs:
 
             echo "--- Installing Meteor server dependencies ---"
             cd ${DEPLOY_PATH_METEOR}/programs/server
-            npm ci --omit=dev || npm install --production
+            npm install --production
 
             echo "--- Updating Haskell binary ---"
             tar -xzf /home/ubuntu/build/haskell-api.tar.gz -C /home/ubuntu
