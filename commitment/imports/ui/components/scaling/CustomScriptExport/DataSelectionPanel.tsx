@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { type DateRange } from 'react-day-picker';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { Label } from '../../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
 import { Checkbox } from '../../ui/checkbox';
-import { Calendar } from '../../ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../ui/dropdown-menu';
+import { DateRangePicker } from './DateRangePicker';
 
 export interface MetricOption {
   id: string;
@@ -20,8 +18,7 @@ export interface MetricOption {
 
 export interface DataSelectionConfig {
   branch: string;
-  startDate: Date;
-  endDate: Date;
+  dateRange: DateRange | undefined;
   selectedMetrics: string[];
   includeRawData: boolean;
   groupBy: 'contributor' | 'date' | 'none';
@@ -65,15 +62,15 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
 }) => {
   const [config, setConfig] = useState<DataSelectionConfig>({
     branch: '',
-    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-    endDate: new Date(),
+    dateRange: {
+      from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+      to: new Date()
+    },
     selectedMetrics: ['total_commits', 'lines_added', 'lines_deleted'],
     includeRawData: true,
     groupBy: 'contributor'
   });
 
-  const [isStartDateOpen, setIsStartDateOpen] = useState(false);
-  const [isEndDateOpen, setIsEndDateOpen] = useState(false);
 
   // Update parent component when config changes
   useEffect(() => {
@@ -149,62 +146,12 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
         </div>
 
         {/* Date Range Selection */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-git-text-primary">Start Date</Label>
-            <Popover open={isStartDateOpen} onOpenChange={setIsStartDateOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {config.startDate ? format(config.startDate, "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={config.startDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setConfig(prev => ({ ...prev, startDate: date }));
-                      setIsStartDateOpen(false);
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-git-text-primary">End Date</Label>
-            <Popover open={isEndDateOpen} onOpenChange={setIsEndDateOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {config.endDate ? format(config.endDate, "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={config.endDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setConfig(prev => ({ ...prev, endDate: date }));
-                      setIsEndDateOpen(false);
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+        <div className="space-y-2">
+          <Label className="text-git-text-primary">Date Range</Label>
+          <DateRangePicker
+            defaultValue={config.dateRange}
+            onChange={(dateRange) => setConfig(prev => ({ ...prev, dateRange }))}
+          />
         </div>
 
         {/* Metrics Selection */}
