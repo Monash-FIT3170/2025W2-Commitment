@@ -29,14 +29,13 @@ export const anyFailedOuptut = (msg: string): boolean =>
     "Encountered error",
     "Process timed out",
   ]
-    .map(msg.startsWith)
+    .map((s: string) => msg.startsWith(s))
     .reduce((acc: boolean, b: boolean) => acc || b, false);
 
 const successful = (res: CommandResult): boolean => {
   const stderr = res.stdError?.toLowerCase() || "";
-  const isFatal = stderr.includes("fatal") || stderr.includes("error");
-
-  return !res.error && !isFatal;
+  const isFailed = anyFailedOuptut(stderr);
+  return !res.error && !isFailed;
 };
 
 export const getErrorMsg = (res: CommandResult): string => {

@@ -22,10 +22,6 @@ import {
  * @returns whether the data is up to date
  */
 export const isUpToDate = async (url: string, data: SerializableRepoData): Promise<boolean> => {
-  const latestCommit = getLatestCommit(getAllCommits(data));
-  if (latestCommit === null) return false;
-  const lastDate: Date = latestCommit.timestamp;
-
   // works out a relative directory to work with based on the
   // publisher of the repo and the repo name
   const rel_dir = join(takeFromBack(url.split("/"), 2));
@@ -33,46 +29,47 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
   // ensure directory is created
   const temp_working_dir = await createTempDirectory(`/tmp-clone-dir/${rel_dir}`);
 
-  // execute commands in local directory
-  const commandLocal = executeCommand(temp_working_dir);
+  try {
+    const latestCommit = getLatestCommit(getAllCommits(data));
+    if (latestCommit === null) return false;
+    const lastDate: Date = new Date(latestCommit.timestamp);
 
-  // checks whether the repository exists
-  await commandLocal(checkIfExists(url)).then(assertSuccess("Repository does not exist"));
+    // execute commands in local directory
+    const commandLocal = executeCommand(temp_working_dir);
 
-  // attempts to clone the repository to a local temp directory (that is unique)
-  await commandLocal(cloneToLocal(url, temp_working_dir)).then(
-    assertSuccess("Failed to clone the repo")
-  );
+    // checks whether the repository exists
+    await commandLocal(checkIfExists(url)).then(assertSuccess("Repository does not exist"));
 
-  const filteredBranches = await commandLocal(getAllBranches())
-    .then(assertSuccess("Failed to fetch branches"))
-    .then((s: string) =>
-      s
-        .split("\n")
-        .filter((b: string) => b.includes("remote"))
-        .map((b: string) => b.replace("remote", ""))
+    // attempts to clone the repository to a local temp directory (that is unique)
+    await commandLocal(cloneToLocal(url, temp_working_dir)).then(
+      assertSuccess("Failed to clone the repo")
     );
 
-  const branchPromises = filteredBranches.map((branch: string) =>
-    commandLocal(getLastCommitDate(branch)).then(
-      assertSuccess(`Failed to fetch head commit from branch: ${branch}`)
-    )
-  );
+    const foundBranches = await commandLocal(getAllBranches())
+      .then(assertSuccess("Failed to fetch branches"))
+      .then((s: string) =>
+        s
+          .split("\n")
+          .map((s: string) => s.trim())
+          .filter((s: string) => s !== "")
+      );
 
-  const dateStrings = await Promise.all(branchPromises);
+    const dates = await Promise.all(
+      foundBranches.map((branch: string) =>
+        commandLocal(getLastCommitDate(branch))
+          .then(assertSuccess(`Failed to fetch head commit from branch: ${branch}`))
+          .then((d: string) => new Date(d.trim()))
+      )
+    );
+    const mostRecentDate = getLatestDate(dates);
 
-  const dates = dateStrings.map((d: string) => new Date(d.trim()));
-
-  // delete all contents from the temporary directory
-  await deleteAllFromDirectory(temp_working_dir);
-
-  // do actual comparison
-  const mostRecentDate = getLatestDate(dates);
-  console.log(`date strings: ${dateStrings}`);
-  console.log(`most recent date: ${mostRecentDate}`);
-  const value = !compareDates(mostRecentDate, lastDate);
-  console.log(`${url} is up to date: ${value}`);
-  return value;
+    // do actual comparison
+    if (mostRecentDate === null) throw Error("dates is empty");
+    return !compareDates(mostRecentDate, lastDate);
+  } finally {
+    // always delete all contents from the temporary directory
+    await deleteAllFromDirectory(temp_working_dir);
+  }
 };
 
 const checkIfExists = (url: string): Command => ({
