@@ -68,7 +68,7 @@ jobs:
       #  HASKELL BUILD
       ####################################################
       - name: Set up Haskell
-        uses: haskell-actions/setup
+        uses: haskell-actions/setup@v2
         with:
           enable-stack: true
 
