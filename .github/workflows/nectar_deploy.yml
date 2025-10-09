@@ -50,30 +50,57 @@ jobs:
         working-directory: ./commitment
         run: |
           set -e
+          echo "=== NPM Install Dependencies ==="
           npm install
           meteor build ../../${BUILD_DIR} --directory
 
-          # Install server dependencies
+          echo "=== Install server dependencies ==="
           cd ../../${BUILD_DIR}/bundle/programs/server
           npm install --production
 
-          # Compress the entire bundle folder
+          echo "===  Compress the entire bundle folder ==="
           cd ../../..
           tar -czf meteor-bundle.tar.gz bundle
-          ls
 
       ####################################################
-      #  HASKELL BUILD (via Docker)
+      #  HASKELL BUILD
       ####################################################
-      - name: Build Haskell binary via Docker
+      - name: Set up Haskell
+        uses: haskell/actions/setup@v2
+        with:
+          enable-stack: true
+
+      - name: Cache Stack build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.stack
+            api/.stack-work
+          key: stack-${{ runner.os }}-${{ hashFiles('api/stack.yaml', 'api/package.yaml') }}
+          restore-keys: |
+            stack-${{ runner.os }}-
+
+      - name: Install system dependencies for Haskell
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgmp-dev
+
+      - name: Build Haskell binary
         working-directory: ./api
         run: |
-          docker build -t commitment-api -f Dockerfile.haskell .
-          container=$(docker create commitment-api)
-          docker cp $container:/usr/local/bin/commitment-api ./commitment-api
-          docker rm $container
-          chmod +x ./commitment-api
-          tar -czf ../${BUILD_DIR}/haskell-api.tar.gz ./commitment-api
+          set -e
+          echo "=== Setting up Stack ==="
+          stack setup
+          
+          echo "=== Building Commitment API ==="
+          stack build --copy-bins --local-bin-path ./bin
+          
+          echo "=== Packaging build ==="
+          mkdir -p ../${BUILD_DIR}
+          chmod +x ./bin/commitment-api
+          tar -czf ../${BUILD_DIR}/haskell-api.tar.gz -C ./bin commitment-api
+
+          echo "Haskell build complete"
 
       ####################################################
       #  DEPLOYMENT TO NECTAR
