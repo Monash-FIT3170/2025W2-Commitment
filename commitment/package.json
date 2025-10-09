@@ -1,5 +1,5 @@
 {
-  "name": "meteor-app",
+  "name": "commitment",
   "private": true,
   "scripts": {
     "start": "meteor run",
@@ -8,45 +8,59 @@
     "visualize": "meteor --production --extra-packages bundle-visualizer",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit --noUnusedLocals false"
   },
   "dependencies": {
-    "@babel/runtime": "^7.20.7",
+    "@babel/runtime": "^7.28.3",
     "@hookform/resolvers": "^5.2.1",
     "@radix-ui/react-accordion": "^1.2.8",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-checkbox": "^1.2.3",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
+    "@radix-ui/react-icons": "^1.3.2",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-navigation-menu": "^1.2.12",
     "@radix-ui/react-popover": "^1.1.14",
     "@radix-ui/react-radio-group": "^1.3.7",
     "@radix-ui/react-scroll-area": "^1.2.9",
+    "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.6",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-toast": "^1.2.13",
-    "@radix-ui/react-toggle": "^1.1.6",
+    "@radix-ui/react-toggle": "^1.1.10",
+    "@radix-ui/react-toggle-group": "^1.1.11",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@tanstack/react-table": "^8.21.3",
+    "@types/papaparse": "^5.3.16",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
+    "dotenv": "^17.2.2",
     "embla-carousel-react": "^8.6.0",
     "history": "^5.3.0",
+    "lightningcss": "^1.30.1",
     "lucide-react": "^0.501.0",
-    "meteor-node-stubs": "^1.2.5",
+    "meteor-node-stubs": "^1.2.22",
+    "mongodb": "^6.19.0",
+    "papaparse": "^5.5.3",
     "react": "^18.2.0",
+    "react-apexcharts": "^1.7.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.62.0",
     "react-router-dom": "^6.30.0",
+    "react-spinners": "^0.17.0",
     "recharts": "^2.15.3",
     "rxjs": "^7.8.2",
+    "sha": "^3.0.0",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
+    "ws": "^8.18.3",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -59,26 +73,30 @@
     "@types/node": "^18.19.121",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
-    "@typescript-eslint/eslint-plugin": "^8.38.0",
-    "@typescript-eslint/parser": "^8.38.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
+    "autoprefixer": "^10.4.21",
     "babel-eslint": "^10.1.0",
     "babel-plugin-module-resolver": "^5.0.2",
-    "chai": "^5.2.1",
+    "chai": "^5.3.3",
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-meteor": "^0.4.0",
+    "eslint-import-resolver-node": "^0.3.9",
+    "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-meteor": "^7.3.0",
     "eslint-plugin-react": "^7.37.5",
     "jsdom": "^26.1.0",
+    "lightningcss": "^1.30.1",
     "mocha": "^11.7.1",
-    "postcss": "^8.5.3",
+    "postcss": "^8.5.6",
     "postcss-load-config": "^6.0.1",
     "sinon": "^21.0.0",
-    "tailwindcss": "^4.1.11",
-    "typescript": "^4.9.5"
+    "tailwindcss": "^4.1.12",
+    "typescript": "^5.9.2"
   },
   "meteor": {
     "mainModule": {
@@ -90,9 +108,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@ui/*": ["imports/ui/*"],
+      "@base/*": ["imports/ui/components/base/*"],
+      "@hook/*": ["imports/ui/hooks/*"],
+      "@api/*": ["imports/api/*"],
+      "@server/*": ["server/*"]
     }
   }
 }

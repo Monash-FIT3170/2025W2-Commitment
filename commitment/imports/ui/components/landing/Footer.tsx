@@ -1,0 +1,103 @@
+import React from "react";
+
+function Logo() {
+  return (
+    <div className="flex items-start justify-start">
+      <img src="/logo.svg" alt="Logo" className="w-[50px] h-auto" />
+    </div>
+  );
+}
+
+function Commitment() {
+  return (
+    <div>
+      <h3 className="font-bold font-mono mb-3">Commitment</h3>
+      <ul>
+        <li>
+          <span className="font-mono cursor-pointer hover:underline">
+            How it Works
+          </span>
+        </li>
+        <li>
+          <span className="font-mono cursor-pointer hover:underline">Docs</span>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+function Support() {
+  return (
+    <div>
+      <h3 className="font-mono font-bold mb-3">Support</h3>
+      <ul>
+        <li>
+          <span className="font-mono cursor-pointer hover:underline">
+            Resources
+          </span>
+        </li>
+        <li>
+          <a
+            href="https://github.com/Monash-FIT3170/2025W2-Commitment"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono hover:underline"
+          >
+            GitHub Repository
+          </a>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+function Legal() {
+  return (
+    <div>
+      <h3 className="font-mono font-bold mb-3">Legal</h3>
+      <ul>
+        <li>
+          <a
+            href="https://github.com/Monash-FIT3170/2025W2-Commitment?tab=Apache-2.0-1-ov-file
+"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono hover:underline"
+          >
+            License
+          </a>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="bg-git-bg-bottom p-10 rounded-lg shadow-lg ml-32 mr-32 mb-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div>
+          <Logo />
+        </div>
+        <div>
+          <Commitment />
+        </div>
+        <div>
+          <Support />
+        </div>
+        <div>
+          <Legal />
+        </div>
+      </div>
+
+      <div className="text-center pt-8 border-t border-border mt- font-mono">
+        <p>
+          &copy; {new Date().getFullYear()} Copyright Commitment. All Rights
+          Reserved
+        </p>
+      </div>
+    </footer>
+  );
+}
+
+export default Footer;

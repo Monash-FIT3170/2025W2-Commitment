@@ -1,6 +1,6 @@
 node_modules/
 tsconfig.tsbuildinfo
-
-# Environment and settings files
-settings-development.json
 .env
+.deploy
+mup.js
+settings.json

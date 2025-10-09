@@ -1,6 +1,8 @@
 @import "tailwindcss";
-@plugin 'tailwindcss-animate';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* put vars which refer to others */
 @theme inline {
   /* Git Background Colours */
   --color-git-bg-bottom: var(--git-bg-bottom);
@@ -80,6 +82,16 @@
   --color-git-900: #781816;
   --color-git-950: #41090a;
 
+  --color-git-heat-100: var(--git-heat-100);
+  --color-git-heat-200: var(--git-heat-200);
+  --color-git-heat-300: var(--git-heat-300);
+  --color-git-heat-400: var(--git-heat-400);
+  --color-git-heat-500: var(--git-heat-500);
+  --color-git-heat-600: var(--git-heat-600);
+  --color-git-heat-700: var(--git-heat-700);
+  --color-git-heat-800: var(--git-heat-800);
+  --color-git-heat-900: var(--git-heat-900);
+
   /* Shadcn Variables */
   --color-border: var(--border);
   --color-input: var(--input);
@@ -120,6 +132,9 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
+  --breakpoint-2xl: 100rem;
+  --breakpoint-3xl: 120rem;
+
   @keyframes accordion-down {
     from {
       height: 0;
@@ -159,16 +174,16 @@
 @layer base {
   :root {
     /* Git Background Colours */
-    --git-bg-bottom: #e8e8dd;
-    --git-bg-primary: #f0f0e8;
-    --git-bg-secondary: #b7b592;
-    --git-bg-tertiary: #d0d0b7;
+    --git-bg-bottom: var(--color-cararra-100);
+    --git-bg-primary: var(--color-cararra-50);
+    --git-bg-secondary: var(--color-cararra-300);
+    --git-bg-tertiary: var(--color-cararra-200);
     --git-bg-elevated: #fefefa;
 
     /* Git Text Colours */
     --git-text-primary: #000;
     --git-text-secondary: #353531;
-    --git-text-disabled: #818181;
+    --git-text-disabled: #9a9a9a;
 
     /* Git Data-Visualisation Colours */
     --git-dv-blue: #4e79a7;
@@ -184,11 +199,11 @@
     --git-dv-pink-dark: #d37295;
 
     /* Git Interactive Colours */
-    --git-int-primary: #f1502f;
+    --git-int-primary: var(--color-git-500);
     --git-int-text: #fef3ee;
-    --git-int-destructive: #951917;
-    --git-int-primary-hover: #e12a15;
-    --git-int-destructive-hover: #781816;
+    --git-int-destructive: #6b0f0e;
+    --git-int-primary-hover: var(--color-git-600);
+    --git-int-destructive-hover: #8b1d1b;
     --git-int-link: #3a76a9;
 
     /* Git Card Colours */
@@ -199,57 +214,83 @@
 
     /* Git Stroke Colours */
     --git-stroke-primary: rgba(53, 53, 49, 0.5);
-    --git-stroke-secondary: #252522;
-    --git-stroke-tertiary: #21211e;
+    --git-stroke-secondary: #25252273;
+    --git-stroke-tertiary: #21211e63;
 
     /* Git Tabs Colours */
     --git-tabs-hovered: #d0d0b7;
     --git-tabs-active: #f0f0e8;
 
     /* Shadcn Variables */
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(0 0% 3.9%);
+    --background: var(--git-bg-primary);
+    --foreground: var(--git-text-primary);
 
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
+    --card: var(--git-card-primary);
+    --card-foreground: var(--git-card-text);
 
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
+    --popover: var(--git-bg-elevated);
+    --popover-foreground: var(--git-text-primary);
 
-    --primary: hsl(0 0% 3.9%);
-    --primary-foreground: hsl(0 0% 98%);
+    --primary: var(--git-int-primary);
+    --primary-foreground: var(--git-int-text);
 
-    --secondary: hsl(210 40% 96.1%);
-    --secondary-foreground: hsl(0 0% 3.9%);
+    --secondary: var(--git-bg-elevated);
+    --secondary-foreground: var(--git-int-text);
+    --muted: var(--git-bg-elevated);
+    --muted-foreground: var(--git-text-disabled);
 
-    --muted: hsl(210 40% 96.1%);
-    --muted-foreground: hsl(215.4 16.3% 46.9%);
+    --accent: var(--git-bg-elevated);
+    --accent-foreground: var(--git-text-disabled);
 
-    --accent: hsl(210 40% 96.1%);
-    --accent-foreground: hsl(0 0% 3.9%);
+    --destructive: var(--git-int-destructive);
+    --destructive-foreground: var(--git-int-text);
 
-    --destructive: hsl(0 100% 50%);
-    --destructive-foreground: hsl(0 0% 98%);
-
-    --border: hsl(214.3 31.8% 91.4%);
-    --input: hsl(214.3 31.8% 91.4%);
-    --ring: hsl(0 0% 3.9%);
+    --border: var(--git-stroke-primary);
+    --input: var(--git-bg-elevated);
+    --ring: var(--git-stroke-primary);
 
     --radius: 0.5rem;
+
+    --chart-1: var(--git-dv-blue);
+    --chart-2: var(--git-dv-orange);
+    --chart-3: var(--git-dv-green);
+    --chart-4: var(--git-dv-coral);
+    --chart-5: var(--git-dv-aqua);
+    --chart-6: var(--git-dv-yellow);
+    --chart-7: var(--git-dv-purple);
+    --chart-8: var(--git-dv-pink);
+    --chart-9: var(--git-dv-brown);
+    --chart-10: var(--git-dv-grey);
+    --chart-11: var(--git-dv-pink-dark);
+
+    /* 🔥 Heatmap Scale (Light Mode) */
+    --git-heat-100: #ffeae1; /* very light peach */
+    --git-heat-200: #ffdac9; /* soft coral */
+    --git-heat-300: #febfa3; /* mid peach */
+    --git-heat-400: #fa9a6f; /* warm orange */
+    --git-heat-500: #f1502f; /* Git brand orange-red */
+    --git-heat-600: #e12a15; /* strong red */
+    --git-heat-700: #bb1c13; /* darker red */
+    --git-heat-800: #951917; /* wine red */
+    --git-heat-900: #781816; /* darkest */
   }
 
   .dark {
+    /* Git Interactive Colours */
+    --git-int-primary: #cc2706;
+
     /* Git Background Colours */
     --git-bg-bottom: #21211e;
     --git-bg-primary: #282823;
     --git-bg-secondary: #2f2f2a;
     --git-bg-tertiary: #393932;
     --git-bg-elevated: #5c5c51;
+    --git-bg-input: #9e9e95;
 
     /* Git Text Colours */
     --git-text-primary: #fff;
     --git-text-secondary: #c4c4c4;
-    --git-text-disabled: #818181;
+    --git-text-disabled: #7a7979;
 
     /* Git Data-Visualisation Colours */
     --git-dv-grey: #fffffb;
@@ -264,37 +305,71 @@
     --git-stroke-tertiary: rgba(183, 181, 146, 0.47);
 
     /* Git Tabs Colours */
-    --git-tabs-hovered: #fff;
-    --git-tabs-active: #fff;
+    --git-tabs-hovered: var(--git-bg-secondary);
+    --git-tabs-active: var(--git-bg-primary);
+
+    --git-int-destructive: #c54846;
+    --git-int-primary-hover: #e12a15;
+    --git-int-destructive-hover: #ad3836;
 
     /* Shadcn Variables */
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
+    --background: var(--git-bg-primary);
+    --foreground: var(--git-text-primary);
 
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
+    --card: var(--git-card-primary);
+    --card-foreground: var(--git-card-text);
 
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
+    --popover: var(--git-bg-elevated);
+    --popover-foreground: var(--git-text-primary);
 
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 3.9%);
+    --primary: var(--git-int-primary);
+    --primary-foreground: var(--git-int-text);
 
-    --secondary: hsl(217.2 32.6% 17.5%);
-    --secondary-foreground: hsl(0 0% 98%);
+    --secondary: var(--git-bg-elevated);
+    --secondary-foreground: var(--git-int-text);
+    --muted: var(--git-bg-elevated);
+    --muted-foreground: var(--git-text-disabled);
 
-    --muted: hsl(217.2 32.6% 17.5%);
-    --muted-foreground: hsl(215 20.2% 65.1%);
+    --accent: var(--git-bg-elevated);
+    --accent-foreground: var(--git-text-disabled);
 
-    --accent: hsl(217.2 32.6% 17.5%);
-    --accent-foreground: hsl(0 0% 98%);
+    --destructive: var(--git-int-destructive);
+    --destructive-foreground: var(--git-int-text);
 
-    --destructive: hsl(0 62.8% 30.6%);
-    --destructive-foreground: hsl(0 0% 98%);
+    --border: var(--git-bg-elevated);
+    --input: var(--git-bg-input);
+    --ring: var(--git-stroke-primary);
 
-    --border: hsl(217.2 32.6% 17.5%);
-    --input: hsl(217.2 32.6% 17.5%);
-    --ring: hsl(212.7 26.8% 83.9%);
+    --radius: 0.5rem;
+
+    --chart-1: var(--git-dv-blue);
+    --chart-2: var(--git-dv-orange);
+    --chart-3: var(--git-dv-green);
+    --chart-4: var(--git-dv-coral);
+    --chart-5: var(--git-dv-aqua);
+    --chart-6: var(--git-dv-yellow);
+    --chart-7: var(--git-dv-purple);
+    --chart-8: var(--git-dv-pink);
+    --chart-9: var(--git-dv-brown);
+    --chart-10: var(--git-dv-grey);
+    --chart-11: var(--git-dv-pink-dark);
+
+    /* 🔥 Heatmap Scale (Dark Mode) */
+    --git-heat-100: #ffd5c2; /* soft highlight */
+    --git-heat-200: #ffb499; /* coral-orange */
+    --git-heat-300: #ff8a66; /* bright mid-orange */
+    --git-heat-400: #ff7043; /* vivid orange */
+    --git-heat-500: #f1502f; /* brand orange-red (anchor) */
+    --git-heat-600: #e63a23; /* brightened red */
+    --git-heat-700: #cc2a1f; /* strong deep red */
+    --git-heat-800: #b22222; /* firebrick red */
+    --git-heat-900: #991b1b; /* rich crimson */
+  }
+
+  html,
+  body {
+    height: 100%;
+    width: 100%;
   }
 
   * {
@@ -308,5 +383,13 @@
   body {
     @apply bg-background text-foreground font-mono;
     background-color: var(--git-bg-primary);
+  }
+
+  .rdp [aria-hidden="true"] {
+    @apply hidden;
+  }
+
+  .rdp-vhidden {
+    @apply hidden;
   }
 }

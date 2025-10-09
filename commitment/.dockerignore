@@ -1,0 +1,6 @@
+**/.meteor/local
+**/node_modules
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
