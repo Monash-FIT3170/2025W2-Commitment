@@ -156,10 +156,10 @@ export const getSerialisedRepoData = (
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
 const fetchDataFromHaskellAppFromSocket =
-  (f: () => WebSocket) =>
+  (createSocket: () => WebSocket) =>
   (url: string, notifier: Subject<string> | null): Promise<RepositoryData> =>
     new Promise<RepositoryData>((resolve, reject) => {
-      const socket = f();
+      const socket = createSocket();
       const emit = emitValue(notifier);
       emit("Connecting to the API...");
 
@@ -181,8 +181,10 @@ const fetchDataFromHaskellAppFromSocket =
           const parsed = JSON.parse(data);
 
           if (parsed.type === "text_update") emit(parsed.data);
-          else if (parsed.type === "error") reject(parsed.message);
-          else if (parsed.type === "value") {
+          else if (parsed.type === "error") {
+            reject(parsed.message);
+            socket.close();
+          } else if (parsed.type === "value") {
             resolve(parsed.data);
             socket.close();
           }
