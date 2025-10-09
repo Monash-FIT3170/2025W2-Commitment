@@ -2,7 +2,7 @@ name: Deploy to Nectar
 
 on:
   push:
-    branches: [ "cd/nectar-deploy" ]
+    branches: ["cd/nectar-deploy"]
   workflow_dispatch:
 
 jobs:
@@ -49,13 +49,22 @@ jobs:
       - name: Build Meteor bundle
         working-directory: ./commitment
         run: |
+          set -e
           npm install
           meteor build ../../${BUILD_DIR} --directory
+
+          # Verify bundle exists
+          ls -la ../../${BUILD_DIR}
+          test -d ../../${BUILD_DIR}/bundle || (echo "Meteor did not produce bundle directory" && exit 1)
+
+          # Install server dependencies
           cd ../../${BUILD_DIR}/bundle/programs/server
           npm install --production
-          cd ../../
-          ls 
+
+          # Compress the entire bundle folder
+          cd ../..
           tar -czf meteor-bundle.tar.gz bundle
+          mv meteor-bundle.tar.gz ../${BUILD_DIR}/
 
       ####################################################
       #  HASKELL BUILD (via Docker)
