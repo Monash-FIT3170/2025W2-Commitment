@@ -186,8 +186,10 @@ const fetchDataFromHaskellAppFromSocket = async (
         const parsed = JSON.parse(data);
 
         if (parsed.type === "text_update" && notifier !== null) notifier.next(parsed.data);
-        else if (parsed.type === "error") reject(parsed.message);
-        else if (parsed.type === "value") {
+        else if (parsed.type === "error") {
+          reject(parsed.message);
+          socket.close();
+        } else if (parsed.type === "value") {
           resolve(parsed.data);
           socket.close();
         }
