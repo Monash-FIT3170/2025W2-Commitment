@@ -45,9 +45,6 @@ Compact Scaling - Smooth values using tanh, floor 0.5 ceiling 1.2 (tries to give
 
 Default	- Simple mean of normalized metrics	
  */
-//
-
-const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day", "Compact Scaling"];
 
 //
 // ---------- Normalization helpers! ----------
@@ -173,6 +170,8 @@ const scoringStrategies: Record<string, ScoreFn> = {
 // ---------- Scaling ----------
 //
 
+const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day", "Compact Scaling"];
+
 /**
  * Builds a matrix of users and their metrics and then uses the chosen scoring method to compute their final scale.
  It rounds to 2 decimal places for the scale
@@ -193,7 +192,7 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
     const metricsValues = selectedMetrics.map((_, i) =>
         normaliseMetric(users.map((u) => u.values[i]))
         );
-        
+
     const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
 
   return users.map((user, idx) => {
