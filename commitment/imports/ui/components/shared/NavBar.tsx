@@ -82,11 +82,11 @@ export const NavBar: React.FC = () => {
                   Dashboard
                 </Link>
               </NavigationMenuItem>
-              {/* <NavigationMenuItem>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <NavigationMenuItem>
+                <Link to="/docs" className={navigationMenuTriggerStyle()}>
                   Docs
-                </NavigationMenuLink>
-              </NavigationMenuItem> */}
+                </Link>
+              </NavigationMenuItem>
             </>
           )}
         </NavigationMenuList>
