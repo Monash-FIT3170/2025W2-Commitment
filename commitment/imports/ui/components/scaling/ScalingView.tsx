@@ -273,7 +273,12 @@ function ScalingView(): JSX.Element {
     } else {
       setScaledResults(results);
     }
-    setStep("sheet");
+
+    if (isLoggedIn) 
+      setStep("sheet");
+    else
+      handleSkipSheet()
+    
   };
 
   const handleSheetSubmit = (
