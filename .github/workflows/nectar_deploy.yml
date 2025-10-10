@@ -52,10 +52,10 @@ jobs:
           set -e
           echo "=== NPM Install Dependencies ==="
           npm install
-          meteor build ../../${BUILD_DIR} --directory
+          meteor build ../../${env.BUILD_DIR} --directory
 
           echo "=== Install server dependencies ==="
-          cd ../../${BUILD_DIR}/bundle/programs/server
+          cd ../../${env.BUILD_DIR}/bundle/programs/server
           npm install --production
 
           echo "=== Compress the entire bundle folder ==="
