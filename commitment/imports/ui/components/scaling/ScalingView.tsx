@@ -5,6 +5,7 @@ import { Upload, Download, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import ScalingConfigForm from "./ScalingConfigForm";
 import { Dialog, DialogContent } from "../ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -33,6 +34,8 @@ import { toast } from "../../hooks/use-toast";
 import InfoButton from "../ui/infoButton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import CustomScriptExport from "./CustomScriptExport";
+import { exportDataService } from "./CustomScriptExport/exportDataService";
 
 interface ScalingConfig {
   metrics: string[];
@@ -54,12 +57,14 @@ function ScalingView(): JSX.Element {
     useState<ParseResult | null>(null);
   const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
   const [repoUrl, setRepoUrl] = useState<string | null>(null);
+  const [availableBranches, setAvailableBranches] = useState<string[]>([]);
 
   // for Alias Mapping
   const [unmappedUsers, setUnmappedUsers] = useState<
     { name: string; rawIdentifiers: string[] }[]
   >([]);
   const [showAliasDialog, setShowAliasDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<"scaling" | "export">("scaling");
 
   const navigate = useNavigate();
 
@@ -91,6 +96,29 @@ function ScalingView(): JSX.Element {
         }
       }
     );
+  }, [repoUrl]);
+
+  // Fetch available branches from server metadata when repoUrl is set
+  useEffect(() => {
+    if (!repoUrl) return;
+
+    try {
+      Meteor.call(
+        "repo.getMetadata",
+        repoUrl,
+        (err: Meteor.Error | null, res: { branches: string[] } | undefined) => {
+          if (err) {
+            console.error("Error fetching repo metadata:", err);
+            return;
+          }
+          if (res && Array.isArray(res.branches)) {
+            setAvailableBranches(res.branches);
+          }
+        }
+      );
+    } catch (e) {
+      console.error("Failed to load branches", e);
+    }
   }, [repoUrl]);
 
   useEffect(() => {
@@ -356,11 +384,40 @@ function ScalingView(): JSX.Element {
     }
   };
 
+  // availableBranches is now fetched from repo metadata
+
+  // Handle data request for export
+  const handleDataRequest = async (config: any) => {
+    if (!repoUrl) {
+      throw new Error('No repository URL available');
+    }
+    return await exportDataService.fetchExportData(config, repoUrl);
+  };
+
   return (
     <div className="w-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated">
       <div className="flex flex-col gap-32">
         <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-4 rounded-2xl bg-git-bg-elevated">
-          {showAliasDialog && (
+          {/* Header */}
+          <div className="mb-10">
+            <div className="flex items-center gap-4">
+              <h1 className="text-5xl text-foreground font-robotoFlex">
+                Scaling
+              </h1>
+              <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
+            </div>
+            <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
+          </div>
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "scaling" | "export")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="scaling">Scaling Configuration</TabsTrigger>
+              <TabsTrigger value="export">Custom Script Export</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="scaling" className="space-y-6">
+              {showAliasDialog && (
             <AlertDialog
               open={showAliasDialog}
               onOpenChange={setShowAliasDialog}
@@ -520,6 +577,16 @@ function ScalingView(): JSX.Element {
               )}
             </DialogContent>
           </Dialog>
+            </TabsContent>
+
+            <TabsContent value="export" className="space-y-6">
+              <CustomScriptExport
+                availableBranches={availableBranches}
+                repoUrl={repoUrl || ''}
+                onDataRequest={handleDataRequest}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
