@@ -2,7 +2,7 @@ name: Deploy to Nectar
 
 on:
   push:
-    branches: ["cd/nectar-deploy"]
+    branches: ["never-deploy"]
   workflow_dispatch:
 
 jobs:
