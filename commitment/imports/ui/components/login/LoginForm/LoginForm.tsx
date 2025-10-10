@@ -17,6 +17,8 @@ import { Eye, EyeOff } from "lucide-react";
 import LoginFormErrorMessage from "@ui/components/login/LoginForm/LoginFormErrorMessage";
 
 import FormInputWithErrors from "@ui/components/shared/FormInputWithErrors";
+import GoogleLoginWidget from "@ui/components/widgets/login/GoogleLoginWidget";
+import GithubLoginWidget from "@ui/components/widgets/login/GithubLoginWidget";
 
 export interface LoginFormProps {
   className?: string;
@@ -164,6 +166,22 @@ function LoginForm(props: LoginFormProps) {
         <Button type="submit" className="w-full">
           Submit
         </Button>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-git-bg-tertiary px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <GoogleLoginWidget />
+          <GithubLoginWidget />
+        </div>
       </form>
     </Form>
   );
