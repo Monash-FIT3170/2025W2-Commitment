@@ -1,4 +1,5 @@
 import { SerializableRepoData } from "@api/types";
+import { checkIfExists, cloneToLocal, getAllBranches, getLastCommitDate } from "./git_commands";
 import {
   join,
   takeFromBack,
@@ -8,9 +9,7 @@ import {
   getAllCommits,
 } from "/server/helper_functions";
 import {
-  Command,
   assertSuccess,
-  doNotLogData,
   executeCommand,
   createTempDirectory,
   deleteAllFromDirectory,
@@ -71,24 +70,3 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
     await deleteAllFromDirectory(temp_working_dir);
   }
 };
-
-const checkIfExists = (url: string): Command => ({
-  ...doNotLogData,
-  cmd: `git ls-remote \"${url}\"`,
-});
-
-const cloneToLocal = (url: string, path: string): Command => ({
-  ...doNotLogData,
-  cmd: `git -c credential.helper= -c core.askPass=true clone --bare \"${url}\" \"${path}\"`,
-});
-
-const getAllBranches = (): Command => ({
-  ...doNotLogData,
-  cmd: `git --no-pager branch -a --format=\"%(refname:short)\"`,
-});
-
-const getLastCommitDate = (branch: string): Command => ({
-  ...doNotLogData,
-  // gets the timestamp of the last commit from the branch
-  cmd: `git log -1 --format=%cI \"${branch}\"`,
-});

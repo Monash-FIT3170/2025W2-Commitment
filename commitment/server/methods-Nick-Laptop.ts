@@ -18,8 +18,7 @@ import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
-import { executeCommand, assertSuccess } from "./api/shell";
-import { checkIfExists } from "./api/git_commands";
+import { spawn } from "child_process";
 
 export async function getFilteredRepoData(
   repoUrl: string,
@@ -54,10 +53,20 @@ Meteor.methods({
    * @returns Promise<boolean> True if repository exists and is accessible
    */
   async "repo.checkExists"(repoUrl: string): Promise<boolean> {
-    return executeCommand("")(checkIfExists(repoUrl))
-      .then(assertSuccess("Repository does not exist"))
-      .then(() => true)
-      .catch(() => false);
+    return new Promise((resolve) => {
+      const git = spawn("git", ["ls-remote", repoUrl], {
+        stdio: ["ignore", "pipe", "pipe"],
+        env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+      });
+
+      git.on("close", (code: number) => {
+        resolve(code === 0);
+      });
+
+      git.on("error", () => {
+        resolve(false);
+      });
+    });
   },
 
   /**
@@ -78,13 +87,13 @@ Meteor.methods({
 
     return getFilteredData({
       ...a,
-      userId: this.userId !== null ? this.userId : undefined,
+      userId: this.userId,
     });
   },
 
   async "repo.getMetadata"(repoUrl: string): Promise<Metadata> {
     // TODO do type checks here if needed
-    return getMetaData(repoUrl, this.userId !== null ? this.userId : undefined);
+    return getMetaData(repoUrl, this.userId);
   },
 
   async "repo.getAnalyticsData"(d: {
@@ -99,7 +108,7 @@ Meteor.methods({
 
     return getAnalyticsData({
       ...d,
-      userId: this.userId !== null ? this.userId : undefined,
+      userId: this.userId,
     });
   },
 
@@ -220,8 +229,7 @@ export const getAnalyticsData = async ({
         : metadata.branches.includes("master")
         ? "master"
         : metadata.branches[0]),
-    selectedContributors:
-      !contributors || contributors.length === 0 ? metadata.contributors : contributors,
+    selectedContributors: contributors ?? [],
     selectedMetrics: metric,
     selectedDateRange: {
       from: startDate || metadata.dateRange.from,
@@ -231,8 +239,8 @@ export const getAnalyticsData = async ({
 
   const filteredRepo: FilteredData = await getFilteredData({
     repoUrl,
-    startDate: selections.selectedDateRange.from!,
-    endDate: selections.selectedDateRange.to!,
+    startDate: selections.selectedDateRange.from,
+    endDate: selections.selectedDateRange.to,
     branch: selections.selectedBranch,
     contributor: selections.selectedContributors,
   });
