@@ -3,79 +3,78 @@ name: Deploy to Nectar
 on:
   push:
     branches: ["cd/nectar-deploy"]
-  workflow_dispatch:
 
-  jobs:
-    build-and-deploy:
-      runs-on: ubuntu-latest
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        ####################################################
-        #  DOCKER BUILD + PUSH (METEOR)
-        ####################################################
-        - name: Log in to Docker Hub
-          uses: docker/login-action@v3
-          with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_TOKEN }}
+      ####################################################
+      #  DOCKER BUILD + PUSH (METEOR)
+      ####################################################
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-        - name: Build Meteor app image
-          run: |
-            docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest \
-              -f commitment/Dockerfile.MeteorProd commitment/
+      - name: Build Meteor app image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest \
+            -f commitment/Dockerfile.MeteorProd commitment/
 
-        - name: Push Meteor app image
-          run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
+      - name: Push Meteor app image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
 
-        ####################################################
-        #  DOCKER BUILD + PUSH (HASKELL)
-        ####################################################
-        - name: Build Haskell API image
-          run: |
-            docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest \
-              -f api/Dockerfile.haskell api/
+      ####################################################
+      #  DOCKER BUILD + PUSH (HASKELL)
+      ####################################################
+      - name: Build Haskell API image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest \
+            -f api/Dockerfile.haskell api/
 
-        - name: Push Haskell API image
-          run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
+      - name: Push Haskell API image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
 
-        ####################################################
-        #  DEPLOY TO EC2 INSTANCE
-        ####################################################
-        - name: Deploy to EC2
-          uses: appleboy/ssh-action@v1.2.0
-          with:
-            host: ${{ secrets.NECTAR_HOST }}
-            username: ${{ secrets.NECTAR_USER }}
-            key: ${{ secrets.NECTAR_KEY }}
-            envs: GITHUB_REF_NAME
-            script: |
-              set -e
+      ####################################################
+      #  DEPLOY TO EC2 INSTANCE
+      ####################################################
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.NECTAR_HOST }}
+          username: ${{ secrets.NECTAR_USER }}
+          key: ${{ secrets.NECTAR_KEY }}
+          envs: GITHUB_REF_NAME
+          script: |
+            set -e
 
-              echo "=== Cloning or updating repo ==="
-              if [ ! -d ~/2025W2-Commitment/.git ]; then
-                rm -rf ~/2025W2-Commitment
-                git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git ~/2025W2-Commitment
-              fi
-              cd ~/app
-              git fetch origin $GITHUB_REF_NAME
-              git checkout $GITHUB_REF_NAME
-              git reset --hard origin/$GITHUB_REF_NAME
+            echo "=== Cloning or updating repo ==="
+            if [ ! -d ~/2025W2-Commitment/.git ]; then
+              rm -rf ~/2025W2-Commitment
+              git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git ~/2025W2-Commitment
+            fi
+            cd ~/app
+            git fetch origin $GITHUB_REF_NAME
+            git checkout $GITHUB_REF_NAME
+            git reset --hard origin/$GITHUB_REF_NAME
 
-              echo "=== Cleaning old images and containers ==="
-              sudo docker compose -f docker-compose.prod.yml down --volumes || true
-              sudo docker system prune -a --volumes -f
+            echo "=== Cleaning old images and containers ==="
+            sudo docker compose -f docker-compose.prod.yml down --volumes || true
+            sudo docker system prune -a --volumes -f
 
-              echo "=== Pulling latest images ==="
-              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
-              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
+            echo "=== Pulling latest images ==="
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
 
-              echo "=== Starting updated containers ==="
-              sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            echo "=== Starting updated containers ==="
+            sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
-              echo "=== Deployment complete! ==="
+            echo "=== Deployment complete! ==="
 
 # jobs:
 #   build-and-deploy:
