@@ -116,7 +116,7 @@ jobs:
           username: ${{ env.NECTAR_USER }}
           key: ${{ env.SSH_KEY }}
           source: "${{ env.BUILD_DIR }}/*.tar.gz"
-          target: "/home/ubuntu/build/"
+          target: "/${{ env.BUILD_DIR }}"
 
       - name: Deploy on instance
         uses: appleboy/ssh-action@v1.0.3
@@ -126,6 +126,10 @@ jobs:
           key: ${{ env.SSH_KEY }}
           script: |
             set -e
+
+            echo "--- LET US SEE WHERE WE ARE ---"
+            pwd 
+            ls -a
 
             echo "--- Unpacking Meteor build ---"
             sudo rm -rf ${{ env.DEPLOY_PATH_METEOR }}
