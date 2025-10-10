@@ -52,10 +52,10 @@ jobs:
           set -e
           echo "=== NPM Install Dependencies ==="
           npm install
-          meteor build ../../${env.BUILD_DIR} --directory
+          meteor build ../../${{ env.BUILD_DIR }} --directory
 
           echo "=== Install server dependencies ==="
-          cd ../../${env.BUILD_DIR}/bundle/programs/server
+          cd ../../${{ env.BUILD_DIR }}/bundle/programs/server
           npm install --production
 
           echo "=== Compress the entire bundle folder ==="
@@ -98,9 +98,9 @@ jobs:
           stack build --copy-bins --local-bin-path ./bin
 
           echo "=== Packaging build ==="
-          mkdir -p ../${env.BUILD_DIR}
+          mkdir -p ../${{ env.BUILD_DIR }}
           chmod +x ./bin/commitment-api
-          tar -czf ../${env.BUILD_DIR}/haskell-api.tar.gz -C ./bin commitment-api
+          tar -czf ../${{ env.BUILD_DIR }}/haskell-api.tar.gz -C ./bin commitment-api
 
           echo "Haskell build complete"
 
@@ -126,20 +126,20 @@ jobs:
             set -e
 
             echo "--- Unpacking Meteor build ---"
-            sudo rm -rf ${env.DEPLOY_PATH_METEOR}
-            sudo mkdir -p ${env.DEPLOY_PATH_METEOR}
+            sudo rm -rf ${{ env.DEPLOY_PATH_METEOR }}
+            sudo mkdir -p ${{ env.DEPLOY_PATH_METEOR }}
             tar -xzf /home/ubuntu/build/meteor-bundle.tar.gz -C /tmp
-            sudo cp -r /tmp/bundle/* ${env.DEPLOY_PATH_METEOR}/
-            sudo chown -R ubuntu:ubuntu ${env.DEPLOY_PATH_METEOR}
+            sudo cp -r /tmp/bundle/* ${{ env.DEPLOY_PATH_METEOR }}/
+            sudo chown -R ubuntu:ubuntu ${{ env.DEPLOY_PATH_METEOR }}
 
             echo "--- Installing Meteor server dependencies ---"
-            cd ${env.DEPLOY_PATH_METEOR}/programs/server
+            cd ${{ env.DEPLOY_PATH_METEOR }}/programs/server
             npm install --production
 
             echo "--- Updating Haskell binary ---"
             tar -xzf /home/ubuntu/build/haskell-api.tar.gz -C /home/ubuntu
-            sudo mv /home/ubuntu/commitment-api ${env.DEPLOY_PATH_HASKELL}/commitment-api
-            sudo chmod +x ${env.DEPLOY_PATH_HASKELL}/commitment-api
+            sudo mv /home/ubuntu/commitment-api ${{ env.DEPLOY_PATH_HASKELL }}/commitment-api
+            sudo chmod +x ${{ env.DEPLOY_PATH_HASKELL }}/commitment-api
 
             echo "--- Restarting services ---"
             sudo systemctl daemon-reload
