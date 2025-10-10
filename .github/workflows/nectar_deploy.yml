@@ -116,7 +116,7 @@ jobs:
           username: ${{ env.NECTAR_USER }}
           key: ${{ env.SSH_KEY }}
           source: "${{ env.BUILD_DIR }}/*.tar.gz"
-          target: "~/${{ env.BUILD_DIR }}"
+          target: "~/"
 
       - name: Deploy on instance
         uses: appleboy/ssh-action@v1.0.3
