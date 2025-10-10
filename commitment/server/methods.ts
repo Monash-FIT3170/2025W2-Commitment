@@ -1,5 +1,4 @@
 import { Meteor } from "meteor/meteor";
-import { Subject } from "rxjs";
 
 import { getFilteredRepoDataServer } from "./filter";
 import { tryFromDatabaseSerialised } from "./api/caching";
