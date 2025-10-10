@@ -61,7 +61,8 @@ jobs:
           echo "=== Compress the entire bundle folder ==="
           cd ../../..
           tar -czf meteor-bundle.tar.gz bundle
-          mv meteor-bundle.tar.gz ../${{ env.BUILD_DIR }}/
+          # mv meteor-bundle.tar.gz ../${{ env.BUILD_DIR }}/
+          ls -a
 
           echo "Meteor build complete"
 
