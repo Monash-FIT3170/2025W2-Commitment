@@ -2,157 +2,229 @@ name: Deploy to Nectar
 
 on:
   push:
-    branches: ["never-deploy"]
+    branches: ["cd/nectar-deploy"]
   workflow_dispatch:
 
-jobs:
+  jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
-    env:
-      NECTAR_HOST: ${{ secrets.NECTAR_HOST }}
-      NECTAR_USER: ${{ secrets.NECTAR_USER }}
-      SSH_KEY: ${{ secrets.NECTAR_KEY }}
-      DEPLOY_PATH_METEOR: /opt/meteor/app
-      DEPLOY_PATH_HASKELL: /usr/local/bin
-      BUILD_DIR: build
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       ####################################################
-      #  METEOR BUILD
+      #  DOCKER BUILD + PUSH (METEOR)
       ####################################################
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
         with:
-          node-version: "20"
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Cache Meteor installation
-        uses: actions/cache@v4
-        with:
-          path: ~/.meteor
-          key: meteor-${{ runner.os }}-${{ hashFiles('commitment/package-lock.json') }}
-
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: commitment/node_modules
-          key: node-${{ runner.os }}-${{ hashFiles('commitment/package-lock.json') }}
-
-      - name: Install Meteor
+      - name: Build Meteor app image
         run: |
-          curl https://install.meteor.com/ | sh
-          meteor --version
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest \
+            -f commitment/Dockerfile.MeteorProd commitment/
 
-      - name: Build Meteor bundle
-        working-directory: ./commitment
+      - name: Push Meteor app image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
+
+      ####################################################
+      #  DOCKER BUILD + PUSH (HASKELL)
+      ####################################################
+      - name: Build Haskell API image
         run: |
-          set -e
-          echo "=== NPM Install Dependencies ==="
-          npm install
-          meteor build ../${{ env.BUILD_DIR }} --directory
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest \
+            -f api/Dockerfile.haskell api/
 
-          echo "=== Install server dependencies ==="
-          cd ../${{ env.BUILD_DIR }}/bundle/programs/server
-          npm install --production
-
-          echo "=== Compress the entire bundle folder ==="
-          cd ../../..
-          tar -czf meteor-bundle.tar.gz bundle
-          # mv meteor-bundle.tar.gz ../${{ env.BUILD_DIR }}/
-          ls -a
-
-          echo "Meteor build complete"
+      - name: Push Haskell API image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
 
       ####################################################
-      #  HASKELL BUILD
+      #  DEPLOY TO EC2 INSTANCE
       ####################################################
-      - name: Set up Haskell
-        uses: haskell-actions/setup@v2
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          enable-stack: true
-
-      - name: Cache Stack build
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.stack
-            api/.stack-work
-          key: stack-${{ runner.os }}-${{ hashFiles('api/stack.yaml', 'api/package.yaml') }}
-          restore-keys: |
-            stack-${{ runner.os }}-
-
-      - name: Install system dependencies for Haskell
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgmp-dev
-
-      - name: Build Haskell binary
-        working-directory: ./api
-        run: |
-          set -e
-          echo "=== Setting up Stack ==="
-          stack setup
-
-          echo "=== Building Commitment API ==="
-          stack build --copy-bins --local-bin-path ./bin
-
-          echo "=== Packaging build ==="
-          mkdir -p ../${{ env.BUILD_DIR }}
-          chmod +x ./bin/commitment-api
-          tar -czf ../${{ env.BUILD_DIR }}/haskell-api.tar.gz -C ./bin commitment-api
-
-          echo "Haskell build complete"
-
-      ####################################################
-      #  DEPLOYMENT TO NECTAR
-      ####################################################
-      - name: Copy build artifacts to Nectar
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.NECTAR_HOST }}
-          username: ${{ env.NECTAR_USER }}
-          key: ${{ env.SSH_KEY }}
-          source: "${{ env.BUILD_DIR }}/*.tar.gz"
-          target: "~/"
-
-      - name: Deploy on instance
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.NECTAR_HOST }}
-          username: ${{ env.NECTAR_USER }}
-          key: ${{ env.SSH_KEY }}
+          host: ${{ secrets.NECTAR_HOST }}
+          username: ${{ secrets.NECTAR_USER }}
+          key: ${{ secrets.NECTAR_KEY }}
+          envs: GITHUB_REF_NAME
           script: |
             set -e
 
-            echo "--- LET US SEE WHERE WE ARE ---"
-            pwd 
-            ls -a
+            echo "=== Cloning or updating repo ==="
+            if [ ! -d ~/2025W2-Commitment/.git ]; then
+              rm -rf ~/2025W2-Commitment
+              git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git ~/2025W2-Commitment
+            fi
+            cd ~/app
+            git fetch origin $GITHUB_REF_NAME
+            git checkout $GITHUB_REF_NAME
+            git reset --hard origin/$GITHUB_REF_NAME
 
-            echo "--- Unpacking Meteor build ---"
-            sudo rm -rf ${{ env.DEPLOY_PATH_METEOR }}
-            sudo mkdir -p ${{ env.DEPLOY_PATH_METEOR }}
-            tar -xzf /home/ubuntu/build/meteor-bundle.tar.gz -C /tmp
-            sudo cp -r /tmp/bundle/* ${{ env.DEPLOY_PATH_METEOR }}/
-            sudo chown -R ubuntu:ubuntu ${{ env.DEPLOY_PATH_METEOR }}
+            echo "=== Cleaning old images and containers ==="
+            sudo docker compose -f docker-compose.prod.yml down --volumes || true
+            sudo docker system prune -a --volumes -f
 
-            echo "--- Installing Meteor server dependencies ---"
-            cd ${{ env.DEPLOY_PATH_METEOR }}/programs/server
-            npm install --production
+            echo "=== Pulling latest images ==="
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
 
-            echo "--- Updating Haskell binary ---"
-            tar -xzf /home/ubuntu/build/haskell-api.tar.gz -C /home/ubuntu
-            sudo mv /home/ubuntu/commitment-api ${{ env.DEPLOY_PATH_HASKELL }}/commitment-api
-            sudo chmod +x ${{ env.DEPLOY_PATH_HASKELL }}/commitment-api
+            echo "=== Starting updated containers ==="
+            sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
-            echo "--- Restarting services ---"
-            sudo systemctl daemon-reload
-            sudo systemctl restart meteor.service haskell-api.service || true
+            echo "=== Deployment complete! ==="
 
-            echo "--- Checking service statuses ---"
-            sudo systemctl status meteor.service --no-pager || true
-            sudo systemctl status haskell-api.service --no-pager || true
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
 
-            echo "Deployment complete"
+#     env:
+#       NECTAR_HOST: ${{ secrets.NECTAR_HOST }}
+#       NECTAR_USER: ${{ secrets.NECTAR_USER }}
+#       SSH_KEY: ${{ secrets.NECTAR_KEY }}
+#       DEPLOY_PATH_METEOR: /opt/meteor/app
+#       DEPLOY_PATH_HASKELL: /usr/local/bin
+#       BUILD_DIR: build
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       ####################################################
+#       #  METEOR BUILD
+#       ####################################################
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: "20"
+
+#       - name: Cache Meteor installation
+#         uses: actions/cache@v4
+#         with:
+#           path: ~/.meteor
+#           key: meteor-${{ runner.os }}-${{ hashFiles('commitment/package-lock.json') }}
+
+#       - name: Cache Node modules
+#         uses: actions/cache@v4
+#         with:
+#           path: commitment/node_modules
+#           key: node-${{ runner.os }}-${{ hashFiles('commitment/package-lock.json') }}
+
+#       - name: Install Meteor
+#         run: |
+#           curl https://install.meteor.com/ | sh
+#           meteor --version
+
+#       - name: Build Meteor bundle
+#         working-directory: ./commitment
+#         run: |
+#           set -e
+#           echo "=== NPM Install Dependencies ==="
+#           npm install
+#           meteor build ../${{ env.BUILD_DIR }} --directory
+
+#           echo "=== Install server dependencies ==="
+#           cd ../${{ env.BUILD_DIR }}/bundle/programs/server
+#           npm install --production
+
+#           echo "=== Compress the entire bundle folder ==="
+#           cd ../../..
+#           tar -czf meteor-bundle.tar.gz bundle
+#           # mv meteor-bundle.tar.gz ../${{ env.BUILD_DIR }}/
+#           ls -a
+
+#           echo "Meteor build complete"
+
+#       ####################################################
+#       #  HASKELL BUILD
+#       ####################################################
+#       - name: Set up Haskell
+#         uses: haskell-actions/setup@v2
+#         with:
+#           enable-stack: true
+
+#       - name: Cache Stack build
+#         uses: actions/cache@v4
+#         with:
+#           path: |
+#             ~/.stack
+#             api/.stack-work
+#           key: stack-${{ runner.os }}-${{ hashFiles('api/stack.yaml', 'api/package.yaml') }}
+#           restore-keys: |
+#             stack-${{ runner.os }}-
+
+#       - name: Install system dependencies for Haskell
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y libgmp-dev
+
+#       - name: Build Haskell binary
+#         working-directory: ./api
+#         run: |
+#           set -e
+#           echo "=== Setting up Stack ==="
+#           stack setup
+
+#           echo "=== Building Commitment API ==="
+#           stack build --copy-bins --local-bin-path ./bin
+
+#           echo "=== Packaging build ==="
+#           mkdir -p ../${{ env.BUILD_DIR }}
+#           chmod +x ./bin/commitment-api
+#           tar -czf ../${{ env.BUILD_DIR }}/haskell-api.tar.gz -C ./bin commitment-api
+
+#           echo "Haskell build complete"
+
+#       ####################################################
+#       #  DEPLOYMENT TO NECTAR
+#       ####################################################
+#       - name: Copy build artifacts to Nectar
+#         uses: appleboy/scp-action@v0.1.7
+#         with:
+#           host: ${{ env.NECTAR_HOST }}
+#           username: ${{ env.NECTAR_USER }}
+#           key: ${{ env.SSH_KEY }}
+#           source: "${{ env.BUILD_DIR }}/*.tar.gz"
+#           target: "~/"
+
+#       - name: Deploy on instance
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ env.NECTAR_HOST }}
+#           username: ${{ env.NECTAR_USER }}
+#           key: ${{ env.SSH_KEY }}
+#           script: |
+#             set -e
+
+#             echo "--- LET US SEE WHERE WE ARE ---"
+#             pwd 
+#             ls -a
+
+#             echo "--- Unpacking Meteor build ---"
+#             sudo rm -rf ${{ env.DEPLOY_PATH_METEOR }}
+#             sudo mkdir -p ${{ env.DEPLOY_PATH_METEOR }}
+#             tar -xzf /home/ubuntu/build/meteor-bundle.tar.gz -C /tmp
+#             sudo cp -r /tmp/bundle/* ${{ env.DEPLOY_PATH_METEOR }}/
+#             sudo chown -R ubuntu:ubuntu ${{ env.DEPLOY_PATH_METEOR }}
+
+#             echo "--- Installing Meteor server dependencies ---"
+#             cd ${{ env.DEPLOY_PATH_METEOR }}/programs/server
+#             npm install --production
+
+#             echo "--- Updating Haskell binary ---"
+#             tar -xzf /home/ubuntu/build/haskell-api.tar.gz -C /home/ubuntu
+#             sudo mv /home/ubuntu/commitment-api ${{ env.DEPLOY_PATH_HASKELL }}/commitment-api
+#             sudo chmod +x ${{ env.DEPLOY_PATH_HASKELL }}/commitment-api
+
+#             echo "--- Restarting services ---"
+#             sudo systemctl daemon-reload
+#             sudo systemctl restart meteor.service haskell-api.service || true
+
+#             echo "--- Checking service statuses ---"
+#             sudo systemctl status meteor.service --no-pager || true
+#             sudo systemctl status haskell-api.service --no-pager || true
+
+#             echo "Deployment complete"
