@@ -8,28 +8,24 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf python3 /usr/bin/python
 
-# Install Meteor 3.2 (cached layer)
+# Install Meteor 3.2 (cached layer, less rebuilds)
 ENV METEOR_ALLOW_SUPERUSER=true
 RUN curl https://install.meteor.com/ | sh
 
 # Upgrade NPM version
 RUN npm install -g npm@11.3.0
 
-# Create non-root user
+# Create a non-root user    
 RUN useradd -ms /bin/bash devuser
+
+# Switch to non-root user
 USER devuser
 
 # Set working directory
 WORKDIR /projects/commitment
 
-# Copy project files
-COPY --chown=devuser:devuser . .
-
-# Install Meteor dependencies
-RUN npm install
-
-# Expose Meteor default ports
+# Expose Meteor default port
 EXPOSE 3000
 
-# Start Meteor app
-CMD ["meteor", "run"]
+# Default command for development
+CMD ["meteor"]
