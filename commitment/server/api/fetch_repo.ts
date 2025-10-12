@@ -70,6 +70,8 @@ const DEV_API_CONN_ENDPOINT = "haskell-api:8081";
 const DEPLOYMENT_API_CONN_ENDPOINT = process.env.API_CONN_ENDPOINT;
 const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT || DEV_API_CONN_ENDPOINT;
 
+console.log(`Using API endpoint: ${API_CONN_ENDPOINT}`);
+
 /**
  * Fetches repository data from an external source.
  *
