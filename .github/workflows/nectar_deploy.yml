@@ -15,30 +15,30 @@ jobs:
       ####################################################
       #  DOCKER BUILD + PUSH (METEOR)
       ####################################################
-      # - name: Log in to Docker Hub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # - name: Build Meteor app image
-      #   run: |
-      #     docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest \
-      #       -f commitment/Dockerfile.MeteorProd commitment/
+      - name: Build Meteor app image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest \
+            -f commitment/Dockerfile.MeteorProd commitment/
 
-      # - name: Push Meteor app image
-      #   run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
+      - name: Push Meteor app image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
 
-      # ####################################################
-      # #  DOCKER BUILD + PUSH (HASKELL)
-      # ####################################################
-      # - name: Build Haskell API image
-      #   run: |
-      #     docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest \
-      #       -f api/Dockerfile.haskell api/
+      ####################################################
+      #  DOCKER BUILD + PUSH (HASKELL)
+      ####################################################
+      - name: Build Haskell API image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest \
+            -f api/Dockerfile.haskell api/
 
-      # - name: Push Haskell API image
-      #   run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
+      - name: Push Haskell API image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
 
       ####################################################
       #  DEPLOY TO Nectar INSTANCE
