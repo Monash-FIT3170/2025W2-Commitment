@@ -53,8 +53,6 @@ Meteor.methods({
         env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
       });
 
-      console.log(`Checking this git thing: ${git}`)
-
       git.on("close", (code) => {
         resolve(code === 0);
       });
