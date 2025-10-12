@@ -26,7 +26,7 @@ WORKDIR /projects/commitment
 COPY --chown=devuser:devuser . .
 
 # Install Meteor dependencies
-RUN meteor npm install
+RUN npm install
 
 # Expose Meteor default ports
 EXPOSE 3000
