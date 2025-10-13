@@ -37,7 +37,7 @@ RUN meteor build ../build --directory
 
 # Install server-only npm packages inside built bundle
 WORKDIR /projects/build/bundle/programs/server
-RUN meteor npm install --production
+RUN npm install --production
 
 # --- Runtime Stage ---
 FROM node:23-slim
@@ -48,14 +48,15 @@ COPY --from=build /projects/build/bundle /app
 
 # Install runtime dependencies (no Meteor required)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates && \
+    apt-get install -y --no-install-recommends \
+    python3 make g++ ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 # Environment variables
-ENV PORT=3000
-ENV NODE_ENV=production
-ENV ROOT_URL=http://localhost:3000
-ENV MONGO_URL=mongodb://localhost:27017/meteor
+# ENV PORT=3000
+# ENV NODE_ENV=production
+# ENV ROOT_URL=http://localhost:3000
+# ENV MONGO_URL=mongodb://localhost:27017/meteor
 
 # Expose app port
 EXPOSE 3000
