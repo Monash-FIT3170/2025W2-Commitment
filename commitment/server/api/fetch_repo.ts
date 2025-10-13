@@ -53,7 +53,12 @@ Meteor.methods({
     const subject = sub || new Subject<string>();
 
     // returns whether it was successful in caching to the database or not
-    return await getRepoData(repoUrl.trim(), subject, queryDatabase).then((_) => true);
+    return await getRepoData(repoUrl.trim(), subject, queryDatabase)
+      .then((_) => true)
+      .catch((e: Error) => {
+        console.log(`error upon getGitHubRepoData with url: ${repoUrl}: \n${e}`);
+        return false;
+      });
   },
 });
 
@@ -99,7 +104,8 @@ export const pipeRepoDataViaCache =
           .then(assertRepoTyping)
           .then(async (d: RepositoryData) => {
             emitSub("Caching data into the database...");
-            await cacheIntoDatabase(url, d);
+            const success = await cacheIntoDatabase(url, d);
+            if (!success) throw Error(`Failed to cache url into database: ${url}`);
             return d;
           })
           .catch((e2: Error) => {

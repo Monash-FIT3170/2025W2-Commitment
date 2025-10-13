@@ -96,20 +96,27 @@ export const isInDatabase = async (url: string): Promise<boolean> => {
  * @param data The repository data to cache.
  */
 export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> => {
+  const serialData = serializeRepoData(data);
   const s: ServerRepoData = {
     url,
     createdAt: new Date(),
-    data: serializeRepoData(data),
+    data: serialData,
   };
+
+  // const size = Buffer.byteLength(JSON.stringify(serialData));
+  // console.log(
+  //   `${url} being inserted is ${size} bytes. This is ${size / 17825792}x of the write limit`
+  // );
 
   const res = await RepoCollection.upsertAsync(
     { url }, // filter
     { $set: s } // only set/replace the intended fields
-  ).catch(overrideValue({ numberAffected: 0 }));
+  );
 
   // res is an object like { numberAffected, insertedId }
   return res.numberAffected! > 0;
 };
+
 /**
  * removes a repo inside the database
  * throws an error if does not exist
@@ -157,7 +164,12 @@ export const tryFromDatabaseSerialisedViaLatest = async (
   const d: SerializableRepoData = await tryFromDatabaseSerialised(url, notifier);
   const upToDate: boolean = await isUpToDate(url, d);
 
-  if (!upToDate) throw Error("Repo is not up to date with the latest changes");
+  if (!upToDate) {
+    const msg = "Repo is not up to date with the latest changes";
+    emitValue(notifier)(msg);
+    throw Error(msg);
+  }
+
   return d;
 };
 
