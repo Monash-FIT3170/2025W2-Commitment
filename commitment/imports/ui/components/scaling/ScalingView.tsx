@@ -327,7 +327,6 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
         scaledResults
       );
 
-      // Create a filename with "scaled_" prefix
       const originalName = gradingSheet.name;
       const fileExtension = originalName.substring(
         originalName.lastIndexOf(".")
