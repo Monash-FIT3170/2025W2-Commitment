@@ -24,6 +24,9 @@ USER devuser
 # Set working directory
 WORKDIR /projects/commitment
 
+# Install dependencies
+RUN npm install
+
 # Expose Meteor default port
 EXPOSE 3000
 
