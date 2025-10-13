@@ -13,18 +13,21 @@ module Command (
   doNotLogData,
   executeCommand,
   executeCommandTimedOut,
-  deleteDirectoryIfExists
+  deleteDirectoryIfExists,
+  copyDirectory,
+  copyAndDistrobute
 ) where
 
 import System.Exit (ExitCode(..))
 import System.Environment (getEnvironment)
 import System.Timeout (timeout)
 import System.IO
-import Control.Monad (when)
+import Control.Monad (when, forM_)
 import Control.Concurrent.STM (TBQueue)
 import Control.Exception (evaluate)
-import System.Directory (doesDirectoryExist, removePathForcibly)
+import System.Directory 
 import System.Process
+import System.FilePath ((</>))
 import Control.DeepSeq (force)
 
 import qualified Data.ByteString as BS
@@ -152,3 +155,22 @@ deleteDirectoryIfExists dir f = do
   when exists $ do
     _ <- f
     removePathForcibly dir
+
+-- Recursively copy one directory to another
+copyDirectory :: FilePath -> FilePath -> IO ()
+copyDirectory src dst = do
+    awaitDirCreation <- createDirectoryIfMissing True dst
+    contents <- listDirectory src
+    forM_ contents $ \name -> do
+        let srcPath = src </> name
+            dstPath = dst </> name
+        isDir <- doesDirectoryExist srcPath
+        if isDir
+            then copyDirectory srcPath dstPath
+            else copyFile srcPath dstPath
+
+copyAndDistrobute :: FilePath -> FilePath -> Int -> IO ()
+copyAndDistrobute taskDir sourceDir p = 
+  forM_ [0 .. p - 1] $ \i -> do
+      let targetDir = taskDir </> show i
+      copyDirectory sourceDir targetDir

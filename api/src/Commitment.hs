@@ -39,34 +39,30 @@ commandPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool (n
 
 type DirectoryMap = IORef (Map.Map FilePath Int)
 
--- Global directory map 
 {-# NOINLINE directoryMap #-}
-directoryMap :: DirectoryMap
-directoryMap = unsafePerformIO (newIORef Map.empty)
+directoryMap :: MVar (Map FilePath Int)
+directoryMap = unsafePerformIO (newMVar Map.empty)
 
--- createDirectory with reference counting
-createDirectory :: FilePath -> IO ()
-createDirectory path = do
-    dirMap <- readIORef directoryMap
+createDirectory :: FilePath -> (FilePath -> IO ()) -> IO ()
+createDirectory task path = modifyMVar_ directoryMap $ \dirMap ->
     case Map.lookup path dirMap of
         Nothing -> do
             createDirectoryIfMissing True path
-            writeIORef directoryMap (Map.insert path 1 dirMap)
+            task path
+            pure (Map.insert path 1 dirMap)
         Just n ->
-            writeIORef directoryMap (Map.insert path (n + 1) dirMap)
+            pure (Map.insert path (n + 1) dirMap)
 
--- deleteDirectory with reference counting
-deleteDirectory :: FilePath -> IO () -> IO ()
-deleteDirectory path f = do
-    dirMap <- readIORef directoryMap
+deleteDirectory :: FilePath -> (FilePath -> IO ()) -> IO () -> IO ()
+deleteDirectory task path callback = modifyMVar_ directoryMap $ \dirMap ->
     case Map.lookup path dirMap of
-        Nothing -> pure () -- nothing to do
+        Nothing -> pure dirMap
         Just 1 -> do
-            deleteDirectoryIfExists path f  -- perform custom removal (e.g., removeDirectoryRecursive path)
-            writeIORef directoryMap (Map.delete path dirMap)
+            deleteDirectoryIfExists path callback
+            task path
+            pure (Map.delete path dirMap)
         Just n ->
-            when (n > 0) $
-                writeIORef directoryMap (Map.insert path (n - 1) dirMap)
+            pure (Map.insert path (n - 1) dirMap)
 
 zipWithFunctions :: [[[a]]] -> [[a] -> b] -> [[([a], [a] -> b)]]
 zipWithFunctions = zipWith (\inner f -> map (\x -> (x, f)) inner)
@@ -104,12 +100,24 @@ fetchDataFrom url notifier = (do
             repoRelativePath = "cloned-repos" </> repoNameFromUrl
             repoAbsPath = workingDir </> repoRelativePath
 
-        awaitCreateRepoDir <- createDirectory repoAbsPath
-
-        emit notifier "Cloning repo..."
         awaitCloneResult <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
-            (\path -> successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url path))
-            repoAbsPath)
+            (\path -> do
+                -- create the sub-directory using createDirectory function to manage 
+                -- IO resources
+                awaitCreateRepoDir <- createDirectory 
+                (\_path -> do
+                    -- clone the repo in this case, otherwise we don't actually need to clone it as
+                    -- it already exists and another request is using it rn
+                    emit notifier "Cloning repo..."
+                    -- creating the source directory to clone into
+                    let source_dir = path </> "source"
+                    awaitSource <- createDirectoryIfMissing True source_dir
+                    -- clones git repo into source directory 
+                    awaitClone <- successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url source_dir)
+                    -- copy contents of source directory to other sub-directories so that worker threads can access them efficiently]
+                    copyAndDistrobute path source_dir $ __nWorkers commandPool
+                    ) repoAbsPath
+            ) repoAbsPath)
 
         emit notifier "Getting repository data..."
         repoData <- formulateRepoData url repoAbsPath notifier
@@ -128,7 +136,7 @@ fetchDataFrom url notifier = (do
             repoRelativePath = "cloned-repos" </> repoNameFromUrl
             repoAbsPath = workingDir </> repoRelativePath
 
-        deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
+        deleteDirectory (\_ -> pure ()) repoAbsPath (emit notifier "Cleaning Up Directory...")
 
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
