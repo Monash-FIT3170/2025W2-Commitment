@@ -24,6 +24,9 @@ USER devuser
 # Set working directory
 WORKDIR /projects/commitment
 
+# Copy project files
+COPY --chown=devuser:devuser . .
+
 # Install dependencies
 RUN npm install
 
