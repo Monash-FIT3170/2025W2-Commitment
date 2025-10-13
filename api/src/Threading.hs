@@ -7,7 +7,7 @@
 module Threading (
   safePrint,
   emit,
-  WorkerPool,
+  WorkerPool(..),
   createThreadPool,
   submit,
   await,
@@ -21,7 +21,8 @@ module Threading (
   passNested,
   passThroughAsync,
   passAllAsync,
-  passNestedAsync
+  passThroughAsyncIndexed,
+  passAllAsyncIndexed
 ) where
 
 import Control.Concurrent.STM (
@@ -51,11 +52,10 @@ import Control.Exception
 
 -- ThreadPool abstraction
 data WorkerPool = WorkerPool
-  { __workers   :: [ThreadId],
-    __nWorkers  :: Int,
+  { numWorkers  :: Int,
+    __workers   :: [ThreadId],
     __name      :: String,
     __taskQueue :: TQueue (Int -> IO ()) }
-
 
 -- Shared globally
 stdoutLock :: MVar ()
@@ -85,7 +85,7 @@ createThreadPool n name = do
   q <- newTQueueIO
   tids <- forM [0 .. n - 1] $ \i ->
     forkIO $ workerLoop i q
-  pure $ WorkerPool tids n name q
+  pure $ WorkerPool n tids name q
 
 -- Worker loop that never dies: catches exceptions from tasks and ignores them,
 -- then continues looping.
@@ -164,8 +164,16 @@ passAllAsync p1 p2 f1 f2 xs = do
   futures <- mapM (passThroughAsync p1 p2 f1 f2) xs  -- [IO c]
   sequence futures  -- IO [c]
 
-passNestedAsync :: WorkerPool -> WorkerPool -> (a -> IO b) -> (b -> IO c) -> [[a]] -> IO [[c]]
-passNestedAsync p1 p2 f1 f2 xss = do
-  futuresNested <- mapM (mapM (passThroughAsync p1 p2 f1 f2)) xss  -- [[IO c]]
-  mapM sequence futuresNested  -- IO [[c]]
+-- pass through indexed variants
+passThroughAsyncIndexed :: WorkerPool -> WorkerPool -> (a -> Int -> IO b) -> (b -> IO c) -> a -> IO (IO c)
+passThroughAsyncIndexed p1 p2 f1 f2 x = do
+  futureB <- submitIndexed p1 (f1 x)     -- IO (IO b)
+  pure $ do
+    b <- futureB                         -- IO b
+    submit p2 (f2 b) >>= id              -- IO c
+
+passAllAsyncIndexed :: WorkerPool -> WorkerPool -> (a -> Int -> IO b) -> (b -> IO c) -> [a] -> IO [c]
+passAllAsyncIndexed p1 p2 f1 f2 xs = do
+  futures <- mapM (passThroughAsyncIndexed p1 p2 f1 f2) xs  -- [IO c]
+  sequence futures  -- IO [c]
 
