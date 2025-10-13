@@ -14,8 +14,7 @@ module Command (
   executeCommand,
   executeCommandTimedOut,
   deleteDirectoryIfExists,
-  copyDirectory,
-  copyAndDistribute
+  copyDirectory
 ) where
 
 import System.Exit (ExitCode(..))
@@ -168,9 +167,3 @@ copyDirectory src dst = do
         if isDir
             then copyDirectory srcPath dstPath
             else copyFile srcPath dstPath
-
-copyAndDistribute :: FilePath -> FilePath -> Int -> IO ()
-copyAndDistribute taskDir sourceDir p = 
-  forM_ [0 .. p - 1] $ \i -> do
-      let targetDir = taskDir </> show i
-      copyDirectory sourceDir targetDir

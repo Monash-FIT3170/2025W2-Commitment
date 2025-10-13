@@ -15,6 +15,7 @@ module Threading (
   submitTask,
   submitTaskAsync,
   submitAll,
+  submitAllAsync,
   submitNested,
   passThrough,
   passAll,
@@ -127,6 +128,10 @@ submitTaskAsync pool f x = submit pool (f x)
 -- Submit a collection of inputs to run in parallel (returns futures)
 submitAll :: WorkerPool -> (a -> b) -> [a] -> IO [IO b]
 submitAll pool f = mapM (submitTask pool f)
+
+-- Submit a collection of inputs to run in parallel (returns futures)
+submitAllAsync :: WorkerPool -> (a -> IO b) -> [a] -> IO [IO b]
+submitAllAsync pool f = mapM (submitTaskAsync pool f)
 
 submitNested :: WorkerPool -> (a -> b) -> [[a]] -> IO (IO [[b]])
 submitNested pool f nested = do

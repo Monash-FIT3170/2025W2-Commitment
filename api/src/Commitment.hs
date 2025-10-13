@@ -17,7 +17,7 @@ import Data.List (sortBy, isPrefixOf)
 import Data.Maybe (fromMaybe)
 import Data.Map.Strict ()
 import qualified Data.Map.Strict as Map
-import System.FilePath
+import System.FilePath ((</>))
 import System.IO.Unsafe (unsafePerformIO)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import Control.Concurrent (
@@ -92,7 +92,6 @@ withDirectoryLock path action = do
 -- | Create a directory if needed and run a task, tracking refcount.
 createDirectory :: FilePath -> (FilePath -> IO a) -> IO (Maybe a)
 createDirectory path task = do
-    safePrint $ "createDirectory function running for: " ++ path
     -- Update refcount
     isCreator <- modifyMVar directoryRefCount $ \refMap ->
         case Map.lookup path refMap of
@@ -110,19 +109,12 @@ createDirectory path task = do
 -- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO ()
 deleteDirectory path callback = do
-    safePrint $ "deleteDirectory function running for: " ++ path
     mDelete <- modifyMVar directoryRefCount $ \refMap ->
         case Map.lookup path refMap of
-            Nothing -> do
-                safePrint $ "found no entries for: " ++ path
-                pure (refMap, False)                         -- nothing to do
-            Just n  -> if n < 2 
-                then do
-                    safePrint $ "removing entry for: " ++ path
-                    pure (Map.delete path refMap, True)          -- remove entry
-                else do
-                    safePrint $ "entries in " ++ path ++ ": " ++ show n
-                    pure (Map.insert path (n - 1) refMap, False) -- decrement entry
+            Nothing -> pure (refMap, False)                       -- nothing to do
+            Just n  -> if n < 2
+                then pure (Map.delete path refMap, True)          -- remove entry
+                else pure (Map.insert path (n - 1) refMap, False) -- decrement entry
 
     -- Only delete if this call actually drops refcount to zero
     when mDelete $ withDirectoryLock path $ deleteDirectoryIfExists path callback
@@ -171,41 +163,44 @@ fetchDataFrom url notifier = do
         emit notifier "Found the repo!"
 
         let parts = splitOn '/' url
-            repoNameFromUrl = last (init parts) ++ "/" ++ last parts
+            repoNameFromUrl  = last (init parts) ++ "/" ++ last parts
             repoRelativePath = "cloned-repos" </> repoNameFromUrl
-            repoAbsPath = workingDir </> repoRelativePath
+            repoAbsPath      = workingDir </> repoRelativePath
+            sourceDir        = repoAbsPath </> "source"
 
-            cloneFunction = submitTaskAsync commandPool
-                (\_0 ->
-                    -- create the sub-directory using createDirectory function to manage 
-                    -- IO resources
-                    createDirectory repoAbsPath (\_1 -> do
-                        -- clone the repo in this case, otherwise we don't actually need to clone it as
-                        -- it already exists and another request is using it rn
-                        emit notifier "Cloning repo..."
+            cloneFunction = createDirectory repoAbsPath (\_ -> do
+                    -- clone the repo in this case, otherwise we don't actually need to clone it as
+                    -- it already exists and another request is using it rn
+                    emit notifier "Cloning repo..."
 
-                        -- creating the source directory to clone into
-                        let source_dir = repoAbsPath </> "source"
-                        awaitSource <- createDirectoryIfMissing True source_dir
+                    -- creating the source directory to clone into
+                    createDirectoryIfMissing True sourceDir
 
-                        -- clones git repo into source directory 
-                        awaitClone <- successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url source_dir)
+                    -- clones git repo into source directory 
+                    cloneResult <- successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url sourceDir)
 
-                        -- copy contents of source directory to other sub-directories so that worker threads can access them efficiently]
-                        awaitCopy <- copyAndDistribute repoAbsPath source_dir $ numWorkers commandPool
-                        pure awaitClone
-                    )
-                ) repoAbsPath
+                    -- assert the error in this function so that the next steps don't happen if its faulty
+                    let parsedCloneResult = parsed "Failed to clone the repo" cloneResult
+
+                    -- submit tasks to the commandPool in parallel to copy to other directories if 
+                    -- copy contents of source directory to other sub-directories so that worker threads can access them efficiently
+                    submitAllAsync commandPool (\idx -> do
+                        let targetDir = repoAbsPath </> show idx
+                        copyDirectory sourceDir targetDir
+                        ) [0 .. numWorkers commandPool - 1]
+
+                    pure ()
+                )
+
+            deleteFunction _ = deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
 
         bracket
             -- clone the repository if it has not already been
-            (await cloneFunction)
+            cloneFunction
             -- delete the repository if it can be
-            (\_ -> deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory..."))
+            deleteFunction
             -- run this part inside to purify any side effects
-            (\cloneResult -> do
-                let parsedCloneResult = parsed "Failed to clone the repo" <$> cloneResult
-
+            (\_ -> do
                 emit notifier "Getting repository data..."
                 repoData <- formulateRepoData url repoAbsPath notifier
                 emit notifier "Data processed!"
@@ -215,6 +210,7 @@ fetchDataFrom url notifier = do
             let errMsg = displayException e
             emit notifier ("Error occurred:\n" ++ errMsg)
             pure (Left errMsg)
+
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
 formulateRepoData :: String -> FilePath -> TBQueue String -> IO RepositoryData

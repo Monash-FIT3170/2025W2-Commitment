@@ -59,9 +59,9 @@ initializeRuntime = do
     let t2 = commandPool
 
     -- worker thread pools should be ready for use
-    safePrint $ "number of cores available for use: " ++ show cores
-    safePrint $ "number of cores available for parsingPool: " ++ show (numWorkers parsingPool)
-    safePrint $ "number of cores available for commandPool: " ++ show (numWorkers commandPool)
+    -- safePrint $ "number of cores available for use: " ++ show cores
+    -- safePrint $ "number of cores available for parsingPool: " ++ show (numWorkers parsingPool)
+    -- safePrint $ "number of cores available for commandPool: " ++ show (numWorkers commandPool)
 
     pure ()
 
