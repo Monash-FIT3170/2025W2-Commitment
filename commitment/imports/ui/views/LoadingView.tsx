@@ -219,7 +219,6 @@ const LoadingPage: React.FC = () => {
   const [tipIndex, setTipIndex] = useState(0);
   const [hadError, setHadError] = useState(false);
 
-  const modelRef = useRef<ProgressModel>(createEmptyModel());
   const [targetPct, setTargetPct] = useState(0);
 
   const tips = useMemo(
