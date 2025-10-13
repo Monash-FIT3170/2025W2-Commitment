@@ -24,14 +24,10 @@ USER devuser
 # Set working directory
 WORKDIR /projects/commitment
 
-# Copy project files
-COPY --chown=devuser:devuser . .
-
-# Install dependencies
-RUN npm install
-
 # Expose Meteor default port
 EXPOSE 3000
+EXPOSE 27017
 
 # Default command for development
-CMD ["meteor"]
+CMD ["npm install"]
+CMD ["meteor run --production"]
