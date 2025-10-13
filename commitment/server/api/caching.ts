@@ -43,7 +43,7 @@ const getCompleteDataFromDatabase = async (url: string): Promise<SerializableRep
   if (repoMetaData === undefined) throw Error(`Could not find url in database: ${url}`);
   const metaData = repoMetaData.data;
 
-  const repoCommitData = CommitCollection.find({ url }).fetch();
+  const repoCommitData: CommitRepoData[] = await CommitCollection.find({ url }).fetchAsync();
   const allCommits = repoCommitData.map(
     (e) =>
       ({
