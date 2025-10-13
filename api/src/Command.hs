@@ -20,12 +20,22 @@ module Command (
 import System.Exit (ExitCode(..))
 import System.Environment (getEnvironment)
 import System.Timeout (timeout)
-import System.IO
+import System.IO ()
 import Control.Monad (when, forM_)
 import Control.Concurrent.STM (TBQueue)
 import Control.Exception (evaluate)
-import System.Directory 
+import System.Directory
+    ( copyFile,
+      createDirectoryIfMissing,
+      doesDirectoryExist,
+      listDirectory,
+      removeDirectoryRecursive ) 
 import System.Process
+    ( createProcess,
+      shell,
+      waitForProcess,
+      CreateProcess(env, cwd, std_out, std_err),
+      StdStream(CreatePipe) )
 import System.FilePath ((</>))
 import Control.DeepSeq (force)
 
@@ -153,7 +163,7 @@ deleteDirectoryIfExists dir f = do
   exists <- doesDirectoryExist dir
   when exists $ do
     _ <- f
-    removePathForcibly dir
+    removeDirectoryRecursive dir
 
 -- Recursively copy one directory to another
 copyDirectory :: FilePath -> FilePath -> IO ()
