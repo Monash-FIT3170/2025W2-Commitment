@@ -1,6 +1,5 @@
 import React from "react";
-import { Moon, Sun } from "lucide-react";
-import { Github } from "lucide-react";
+import { Moon, Sun, Github } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
 import { useTheme } from "@hook/useTheme";
@@ -53,7 +52,7 @@ export const NavBar: React.FC = () => {
               <NavigationMenuItem>
                 <NavigationMenuLink
                   href="#about"
-                  className={navigationMenuTriggerStyle()}
+                  className={navigationMenuTriggerStyle({ kind: "link" })}
                 >
                   About
                 </NavigationMenuLink>
@@ -61,7 +60,7 @@ export const NavBar: React.FC = () => {
               <NavigationMenuItem>
                 <NavigationMenuLink
                   href="#features"
-                  className={navigationMenuTriggerStyle()}
+                  className={navigationMenuTriggerStyle({ kind: "link" })}
                 >
                   Features
                 </NavigationMenuLink>
@@ -69,7 +68,7 @@ export const NavBar: React.FC = () => {
               <NavigationMenuItem>
                 <NavigationMenuLink
                   href="#howto"
-                  className={navigationMenuTriggerStyle()}
+                  className={navigationMenuTriggerStyle({ kind: "link" })}
                 >
                   How-To
                 </NavigationMenuLink>
@@ -79,7 +78,7 @@ export const NavBar: React.FC = () => {
             // App navigation items
             <>
               <NavigationMenuItem>
-                <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
+                <Link to="/dashboard" className={navigationMenuTriggerStyle({ kind: "link" })}>
                   Dashboard
                 </Link>
               </NavigationMenuItem>
@@ -98,7 +97,7 @@ export const NavBar: React.FC = () => {
         <button
           type="button"
           onClick={handleToggleDarkMode}
-          className="p-2 rounded-full transition-colors hover:bg-accent hover:text-accent-foreground"
+          className={navigationMenuTriggerStyle({ kind: "icon" })}
           aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
           {isDark ? (
@@ -113,7 +112,7 @@ export const NavBar: React.FC = () => {
           href="https://github.com/Monash-FIT3170/2025W2-Commitment"
           target="_blank"
           rel="noopener noreferrer"
-          className="p-2 rounded-full transition-colors hover:bg-accent hover:text-accent-foreground"
+          className={navigationMenuTriggerStyle({ kind: "icon" })}
           aria-label="Project GitHub"
         >
           <Github className="h-6 w-6" />
@@ -121,7 +120,7 @@ export const NavBar: React.FC = () => {
 
         {!isLoggedIn && (
           <div>
-            <a href="/login" className={`${navigationMenuTriggerStyle()}mr-10`}>
+            <a href="/login" className={`${navigationMenuTriggerStyle({ kind: "link" })} mr-10`}>
               Log in
             </a>
             {/* Sign up button */}
