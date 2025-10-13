@@ -35,41 +35,79 @@ parsingPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool n 
 
 {-# NOINLINE commandPool #-}
 commandPool :: WorkerPool
-commandPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool (n * 8) "Command Pool"
+commandPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool (n * 4) "Command Pool"
+
+type RefCountMap = Map.Map FilePath Int
+type SemaphoreMap = Map.Map FilePath (MVar ())
 
 -- Global registry of per-directory locks
-{-# NOINLINE directoryLocks #-}
-directoryLocks :: MVar (Map.Map FilePath (MVar ()))
-directoryLocks = unsafePerformIO (newMVar Map.empty)
+{-# NOINLINE directoryRefCount #-}
+directoryRefCount :: MVar RefCountMap
+directoryRefCount = unsafePerformIO (newMVar Map.empty)
 
--- | Acquire a per-directory lock (create it if necessary)
+-- Global registry of per-directory semaphores to store whether it exists or not
+{-# NOINLINE directorySemaphores #-}
+directorySemaphores :: MVar SemaphoreMap
+directorySemaphores = unsafePerformIO (newMVar Map.empty)
+
+-- | Get the semaphore for a directory, creating one if it doesn't exist.
+getDirSemaphore :: FilePath -> IO (MVar ())
+getDirSemaphore path = modifyMVar directorySemaphores $ \semMap ->
+    case Map.lookup path semMap of
+        Just sem -> pure (semMap, sem)
+        Nothing -> do
+            sem <- newMVar ()
+            pure (Map.insert path sem semMap, sem)
+
+-- | Acquire the per-directory lock and run an action.
 withDirectoryLock :: FilePath -> IO a -> IO a
 withDirectoryLock path action = do
-    lock <- modifyMVar directoryLocks $ \locks ->
-        case Map.lookup path locks of
-            Just l  -> pure (locks, l)
-            Nothing -> do
-                newLock <- newMVar ()
-                pure (Map.insert path newLock locks, newLock)
-    -- Now lock only for this directory
-    withMVar lock $ const action
+    sem <- getDirSemaphore path
+    withMVar sem $ const action
 
--- | Run a task safely within a directory, creating it if needed.
+-- | Create a directory if needed and run a task, tracking refcount.
 createDirectory :: (FilePath -> IO a) -> FilePath -> IO (Maybe a)
-createDirectory task path =
-    withDirectoryLock path $ do
-        createDirectoryIfMissing True path
-        Just <$> task path
+createDirectory task path = do
+    -- Update refcount
+    isCreator <- modifyMVar directoryRefCount $ \refMap ->
+        case Map.lookup path refMap of
+            Nothing -> pure (Map.insert path 1 refMap, True)
+            Just n  -> pure (Map.insert path (n + 1) refMap, False)
+
+    -- Run actual IO task only if this call is the creator
+    if isCreator
+       then withDirectoryLock path $ do
+           createDirectoryIfMissing True path
+           a <- task path
+           pure (Just a)
+       else pure Nothing
 
 -- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO ()
-deleteDirectory path callback =
-    withDirectoryLock path $ deleteDirectoryIfExists path callback
+deleteDirectory path callback = do
+    mDelete <- modifyMVar directoryRefCount $ \refMap ->
+        case Map.lookup path refMap of
+            Nothing -> pure (refMap, Nothing)         -- nothing to do
+            Just 1  -> pure (Map.delete path refMap, Just ()) -- remove entry
+            Just n  -> pure (Map.insert path (n - 1) refMap, Nothing)
+
+    -- Only delete if this call actually drops refcount to zero
+    case mDelete of
+        Nothing -> pure ()
+        Just _  -> withDirectoryLock path $ deleteDirectoryIfExists path callback
 
 zipWithFunctions :: [[[a]]] -> [[a] -> b] -> [[([a], [a] -> b)]]
 zipWithFunctions = zipWith (\inner f -> map (\x -> (x, f)) inner)
 
 -- automatically execute shell scripts in the command pool whilst the command result is extracted and passed to the parsing pool
+execAndParseNoIndex :: TBQueue String -> FilePath -> Command -> (String -> ParseResult a) -> String -> IO a
+execAndParseNoIndex notifier cwd cmd parser msg = await (
+        passThroughAsync commandPool parsingPool
+        (executeCommand notifier cwd)
+        (pure . parsed msg . parser . parsed msg . successful)
+        cmd
+    )
+
 execAndParse :: TBQueue String -> FilePath -> Command -> (String -> ParseResult a) -> String -> IO a
 execAndParse notifier cwd cmd parser msg = await (
         passThroughAsyncIndexed commandPool parsingPool
@@ -96,7 +134,7 @@ fetchDataFrom url notifier = (do
         awaitOutsideCloneDir <- createDirectoryIfMissing True cloneRoot
         emit notifier "Validating repo exists..."
 
-        let execCmdInWorkingDir = execAndParse notifier workingDir
+        let execCmdInWorkingDir = execAndParseNoIndex notifier workingDir
         _ <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
 
         emit notifier "Found the repo!"
@@ -139,15 +177,15 @@ fetchDataFrom url notifier = (do
         let errMsg = displayException e
         emit notifier ("Error occurred:\n" ++ errMsg)
         pure (Left errMsg)
-    `finally` do
+    -- `finally` do
         -- cleanup no matter what
-        workingDir <- getCurrentDirectory
-        let parts = splitOn '/' url
-            repoNameFromUrl = last (init parts) ++ "/" ++ last parts
-            repoRelativePath = "cloned-repos" </> repoNameFromUrl
-            repoAbsPath = workingDir </> repoRelativePath
+        -- workingDir <- getCurrentDirectory
+        -- let parts = splitOn '/' url
+            -- repoNameFromUrl = last (init parts) ++ "/" ++ last parts
+            -- repoRelativePath = "cloned-repos" </> repoNameFromUrl
+            -- repoAbsPath = workingDir </> repoRelativePath
 
-        deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
+        -- deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
 
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
