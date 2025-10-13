@@ -12,7 +12,7 @@ module Commitment (
 ) where
 
 import Control.Concurrent.STM
-import Control.Exception (catch, SomeException (SomeException), displayException, finally)
+import Control.Exception (catch, SomeException (SomeException), displayException, bracket)
 import Data.List (sortBy, isPrefixOf)
 import Data.Maybe (fromMaybe)
 import Data.Map.Strict ()
@@ -21,15 +21,15 @@ import System.FilePath
 import System.IO.Unsafe (unsafePerformIO)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import Control.Concurrent (
-    MVar, 
-    newMVar, 
-    modifyMVar_, 
-    modifyMVar, 
-    withMVar, 
-    readMVar, 
-    putMVar, 
-    tryTakeMVar, 
-    getNumCapabilities, 
+    MVar,
+    newMVar,
+    modifyMVar_,
+    modifyMVar,
+    withMVar,
+    readMVar,
+    putMVar,
+    tryTakeMVar,
+    getNumCapabilities,
     newEmptyMVar )
 import Control.Monad (when)
 import Data.IORef
@@ -90,8 +90,9 @@ withDirectoryLock path action = do
     withMVar sem $ const action
 
 -- | Create a directory if needed and run a task, tracking refcount.
-createDirectory :: (FilePath -> IO a) -> FilePath -> IO (Maybe a)
-createDirectory task path = do
+createDirectory :: FilePath -> (FilePath -> IO a) -> IO (Maybe a)
+createDirectory path task = do
+    safePrint $ "createDirectory function running for: " ++ path
     -- Update refcount
     isCreator <- modifyMVar directoryRefCount $ \refMap ->
         case Map.lookup path refMap of
@@ -109,16 +110,22 @@ createDirectory task path = do
 -- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO ()
 deleteDirectory path callback = do
+    safePrint $ "deleteDirectory function running for: " ++ path
     mDelete <- modifyMVar directoryRefCount $ \refMap ->
         case Map.lookup path refMap of
-            Nothing -> pure (refMap, Nothing)         -- nothing to do
-            Just 1  -> pure (Map.delete path refMap, Just ()) -- remove entry
-            Just n  -> pure (Map.insert path (n - 1) refMap, Nothing)
+            Nothing -> do
+                safePrint $ "found no entries for: " ++ path
+                pure (refMap, False)                         -- nothing to do
+            Just n  -> if n < 2 
+                then do
+                    safePrint $ "removing entry for: " ++ path
+                    pure (Map.delete path refMap, True)          -- remove entry
+                else do
+                    safePrint $ "entries in " ++ path ++ ": " ++ show n
+                    pure (Map.insert path (n - 1) refMap, False) -- decrement entry
 
     -- Only delete if this call actually drops refcount to zero
-    case mDelete of
-        Nothing -> pure ()
-        Just _  -> withDirectoryLock path $ deleteDirectoryIfExists path callback
+    when mDelete $ withDirectoryLock path $ deleteDirectoryIfExists path callback
 
 zipWithFunctions :: [[[a]]] -> [[a] -> b] -> [[([a], [a] -> b)]]
 zipWithFunctions = zipWith (\inner f -> map (\x -> (x, f)) inner)
@@ -151,7 +158,7 @@ execAndParseAll notifier cwd cmds parser msg = passAllAsyncIndexed commandPool p
     cmds
 
 fetchDataFrom :: String -> TBQueue String -> IO (Either String RepositoryData)
-fetchDataFrom url notifier = (do
+fetchDataFrom url notifier = do
         workingDir <- getCurrentDirectory
         let cloneRoot = workingDir </> "cloned-repos"
 
@@ -168,49 +175,46 @@ fetchDataFrom url notifier = (do
             repoRelativePath = "cloned-repos" </> repoNameFromUrl
             repoAbsPath = workingDir </> repoRelativePath
 
-        awaitCloneResultMaybe <- await (submitTaskAsync commandPool
-            (\_path_0 ->
-                -- create the sub-directory using createDirectory function to manage 
-                -- IO resources
-                createDirectory (\_path_1 -> do
-                    -- clone the repo in this case, otherwise we don't actually need to clone it as
-                    -- it already exists and another request is using it rn
-                    emit notifier "Cloning repo..."
+            cloneFunction = submitTaskAsync commandPool
+                (\_0 ->
+                    -- create the sub-directory using createDirectory function to manage 
+                    -- IO resources
+                    createDirectory repoAbsPath (\_1 -> do
+                        -- clone the repo in this case, otherwise we don't actually need to clone it as
+                        -- it already exists and another request is using it rn
+                        emit notifier "Cloning repo..."
 
-                    -- creating the source directory to clone into
-                    let source_dir = repoAbsPath </> "source"
-                    awaitSource <- createDirectoryIfMissing True source_dir
+                        -- creating the source directory to clone into
+                        let source_dir = repoAbsPath </> "source"
+                        awaitSource <- createDirectoryIfMissing True source_dir
 
-                    -- clones git repo into source directory 
-                    awaitClone <- successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url source_dir)
+                        -- clones git repo into source directory 
+                        awaitClone <- successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url source_dir)
 
-                    -- copy contents of source directory to other sub-directories so that worker threads can access them efficiently]
-                    awaitCopy <- copyAndDistribute repoAbsPath source_dir $ numWorkers commandPool
-                    pure awaitClone
+                        -- copy contents of source directory to other sub-directories so that worker threads can access them efficiently]
+                        awaitCopy <- copyAndDistribute repoAbsPath source_dir $ numWorkers commandPool
+                        pure awaitClone
+                    )
                 ) repoAbsPath
-            ) repoAbsPath)
 
-        let parsedCloneResult = parsed "Failed to clone the repo" <$> awaitCloneResultMaybe
+        bracket
+            -- clone the repository if it has not already been
+            (await cloneFunction)
+            -- delete the repository if it can be
+            (\_ -> deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory..."))
+            -- run this part inside to purify any side effects
+            (\cloneResult -> do
+                let parsedCloneResult = parsed "Failed to clone the repo" <$> cloneResult
 
-        emit notifier "Getting repository data..."
-        repoData <- formulateRepoData url repoAbsPath notifier
-        emit notifier "Data processed!"
-        pure (Right repoData)
-    )
-    `catch` \(e :: SomeException) -> do
-        let errMsg = displayException e
-        emit notifier ("Error occurred:\n" ++ errMsg)
-        pure (Left errMsg)
-    `finally` do
-        -- cleanup no matter what
-        workingDir <- getCurrentDirectory
-        let parts = splitOn '/' url
-            repoNameFromUrl = last (init parts) ++ "/" ++ last parts
-            repoRelativePath = "cloned-repos" </> repoNameFromUrl
-            repoAbsPath = workingDir </> repoRelativePath
-
-        deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
-
+                emit notifier "Getting repository data..."
+                repoData <- formulateRepoData url repoAbsPath notifier
+                emit notifier "Data processed!"
+                pure (Right repoData)
+            )
+            `catch` \(e :: SomeException) -> do
+            let errMsg = displayException e
+            emit notifier ("Error occurred:\n" ++ errMsg)
+            pure (Left errMsg)
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
 formulateRepoData :: String -> FilePath -> TBQueue String -> IO RepositoryData
