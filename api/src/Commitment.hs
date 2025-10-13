@@ -9,7 +9,7 @@ module Commitment (
     fetchDataFrom
 ) where
 
-import Control.Concurrent.STM 
+import Control.Concurrent.STM
 import Control.Exception (catch, SomeException (SomeException), displayException, finally)
 import Data.List (sortBy, isPrefixOf)
 import Data.Maybe (fromMaybe)
@@ -37,31 +37,36 @@ parsingPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool n 
 commandPool :: WorkerPool
 commandPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool (n * 8) "Command Pool"
 
-type DirectoryMap = IORef (Map.Map FilePath Int)
+-- Global registry of per-directory locks
+{-# NOINLINE directoryLocks #-}
+directoryLocks :: MVar (Map.Map FilePath (MVar ()))
+directoryLocks = unsafePerformIO (newMVar Map.empty)
 
-{-# NOINLINE directoryMap #-}
-directoryMap :: MVar (Map.Map FilePath Int)
-directoryMap = unsafePerformIO (newMVar Map.empty)
+-- | Acquire a per-directory lock (create it if necessary)
+withDirectoryLock :: FilePath -> IO a -> IO a
+withDirectoryLock path action = do
+    lock <- modifyMVar directoryLocks $ \locks ->
+        case Map.lookup path locks of
+            Just l  -> pure (locks, l)
+            Nothing -> do
+                newLock <- newMVar ()
+                pure (Map.insert path newLock locks, newLock)
+    -- Now lock only for this directory
+    withMVar lock $ const action
 
+-- | Run a task safely within a directory, creating it if needed.
 createDirectory :: (FilePath -> IO a) -> FilePath -> IO (Maybe a)
-createDirectory task path = modifyMVar directoryMap $ \dirMap ->
-    case Map.lookup path dirMap of
-        Nothing -> do
-            createDirectoryIfMissing True path
-            a <- task path
-            pure (Map.insert path 1 dirMap, Just a)
-        Just n -> do
-            pure (Map.insert path (n + 1) dirMap, Nothing)
+createDirectory task path =
+    withDirectoryLock path $ do
+        createDirectoryIfMissing True path
+        Just <$> task path
 
+-- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO ()
-deleteDirectory path callback = modifyMVar_ directoryMap $ \dirMap ->
-    case Map.lookup path dirMap of
-        Nothing -> pure dirMap
-        Just 1 -> do
-            deleteDirectoryIfExists path callback
-            pure (Map.delete path dirMap)
-        Just n ->
-            pure (Map.insert path (n - 1) dirMap)
+deleteDirectory path callback =
+    withDirectoryLock path $ do
+        callback
+        removeDirectoryRecursive path `catch` \(_ :: IOError) -> pure ()
 
 zipWithFunctions :: [[[a]]] -> [[a] -> b] -> [[([a], [a] -> b)]]
 zipWithFunctions = zipWith (\inner f -> map (\x -> (x, f)) inner)
@@ -104,7 +109,7 @@ fetchDataFrom url notifier = (do
             repoAbsPath = workingDir </> repoRelativePath
 
         awaitCloneResultMaybe <- await (submitTaskAsync commandPool
-            (\_path_0 -> 
+            (\_path_0 ->
                 -- create the sub-directory using createDirectory function to manage 
                 -- IO resources
                 createDirectory (\_path_1 -> do
@@ -118,7 +123,7 @@ fetchDataFrom url notifier = (do
 
                     -- clones git repo into source directory 
                     awaitClone <- successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url source_dir)
-                    
+
                     -- copy contents of source directory to other sub-directories so that worker threads can access them efficiently]
                     awaitCopy <- copyAndDistribute repoAbsPath source_dir $ numWorkers commandPool
                     pure awaitClone
