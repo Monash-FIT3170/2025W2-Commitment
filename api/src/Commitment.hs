@@ -104,23 +104,23 @@ fetchDataFrom url notifier = (do
             repoAbsPath = workingDir </> repoRelativePath
 
         awaitCloneResultMaybe <- await (submitTaskAsync commandPool
-            (\path -> 
+            (\_path_0 -> 
                 -- create the sub-directory using createDirectory function to manage 
                 -- IO resources
-                createDirectory (\_path -> do
+                createDirectory (\_path_1 -> do
                     -- clone the repo in this case, otherwise we don't actually need to clone it as
                     -- it already exists and another request is using it rn
                     emit notifier "Cloning repo..."
 
                     -- creating the source directory to clone into
-                    let source_dir = path </> "source"
+                    let source_dir = repoAbsPath </> "source"
                     awaitSource <- createDirectoryIfMissing True source_dir
 
                     -- clones git repo into source directory 
                     awaitClone <- successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url source_dir)
                     
                     -- copy contents of source directory to other sub-directories so that worker threads can access them efficiently]
-                    awaitCopy <- copyAndDistribute path source_dir $ numWorkers commandPool
+                    awaitCopy <- copyAndDistribute repoAbsPath source_dir $ numWorkers commandPool
                     pure awaitClone
                 ) repoAbsPath
             ) repoAbsPath)
