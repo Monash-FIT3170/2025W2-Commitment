@@ -6,7 +6,9 @@
 {-# HLINT ignore "Use tuple-section" #-}
 
 module Commitment (
-    fetchDataFrom
+    fetchDataFrom,
+    parsingPool,
+    commandPool
 ) where
 
 import Control.Concurrent.STM
@@ -18,7 +20,17 @@ import qualified Data.Map.Strict as Map
 import System.FilePath
 import System.IO.Unsafe (unsafePerformIO)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
-import Control.Concurrent (getNumCapabilities, MVar, newMVar, modifyMVar_, modifyMVar, withMVar)
+import Control.Concurrent (
+    MVar, 
+    newMVar, 
+    modifyMVar_, 
+    modifyMVar, 
+    withMVar, 
+    readMVar, 
+    putMVar, 
+    tryTakeMVar, 
+    getNumCapabilities, 
+    newEmptyMVar )
 import Control.Monad (when)
 import Data.IORef
 
@@ -29,14 +41,26 @@ import GitCommands
 import Parsing
 
 -- Create global thread pools
+-- Initialize RTS and return pools
+{-# NOINLINE globalPools #-}
+globalPools :: (WorkerPool, WorkerPool)
+globalPools = unsafePerformIO $ do
+    cap <- getNumCapabilities
+    -- Create the pools
+    parsing <- createThreadPool cap "Parsing Pool"
+    command <- createThreadPool (cap * 4) "Command Pool"
+    pure (parsing, command)
+
+-- Expose them as pure values
 {-# NOINLINE parsingPool #-}
 parsingPool :: WorkerPool
-parsingPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool n "Parsing Pool"
+parsingPool = fst globalPools
 
 {-# NOINLINE commandPool #-}
 commandPool :: WorkerPool
-commandPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool (n * 4) "Command Pool"
+commandPool = snd globalPools
 
+-- global Disk resource registeries
 type RefCountMap = Map.Map FilePath Int
 type SemaphoreMap = Map.Map FilePath (MVar ())
 
