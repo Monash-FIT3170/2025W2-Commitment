@@ -24,7 +24,7 @@ jobs:
       - name: Build Meteor app image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest \
-            -f commitment/Dockerfile.MeteorTesting commitment/
+            -f commitment/Dockerfile.MeteorDev commitment/
 
       - name: Push Meteor app image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
@@ -73,6 +73,11 @@ jobs:
 
             echo "=== Starting updated containers ==="
             sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+            echo "=== Going into container to start ==="
+            sudo docker exec -it 3170-prod bash
+            npm install
+            meteor
 
             echo "=== Deployment complete! ==="
 
