@@ -33,6 +33,7 @@ import { toast } from "../../hooks/use-toast";
 import InfoButton from "../ui/infoButton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { X } from "lucide-react";
 
 interface ScalingConfig {
   metrics: string[];
@@ -40,7 +41,11 @@ interface ScalingConfig {
   customScript?: File[];
 }
 
-function ScalingView(): JSX.Element {
+interface ScalingViewProps {
+  onNavigateToMetrics?: () => void;
+}
+
+function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
   const location = useLocation();
   const [completed, setCompleted] = useState(false);
 
@@ -370,51 +375,66 @@ function ScalingView(): JSX.Element {
               </AlertDialogTrigger>
 
               <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Unmapped Contributors</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    The following contributors are not mapped in your alias
-                    config:
-                    <ul className="mt-2 list-disc ml-5">
-                      {unmappedUsers.map((u) => (
-                        <li key={u.name}>
-                          <strong>{u.name}</strong>
-                        </li>
-                      ))}
-                    </ul>
-                    Please upload or update your alias configuration in
-                    settings.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter className="p-0">
-                  <div className="w-full flex justify-center items-center">
-                    <AlertDialogAction
-                      onClick={() => {
-                        navigate("/settings", {
-                          state: { tab: "alias-config" },
-                        });
-                      }}
-                    >
-                      Go to Alias Configuration
-                    </AlertDialogAction>
-                  </div>
+                <div className="flex justify-between items-start">
+                  {/* X Close Button (top-left as requested) */}
+                  <button
+                    onClick={() => {
+                      setShowAliasDialog(false);
+                      if (onNavigateToMetrics) {
+                        onNavigateToMetrics(); // ✅ Switch back to metrics tab
+                      }
+                    }}
+                    className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+
+                  {/* Optional: maintain centered title alignment visually */}
+                  <AlertDialogHeader className="flex-1 text-center">
+                    <AlertDialogTitle>Unmapped Contributors</AlertDialogTitle>
+                  </AlertDialogHeader>
+                </div>
+
+                <AlertDialogDescription className="mt-3">
+                  The following contributors are not mapped in your alias
+                  config:
+                  <ul className="mt-2 list-disc ml-5">
+                    {unmappedUsers.map((u) => (
+                      <li key={u.name}>
+                        <strong>{u.name}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                  Please upload or update your alias configuration in settings.
+                </AlertDialogDescription>
+
+                <AlertDialogFooter className="p-0 mt-4 flex justify-center items-center">
+                  <AlertDialogAction
+                    onClick={() => {
+                      navigate("/settings", { state: { tab: "alias-config" } });
+                    }}
+                  >
+                    Go to Alias Configuration
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           )}
 
-          <div className="flex">
-            <div className="mb-10 mr-auto">
-              <div className="flex items-center gap-4">
-                <h1 className="text-3xl text-foreground font-robotoFlex mt-4">
-                  Scaling
-                </h1>
-                <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
+          {!showAliasDialog && (
+            <div className="flex">
+              <div className="mb-10 mr-auto">
+                <div className="flex items-center gap-4">
+                  <h1 className="text-3xl text-foreground font-robotoFlex mt-4">
+                    Scaling
+                  </h1>
+                  <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
+                </div>
+                <div className="h-[2px] bg-git-stroke-primary w-full mt-2" />
               </div>
-              <div className="h-[2px] bg-git-stroke-primary w-full mt-2" />
             </div>
-          </div>
-
+          )}
           {/* Always render the scaling summary in the background */}
           {config && scaledResults.length > 0 && !showAliasDialog && (
             <div className="mb-6">
@@ -426,7 +446,6 @@ function ScalingView(): JSX.Element {
               />
             </div>
           )}
-
           {/* Buttons for grading sheet or regenerate */}
           {!showAliasDialog && (
             <div className="flex justify-center gap-4 flex-wrap p-4">
@@ -496,30 +515,31 @@ function ScalingView(): JSX.Element {
               )}
             </div>
           )}
-
           {/* Multi-Step Dialog */}
-          <Dialog
-            open={showDialog}
-            onOpenChange={(open) => {
-              if (!open && step === "sheet") {
-                setCompleted(true);
-                setStep("done");
-              }
-              setShowDialog(open);
-            }}
-          >
-            <DialogContent className="max-w-2xl">
-              {step === "config" && (
-                <ScalingConfigForm onSubmit={handleConfigSubmit} />
-              )}
-              {step === "sheet" && (
-                <GradingSheetForm
-                  onSubmit={handleSheetSubmit}
-                  onSkip={handleSkipSheet}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
+          {!showAliasDialog && (
+            <Dialog
+              open={showDialog}
+              onOpenChange={(open) => {
+                if (!open && step === "sheet") {
+                  setCompleted(true);
+                  setStep("done");
+                }
+                setShowDialog(open);
+              }}
+            >
+              <DialogContent className="max-w-2xl">
+                {step === "config" && (
+                  <ScalingConfigForm onSubmit={handleConfigSubmit} />
+                )}
+                {step === "sheet" && (
+                  <GradingSheetForm
+                    onSubmit={handleSheetSubmit}
+                    onSkip={handleSkipSheet}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
     </div>
