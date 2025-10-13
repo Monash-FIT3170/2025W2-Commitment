@@ -142,8 +142,9 @@ fetchDataFrom url notifier = (do
 -- | High-level function to orchestrate parsing, transforming, and assembling data
 formulateRepoData :: String -> FilePath -> TBQueue String -> IO RepositoryData
 formulateRepoData _url path notifier = do
-    let execCmd = execAndParse notifier path
-        execAll = execAndParseAll notifier path
+    let source = path </> "source"
+        execCmd = execAndParse notifier source
+        execAll = execAndParseAll notifier source
 
     emit notifier "Searching for branch names..."
     collectedBranchNames <- execCmd getBranches parseRepoBranches "Failed to parse git branch names"
@@ -161,7 +162,7 @@ formulateRepoData _url path notifier = do
     emit notifier "Formulating all commit data..."
     allCommitData <- passAllAsync commandPool parsingPool
         (\(c1, c2) -> do
-            let doCommitCommand = executeCommand notifier path
+            let doCommitCommand = executeCommand notifier source
             r1 <- doCommitCommand c1
             r2 <- doCommitCommand c2
             pure (r1, r2)
