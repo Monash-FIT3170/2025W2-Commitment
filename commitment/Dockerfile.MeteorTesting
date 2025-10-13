@@ -1,33 +1,35 @@
 # Start with Node.js base image
 FROM node:23-slim
 
-# Install required dependencies in one layer
+# Install required dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl git python3 make g++ ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf python3 /usr/bin/python
 
-# Install Meteor 3.2 (cached layer, less rebuilds)
+# Install Meteor
 ENV METEOR_ALLOW_SUPERUSER=true
 RUN curl https://install.meteor.com/ | sh
 
-# Upgrade NPM version
+# Upgrade NPM
 RUN npm install -g npm@11.3.0
 
-# Create a non-root user    
+# Create non-root user
 RUN useradd -ms /bin/bash devuser
-
-# Switch to non-root user
 USER devuser
 
 # Set working directory
 WORKDIR /projects/commitment
 
+# Copy Meteor project
+COPY --chown=devuser:devuser . .
+
+# Install Meteor dependencies at build time
+RUN meteor npm install --production
+
 # Expose Meteor default port
 EXPOSE 3000
-EXPOSE 27017
 
-# Default command for development
-CMD ["npm install"]
-CMD ["meteor run --production"]
+# Start Meteor automatically in production
+CMD ["meteor", "run", "--production"]
