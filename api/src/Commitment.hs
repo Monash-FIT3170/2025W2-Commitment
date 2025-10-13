@@ -18,7 +18,7 @@ import qualified Data.Map.Strict as Map
 import System.FilePath
 import System.IO.Unsafe (unsafePerformIO)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
-import Control.Concurrent (getNumCapabilities, MVar, newMVar, modifyMVar_, modifyMVar)
+import Control.Concurrent (getNumCapabilities, MVar, newMVar, modifyMVar_, modifyMVar, withMVar)
 import Control.Monad (when)
 import Data.IORef
 
@@ -64,9 +64,7 @@ createDirectory task path =
 -- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO ()
 deleteDirectory path callback =
-    withDirectoryLock path $ do
-        callback
-        removeDirectoryRecursive path `catch` \(_ :: IOError) -> pure ()
+    withDirectoryLock path $ deleteDirectoryIfExists path callback
 
 zipWithFunctions :: [[[a]]] -> [[a] -> b] -> [[([a], [a] -> b)]]
 zipWithFunctions = zipWith (\inner f -> map (\x -> (x, f)) inner)
