@@ -337,7 +337,6 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
       );
       const scaledFileName = `scaled_${nameWithoutExtension}${fileExtension}`;
 
-      // Create a new file with the custom name
       const renamedFile = new File([scaledFile], scaledFileName, {
         type: scaledFile.type,
       });
