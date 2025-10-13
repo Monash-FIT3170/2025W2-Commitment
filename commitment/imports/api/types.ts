@@ -52,6 +52,7 @@ export type SerializableRepoData = Readonly<{
   allCommits: SerialisableMapObject<string, CommitData>[]; // Map converted to a list of objects
   contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
 }>;
+
 export interface FilteredData {
   repoUrl: string;
   dateRange: {

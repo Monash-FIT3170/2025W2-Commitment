@@ -3,22 +3,65 @@ import { Mongo } from "meteor/mongo";
 import { Meteor } from "meteor/meteor";
 import { check } from "meteor/check";
 
-import { RepositoryData, SerializableRepoData } from "@api/types";
+import {
+  RepositoryData,
+  SerializableRepoData,
+  BranchData,
+  SerialisableMapObject,
+  CommitData,
+  ContributorData,
+} from "@api/types";
 import { deserializeRepoData, serializeRepoData } from "@api/serialisation";
-import { overrideValue, emitValue } from "@api/meteor_interface";
+import { emitValue } from "@api/meteor_interface";
 import { isUpToDate } from "./update";
 
 /**
  * COLLECTION OF REPOSITORY METHODS
  */
-export interface ServerRepoData {
+type SerializableRepoMetaData = Readonly<{
+  name: string;
+  branches: BranchData[];
+  contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
+}>;
+
+interface ServerRepoMetaData {
   _id?: string;
-  url: string;
   createdAt: Date;
-  data: SerializableRepoData;
+  url: string;
+  data: SerializableRepoMetaData;
 }
 
-const RepoCollection = new Mongo.Collection<ServerRepoData>("repoCollection");
+interface CommitRepoData {
+  _id?: string;
+  url: string;
+  hash: string;
+  commit: CommitData;
+}
+
+const getCompleteDataFromDatabase = async (url: string): Promise<SerializableRepoData> => {
+  const repoMetaData = await RepoCollection.findOneAsync({ url });
+  if (repoMetaData === undefined) throw Error(`Could not find url in database: ${url}`);
+  const metaData = repoMetaData.data;
+
+  const repoCommitData = CommitCollection.find({ url }).fetch();
+  const allCommits = repoCommitData.map(
+    (e) =>
+      ({
+        key: e.hash,
+        value: e.commit,
+      } as SerialisableMapObject<string, CommitData>)
+  );
+
+  return {
+    name: metaData.name,
+    branches: metaData.branches,
+    contributors: metaData.contributors,
+    allCommits: allCommits,
+  } as SerializableRepoData;
+};
+
+const RepoCollection = new Mongo.Collection<ServerRepoMetaData>("repoCollection");
+const CommitCollection = new Mongo.Collection<CommitRepoData>("commitCollection");
 
 Meteor.methods({
   /**
@@ -97,24 +140,40 @@ export const isInDatabase = async (url: string): Promise<boolean> => {
  */
 export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> => {
   const serialData = serializeRepoData(data);
-  const s: ServerRepoData = {
+  const s: ServerRepoMetaData = {
     url,
     createdAt: new Date(),
-    data: serialData,
+    data: {
+      name: serialData.name,
+      branches: serialData.branches,
+      contributors: serialData.contributors,
+    } as SerializableRepoMetaData,
   };
 
-  // const size = Buffer.byteLength(JSON.stringify(serialData));
-  // console.log(
-  //   `${url} being inserted is ${size} bytes. This is ${size / 17825792}x of the write limit`
-  // );
+  const cs = serialData.allCommits.map(
+    (e) =>
+      ({
+        url,
+        hash: e.key,
+        commit: e.value,
+      } as CommitRepoData)
+  );
 
   const res = await RepoCollection.upsertAsync(
     { url }, // filter
     { $set: s } // only set/replace the intended fields
   );
 
+  const cRes = (
+    await Promise.all(
+      cs.map(async (e: CommitRepoData) => {
+        return await CommitCollection.upsertAsync({ url, hash: e.hash }, { $set: e });
+      })
+    )
+  ).reduce((acc, i) => (acc && i.numberAffected! > 0 ? true : false), true);
+
   // res is an object like { numberAffected, insertedId }
-  return res.numberAffected! > 0;
+  return res.numberAffected! > 0 && cRes;
 };
 
 /**
@@ -125,9 +184,11 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
  */
 export const removeRepo = async (url: string): Promise<boolean> => {
   const doc = await RepoCollection.findOneAsync({ url: url });
+  // only have to do the one call as the methods should be syncronised
   if (null === doc || undefined == doc) return false;
-  const res = await RepoCollection.removeAsync(doc._id as string);
-  return res > 0;
+  const res = await RepoCollection.removeAsync({ url });
+  const cRes = await CommitCollection.removeAsync({ url });
+  return res > 0 && cRes > 0;
 };
 
 // -----------------------  WARNING  -----------------------
@@ -135,6 +196,7 @@ export const removeRepo = async (url: string): Promise<boolean> => {
 // YOU WILL BE SENT TO THE GULAG
 export const voidDatabase = async (): Promise<void> => {
   await RepoCollection.removeAsync({});
+  await CommitCollection.removeAsync({});
 };
 
 /**
@@ -150,11 +212,10 @@ export const tryFromDatabaseSerialised = async (
   const emit = emitValue(notifier);
   emit("Checking database for existing data...");
 
-  const repoData = await RepoCollection.findOneAsync({ url });
-  if (!repoData) throw Error("Data not found in database");
+  if (!isInDatabase(url)) throw Error("Data not found in database");
   emit("Found data in database!");
 
-  return repoData.data;
+  return getCompleteDataFromDatabase(url);
 };
 
 export const tryFromDatabaseSerialisedViaLatest = async (
