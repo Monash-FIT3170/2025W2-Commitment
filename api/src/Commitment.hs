@@ -201,15 +201,15 @@ fetchDataFrom url notifier = (do
         let errMsg = displayException e
         emit notifier ("Error occurred:\n" ++ errMsg)
         pure (Left errMsg)
-    -- `finally` do
+    `finally` do
         -- cleanup no matter what
-        -- workingDir <- getCurrentDirectory
-        -- let parts = splitOn '/' url
-            -- repoNameFromUrl = last (init parts) ++ "/" ++ last parts
-            -- repoRelativePath = "cloned-repos" </> repoNameFromUrl
-            -- repoAbsPath = workingDir </> repoRelativePath
+        workingDir <- getCurrentDirectory
+        let parts = splitOn '/' url
+            repoNameFromUrl = last (init parts) ++ "/" ++ last parts
+            repoRelativePath = "cloned-repos" </> repoNameFromUrl
+            repoAbsPath = workingDir </> repoRelativePath
 
-        -- deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
+        deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
 
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
