@@ -376,12 +376,12 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
 
               <AlertDialogContent>
                 <div className="flex justify-between items-start">
-                  {/* X Close Button (top-left as requested) */}
                   <button
+                    type="button" 
                     onClick={() => {
                       setShowAliasDialog(false);
                       if (onNavigateToMetrics) {
-                        onNavigateToMetrics(); // ✅ Switch back to metrics tab
+                        onNavigateToMetrics(); 
                       }
                     }}
                     className="p-1 rounded-md hover:bg-gray-100 transition-colors"
