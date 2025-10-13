@@ -75,9 +75,8 @@ jobs:
             sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
             echo "=== Going into container to start ==="
-            sudo docker exec -it 3170-prod bash
-            npm install
-            meteor
+            sudo docker exec 3170-prod npm install
+            sudo docker exec 3170-prod meteor run
 
             echo "=== Deployment complete! ==="
 
