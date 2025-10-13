@@ -192,6 +192,21 @@ function useSmoothedProgress(target: number) {
   return progress;
 }
 
+/** Navigate back if there's a previous entry; otherwise fallback to /home */
+function goBackOrHome(navigate: ReturnType<typeof useNavigate>) {
+  try {
+    // In browsers, history.length > 1 usually means we can go back safely.
+    if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+  } catch {
+    // ignore and use fallback
+  }
+  navigate("/home", { replace: true });
+}
+
+
 const LoadingPage: React.FC = () => {
   const navigate = useNavigate();
 
@@ -267,9 +282,10 @@ const LoadingPage: React.FC = () => {
         setHadError(true);
         notifier.next(`Error: ${errMsg}`);
         setTimeout(() => {
-          navigate("/home", { replace: true });
+          goBackOrHome(navigate);
         }, 8000);
       })
+
       .finally(() => {
         notifier.complete();
       });
