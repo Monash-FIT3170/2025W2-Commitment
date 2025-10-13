@@ -32,13 +32,13 @@ jobs:
       ####################################################
       #  DOCKER BUILD + PUSH (HASKELL)
       ####################################################
-      - name: Build Haskell API image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest \
-            -f api/Dockerfile.haskell api/
+      # - name: Build Haskell API image
+      #   run: |
+      #     docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest \
+      #       -f api/Dockerfile.haskell api/
 
-      - name: Push Haskell API image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
+      # - name: Push Haskell API image
+      #   run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
 
       ####################################################
       #  DEPLOY TO Nectar INSTANCE
