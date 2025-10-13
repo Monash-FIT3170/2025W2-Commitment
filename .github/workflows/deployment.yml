@@ -24,7 +24,7 @@ jobs:
       - name: Build Meteor app image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest \
-            -f commitment/Dockerfile.MeteorTesting commitment/
+            -f commitment/Dockerfile.MeteorProd commitment/
 
       - name: Push Meteor app image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/commitment-img:latest
@@ -41,7 +41,7 @@ jobs:
       #   run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/haskell-api-img:latest
 
       ####################################################
-      #  DEPLOY TO Nectar INSTANCE
+      #  DEPLOY TO INSTANCE
       ####################################################
       - name: Deploy to Nectar Instance
         uses: appleboy/ssh-action@v1.2.0
