@@ -341,7 +341,6 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
         type: scaledFile.type,
       });
 
-      // Trigger download
       const url = URL.createObjectURL(renamedFile);
       const link = document.createElement("a");
       link.href = url;
