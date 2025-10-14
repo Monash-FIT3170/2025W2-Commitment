@@ -379,7 +379,7 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
                         onNavigateToMetrics();
                       }
                     }}
-                    className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                    className="absolute top-2 right-2 p-1 rounded-md hover:bg-gray-100 transition-colors"
                     aria-label="Close"
                   >
                     <X className="w-5 h-5" />
