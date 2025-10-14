@@ -29,7 +29,10 @@ Commitment is designed to support fairer and more transparent grading in team-ba
     - [1. Acquire Instance](#1-acquire-instance)
     - [2. Dockerhub Setup](#2-dockerhub-setup)
     - [3. Github Setup](#3-github-setup)
-  - [Nginx Setup](#nginx-setup)
+  - [Instance Configuration](#instance-configuration)
+    - [1. Docker Setup](#1-docker-setup)
+    - [2. Nginx Setup](#2-nginx-setup)
+    - [3. Repository Setup](#3-repository-setup)
 - [Other Useful Reading](#other-useful-reading)
 - [Contributors ✨](#contributors-)
 
@@ -148,7 +151,7 @@ Once an instance has been acquired it will primarily be accessed via [SSH](https
 - **Identity or Key File**: A file with an encrypted key to verify your identity when remoting in.
 
 You can SSH onto a server with the following command:
-```
+``` bash
 ssh [user]@[hostname] -i [path to identity file]
 ```
 
@@ -176,8 +179,52 @@ Now you should have 5 things which need to be added as secrets to this repositor
 
 The names should match exactly as they are in the `deployment.yml` file. If you decide to rename them the file should also reflect those changes.
 
+## Instance Configuration
 
-## Nginx Setup
+### 1. Docker Setup 
+Docker and its associated tools need to be installed on the instance to allow for the containerised deployment. Instructions for installation on Ubuntu machines can be found [here](https://docs.docker.com/engine/install/ubuntu/), however, the steps are provided below.
+
+1. Uninstall older Docker Engine versions.
+  ``` bash
+  for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+  ```
+
+2. Set up the Docker `apt` repository.
+  ``` bash
+  # Add Docker's official GPG key:
+  sudo apt-get update
+  sudo apt-get install ca-certificates curl
+  sudo install -m 0755 -d /etc/apt/keyrings
+  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
+  
+  # Add the repository to Apt sources:
+  echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt-get update
+```
+
+3. Install latest Docker packages.
+  ``` bash
+  sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  ```
+
+4. Verify the installation.
+  ``` bash
+  # Verify running status
+  sudo systemctl status docker
+
+  # Some systems may need manual start
+   sudo systemctl start docker
+  ```
+
+### 2. Nginx Setup
+
+### 3. Repository Setup
+
+
 
 
 # Other Useful Reading
