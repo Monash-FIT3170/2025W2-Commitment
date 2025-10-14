@@ -132,7 +132,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
               </TableRow>
 
               {/* Expanded Rows */}
-              {row.getIsExpanded() && row.original.aliases?.length > 0 && (
+              {row.getIsExpanded() && (row.original.aliases?.length ?? 0) > 0 && (
                 <>
                   {/* Row for Associated Accounts */}
 
