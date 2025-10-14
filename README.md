@@ -36,7 +36,7 @@ With Commitment, you can:
 - Generate recommended assessment scalings using a variety of strategies (percentiles, mean + standard deviation, quartiles, etc.).
 - Visualize metrics and recommendations through interactive graphs.
 - Upload a Moodle grading sheet to automatically apply scaling before downloading it for submission.
-- Map multiple Git accounts to the same contributor via a repo-specific config file.
+- Map multiple Git accounts to the same contributor via a global alias configuration file.
 
 Commitment is designed to support fairer and more transparent grading in team-based coding projects.
 
