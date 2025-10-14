@@ -25,9 +25,11 @@ Commitment is designed to support fairer and more transparent grading in team-ba
 - [Running Project](#running-project)
   - [Docker Commands](#docker-commands)
 - [Deployment](#deployment)
-  - [Instance Setup](#instance-setup)
+  - [Initial Setup](#initial-setup)
+    - [1. Acquire Instance](#1-acquire-instance)
+    - [2. Dockerhub Setup](#2-dockerhub-setup)
+    - [3. Github Setup](#3-github-setup)
   - [Nginx Setup](#nginx-setup)
-  - [Github Setup](#github-setup)
 - [Other Useful Reading](#other-useful-reading)
 - [Contributors ✨](#contributors-)
 
@@ -122,11 +124,45 @@ At the conclusion of **Semester 2 (2025) at Monash University**, the Commitment 
 
 For future contributions to this repository there are a set of steps needed to follow to set up deployment via the Github actions. Changes will be pushed to the production site whenever a PR is merged into `main` through the Github Actions pipeline.
 
-## Instance Setup
+## Initial Setup
+### 1. Acquire Instance
+
+An instance in this case is some virtual machine that will be accessed and used to host the application. There are a number of services that offer machine instances for use in this purpose.
+
+Some examples include:
+- [Amazon Web Services](https://aws.amazon.com/ec2/instance-types/)
+- [Digital Ocean](https://www.digitalocean.com/products/droplets)
+- [Azure](https://azure.microsoft.com/en-us/products/virtual-machines)
+
+There a number of options available but must meet a set of system requirements.
+
+**Minimum System Requirements**
+- **Flavour**: Ubuntu 22.04 LTS (Jammy)
+- **Cores**: 2
+- **RAM**: 4 GB
+- **Storage**: 15 GB
+
+Once an instance has been acquired it will primarily be accessed via [SSH](https://www.ssh.com/academy/ssh/protocol). To do this a service will provide you with 3 things:
+- **Host Name**: An IP Address or DNS.
+- **User**: The user of the account you want to log in to (should just be ubuntu in this case).
+- **Identity or Key File**: A file with an encrypted key to verify your identity when remoting in.
+
+You can SSH onto a server with the following command:
+```
+ssh [user]@[hostname] -i [path to identity file]
+```
+
+Have those 3 things handy as it will be required in later steps.
+
+
+### 2. Dockerhub Setup
+
+### 3. Github Setup
+
+
 
 ## Nginx Setup
 
-## Github Setup
 
 # Other Useful Reading
 
