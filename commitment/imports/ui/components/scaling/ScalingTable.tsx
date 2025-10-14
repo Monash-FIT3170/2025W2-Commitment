@@ -38,6 +38,12 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
     getRowCanExpand: (row) => (row.original.aliases?.length ?? 0) > 0,
   });
 
+  const getCellClass = (idx: number, rowLength: number) => {
+    if (idx === 0) return "rounded-l-md text-git-int-text text-1xl";
+    if (idx === rowLength - 1) return "rounded-r-md text-git-int-text";
+    return "text-git-int-text text-sm font-normal";
+  };
+
   return (
     <div className="overflow-hidden rounded-md border-git-stroke-primary">
       <Table>
@@ -74,13 +80,10 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                 {row.getVisibleCells().map((cell, idx) => (
                   <TableCell
                     key={cell.id}
-                    className={`${
-                      idx === 0
-                        ? "rounded-l-md text-git-int-text text-1xl"
-                        : idx === row.getVisibleCells().length - 1
-                        ? "rounded-r-md text-git-int-text"
-                        : "text-git-int-text text-sm font-normal"
-                    } py-0`}
+                    className={`${getCellClass(
+                      idx,
+                      row.getVisibleCells().length
+                    )} py-0`}
                   >
                     {idx === 0 ? (
                       <div className="flex items-center gap-1">
