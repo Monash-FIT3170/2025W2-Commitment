@@ -1,7 +1,7 @@
-import NotAuthorizedView from "@ui/views/NotAuthorizedView";
+import NotAuthorizedView from "@ui/views/NotAuthorizedView/NotAuthorizedView";
 import React, {ReactNode} from "react";
 import {Meteor} from "meteor/meteor";
-import { useAuth } from "@hook/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 
 
 export interface AuthorizedProps {

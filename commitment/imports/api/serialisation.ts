@@ -7,7 +7,7 @@ import {
   ContributorData,
   FileChanges,
   ChangeType,
-} from "@api/types";
+} from "/imports/api/types";
 
 /**
  * Convert RepositoryData's Maps into plain objects to store in DB.

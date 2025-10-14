@@ -3,7 +3,7 @@ import {
 } from '@radix-ui/react-dropdown-menu';
 import { ArrowDownUp, ArrowDown, ArrowUp } from 'lucide-react';
 import React from 'react';
-import { Button } from '@base/button';
+import { Button } from '@ui/components/ui/button';
 
 type SortKey = 'createdAt' | 'lastViewed' | null
 type SortDir = 'asc' | 'desc' | null

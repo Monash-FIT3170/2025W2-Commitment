@@ -14,7 +14,7 @@
     "dist/",
     "build/",
     "*.d.ts",
-    "imports/base"
+    "imports/ui/components/ui"
   ],
   "env": {
     "browser": true,
@@ -22,11 +22,7 @@
     "es2020": true,
     "mocha": true
   },
-  "parser": "@babel/eslint-parser",
-  "settings": {
-    "import/resolver": {
-      "babel-module": {}
-    },
+  "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "import"],
   "parserOptions": {
     "project": "./tsconfig.json",

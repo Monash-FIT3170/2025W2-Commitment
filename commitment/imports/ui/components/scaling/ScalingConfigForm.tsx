@@ -7,11 +7,11 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@base/form";
+} from "@ui/components/ui/form";
 import { UploadIcon } from "lucide-react";
-import { Checkbox } from "@base/checkbox";
-import { RadioGroup, RadioGroupItem } from "@base/radio-group";
-import { Button } from "@base/button";
+import { Checkbox } from "@ui/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@ui/components/ui/radio-group";
+import { Button } from "@ui/components/ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,10 +20,9 @@ import {
   FilteredData,
   UserScalingSummary,
   SerialisableMapObject,
-} from "@api/types";
+} from "/imports/api/types";
 import { useLocation } from "react-router-dom";
-import { config } from "process";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "./dropzone";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),

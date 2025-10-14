@@ -1,7 +1,7 @@
 import { Subject } from "rxjs";
 
 import React, { useEffect, useState } from "react";
-import { Button } from "@base/button";
+import { Button } from "@ui/components/ui/button";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -12,12 +12,12 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@base/alert-dialog";
-import { useToast } from "@hook/useToast";
+} from "@ui/components/ui/alert-dialog";
+import { useToast } from "@ui/hooks/use-toast";
 import { Meteor } from "meteor/meteor";
 import { Bookmark } from "lucide-react";
 // Update the import path to the correct relative location of call_repo
-import { fetchRepo, repoInDatabase } from "@api/call_repo";
+import { fetchRepo, repoInDatabase } from "../../../api/call_repo";
 
 /**
  * BookmarkRepoButton Component
