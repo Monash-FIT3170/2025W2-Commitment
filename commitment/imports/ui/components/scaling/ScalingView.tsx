@@ -165,7 +165,9 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
       (hasExistingScalingData && !lastRepoUrl && currentRepoUrl)
     ) {
       clearScalingData();
-      localStorage.setItem("scaling_last_repo_url", currentRepoUrl);
+      if (currentRepoUrl) {
+        localStorage.setItem("scaling_last_repo_url", currentRepoUrl);
+      }
       setCompleted(false);
       setShowDialog(true);
     } else {
