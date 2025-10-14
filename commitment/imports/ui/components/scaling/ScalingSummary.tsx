@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { CellContext, ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ScalingTable";
 import { ScalingRadialChart } from "./ScalingRadialChart";
-import { UserScalingSummary } from "/imports/api/types";
+import { UserScalingSummary } from "@api/types";
 
 interface ScalingSummaryProps {
   userScalingSummaries: UserScalingSummary[]; 
