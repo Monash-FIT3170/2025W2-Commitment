@@ -22,7 +22,6 @@ import {
   SerialisableMapObject,
 } from "/imports/api/types";
 import { useLocation } from "react-router-dom";
-import { config } from "process";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
 
 const scalingConfigSchema = z.object({
@@ -40,9 +39,15 @@ interface ScalingConfigFormProps {
   ) => void;
 }
 
+interface ScalingViewLocationState {
+repoUrl?: string;
+}
+
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
-  const repoUrl: string = location.state?.repoUrl ?? null;
+
+  const state = location.state as ScalingViewLocationState | null;
+  const repoUrl: string | null = state?.repoUrl ?? null;
 
   //   Make a repo call here to get the number of contributors
 
@@ -139,7 +144,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         </div>
         <form
           onSubmit={(e) => {
-            e.preventDefault(); 
+            e.preventDefault();
             void form.handleSubmit(handleSubmit)(e);
           }}
           className="space-y-6"
