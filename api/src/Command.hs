@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Command (
   Command(..),
@@ -23,12 +24,13 @@ import System.Timeout (timeout)
 import System.IO ()
 import Control.Monad (when, forM_)
 import Control.Concurrent.STM (TBQueue)
-import Control.Exception (evaluate)
+import Control.Exception (evaluate, SomeException (SomeException), try, catch)
+import Control.Concurrent (threadDelay)
 import System.Directory
     ( copyFile,
       createDirectoryIfMissing,
       doesDirectoryExist,
-      listDirectory,
+      getDirectoryContents,
       removeDirectoryRecursive ) 
 import System.Process
     ( createProcess,
@@ -158,22 +160,40 @@ executeCommandTimedOut seconds notifier filepath cmd = do
 
 -- | Filesystem helpers
 -- Deletes directory if it exists (raises errors when it fails)
-deleteDirectoryIfExists :: FilePath -> IO () -> IO ()
+deleteDirectoryIfExists :: FilePath -> IO () -> IO Bool
 deleteDirectoryIfExists dir f = do
   exists <- doesDirectoryExist dir
-  when exists $ do
-    _ <- f
-    removeDirectoryRecursive dir
+  if exists 
+    then do
+      _ <- f
+      retryDelete 3 Nothing
+    else 
+      pure False
+  where
+    retryDelete :: Int -> Maybe SomeException ->  IO Bool
+    -- failed case
+    retryDelete 0 e = error $ "Failed to delete directory \"" ++ dir ++ "\": " ++ show e
+    retryDelete n e = do
+      result <- try (removeDirectoryRecursive dir) :: IO (Either SomeException ())
+      case result of
+        Right _ -> pure True
+        Left e  -> do
+          -- safePrint $ "Retry " ++ show (4 - n) ++ " failed to delete " ++ dir ++ ": " ++ show e
+          threadDelay 1000000  -- wait 1 seconds
+          retryDelete (n - 1) $ Just e
 
--- Recursively copy one directory to another
+-- | Recursively copy one directory to another, including hidden files like `.git`.
 copyDirectory :: FilePath -> FilePath -> IO ()
 copyDirectory src dst = do
-    awaitDirCreation <- createDirectoryIfMissing True dst
-    contents <- listDirectory src
-    forM_ contents $ \name -> do
+    createDirectoryIfMissing True dst
+    contents <- getDirectoryContents src
+    let properContents = filter (`notElem` [".", ".."]) contents
+    forM_ properContents $ \name -> do
         let srcPath = src </> name
             dstPath = dst </> name
         isDir <- doesDirectoryExist srcPath
         if isDir
-            then copyDirectory srcPath dstPath
-            else copyFile srcPath dstPath
+           then copyDirectory srcPath dstPath
+           else copyFile srcPath dstPath `catch` \(e :: SomeException) ->
+                    safePrint $ "Failed to copy " ++ srcPath ++ " to " ++ dstPath ++ ": " ++ show e
+    

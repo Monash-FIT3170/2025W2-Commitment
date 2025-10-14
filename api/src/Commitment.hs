@@ -12,14 +12,21 @@ module Commitment (
 ) where
 
 import Control.Concurrent.STM
-import Control.Exception (catch, SomeException (SomeException), displayException, bracket)
+import Control.Exception (
+    catch,
+    SomeException (SomeException),
+    displayException,
+    bracket)
 import Data.List (sortBy, isPrefixOf)
 import Data.Maybe (fromMaybe)
 import Data.Map.Strict ()
 import qualified Data.Map.Strict as Map
 import System.FilePath ((</>))
 import System.IO.Unsafe (unsafePerformIO)
-import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
+import System.Directory (
+    getTemporaryDirectory,
+    createDirectoryIfMissing,
+    doesDirectoryExist)
 import Control.Concurrent (
     MVar,
     newMVar,
@@ -31,7 +38,7 @@ import Control.Concurrent (
     tryTakeMVar,
     getNumCapabilities,
     newEmptyMVar )
-import Control.Monad (when)
+import Control.Monad (when, void)
 import Data.IORef
 
 import Types
@@ -95,99 +102,82 @@ createDirectory path task = do
     -- Update refcount
     isCreator <- modifyMVar directoryRefCount $ \refMap ->
         case Map.lookup path refMap of
-            Nothing -> pure (Map.insert path 1 refMap, True)
-            Just n  -> pure (Map.insert path (n + 1) refMap, False)
+            Nothing -> pure (Map.insert path 1 refMap, True)        -- add entry to map
+            Just n  -> pure (Map.insert path (n + 1) refMap, False) -- increment entry
 
-    -- Run actual IO task only if this call is the creator
+    -- Run actual IO task only if this call is the creator and 
+    -- the path does not already exist
     if isCreator
        then withDirectoryLock path $ do
-           createDirectoryIfMissing True path
-           a <- task path
-           pure (Just a)
+            -- delete it if it already exists, it should not exist yet
+            exists <- doesDirectoryExist path
+            if exists then deleteDirectoryIfExists path (pure ()) else pure False
+            -- create fresh directory
+            createDirectoryIfMissing True path
+            -- do task to initialise directory
+            Just <$> task path
        else pure Nothing
 
 -- | Delete a directory safely (only one thread per dir at a time)
-deleteDirectory :: FilePath -> IO () -> IO ()
+deleteDirectory :: FilePath -> IO () -> IO Bool
 deleteDirectory path callback = do
     mDelete <- modifyMVar directoryRefCount $ \refMap ->
         case Map.lookup path refMap of
             Nothing -> pure (refMap, False)                       -- nothing to do
-            Just n  -> if n < 2
-                then pure (Map.delete path refMap, True)          -- remove entry
-                else pure (Map.insert path (n - 1) refMap, False) -- decrement entry
+            Just 1  -> pure (Map.delete path refMap, True)        -- remove entry 
+            Just n  -> if n > 0
+                then pure (Map.insert path (n - 1) refMap, False) -- decrement entry if valid
+                else pure (refMap, False)                         -- do nothing if n <= 0
 
     -- Only delete if this call actually drops refcount to zero
-    when mDelete $ withDirectoryLock path $ deleteDirectoryIfExists path callback
-
-zipWithFunctions :: [[[a]]] -> [[a] -> b] -> [[([a], [a] -> b)]]
-zipWithFunctions = zipWith (\inner f -> map (\x -> (x, f)) inner)
+    if mDelete
+        then withDirectoryLock path $ deleteDirectoryIfExists path callback
+        else pure False
 
 -- automatically execute shell scripts in the command pool whilst the command result is extracted and passed to the parsing pool
-execAndParseNoIndex :: TBQueue String -> FilePath -> Command -> (String -> ParseResult a) -> String -> IO a
-execAndParseNoIndex notifier cwd cmd parser msg = await (
+execAndParse :: TBQueue String -> FilePath -> Command -> (String -> ParseResult a) -> String -> IO a
+execAndParse notifier cwd cmd parser msg = await (
         passThroughAsync commandPool parsingPool
         (executeCommand notifier cwd)
         (pure . parsed msg . parser . parsed msg . successful)
         cmd
     )
 
-execAndParse :: TBQueue String -> FilePath -> Command -> (String -> ParseResult a) -> String -> IO a
-execAndParse notifier cwd cmd parser msg = await (
-        passThroughAsyncIndexed commandPool parsingPool
-        (\command idx -> do
-            let workingDir = cwd </> show idx
-            executeCommand notifier workingDir command)
-        (pure . parsed msg . parser . parsed msg . successful)
-        cmd
-    )
-
 execAndParseAll :: TBQueue String -> FilePath -> [Command] -> (String -> ParseResult a) -> String -> IO [a]
-execAndParseAll notifier cwd cmds parser msg = passAllAsyncIndexed commandPool parsingPool
-    (\command idx -> do
-        let workingDir = cwd </> show idx
-        executeCommand notifier workingDir command)
+execAndParseAll notifier cwd cmds parser msg = 
+    passAllAsync commandPool parsingPool
+    (executeCommand notifier cwd)
     (pure . parsed msg . parser . parsed msg . successful)
     cmds
 
 fetchDataFrom :: String -> TBQueue String -> IO (Either String RepositoryData)
 fetchDataFrom url notifier = do
-        workingDir <- getCurrentDirectory
+        workingDir <- getTemporaryDirectory
         let cloneRoot = workingDir </> "cloned-repos"
 
         awaitOutsideCloneDir <- createDirectoryIfMissing True cloneRoot
         emit notifier "Validating repo exists..."
 
-        let execCmdInWorkingDir = execAndParseNoIndex notifier workingDir
+        let execCmdInWorkingDir = execAndParse notifier workingDir
         _ <- execCmdInWorkingDir (checkIfRepoExists url) parseRepoExists "Repo does not exist"
 
         emit notifier "Found the repo!"
 
         let parts = splitOn '/' url
-            repoNameFromUrl  = last (init parts) ++ "/" ++ last parts
-            repoRelativePath = "cloned-repos" </> repoNameFromUrl
-            repoAbsPath      = workingDir </> repoRelativePath
-            sourceDir        = repoAbsPath </> "source"
+            repoRelativePath = last (init parts) ++ "/" ++ last parts
+            repoAbsPath      = cloneRoot </> repoRelativePath
 
             cloneFunction = createDirectory repoAbsPath (\_ -> do
                     -- clone the repo in this case, otherwise we don't actually need to clone it as
                     -- it already exists and another request is using it rn
                     emit notifier "Cloning repo..."
 
-                    -- creating the source directory to clone into
-                    createDirectoryIfMissing True sourceDir
+                    -- creating the directory to clone into
+                    createDirectoryIfMissing True repoAbsPath
 
-                    -- clones git repo into source directory 
-                    cloneResult <- successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url sourceDir)
-
-                    -- assert the error in this function so that the next steps don't happen if its faulty
-                    let parsedCloneResult = parsed "Failed to clone the repo" cloneResult
-
-                    -- submit tasks to the commandPool in parallel to copy to other directories if 
-                    -- copy contents of source directory to other sub-directories so that worker threads can access them efficiently
-                    submitAllAsync commandPool (\idx -> do
-                        let targetDir = repoAbsPath </> show idx
-                        copyDirectory sourceDir targetDir
-                        ) [0 .. numWorkers commandPool - 1]
+                    -- clones git repo into directory 
+                    commandResult <- executeCommandTimedOut 10 notifier cloneRoot (cloneRepo url repoAbsPath)
+                    let parsedCloneResult = parsed "Failed to clone the repo" $ successful commandResult
 
                     pure ()
                 )
@@ -215,8 +205,7 @@ fetchDataFrom url notifier = do
 -- | High-level function to orchestrate parsing, transforming, and assembling data
 formulateRepoData :: String -> FilePath -> TBQueue String -> IO RepositoryData
 formulateRepoData _url path notifier = do
-    let source = path </> "source"
-        execCmd = execAndParse notifier path
+    let execCmd = execAndParse notifier path
         execAll = execAndParseAll notifier path
 
     emit notifier "Searching for branch names..."
@@ -233,10 +222,9 @@ formulateRepoData _url path notifier = do
 
     commitCounter <- newTVarIO 0
     emit notifier "Formulating all commit data..."
-    allCommitData <- passAllAsyncIndexed commandPool parsingPool
-        (\(c1, c2) idx -> do
-            let workingDir = path </> show idx
-                doCommitCommand = executeCommand notifier workingDir
+    allCommitData <- passAllAsync commandPool parsingPool
+        (\(c1, c2) -> do
+            let doCommitCommand = executeCommand notifier path
             r1 <- doCommitCommand c1
             r2 <- doCommitCommand c2
             pure (r1, r2)
