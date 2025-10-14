@@ -102,6 +102,30 @@ NODE_ENV=development
 4. Run `docker-compose up -d` to spin it up and attach to a container.
 5. The container is ready for development.
 
+## Adding New Collections to MongoDB Atlas
+
+To add a new collection to the MongoDB Atlas setup:
+
+1. **Add collection creation** in `commitment/atlas/src/services/atlas.ts` (line ~26):
+   ```
+   await db.createCollection('your_new_collection');
+   ```
+
+2. **Add collection constant** in `commitment/atlas/server.js` (line ~48):
+   ```
+   const YOUR_COLLECTION = 'your_new_collection';
+   ```
+
+3. **Add indexes** if needed in `commitment/atlas/server.js` (line ~152):
+   ```
+   await db.collection(YOUR_COLLECTION).createIndex({ field: 1 });
+   ```
+
+4. **Add API endpoints** and helper functions as needed, following existing patterns.
+
+5. **Restart the server** to apply changes and verify in MongoDB Atlas.
+
+
 # Running Project
 
 These provide steps to run the project.
