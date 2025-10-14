@@ -148,7 +148,9 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
 
   // Simple initialization with localStorage persistence for core state
   useEffect(() => {
-    const currentRepoUrl: string = location.state?.repoUrl ?? null;
+    const currentRepoUrl: string | null =
+      (location.state as { repoUrl?: string } | null)?.repoUrl ?? null;
+
     setRepoUrl(currentRepoUrl);
 
     // Check if repo has changed - clear localStorage if it has
