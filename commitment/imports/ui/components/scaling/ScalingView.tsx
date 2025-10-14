@@ -367,16 +367,16 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
               open={showAliasDialog}
               onOpenChange={setShowAliasDialog}
             >
-              <AlertDialogTrigger asChild/>
+              <AlertDialogTrigger asChild />
 
               <AlertDialogContent>
                 <div className="flex justify-between items-start">
                   <button
-                    type="button" 
+                    type="button"
                     onClick={() => {
                       setShowAliasDialog(false);
                       if (onNavigateToMetrics) {
-                        onNavigateToMetrics(); 
+                        onNavigateToMetrics();
                       }
                     }}
                     className="p-1 rounded-md hover:bg-gray-100 transition-colors"
@@ -404,14 +404,20 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
                   Please upload or update your alias configuration in settings.
                 </AlertDialogDescription>
 
-                <AlertDialogFooter className="p-0 mt-4 flex justify-center items-center">
-                  <AlertDialogAction
-                    onClick={() => {
-                      navigate("/settings", { state: { tab: "alias-config" } });
-                    }}
-                  >
-                    Go to Alias Configuration
-                  </AlertDialogAction>
+                <AlertDialogFooter className="p-0 mt-4 flex justify-center">
+                  <div className="flex justify-center w-full">
+                    <AlertDialogAction
+                      type="button"
+                      className="inline-flex px-4 py-2 justify-center"
+                      onClick={() => {
+                        navigate("/settings", {
+                          state: { tab: "alias-config" },
+                        });
+                      }}
+                    >
+                      Go to Alias Configuration
+                    </AlertDialogAction>
+                  </div>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
