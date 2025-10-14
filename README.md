@@ -29,6 +29,7 @@ Commitment is designed to support fairer and more transparent grading in team-ba
     - [1. Acquire Instance](#1-acquire-instance)
     - [2. Dockerhub Setup](#2-dockerhub-setup)
     - [3. Github Setup](#3-github-setup)
+    - [4. Domain \& DNS Setup (Optional)](#4-domain--dns-setup-optional)
   - [Instance Configuration](#instance-configuration)
     - [1. Docker Setup](#1-docker-setup)
     - [2. Nginx Setup](#2-nginx-setup)
@@ -178,6 +179,13 @@ Now you should have 5 things which need to be added as secrets to this repositor
 | `DOCKERHUB_TOKEN`    | Dockerhub PAT      |
 
 The names should match exactly as they are in the `deployment.yml` file. If you decide to rename them the file should also reflect those changes.
+
+### 4. Domain & DNS Setup (Optional)
+This step is optional, however, if you want your deployed app to have a domain it needs to be acquired. Additionally a service needs to be used to act as a DNS registrar to resolve the instance IP to the domain name.
+
+This project used [Cloudflare](https://developers.cloudflare.com/fundamentals/manage-domains/) to manage the DNS and the domain was purchased on [Squarespace](https://domains.squarespace.com/). 
+
+If this step is completed keep note of the domains that were acquired for later.
 
 ## Instance Configuration
 
