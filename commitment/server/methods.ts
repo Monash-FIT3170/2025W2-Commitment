@@ -12,6 +12,7 @@ import {
   Selections,
   AllMetricsData,
   MetricType,
+  RepositoryData,
 } from "@api/types";
 
 import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
@@ -23,7 +24,7 @@ import { getNumberOfContributors } from "./helper_functions";
 
 export async function getFilteredRepoData(  repoUrl:string, startDate:Date, endDate:Date, branch:string, contributor:string[]):Promise<FilteredData>{
     // Get full repository data from db
-    const repo = await Meteor.callAsync("repoCollection.getData", repoUrl) as SerializableRepoData;
+    const repo = tryFromDatabaseSerialised(repoUrl, null);
 
     // Apply alias mapping if user has config
     const userId = Meteor.userId();
