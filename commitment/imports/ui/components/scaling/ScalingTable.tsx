@@ -87,7 +87,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                   >
                     {idx === 0 ? (
                       <div className="flex items-center gap-1">
-                        {/* Chevron or placeholder */}
+                        {/* Chevron */}
                         {row.getCanExpand() ? (
                           <ChevronRight
                             className={`transition-transform duration-200 ${
