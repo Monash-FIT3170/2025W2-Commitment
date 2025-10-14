@@ -368,8 +368,6 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
               onOpenChange={setShowAliasDialog}
             >
               <AlertDialogTrigger asChild/>
-                {/* <div></div>
-              </AlertDialogTrigger> */}
 
               <AlertDialogContent>
                 <div className="flex justify-between items-start">
