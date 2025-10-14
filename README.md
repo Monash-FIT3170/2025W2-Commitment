@@ -1,6 +1,6 @@
 # 2025W2-Commitment
 
-**Commitment** is a web-based GUI tool that provides **code contribution analysis** and **automatic scaling suggestions** for student assessments.
+[**Commitment**](https://commitmentfit3170.net/) is a web-based GUI tool that provides **code contribution analysis** and **automatic scaling suggestions** for student assessments.
 
 With Commitment, you can:
 
@@ -24,6 +24,10 @@ Commitment is designed to support fairer and more transparent grading in team-ba
   - [Building the Environment](#building-the-environment)
 - [Running Project](#running-project)
   - [Docker Commands](#docker-commands)
+- [Deployment](#deployment)
+  - [Instance Setup](#instance-setup)
+  - [Nginx Setup](#nginx-setup)
+  - [Github Setup](#github-setup)
 - [Other Useful Reading](#other-useful-reading)
 - [Contributors ✨](#contributors-)
 
@@ -111,6 +115,18 @@ These commands are useful for working with the container but must be run from th
 | Access Dev Container         | `docker exec -it 3170-build bash`  |
 | Access Haskell Container     | `docker exec -it haskell-api bash` |
 | Attach Container to Terminal | `docker attach <container>`        |
+
+# Deployment
+
+At the conclusion of **Semester 2 (2025) at Monash University**, the Commitment web app is accessible [via this url](https://commitmentfit3170.net/).
+
+For future contributions to this repository there are a set of steps needed to follow to set up deployment via the Github actions. Changes will be pushed to the production site whenever a PR is merged into `main` through the Github Actions pipeline.
+
+## Instance Setup
+
+## Nginx Setup
+
+## Github Setup
 
 # Other Useful Reading
 
