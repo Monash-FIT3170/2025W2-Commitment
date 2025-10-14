@@ -156,6 +156,12 @@ Have those 3 things handy as it will be required in later steps.
 
 
 ### 2. Dockerhub Setup
+Dockerhub is where the Docker images will be pushed and used in the production bundle on the instance. 
+
+1. Navigate to [Dockerhub](https://hub.docker.com/) and create an account.
+2. Take note of the username that you create.
+3. Create a Personal Access Token following the [instructions here](https://docs.docker.com/security/access-tokens/).
+4. Take note of the PAT for later use.
 
 ### 3. Github Setup
 
