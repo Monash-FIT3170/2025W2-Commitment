@@ -1,13 +1,14 @@
 import { Meteor } from "meteor/meteor";
-import { BookmarksCollection } from "../imports/api/bookmarks";
-import { RepositoriesCollection } from "../imports/api/repositories";
+import { BookmarksCollection } from "@api/bookmarks";
+import { RepositoriesCollection } from "@api/repositories";
 
-import "../imports/api/methods";
-import "../imports/api/bookmark_methods";
-import "../imports/api/repository_methods";
-import "../imports/api/alias_config_methods";
-import "./fetch_repo";
-import "./caching";
+import "@api/methods";
+import "@api/bookmark_methods";
+import "@api/repository_methods";
+import "@api/alias_config_methods";
+
+import "./api/fetch_repo";
+import "./api/caching";
 import "./methods";
 
 Meteor.startup(() => {

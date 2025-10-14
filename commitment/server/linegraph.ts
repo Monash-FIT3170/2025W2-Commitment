@@ -1,5 +1,7 @@
-import { FilteredData, LineGraphData } from "../imports/api/types";
-import { getLinesOfCodeFromCommit } from "./helper_functions";
+import { FilteredData, LineGraphData } from "@api/types";
+import {
+  getLinesOfCodeFromCommit
+} from "./helper_functions"
 
 /**
  * LINEGRAPH FUNCTIONS

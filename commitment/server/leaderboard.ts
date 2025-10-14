@@ -2,7 +2,7 @@ import {
   FilteredData,
   LeaderboardData,
   SerializableRepoData,
-} from "../imports/api/types";
+} from "@api/types";
 
 import {
   getAllContributorsCommitCounts,

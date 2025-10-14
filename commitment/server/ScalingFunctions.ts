@@ -7,7 +7,7 @@ import {
   ContributorValueWithAliases,
   ScoreFn,
   SerialisableMapObject,
-} from "../imports/api/types";
+} from "@api/types";
 import {
   applyAliasMapping,
   createAliasMapping,

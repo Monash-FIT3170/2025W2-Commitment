@@ -1,5 +1,5 @@
 import React from 'react';
-import Filter, { FilterOption, FiltersState, FilterValue } from '../ui/filter';
+import Filter, { FilterOption, FiltersState, FilterValue } from '@base/filter';
 
 interface FilterProps {
   filters: FiltersState;
