@@ -252,7 +252,7 @@ NGINX is used to act as a web server for serving the content of the web applicat
   sudo nano /etc/nginx/sites-available/commitment.conf
   ```
 
-4. Update the configuration file with the below contents. This will redirect and manage traffic to the server. Replace `app_domains` with any domain names you may have acquired, also replace `host_ip` with the IP of the server.
+4. Update the configuration file with the below contents. This will redirect and manage traffic to the server. Replace `app_domains` with all the domain names you may have acquired, also replace `host_ip` with the IP of the server.
   ``` bash
   server {
       listen 80;
@@ -286,6 +286,17 @@ NGINX is used to act as a web server for serving the content of the web applicat
   ```
 
 ### (Optional) SSL Certbot Auth
+This optional step only applies if domain names have been acquired. This step will setup SSL for secure connections to the webapp using [Certbot](https://certbot.eff.org/). 
+
+1. Install certbot on the instance.
+  ``` bash
+  sudo apt install certbot python3-certbot-nginx -y
+  ```
+
+2. Associate certification with domain names (will not work for IP address). Replace `your-domains` with any domains you have acquired.
+  ``` bash
+  sudo certbot --nginx -d you-domains
+  ```
 
 ### 3. Repository Setup
 
