@@ -14,7 +14,20 @@ With Commitment, you can:
 
 Commitment is designed to support fairer and more transparent grading in team-based coding projects.
 
-## System Requirements
+- [2025W2-Commitment](#2025w2-commitment)
+- [System Requirements](#system-requirements)
+- [Environment Setup](#environment-setup)
+  - [Docker Installation](#docker-installation)
+    - [Select Target Platform](#select-target-platform)
+    - [Install Docker Desktop](#install-docker-desktop)
+    - [Install Verification](#install-verification)
+  - [Building the Environment](#building-the-environment)
+- [Running Project](#running-project)
+  - [Docker Commands](#docker-commands)
+- [Other Useful Reading](#other-useful-reading)
+- [Contributors ✨](#contributors-)
+
+# System Requirements
 
 To run this project with **Docker**, **Meteor**, and **Haskell**, to ensure a smooth experience running your development environment must meet the following requirements:
 
@@ -23,15 +36,15 @@ To run this project with **Docker**, **Meteor**, and **Haskell**, to ensure a sm
 - **RAM**: **16 GB+** strongly recommended
 - **Disk**: **100 GB SSD free** (fast storage for builds and containers)
 
-## Environment Setup
+# Environment Setup
 
 Follow the below steps to set up your Docker environment for development.
 
-### Docker Installation
+## Docker Installation
 
 Docker Desktop can be installed for all platforms from the official website, [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/) (Scroll Below _Choose Plan_).
 
-#### Select Target Platform
+### Select Target Platform
 
 Depending on your device you can choose the target platform:
 
@@ -41,21 +54,21 @@ Depending on your device you can choose the target platform:
 - Download for Windows ARM64 - **Snapdragon Laptops**
 - Download for Linux - **Ubuntu, Debian, Fedora, etc.**
 
-#### Install Docker Desktop
+### Install Docker Desktop
 
 1. Open the downloaded installer: **Docker Desktop Installer exe**.
 2. Follow the installation prompts.
 3. Enable WSL2 Backend (recommended).
 4. Restart device to complete installation.
 
-#### Install Verification
+### Install Verification
 
 1. Open native terminal on device.
 2. Run `docker --version` to verify the installation.
 
 _If there are any issues please contact an SA for help._
 
-### Building the Environment
+## Building the Environment
 
 These next steps are required to build and spin up the Docker image that will be used.
 
@@ -76,7 +89,7 @@ NODE_ENV=development
 4. Run `docker-compose up -d` to spin it up and attach to a container.
 5. The container is ready for development.
 
-## Running Project
+# Running Project
 
 These provide steps to run the project.
 
@@ -87,7 +100,7 @@ These provide steps to run the project.
    - This will be mapped to your `localhost` on `PORT 3000`.
 5. Enjoy developing!
 
-### Docker Commands
+## Docker Commands
 
 These commands are useful for working with the container but must be run from the root directory of the project.
 
@@ -95,21 +108,21 @@ These commands are useful for working with the container but must be run from th
 | ---------------------------- | ---------------------------------- |
 | Start Container              | `docker-compose start`             |
 | Stop Container               | `docker-compose stop`              |
-| Access Dev Container         | `docker exec -it 3170-build bash`    |
+| Access Dev Container         | `docker exec -it 3170-build bash`  |
 | Access Haskell Container     | `docker exec -it haskell-api bash` |
 | Attach Container to Terminal | `docker attach <container>`        |
 
-## Other Useful Reading
+# Other Useful Reading
 
 Below are useful links for learning a little more about the project from the READMEs scattered throughout.
-| README Name | Info / Description | Link |
-|---------------------|--------------------------------------------------------|------|
-| Mongo Setup | More information on playing with Mongo.| [View README](commitment/server/README_DATA_ENTRY.md) |
-| Mongo Architecture | Documentation on the architecture of Mongo in our application. | [View README](commitment/ARCHITECTURE.md) |
-| Tailwind How-To | Example usage and demos for applying tailwind in the project.| [View README](README.tailwind-colors.md) |
-| Contribution Guide | Guidelines for contributing to the project | [View README](CONTRIBUTING.md) |
+| README Name        | Info / Description                                             | Link                                                  |
+| ------------------ | -------------------------------------------------------------- | ----------------------------------------------------- |
+| Mongo Setup        | More information on playing with Mongo.                        | [View README](commitment/server/README_DATA_ENTRY.md) |
+| Mongo Architecture | Documentation on the architecture of Mongo in our application. | [View README](commitment/ARCHITECTURE.md)             |
+| Tailwind How-To    | Example usage and demos for applying tailwind in the project.  | [View README](README.tailwind-colors.md)              |
+| Contribution Guide | Guidelines for contributing to the project                     | [View README](CONTRIBUTING.md)                        |
 
-## Contributors ✨
+# Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
