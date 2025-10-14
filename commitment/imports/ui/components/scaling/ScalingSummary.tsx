@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { ColumnDef } from "@tanstack/react-table";
+import { CellContext, ColumnDef, Row } from "@tanstack/react-table";
 import { DataTable } from "./ScalingTable";
 import { ScalingRadialChart } from "./ScalingRadialChart";
 import { UserScalingSummary } from "/imports/api/types";
@@ -10,6 +10,14 @@ interface ScalingSummaryProps {
   userScalingSummaries: UserScalingSummary[]; // IF A GRADING SHEET IS PROVIDED, THE VALUES OF THIS PARAMETER MUST REFLECT THE FINAL GRADE, THUS CALCULATIONS ARE DONE AT THE GradingSheetForm STAGE
   hasGradingSheet: boolean;
 }
+
+// Outside ScalingSummary
+
+const renderNameCell = (cell: CellContext<UserScalingSummary, unknown>) => (
+  <span className="text-git-int-text text-sm font-normal">
+    {cell.getValue<string>()}
+  </span>
+);
 
 const ScalingSummary: React.FC<ScalingSummaryProps> = ({
   userScalingSummaries,
@@ -20,18 +28,12 @@ const ScalingSummary: React.FC<ScalingSummaryProps> = ({
       {
         accessorKey: "name",
         header: "Contributor Name",
-        cell: ({ row }) => (
-          <span className="text-git-int-text text-sm font-normal">
-            {row.getValue("name")}
-          </span>
-        ),
+        cell: renderNameCell, 
       },
       {
         accessorKey: "scale",
         header: "Scale",
-        cell: ({ row }) => (
-          <ScalingRadialChart value={row.getValue("scale")} />
-        ),
+        cell: ({ row }) => <ScalingRadialChart value={row.getValue("scale")} />,
       },
     ];
 
