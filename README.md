@@ -31,8 +31,8 @@ Commitment is designed to support fairer and more transparent grading in team-ba
     - [3. Github Setup](#3-github-setup)
     - [4. Domain \& DNS Setup (Optional)](#4-domain--dns-setup-optional)
   - [Instance Configuration](#instance-configuration)
-    - [1. Docker Setup](#1-docker-setup)
-    - [2. Nginx Setup](#2-nginx-setup)
+    - [1. Docker Installation](#1-docker-installation)
+    - [2. Nginx Installation \& Setup](#2-nginx-installation--setup)
     - [3. Repository Setup](#3-repository-setup)
 - [Other Useful Reading](#other-useful-reading)
 - [Contributors ✨](#contributors-)
@@ -188,8 +188,9 @@ This project used [Cloudflare](https://developers.cloudflare.com/fundamentals/ma
 If this step is completed keep note of the domains that were acquired for later.
 
 ## Instance Configuration
+The following sections cover the setup and required installations for the instance to run the deployed application. Ensure you have established an SSH connection to the instance before completing the next set of steps.
 
-### 1. Docker Setup 
+### 1. Docker Installation
 Docker and its associated tools need to be installed on the instance to allow for the containerised deployment. Instructions for installation on Ubuntu machines can be found [here](https://docs.docker.com/engine/install/ubuntu/), however, the steps are provided below.
 
 1. Uninstall older Docker Engine versions.
@@ -228,7 +229,7 @@ Docker and its associated tools need to be installed on the instance to allow fo
    sudo systemctl start docker
   ```
 
-### 2. Nginx Setup
+### 2. Nginx Installation & Setup
 
 ### 3. Repository Setup
 
