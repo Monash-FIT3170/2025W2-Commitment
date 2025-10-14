@@ -164,7 +164,17 @@ Dockerhub is where the Docker images will be pushed and used in the production b
 4. Take note of the PAT for later use.
 
 ### 3. Github Setup
+Now you should have 5 things which need to be added as secrets to this repository as they will be used in the `deployment.yml` file. You can follow [these instructions](https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/managing-development-environment-secrets-for-your-repository-or-organization) to add the following secrets to the repository.
 
+| Secret Name          | Info               |
+| -------------------- | ------------------ |
+| `NECTAR_HOST`        | Instance Host Name |
+| `NECTAR_USER`        | Instance User Name |
+| `NECTAR_KEY`         | Instance SSH Key   |
+| `DOCKERHUB_USERNAME` | Dockerhub Username |
+| `DOCKERHUB_TOKEN`    | Dockerhub PAT      |
+
+The names should match exactly as they are in the `deployment.yml` file. If you decide to rename them the file should also reflect those changes.
 
 
 ## Nginx Setup
