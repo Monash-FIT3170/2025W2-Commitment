@@ -58,7 +58,11 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
   const handleSubmit = async (data: ScalingConfig) => {
     try {
-      const result = await Meteor.callAsync("getScalingResults", data, repoUrl) as UserScalingSummary[];
+      const result = (await Meteor.callAsync(
+        "getScalingResults",
+        data,
+        repoUrl
+      )) as UserScalingSummary[];
 
       onSubmit(data, result); // this is where all the scaling starts from
     } catch (err) {
@@ -133,7 +137,13 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         <div className="text-2xl font-bold mb-4 text-center">
           Generate Scaling
         </div>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault(); 
+            void form.handleSubmit(handleSubmit)(e);
+          }}
+          className="space-y-6"
+        >
           {/* METRICS CHECKBOXES */}
           <FormField
             control={form.control}
