@@ -1,19 +1,6 @@
-# 2025W2-Commitment
+# Table of Contents
 
-[**Commitment**](https://commitmentfit3170.net/) is a web-based GUI tool that provides **code contribution analysis** and **automatic scaling suggestions** for student assessments.
-
-With Commitment, you can:
-
-- Enter a Git URL to view repository stats or bookmark repos (when signed in).
-- Explore contributor metrics (commits, lines of code, LOC per commit, commit frequency, etc.) filtered by branch and timeframe.
-- Generate recommended assessment scalings using a variety of strategies (percentiles, mean + standard deviation, quartiles, etc.).
-- Visualize metrics and recommendations through interactive graphs.
-- Upload a Moodle grading sheet to automatically apply scaling before downloading it for submission.
-- Filter out unwanted commits (e.g., merges or keyword-based).
-- Map multiple Git accounts to the same contributor via a repo-specific config file.
-
-Commitment is designed to support fairer and more transparent grading in team-based coding projects.
-
+- [Table of Contents](#table-of-contents)
 - [2025W2-Commitment](#2025w2-commitment)
 - [System Requirements](#system-requirements)
 - [Environment Setup](#environment-setup)
@@ -37,6 +24,22 @@ Commitment is designed to support fairer and more transparent grading in team-ba
     - [3. Repository Setup](#3-repository-setup)
 - [Other Useful Reading](#other-useful-reading)
 - [Contributors ✨](#contributors-)
+
+# 2025W2-Commitment
+
+[**Commitment**](https://commitmentfit3170.net/) is a web-based GUI tool that provides **code contribution analysis** and **automatic scaling suggestions** for student assessments.
+
+With Commitment, you can:
+
+- Enter a Git URL to view repository stats or bookmark repos (when signed in).
+- Explore contributor metrics (commits, lines of code, LOC per commit, commit frequency, etc.) filtered by branch and timeframe.
+- Generate recommended assessment scalings using a variety of strategies (percentiles, mean + standard deviation, quartiles, etc.).
+- Visualize metrics and recommendations through interactive graphs.
+- Upload a Moodle grading sheet to automatically apply scaling before downloading it for submission.
+- Filter out unwanted commits (e.g., merges or keyword-based).
+- Map multiple Git accounts to the same contributor via a repo-specific config file.
+
+Commitment is designed to support fairer and more transparent grading in team-based coding projects.
 
 # System Requirements
 
@@ -299,9 +302,35 @@ This optional step only applies if domain names have been acquired. This step wi
   ```
 
 ### 3. Repository Setup
+These next steps will have the repository set up initially before any pipelines can be run.
 
+1. Clone the repository into the root directory.
+  ``` bash
+  git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git
+  ```
 
+2. Navigate to the commitment directory.
+  ``` bash
+  cd 2025W2-Commitment/commitment
+  ```
 
+3. Create a `.env` file, to be used during deployment.
+  ``` bash
+  sudo nano .env
+  ```
+
+4. Populate with the below information.
+  ``` bash
+  MONGO_URL=<YOUR_MONGO_URI>
+  SERVER_HOST=0.0.0.0
+  PORT=3000
+  DB_NAME=commitment_db
+  NODE_ENV=production
+  ROOT_URL=<YOUR_DOMAIN_NAME>
+  API_CONN_ENDPOINT=haskell-api:8081
+  ```
+
+Now the everything is setup for deploment. Pushes to main will trigger the workflow for deployment.
 
 # Other Useful Reading
 
