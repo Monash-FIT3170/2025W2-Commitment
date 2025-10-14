@@ -32,7 +32,8 @@ Commitment is designed to support fairer and more transparent grading in team-ba
     - [4. Domain \& DNS Setup (Optional)](#4-domain--dns-setup-optional)
   - [Instance Configuration](#instance-configuration)
     - [1. Docker Installation](#1-docker-installation)
-    - [2. Nginx Installation \& Setup](#2-nginx-installation--setup)
+    - [2. NGINX Setup](#2-nginx-setup)
+    - [(Optional) SSL Certbot Auth](#optional-ssl-certbot-auth)
     - [3. Repository Setup](#3-repository-setup)
 - [Other Useful Reading](#other-useful-reading)
 - [Contributors ✨](#contributors-)
@@ -229,7 +230,62 @@ Docker and its associated tools need to be installed on the instance to allow fo
    sudo systemctl start docker
   ```
 
-### 2. Nginx Installation & Setup
+### 2. NGINX Setup
+NGINX is used to act as a web server for serving the content of the web application and acting as a reverse proxy to forward requests. It is used to server our web app and route traffic through the domain name instead of pointing to the IP address.
+
+1. Install nginx.
+  ``` bash
+  sudo apt update
+  sudo apt upgrade -y
+  sudo apt install nginx
+  ```
+2. Adjust the firewall, for HTTP and HTTPS.
+  ``` bash
+  sudo ufw allow 'Nginx Full'
+
+  # Verify status
+  sudo ufw status
+  ```
+
+3. From the root directory create a new nginx configuration file.
+  ``` bash
+  sudo nano /etc/nginx/sites-available/commitment.conf
+  ```
+
+4. Update the configuration file with the below contents. This will redirect and manage traffic to the server. Replace `app_domains` with any domain names you may have acquired, also replace `host_ip` with the IP of the server.
+  ``` bash
+  server {
+      listen 80;
+      server_name app_domains host_ip;
+
+      location /api/ {
+          proxy_pass http://127.0.0.1:8081/;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection 'upgrade';
+          proxy_set_header Host $host;
+          proxy_cache_bypass $http_upgrade;
+      }
+
+      location / {
+          proxy_pass http://127.0.0.1:3000/;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection 'upgrade';
+          proxy_set_header Host $host;
+          proxy_cache_bypass $http_upgrade;
+      }
+  }
+  ```
+
+5. Enable the changes on nginx.
+  ``` bash
+  sudo ln -s /etc/nginx/sites-available/meteor /etc/nginx/sites-enabled/
+  sudo nginx -t
+  sudo systemctl restart nginx
+  ```
+
+### (Optional) SSL Certbot Auth
 
 ### 3. Repository Setup
 
