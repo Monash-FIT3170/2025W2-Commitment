@@ -159,9 +159,9 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                       (row.original.aliases?.length ?? 0) > 0 &&
                       (() => {
                         // Only show aliases with non-null emails
-                        const visibleAliases = row.original.aliases.filter(
-                          (alias) => alias.email
-                        );
+                        const visibleAliases = (
+                          row.original.aliases ?? []
+                        ).filter((alias) => alias.email);
 
                         if (visibleAliases.length === 0) return null;
 
@@ -169,7 +169,7 @@ export function DataTable<TData extends { aliases?: AliasEmail[] }, TValue>({
                           <>
                             {/* Rows for Aliases */}
                             {visibleAliases.map((alias, idx) => (
-                              <React.Fragment key={`${row.id}-alias-${idx}`}>
+                              <React.Fragment key={`${row.id}-alias-${alias.email}`}>
                                 <TableRow className="bg-git-int-secondary hover:bg-git-int-secondary !border-0">
                                   <TableCell
                                     colSpan={columns.length}
