@@ -21,24 +21,32 @@ import {
  * @param data the data to check whether it is up to date or not
  * @returns whether the data is up to date
  */
-export const isUpToDate = async (url: string, data: SerializableRepoData): Promise<boolean> => {
+export const isUpToDate = async (
+  url: string,
+  data: SerializableRepoData
+): Promise<boolean> => {
   // works out a relative directory to work with based on the
   // publisher of the repo and the repo name
   const rel_dir = join(takeFromBack(url.split("/"), 2));
 
   // ensure directory is created
-  const temp_working_dir = await createTempDirectory(`/tmp-clone-dir/${rel_dir}`);
+  const temp_working_dir = await createTempDirectory(
+    `/tmp-clone-dir/${rel_dir}`
+  );
 
   try {
     const latestCommit = getLatestCommit(getAllCommits(data));
     if (latestCommit === null) return false;
+    console.log("string latest date: ", latestCommit.timestamp);
     const lastDate: Date = new Date(latestCommit.timestamp);
 
     // execute commands in local directory
     const commandLocal = executeCommand(temp_working_dir);
 
     // checks whether the repository exists
-    await commandLocal(checkIfExists(url)).then(assertSuccess("Repository does not exist"));
+    await commandLocal(checkIfExists(url)).then(
+      assertSuccess("Repository does not exist")
+    );
 
     // attempts to clone the repository to a local temp directory (that is unique)
     await commandLocal(cloneToLocal(url, temp_working_dir)).then(
@@ -57,14 +65,20 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
     const dates = await Promise.all(
       foundBranches.map((branch: string) =>
         commandLocal(getLastCommitDate(branch))
-          .then(assertSuccess(`Failed to fetch head commit from branch: ${branch}`))
+          .then(
+            assertSuccess(`Failed to fetch head commit from branch: ${branch}`)
+          )
           .then((d: string) => new Date(d.trim()))
       )
     );
     const mostRecentDate = getLatestDate(dates);
 
+    console.log(dates);
+    console.log("most recent: ", mostRecentDate);
+    console.log("last date: ", lastDate);
     // do actual comparison
     if (mostRecentDate === null) throw Error("dates is empty");
+    console.log(!compareDates(mostRecentDate, lastDate));
     return !compareDates(mostRecentDate, lastDate);
   } finally {
     // always delete all contents from the temporary directory
