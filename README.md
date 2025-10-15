@@ -2,15 +2,18 @@
 
 - [Table of Contents](#table-of-contents)
 - [2025W2-Commitment](#2025w2-commitment)
-- [System Requirements](#system-requirements)
-- [Environment Setup](#environment-setup)
-  - [Docker Installation](#docker-installation)
-    - [Select Target Platform](#select-target-platform)
-    - [Install Docker Desktop](#install-docker-desktop)
-    - [Install Verification](#install-verification)
-  - [Building the Environment](#building-the-environment)
-- [Running Project](#running-project)
-  - [Docker Commands](#docker-commands)
+  - [System Requirements](#system-requirements)
+  - [Environment Setup](#environment-setup)
+    - [Docker Installation](#docker-installation)
+      - [Select Target Platform](#select-target-platform)
+      - [Install Docker Desktop](#install-docker-desktop)
+      - [Install Verification](#install-verification)
+    - [Atlas Database Setup](#atlas-database-setup)
+      - [Creating an Atlas Account](#creating-an-atlas-account)
+      - [Setting Up Your Cloud Database](#setting-up-your-cloud-database)
+    - [Building the Environment](#building-the-environment)
+  - [Running Project](#running-project)
+    - [Docker Commands](#docker-commands)
 - [Deployment](#deployment)
   - [Initial Setup](#initial-setup)
     - [1. Acquire Instance](#1-acquire-instance)
@@ -22,8 +25,8 @@
     - [2. NGINX Setup](#2-nginx-setup)
     - [(Optional) SSL Certbot Auth](#optional-ssl-certbot-auth)
     - [3. Repository Setup](#3-repository-setup)
-- [Other Useful Reading](#other-useful-reading)
-- [Contributors ✨](#contributors-)
+  - [Other Useful Reading](#other-useful-reading)
+  - [Contributors ✨](#contributors-)
 
 # 2025W2-Commitment
 
@@ -46,7 +49,7 @@ Commitment is designed to support fairer and more transparent grading in team-ba
 To run this project with **Docker**, **Meteor**, and **Haskell**, to ensure a smooth experience running your development environment must meet the following requirements:
 
 - **OS**: Linux (Ubuntu 22.04+) or macOS (Intel/Apple Silicon), or Windows 10/11 Pro with WSL2
-- **CPU**: Quad-core 64-bit processor (Intel i5/i7, AMD Ryzen 5/7, or Apple M1/M2)
+- **CPU**: **2 Cores** minimum, **Quad-core 64-bit processor** (Intel i5/i7, AMD Ryzen 5/7, or Apple M1/M2) strongly recommended
 - **RAM**: **8 GB** minimum, **16 GB+** strongly recommended
 - **Disk**: **16 GB Free** minimum, **32 GB+** strongly recommended (fast storage for builds and containers)
 
@@ -165,7 +168,7 @@ These commands are useful for working with the container but must be run from th
 | ---------------------------- | ---------------------------------- |
 | Start Container              | `docker-compose start`             |
 | Stop Container               | `docker-compose stop`              |
-| Access Dev Container         | `docker exec -it 3170-build bash`    |
+| Access Dev Container         | `docker exec -it 3170-build bash`  |
 | Access Haskell Container     | `docker exec -it haskell-api bash` |
 | Attach Container to Terminal | `docker attach <container>`        |
 
@@ -358,12 +361,12 @@ Now the everything is setup for deploment. Pushes to main will trigger the workf
 ## Other Useful Reading
 
 Below are useful links for learning a little more about the project from the READMEs scattered throughout.
-| README Name | Info / Description | Link |
-|---------------------|--------------------------------------------------------|------|
-| Mongo Setup | More information on playing with Mongo.| [View README](commitment/server/README_DATA_ENTRY.md) |
-| Mongo Architecture | Documentation on the architecture of Mongo in our application. | [View README](commitment/ARCHITECTURE.md) |
-| Tailwind How-To | Example usage and demos for applying tailwind in the project.| [View README](README.tailwind-colors.md) |
-| Contribution Guide | Guidelines for contributing to the project | [View README](CONTRIBUTING.md) |
+| README Name        | Info / Description                                             | Link                                                 |
+| ------------------ | -------------------------------------------------------------- | ---------------------------------------------------- |
+| Mongo Setup        | More information on playing with Mongo.                        | [View README](commitment/atlas/README_DATA_ENTRY.md) |
+| Mongo Architecture | Documentation on the architecture of Mongo in our application. | [View README](commitment/ARCHITECTURE.md)            |
+| Tailwind How-To    | Example usage and demos for applying tailwind in the project.  | [View README](README.tailwind-colors.md)             |
+| Contribution Guide | Guidelines for contributing to the project                     | [View README](CONTRIBUTING.md)                       |
 
 ## Contributors ✨
 
