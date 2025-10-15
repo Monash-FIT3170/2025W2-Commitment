@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { addDays, format, parse, subMonths } from "date-fns";
+import { addDays, format, parse, subMonths, subWeeks } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { type DateRange } from "react-day-picker";
 import { startOfDay } from "date-fns";
@@ -38,20 +38,37 @@ export function DatePicker({ onChange, defaultValue }: Props) {
 
   // update state change
   React.useEffect(() => {
+    const now = new Date();
+
     const parsedFrom = parse(fromInput, "yyyy-MM-dd", new Date());
-    const parsedTo = parse(toInput, "yyyy-MM-dd", new Date());
+    const parsedToRaw =
+      toInput?.trim() !== ""
+        ? parse(toInput, "yyyy-MM-dd", new Date())
+        : undefined;
+
+    let parsedTo: Date | undefined = parsedToRaw;
+
+    if (parsedTo && !isNaN(parsedTo.getTime())) {
+      // Set current time on parsedTo
+      parsedTo.setHours(
+        now.getHours(),
+        now.getMinutes(),
+        now.getSeconds(),
+        now.getMilliseconds()
+      );
+    }
 
     if (
       !isNaN(parsedFrom.getTime()) &&
-      (!toInput || !isNaN(parsedTo.getTime()))
+      (!parsedTo || !isNaN(parsedTo.getTime()))
     ) {
-      if (parsedTo && parsedFrom && !is12Weeks(parsedFrom, parsedTo)) {
+      if (parsedFrom && parsedTo && !is12Weeks(parsedFrom, parsedTo)) {
         return;
       }
 
       const newRange: DateRange = {
         from: parsedFrom,
-        to: toInput ? parsedTo : undefined,
+        to: parsedTo,
       };
 
       setDate(newRange);
@@ -84,8 +101,8 @@ export function DatePicker({ onChange, defaultValue }: Props) {
   };
 
   const last12Weeks = () => {
-    const to = startOfDay(new Date());
-    const from = startOfDay(addDays(to, -84));
+    const to = new Date();
+    const from = subWeeks(to, 12);
     const range = { from, to };
     setDate(range);
     onChange?.(range);
@@ -185,13 +202,8 @@ export function DatePicker({ onChange, defaultValue }: Props) {
 
               return false;
             }}
-            captionLayout="buttons"
             fromYear={2015}
             toYear={new Date().getFullYear()}
-            components={{
-              IconLeft: () => <ChevronLeft className="w-4 h-4" />,
-              IconRight: () => <ChevronRight className="w-4 h-4" />,
-            }}
             classNames={{
               day_today: "text-black font-normal",
               day_selected:
