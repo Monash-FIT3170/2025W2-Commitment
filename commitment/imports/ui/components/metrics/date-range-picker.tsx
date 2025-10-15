@@ -9,11 +9,7 @@ import { startOfDay } from "date-fns";
 import { cn } from "@ui/lib/utils";
 import { Button } from "@base/button";
 import { Calendar } from "@base/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@base/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@base/popover";
 // import "react-day-picker/dist/style.css";
 
 type Props = {
@@ -22,12 +18,7 @@ type Props = {
 };
 
 export function DatePicker({ onChange, defaultValue }: Props) {
-  const [date, setDate] = React.useState<DateRange | undefined>(
-    defaultValue ?? {
-      from: addDays(new Date(), -20),
-      to: new Date(),
-    }
-  );
+  const [date, setDate] = React.useState<DateRange>() ?? defaultValue;
 
   // constant to set 'from' date
   const [fromInput, setFromInput] = React.useState<string>(

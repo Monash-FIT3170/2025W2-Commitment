@@ -61,7 +61,7 @@ function buildUsers(
   return Object.entries(allMetrics).map(([name, metrics]) => {
     const values = selectedMetrics.map((metricName) => {
       const val = metrics[metricName as keyof typeof metrics];
-      return Number.isFinite(val) ? (val) : null;
+      return Number.isFinite(val) ? val : null;
     });
 
     return { name, values };
@@ -216,13 +216,13 @@ export async function getScaledResults(
   repoData: SerializableRepoData,
   config: ScalingConfig,
   repoUrl: string,
-  userId: string 
+  userId: string
 ): Promise<UserScalingSummary[]> {
   const aliasConfig = await Meteor.callAsync("aliasConfigs.getAllForOwner", userId).catch(
     () => null
   );
   // const aliasConfig = await meteorCallAsync<AliasConfig>("aliasConfigs.getAllForOwner")(userId)
-  
+
   const mappedData =
     aliasConfig && aliasConfig.length
       ? {
@@ -248,10 +248,6 @@ export async function getScaledResults(
             } as ContributorValueWithAliases,
           })),
         };
-
-    
-
-
 
   const updatedContributors = await Promise.all(
     mappedData.contributors.map(async (contributor) => {
@@ -289,7 +285,6 @@ export async function getScaledResults(
     ...mappedData,
     contributors: updatedContributors,
   };
-
 
   const scaledUsers = await scaleUsers(repoUrl, config);
 
