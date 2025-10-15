@@ -200,8 +200,8 @@ const fetchDataFromHaskellAppFromSocket =
         }
       };
 
-      socket.onerror = (_err: WebSocket.ErrorEvent) => {
-        const s = "Encountered a Websocket Error";
+      socket.onerror = (e: WebSocket.ErrorEvent) => {
+        const s = `Encountered a Websocket Error: ${e}`;
         emit(s);
         reject(s);
         socket.close();
