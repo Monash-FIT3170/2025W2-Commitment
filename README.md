@@ -32,7 +32,7 @@
 With Commitment, you can:
 
 - Enter a Git URL to view repository stats or bookmark repos (when signed in).
-- Explore contributor metrics (commits, lines of code, LOC per commit, commit frequency, etc.) filtered by branch and timeframe.
+- Explore contributor metrics (Lines of Code, Lines of Code per Commit, Commits per Day, Total Number of commits) filtered by branch and timeframe.
 - Generate recommended assessment scalings using a variety of strategies (percentiles, mean + standard deviation, quartiles, etc.).
 - Visualize metrics and recommendations through interactive graphs.
 - Upload a Moodle grading sheet to automatically apply scaling before downloading it for submission.
