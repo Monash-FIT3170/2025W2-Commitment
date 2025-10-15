@@ -65,7 +65,7 @@ export const isUpToDate = async (url: string, data: SerializableRepoData): Promi
 
     // do actual comparison
     if (mostRecentDate === null) throw Error("dates is empty");
-    return !compareDates(mostRecentDate, lastDate);
+    return mostRecentDate.valueOf() > lastDate.valueOf();
   } finally {
     // always delete all contents from the temporary directory
     await deleteAllFromDirectory(temp_working_dir);
