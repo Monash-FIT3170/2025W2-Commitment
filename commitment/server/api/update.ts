@@ -72,10 +72,7 @@ export const isUpToDate = async (
       )
     );
     const mostRecentDate = getLatestDate(dates);
-
-    console.log(dates);
-    console.log("most recent: ", mostRecentDate);
-    console.log("last date: ", lastDate);
+    
     // do actual comparison
     if (mostRecentDate === null) throw Error("dates is empty");
     return mostRecentDate.valueOf() <= lastDate.valueOf();
