@@ -171,7 +171,7 @@ data InbetweenCommitData = InbetweenCommitData
   , ibCommitTitle     :: String
   , ibContributorName :: String
   , ibDescription     :: String
-  , ibTimestamp       :: UTCTime
+  , ibTimestamp       :: String
   , involvedFiles     :: [[String]]
   } deriving (Show, Eq)
 
@@ -180,11 +180,10 @@ parseCommitData txt
   | failedOutput txt  = Error txt
   | length blocks < 6 = Error ("has less than 6 blocks: \"" ++ show blocks ++ "\" | txt: \"" ++ txt ++ "\"")
   | otherwise = do
-      ts <- parseTimeM True defaultTimeLocale "%a %b %-d %T %Y %z" (trim $ blocks !! 2)
       return InbetweenCommitData
         { ibCommitHash      = trim $ blocks !! 0
         , ibContributorName = trim $ blocks !! 1
-        , ibTimestamp       = ts
+        , ibTimestamp       = trim $ blocks !! 2
         , ibCommitTitle     = trim $ blocks !! 3
         , ibDescription     = trim $ blocks !! 4
         , involvedFiles     = parseFileLines (drop 5 blocks)

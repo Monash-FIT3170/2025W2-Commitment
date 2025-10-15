@@ -155,7 +155,7 @@ type CommitData = Readonly<{
     commitTitle: string;
     contributorName: string;
     description: string;
-    timestamp: Date;
+    timestamp: string;
     fileData: FileChanges[];
 
 }>;

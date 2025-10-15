@@ -2,7 +2,15 @@ import { SerializableRepoData, CommitData, Maybe } from "@api/types";
 
 // HELPER GRANULAR FUNCTIONS
 
-export const compareDates = (d1: Date, d2: Date): boolean => d1.valueOf() > d2.valueOf();
+export const sortDateFunction = (d1: Date, d2: Date): number => d1.valueOf() - d2.valueOf();
+
+export const sortDateStrings = (d1: string, d2: string): number =>
+  sortDateFunction(new Date(d1), new Date(d2));
+
+export const compareDates = (d1: Date, d2: Date): boolean => d1.valueOf() < d2.valueOf();
+
+export const compareDateStrings = (d1: string, d2: string): boolean =>
+  compareDates(new Date(d1), new Date(d2));
 
 export const takeFromBack = <T>(arr: T[], num: number): T[] => arr.slice(-num);
 
@@ -20,25 +28,28 @@ export const safeNumber = (value: unknown): Maybe<number> => {
 };
 
 export const minValue = <T>(arr: T[], f: (v1: T, v2: T) => boolean): T =>
-  arr.reduce((v1, v2) => (f(v1, v2) ? v1 : v2), arr[0]);
+  arr.reduce((min, cur) => (f(cur, min) ? cur : min));
 
 export const maxValue = <T>(arr: T[], f: (v1: T, v2: T) => boolean): T =>
-  arr.reduce((v1, v2) => (f(v1, v2) ? v2 : v1), arr[0]);
+  arr.reduce((max, cur) => (f(max, cur) ? cur : max));
 
 // FUNCTIONS THAT USE SerializableRepoData or any other type from Types.ts
 
 export const sortCommitsByDate = (data: SerializableRepoData): CommitData[] =>
-  getAllCommits(data).sort(
-    (d1: CommitData, d2: CommitData) => d1.timestamp.valueOf() - d2.timestamp.valueOf()
-  );
+  getAllCommits(data).sort((d1, d2) => sortDateStrings(d1.timestamp, d2.timestamp));
 
-export const getCommitDates = (data: CommitData[]): Date[] => data.map((d) => d.timestamp);
+export const getCommitDates = (data: CommitData[]): Date[] =>
+  data.map((d) => new Date(d.timestamp));
 
 export const getEarliestCommit = (data: CommitData[]): Maybe<CommitData> =>
-  data.length !== 0 ? minValue(data, (d1, d2) => compareDates(d1.timestamp, d2.timestamp)) : null;
+  data.length !== 0
+    ? minValue(data, (d1, d2) => compareDateStrings(d1.timestamp, d2.timestamp))
+    : null;
 
 export const getLatestCommit = (data: CommitData[]): Maybe<CommitData> =>
-  data.length !== 0 ? maxValue(data, (d1, d2) => compareDates(d1.timestamp, d2.timestamp)) : null;
+  data.length !== 0
+    ? maxValue(data, (d1, d2) => compareDateStrings(d1.timestamp, d2.timestamp))
+    : null;
 
 export const getEarliestDate = (data: Date[]): Maybe<Date> =>
   data.length !== 0 ? minValue(data, compareDates) : null;
