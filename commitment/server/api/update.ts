@@ -78,8 +78,7 @@ export const isUpToDate = async (
     console.log("last date: ", lastDate);
     // do actual comparison
     if (mostRecentDate === null) throw Error("dates is empty");
-    console.log(!compareDates(mostRecentDate, lastDate));
-    return !compareDates(mostRecentDate, lastDate);
+    return mostRecentDate.valueOf() <= lastDate.valueOf();
   } finally {
     // always delete all contents from the temporary directory
     await deleteAllFromDirectory(temp_working_dir);
