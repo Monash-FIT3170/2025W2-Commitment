@@ -73,7 +73,7 @@ Meteor.methods({
 // Load environment variables
 dotenv.config();
 const DEV_API_CONN_ENDPOINT = "haskell-api:8081";
-const DEPLOYMENT_API_CONN_ENDPOINT = process.env.API_CONN_ENDPOINT; // "54.66.80.27:8081";
+const DEPLOYMENT_API_CONN_ENDPOINT = process.env.API_CONN_ENDPOINT;
 const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT || DEV_API_CONN_ENDPOINT;
 
 type ApiFetchStruct = {
