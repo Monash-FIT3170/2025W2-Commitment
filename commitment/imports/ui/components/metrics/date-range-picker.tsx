@@ -109,7 +109,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
   };
 
   const lastMonth = () => {
-    const to = startOfDay(new Date());
+    const to = new Date();
     const from = startOfDay(subMonths(to, 1));
     const range = { from, to };
 
@@ -118,7 +118,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
   };
 
   const lastWeek = () => {
-    const to = startOfDay(new Date());
+    const to = new Date();
     const from = startOfDay(addDays(to, -7));
     const range = { from, to };
     setDate(range);
