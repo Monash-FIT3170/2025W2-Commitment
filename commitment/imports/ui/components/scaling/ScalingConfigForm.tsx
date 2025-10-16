@@ -235,10 +235,22 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
                             placeholder="Lower"
                             className="border rounded px-2 py-1 w-24"
                             disabled={!selectedMetrics.includes(metric)}
-                            maxLength={5} // limit to 5 characters
+                            maxLength={5}
+                            onKeyDown={(e) => {
+                              // Allow: backspace, delete, arrows, tab
+                              if (
+                                !/[0-9]/.test(e.key) &&
+                                e.key !== "Backspace" &&
+                                e.key !== "Delete" &&
+                                e.key !== "ArrowLeft" &&
+                                e.key !== "ArrowRight" &&
+                                e.key !== "Tab"
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
                             onChange={(e) => {
-                              // Only allow digits
-                              const val = e.target.value.replace(/\D/g, "");
+                              const val = e.target.value;
                               form.setValue(
                                 `ranges.${metric}.lower` as any,
                                 val ? parseInt(val) : undefined
@@ -253,9 +265,21 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
                             placeholder="Upper"
                             className="border rounded px-2 py-1 w-24"
                             disabled={!selectedMetrics.includes(metric)}
-                            maxLength={5} // limit to 5 characters
+                            maxLength={5}
+                            onKeyDown={(e) => {
+                              if (
+                                !/[0-9]/.test(e.key) &&
+                                e.key !== "Backspace" &&
+                                e.key !== "Delete" &&
+                                e.key !== "ArrowLeft" &&
+                                e.key !== "ArrowRight" &&
+                                e.key !== "Tab"
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
                             onChange={(e) => {
-                              const val = e.target.value.replace(/\D/g, "");
+                              const val = e.target.value;
                               form.setValue(
                                 `ranges.${metric}.upper` as any,
                                 val ? parseInt(val) : undefined
