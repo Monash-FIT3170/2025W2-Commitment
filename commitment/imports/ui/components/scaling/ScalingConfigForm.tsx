@@ -189,7 +189,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
             />
           )}
 
-          {/* RANGED SCALING INPUTS */}
+          {/* RANGED SCALING */}
           {selectedMethod === "Ranged Scaling" && (
             <FormField
               control={form.control}
@@ -197,7 +197,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
               render={() => (
                 <FormItem>
                   <FormLabel className="font-bold justify-center mb-2">
-                    Enter metric ranges
+                    Select metrics and enter ranges
                   </FormLabel>
                   <div className="flex flex-col gap-2">
                     {metricOptions.map((metric) => (
@@ -205,14 +205,36 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
                         key={metric}
                         className="flex items-center space-x-2"
                       >
-                        <FormLabel className="font-normal w-40">
+                        <FormControl>
+                          <Checkbox
+                            checked={selectedMetrics.includes(metric)}
+                            onCheckedChange={(checked) => {
+                              const value = selectedMetrics || [];
+                              form.setValue(
+                                "metrics",
+                                checked
+                                  ? [...value, metric]
+                                  : value.filter((v) => v !== metric)
+                              );
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel
+                          className={`font-normal w-40 ${
+                            !selectedMetrics.includes(metric)
+                              ? "text-gray-400"
+                              : ""
+                          }`}
+                        >
                           {metric}
                         </FormLabel>
+
                         <FormControl>
                           <input
                             type="number"
                             placeholder="Lower"
-                            className="border rounded px-2 py-1 w-24"
+                            className="border rounded px-1 py-0.1 w-24"
+                            disabled={!selectedMetrics.includes(metric)}
                             onChange={(e) => {
                               const val = e.target.valueAsNumber;
                               form.setValue(
@@ -226,7 +248,8 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
                           <input
                             type="number"
                             placeholder="Upper"
-                            className="border rounded px-2 py-1 w-24"
+                            className="border rounded px-2 py-0.1 w-24"
+                            disabled={!selectedMetrics.includes(metric)}
                             onChange={(e) => {
                               const val = e.target.valueAsNumber;
                               form.setValue(
