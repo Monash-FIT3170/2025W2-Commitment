@@ -83,7 +83,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
       if (isSmallGroupCache[repoUrl] !== undefined) {
         setMethodOptions(
           isSmallGroupCache[repoUrl]
-            ? ["Compact Scaling"]
+            ? ["Compact Scaling, Ranged Scaling"]
             : ["Percentiles", "Mean +/- Std", "Quartiles"]
         );
         return;
