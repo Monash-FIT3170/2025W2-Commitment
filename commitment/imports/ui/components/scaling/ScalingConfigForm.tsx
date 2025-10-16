@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Meteor } from "meteor/meteor";
 import {
   Form,
@@ -8,22 +8,14 @@ import {
   FormControl,
   FormMessage,
 } from "@base/form";
-import { UploadIcon } from "lucide-react";
 import { Checkbox } from "@base/checkbox";
 import { RadioGroup, RadioGroupItem } from "@base/radio-group";
 import { Button } from "@base/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  RepositoryData,
-  FilteredData,
-  UserScalingSummary,
-  SerialisableMapObject,
-} from "@api/types";
 import { useLocation } from "react-router-dom";
-import { config } from "process";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "./dropzone";
+import { UserScalingSummary } from "/imports/api/types";
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
@@ -40,12 +32,18 @@ interface ScalingConfigFormProps {
   ) => void;
 }
 
+interface ScalingViewLocationState {
+repoUrl?: string;
+}
+
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
-  const repoUrl: string = location.state?.repoUrl ?? null;
 
-  const [script, setScript] = useState<File[] | undefined>();
+  const state = location.state as ScalingViewLocationState | null;
+  const repoUrl: string | null = state?.repoUrl ?? null;
 
+  //   Make a repo call here to get the number of contributors
+  
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
@@ -54,16 +52,72 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     },
   });
 
-  const handleDrop = (files: File[]) => setScript(files);
   const handleSubmit = async (data: ScalingConfig) => {
     try {
-      const result = await Meteor.callAsync("getScalingResults", data, repoUrl);
+      const result = (await Meteor.callAsync(
+        "getScalingResults",
+        data,
+        repoUrl
+      )) as UserScalingSummary[];
 
       onSubmit(data, result); // this is where all the scaling starts from
     } catch (err) {
       console.error("Error:", err);
     }
   };
+
+  const [isSmallGroupCache, setIsSmallGroupCache] = useState<
+    Record<string, boolean>
+  >({});
+  const [methodOptions, setMethodOptions] = useState<string[]>([
+    "Percentiles",
+    "Mean +/- Std",
+    "Quartiles",
+  ]);
+
+  useEffect(() => {
+    const fetchSmallGroup = async () => {
+      if (!repoUrl) return;
+
+      // check cache first
+      if (isSmallGroupCache[repoUrl] !== undefined) {
+        setMethodOptions(
+          isSmallGroupCache[repoUrl]
+            ? ["Compact Scaling"]
+            : ["Percentiles", "Mean +/- Std", "Quartiles"]
+        );
+        return;
+      }
+
+      try {
+        const result = (await Meteor.callAsync(
+          "isSmallContributorGroup",
+          repoUrl,
+          15
+        )) as boolean;
+
+        // update cache
+        setIsSmallGroupCache((prev) => ({ ...prev, [repoUrl]: result }));
+
+        setMethodOptions(
+          result
+            ? ["Compact Scaling"]
+            : ["Percentiles", "Mean +/- Std", "Quartiles"]
+        );
+      } catch (err) {
+        console.error("Error checking contributor group size:", err);
+      }
+    };
+
+    void fetchSmallGroup();
+  }, [repoUrl, isSmallGroupCache]);
+
+  // Automatically select the first method option whenever it changes
+  useEffect(() => {
+    if (methodOptions.length > 0) {
+      form.setValue("method", methodOptions[0]);
+    }
+  }, [methodOptions, form]);
 
   const metricOptions = [
     "Total No. Commits",
@@ -72,7 +126,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     "LOC Per Commit",
     "Commits Per Day",
   ];
-  const methodOptions = ["Percentiles", "Mean +/- Std", "Quartiles"];
 
   return (
     <div className="w-full">
@@ -80,7 +133,13 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         <div className="text-2xl font-bold mb-4 text-center">
           Generate Scaling
         </div>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void form.handleSubmit(handleSubmit)(e);
+          }}
+          className="space-y-6"
+        >
           {/* METRICS CHECKBOXES */}
           <FormField
             control={form.control}
@@ -136,7 +195,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     {methodOptions.map((m) => (
                       <FormItem
@@ -155,58 +214,10 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
               </FormItem>
             )}
           />
-
-          {/* FILE UPLOAD */}
-          {/* <FormField
-            control={form.control}
-            name="customScript"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-bold justify-center">
-                  Custom scaling? Upload a Python script:
-                </FormLabel>
-                <FormControl>
-                  <Dropzone
-                    onDrop={(files) => {
-                      handleDrop(files);
-                      field.onChange(files);
-                    }}
-                    onError={console.error}
-                    src={script}
-                    accept={{ ".py": [] }}
-                    maxFiles={1}
-                    className="border-2 border-dashed border-muted-foreground rounded-md transition-colors hover:border-primary focus:border-primary"
-                  >
-                    <DropzoneEmptyState>
-                      <div className="flex flex-col items-center w-full py-4">
-                        <UploadIcon
-                          size={32}
-                          className="mb-2 text-muted-foreground"
-                        />
-                        <div className="text-center w-full">
-                          <p className="font-medium text-sm mb-1">
-                            Upload a Python file
-                          </p>
-                          <p className="text-muted-foreground text-xs mb-0.5">
-                            Drag and drop or click to select
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            Accepted: <span className="font-mono">.py</span>
-                          </p>
-                        </div>
-                      </div>
-                    </DropzoneEmptyState>
-                    <DropzoneContent />
-                  </Dropzone>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
-
           <div className="flex justify-center">
             <Button
               type="submit"
+              disabled={!form.watch("method")}
               className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-full px-8"
             >
               Next
