@@ -19,12 +19,29 @@ export type CommandResult = Readonly<{
   stdError: string | null;
 }>;
 
-export const successful = (res: CommandResult): boolean => res.error == null;
+export const anyFailedOuptut = (msg: string): boolean =>
+  [
+    "fatal:",
+    "error:",
+    "could not",
+    "not a git repository",
+    "Process exited with code",
+    "Encountered error",
+    "Process timed out",
+  ]
+    .map((s: string) => msg.startsWith(s))
+    .reduce((acc: boolean, b: boolean) => acc || b, false);
+
+const successful = (res: CommandResult): boolean => {
+  const stderr = res.stdError?.toLowerCase() || "";
+  const isFailed = anyFailedOuptut(stderr);
+  return !res.error && !isFailed;
+};
 
 export const getErrorMsg = (res: CommandResult): string => {
   if (res.error) return res.error.message;
   else if (res.stdError) return res.stdError;
-  throw Error(`Command was successful: ${res.cmd}`);
+  throw Error(`Command was successful: ${JSON.stringify(res, null, 2)}`);
 };
 
 export const assertSuccess =
@@ -110,7 +127,11 @@ export const createDirectory =
     // Ensure the base directory is absolute
     // mkdir requires the prefix to be a full path
     const absBase = path.resolve(baseDir);
-    return await fs_promise.mkdir(path.join(absBase, prefix), { recursive: true });
+    const tmpPath = path.join(absBase, prefix);
+    await fs_promise.mkdir(tmpPath, {
+      recursive: true,
+    });
+    return tmpPath;
   };
 
 export const createTempDirectory = createDirectory(os.tmpdir());

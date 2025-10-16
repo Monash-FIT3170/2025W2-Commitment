@@ -1,6 +1,12 @@
 import { SerializableRepoData } from "@api/types";
-import { CommitData } from "@api/types";
-import { getAllCommits } from "/server/helper_functions";
+import {
+  join,
+  takeFromBack,
+  compareDates,
+  getLatestCommit,
+  getLatestDate,
+  getAllCommits,
+} from "/server/helper_functions";
 import {
   Command,
   assertSuccess,
@@ -10,55 +16,70 @@ import {
   deleteAllFromDirectory,
 } from "./shell";
 
-const compareDates = (d1: Date, d2: Date): boolean => d1.valueOf() > d2.valueOf();
-
-const takeFromBack = <T>(arr: T[], num: number): T[] => arr.slice(-num);
-
-const join = (arr: string[]): string => arr.reduce((acc, i) => acc + i, "");
-
 /**
  * checks whether a repository splat is up to date with the real version on github (doesn't need to clone anything to the server, can just use remote query)
  * @param data the data to check whether it is up to date or not
  * @returns whether the data is up to date
  */
-export const isUpToDate = async (url: string, data: SerializableRepoData): Promise<boolean> => {
-  const lastCommitFromDatabase: Date = getAllCommits(data).reduce(
-    (acc: Date, c: CommitData) => (compareDates(acc, c.timestamp) ? acc : c.timestamp),
-    new Date(0) // git didn't exist here so its fine :D
-  );
-
+export const isUpToDate = async (
+  url: string,
+  data: SerializableRepoData
+): Promise<boolean> => {
   // works out a relative directory to work with based on the
   // publisher of the repo and the repo name
   const rel_dir = join(takeFromBack(url.split("/"), 2));
 
   // ensure directory is created
-  const temp_working_dir = await createTempDirectory(`/tmp-clone-dir/${rel_dir}`);
-
-  // execute commands in local directory
-  const commandLocal = executeCommand(temp_working_dir);
-
-  // checks whether the repository exists
-  const output1 = await commandLocal(checkIfExists(url)).then(
-    assertSuccess("Repository does not exist")
-  );
-  const hash = output1.split("\t")[0];
-
-  // attempts to clone the repository to a local temp directory (that is unique)
-  await commandLocal(cloneToLocal(url, temp_working_dir)).then(
-    assertSuccess("Failed to clone the repo")
+  const temp_working_dir = await createTempDirectory(
+    `/tmp-clone-dir/${rel_dir}`
   );
 
-  // gets the date that HEAD was pushed
-  const date = await commandLocal(getDateFrom(hash)).then(
-    assertSuccess("Failed to fetch the HEAD commit details")
-  );
+  try {
+    const latestCommit = getLatestCommit(getAllCommits(data));
+    if (latestCommit === null) return false;
+    console.log("string latest date: ", latestCommit.timestamp);
+    const lastDate: Date = new Date(latestCommit.timestamp);
 
-  // delete all contents from the temporary directory
-  await deleteAllFromDirectory(temp_working_dir);
+    // execute commands in local directory
+    const commandLocal = executeCommand(temp_working_dir);
 
-  // do actual comparison
-  const dateObj = new Date(date);
-  return !compareDates(dateObj, lastCommitFromDatabase);
+    // checks whether the repository exists
+    await commandLocal(checkIfExists(url)).then(
+      assertSuccess("Repository does not exist")
+    );
+
+    // attempts to clone the repository to a local temp directory (that is unique)
+    await commandLocal(cloneToLocal(url, temp_working_dir)).then(
+      assertSuccess("Failed to clone the repo")
+    );
+
+    const foundBranches = await commandLocal(getAllBranches())
+      .then(assertSuccess("Failed to fetch branches"))
+      .then((s: string) =>
+        s
+          .split("\n")
+          .map((s: string) => s.trim())
+          .filter((s: string) => s !== "")
+      );
+
+    const dates = await Promise.all(
+      foundBranches.map((branch: string) =>
+        commandLocal(getLastCommitDate(branch))
+          .then(
+            assertSuccess(`Failed to fetch head commit from branch: ${branch}`)
+          )
+          .then((d: string) => new Date(d.trim()))
+      )
+    );
+    const mostRecentDate = getLatestDate(dates);
+    
+    // do actual comparison
+    if (mostRecentDate === null) throw Error("dates is empty");
+    return mostRecentDate.valueOf() <= lastDate.valueOf();
+  } finally {
+    // always delete all contents from the temporary directory
+    await deleteAllFromDirectory(temp_working_dir);
+  }
 };
 
 const checkIfExists = (url: string): Command => ({
@@ -71,7 +92,13 @@ const cloneToLocal = (url: string, path: string): Command => ({
   cmd: `git -c credential.helper= -c core.askPass=true clone --bare \"${url}\" \"${path}\"`,
 });
 
-const getDateFrom = (hash: string): Command => ({
+const getAllBranches = (): Command => ({
   ...doNotLogData,
-  cmd: `git show -s --format=%ci ${hash}`,
+  cmd: `git --no-pager branch -a --format=\"%(refname:short)\"`,
+});
+
+const getLastCommitDate = (branch: string): Command => ({
+  ...doNotLogData,
+  // gets the timestamp of the last commit from the branch
+  cmd: `git log -1 --format=%cI \"${branch}\"`,
 });
