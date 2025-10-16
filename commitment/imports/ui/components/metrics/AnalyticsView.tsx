@@ -189,9 +189,9 @@ export function AnalyticsView(): React.JSX.Element {
   if (!analytics) return <div>No repo data available</div>;
 
   return (
-    <div className="w-full h-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated">
+    <div className="w-full h-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated dark:bg-git-bg-primary">
       <div className="flex flex-col gap-32">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-4  bg-git-bg-elevated">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-4  bg-git-bg-elevated dark:bg-git-bg-primary">
           {/* Header */}
           <div className="mb-6 flex justify-between">
             <div className="flex flex-col pr-20">

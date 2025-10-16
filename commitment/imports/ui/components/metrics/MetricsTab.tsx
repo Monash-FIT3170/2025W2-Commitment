@@ -24,7 +24,7 @@ const allTabData: TabData[] = [
 
 export default function MetricsTabs() {
   const isLoggedIn = useAuth();
-  const [activeTab, setActiveTab] = React.useState("metrics"); // ✅ Add this
+  const [activeTab, setActiveTab] = React.useState("metrics");
 
   const visibleTabs = allTabData.filter(
     (tab) => !tab.requiresAuth || isLoggedIn
@@ -32,13 +32,32 @@ export default function MetricsTabs() {
 
   return (
     <Tabs
-      value={activeTab} // ✅ Use controlled tab value
-      onValueChange={setActiveTab} // ✅ Allow switching
-      className="w-full bg-git-bg-elevated justify-items-start"
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full bg-git-bg-secondary dark:bg-git-bg-primary justify-items-start"
     >
-      <TabsList className="w-full flex justify-start bg-git-bg-elevated">
+      <TabsList className="w-full flex justify-start bg-git-bg-elevated dark:bg-git-bg-tertiary">
         {visibleTabs.map(({ value, label }) => (
-          <TabsTrigger key={value} value={value}>
+          <TabsTrigger
+            key={value}
+            value={value}
+            className={`
+              relative px-4 text-lg font-medium text-foreground
+              bg-git-bg-elevated dark:bg-git-bg-tertiary hover:bg-git-tabs-hovered
+              border-b border-git-stroke-primary/40
+              data-[state=active]:bg-git-tabs-active
+              data-[state=active]:git-tabs-hovered
+              data-[state=active]:after:content-['']
+              data-[state=active]:after:absolute
+              data-[state=active]:after:bottom-0
+              data-[state=active]:after:left-0
+              data-[state=active]:after:w-full
+              data-[state=active]:after:h-0.5
+              data-[state=active]:after:bg-orange-500
+              rounded-none border-none shadow-none focus:outline-hidden
+              transition-all
+            `}
+          >
             {label}
           </TabsTrigger>
         ))}
