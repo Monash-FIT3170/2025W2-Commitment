@@ -1,4 +1,5 @@
 import { Meteor } from "meteor/meteor";
+import { Subject } from "rxjs";
 
 import { getFilteredRepoDataServer } from "./filter";
 import { tryFromDatabaseSerialised } from "./api/caching";
@@ -19,6 +20,7 @@ import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 import { executeCommand, assertSuccess } from "./api/shell";
 import { checkIfExists } from "./api/git_commands";
+import { getNumberOfContributors } from "./helper_functions";
 
 export async function getFilteredRepoData(
   repoUrl: string,
@@ -118,12 +120,19 @@ Meteor.methods({
   },
 
   async getScalingResults(data: ScalingConfig, repoUrl: string) {
-    return getScaledResults(
-      await tryFromDatabaseSerialised(repoUrl, null),
-      data,
-      repoUrl,
-      "" // null string for now as Yoonus is TODO fix this
-    );
+    return getScaledResults(await tryFromDatabaseSerialised(repoUrl, null), data, repoUrl);
+  },
+
+  async isSmallContributorGroup(repoUrl: string = "", largestSize: number = 4): Promise<boolean> {
+    const n = new Subject<string>();
+
+    const result = getNumberOfContributors(await tryFromDatabaseSerialised(repoUrl, n));
+
+    console.log("result: ", result);
+
+    if (result <= largestSize) return true;
+
+    return false;
   },
 });
 

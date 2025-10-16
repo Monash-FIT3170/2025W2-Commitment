@@ -21,7 +21,8 @@ function Calendar({
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-between pt-1 relative items-center gap-2 px-2",
-        caption_label: "text-sm font-medium capitalize",
+        caption_label:
+          "text-sm font-medium capitalize mx-auto px-6 text-center",
         nav: "space-x-1 flex items-center",
         caption_dropdowns: "flex justify-center gap-2",
         nav_button: cn(
@@ -57,14 +58,6 @@ function Calendar({
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
         ...classNames,
-      }}
-      components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronLeft className={cn("h-4 w-4", className)} {...props} />
-        ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronRight className={cn("h-4 w-4", className)} {...props} />
-        ),
       }}
       {...props}
     />
