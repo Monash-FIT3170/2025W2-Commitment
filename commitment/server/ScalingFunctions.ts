@@ -178,38 +178,37 @@ const scoringStrategies: Record<string, ScoreFn> = {
         return Math.min(avgScaled, maxScale);
     },
     
-    "Ranged Scaling": (scales, idx, users, selectedMetrics) => {
-        if (!scales.length) return 1;
+   "Ranged Scaling": (rawValues, idx, users, selectedMetrics) => {
+        if (!rawValues.length) return 1;
 
-        // For each metric, compute a smooth linear scaling based on lower/upper bounds
-        const scaledMetrics = scales.map((v, i) => {
+        console.log("rawValues",rawValues)
+
+        const scaledMetrics: number[] = [];
+
+        rawValues.forEach((v, i) => {
             const metricRange = (users[idx] as UserWithRanges).metricRanges?.[selectedMetrics[i]];
-            if (v == null || !metricRange) return 0.5;
-
-            const lower = metricRange.lower ?? Number.MIN_SAFE_INTEGER;
-            const upper = metricRange.upper ?? Number.MAX_SAFE_INTEGER;
-            const range = upper - lower || 1;
-            const maxScale = 1.2;
-            const minScale = 0;
-
-            let scale = 1;
-
-            if (v < lower) {
-                // outside low: scale drops faster
-                scale = 1 + (v - lower) / (range * 0.5);
-            } else if (v > upper) {
-                // outside high: scale rises faster
-                scale = 1 + (v - upper) / (range * 0.5);
-            } else {
-                // inside range: linear from 0.9 to 1.1 (instead of subtle 0.95–1.05)
-                scale = 1 + ((v - lower) / range - 0.5) * 0.4; // maps mid-range to 1, edges to ~0.8–1.2
+            if (v == null || !metricRange || metricRange.lower == null || metricRange.upper == null) {
+            
+            return;
             }
 
-            return Math.min(Math.max(scale, minScale), maxScale);
+            const { lower, upper } = metricRange;
+            const range = upper - lower || 1;
+
+            let scale: number;
+
+            if (v < lower) {
+            scale = 1 + (v - lower) / (range * 0.5);
+            } else if (v > upper) {
+            scale = 1 + (v - upper) / (range * 0.5);
+            } else {
+            scale = 1 + ((v - lower) / range - 0.5) * 0.4;
+            }
+
+            scaledMetrics.push(Math.min(Math.max(scale, 0), 1.2));
         });
 
-
-
+        if (!scaledMetrics.length) return 1; // fallback if no metric had ranges
         return scaledMetrics.reduce((a, b) => a + b, 0) / scaledMetrics.length;
     },
 
@@ -248,10 +247,16 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
 
   return users.map((user, idx) => {
-    const scales = metricsValues.map((col) => col[idx]);
+    // if Ranged Scaling, use raw user.values (with null -> 0), else use normalized metrics
+    const scales =
+        method === "Ranged Scaling"
+        ? user.values.map((v) => (v ?? 0)) // raw metrics
+        : metricsValues.map((col) => col[idx]); // normalized metrics
+
     const score = scoreFn(scales, idx, users, selectedMetrics);
     return { name: user.name, score: Math.round(score * 100) / 100 };
-  });
+    });
+
 }
 
 
