@@ -34,16 +34,16 @@ export default function MetricsTabs() {
     <Tabs
       value={activeTab}
       onValueChange={setActiveTab}
-      className="w-full bg-git-bg-elevated dark:bg-git-bg-primary justify-items-start"
+      className="w-full bg-git-bg-secondary dark:bg-git-bg-primary justify-items-start"
     >
-      <TabsList className="w-full flex justify-start bg-git-bg-elevated">
+      <TabsList className="w-full flex justify-start bg-git-bg-elevated dark:bg-git-bg-tertiary">
         {visibleTabs.map(({ value, label }) => (
           <TabsTrigger
             key={value}
             value={value}
             className={`
               relative px-4 text-lg font-medium text-foreground
-              bg-git-bg-elevated hover:bg-git-tabs-hovered
+              bg-git-bg-elevated dark:bg-git-bg-tertiary hover:bg-git-tabs-hovered
               border-b border-git-stroke-primary/40
               data-[state=active]:bg-git-tabs-active
               data-[state=active]:git-tabs-hovered
