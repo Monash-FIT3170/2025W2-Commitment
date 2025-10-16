@@ -17,10 +17,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "react-router-dom";
 import { UserScalingSummary } from "/imports/api/types";
 
+// Add ranges to Zod schema
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
   method: z.string().nonempty("Select a method"),
   customScript: z.any().optional(),
+  ranges: z
+    .record(
+      z.object({
+        lower: z.number().min(0).max(99999).optional(),
+        upper: z.number().min(0).max(99999).optional(),
+      })
+    )
+    .optional(),
 });
 
 export type ScalingConfig = z.infer<typeof scalingConfigSchema>;

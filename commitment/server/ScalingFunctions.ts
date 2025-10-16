@@ -46,6 +46,14 @@ Compact Scaling - Smooth values using tanh, floor 0.5 ceiling 1.2 (tries to give
 Default	- Simple mean of normalized metrics	
  */
 
+type UserWithRanges = {
+  name: string;
+  values: (number | null)[];
+  metricRanges?: Record<string, { lower?: number; upper?: number }>;
+};
+
+
+
 //
 // ---------- Normalization helpers! ----------
 //
@@ -80,8 +88,13 @@ function percentileRank(values: number[], value: number): number {
  */
 function buildUsers(
   allMetrics: AllMetricsData,
-  selectedMetrics: string[]
-): { name: string; values: (number | null)[] }[] {
+  selectedMetrics: string[],
+  ranges?: Record<string, { lower?: number; upper?: number }>
+): { 
+  name: string; 
+  values: (number | null)[]; 
+  metricRanges?: Record<string, { lower?: number; upper?: number }>
+}[] {
 
   return Object.entries(allMetrics).map(([name, metrics]) => ({
     name,
@@ -89,8 +102,10 @@ function buildUsers(
       const val = metrics[metricName as keyof typeof metrics];
       return Number.isFinite(val) ? val : null;
     }),
+    metricRanges: ranges, // attach ranges if provided
   }));
 }
+
 
 //
 // ---------- Scoring strategies ----------
@@ -162,6 +177,41 @@ const scoringStrategies: Record<string, ScoreFn> = {
 
         return Math.min(avgScaled, maxScale);
     },
+    
+    "Ranged Scaling": (scales, idx, users, selectedMetrics) => {
+        if (!scales.length) return 1;
+
+        // For each metric, compute a smooth linear scaling based on lower/upper bounds
+        const scaledMetrics = scales.map((v, i) => {
+            const metricRange = (users[idx] as UserWithRanges).metricRanges?.[selectedMetrics[i]];
+            if (v == null || !metricRange) return 0.5;
+
+            const lower = metricRange.lower ?? Number.MIN_SAFE_INTEGER;
+            const upper = metricRange.upper ?? Number.MAX_SAFE_INTEGER;
+            const range = upper - lower || 1;
+            const maxScale = 1.2;
+            const minScale = 0;
+
+            let scale = 1;
+
+            if (v < lower) {
+                // outside low: scale drops faster
+                scale = 1 + (v - lower) / (range * 0.5);
+            } else if (v > upper) {
+                // outside high: scale rises faster
+                scale = 1 + (v - upper) / (range * 0.5);
+            } else {
+                // inside range: linear from 0.9 to 1.1 (instead of subtle 0.95–1.05)
+                scale = 1 + ((v - lower) / range - 0.5) * 0.4; // maps mid-range to 1, edges to ~0.8–1.2
+            }
+
+            return Math.min(Math.max(scale, minScale), maxScale);
+        });
+
+
+
+        return scaledMetrics.reduce((a, b) => a + b, 0) / scaledMetrics.length;
+    },
 
     Default: (scales) => scales.reduce((a, b) => a + b, 0) / scales.length, // just calculates the mean (average) of the user’s normalized metric values
 };
@@ -180,20 +230,22 @@ const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits 
  * @returns array of {name, scale} 
  */
 async function scaleUsers(repoUrl: string, config: ScalingConfig) {
+  const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData;
 
-    const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // IS CASTING LIKE THIS OKAY?
+  const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
+  const method = config.method ?? "Percentiles";
 
-    const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
-    const method = config.method ?? "Percentiles";
+  // Build users and optionally attach metricRanges
+  const users = buildUsers(allMetrics, selectedMetrics, method === "Ranged Scaling" ? config.ranges : undefined);
+  if (!users.length) return [];
 
-    const users = buildUsers(allMetrics, selectedMetrics);
-    if (!users.length) return [];
+  // Build normalized/scaled metric values
+  const metricsValues: number[][] = selectedMetrics.map((_, colIdx) => {
+    const values = users.map((u) => u.values[colIdx]);
+    return normaliseMetric(values);
+  });
 
-    const metricsValues = selectedMetrics.map((_, i) =>
-        normaliseMetric(users.map((u) => u.values[i]))
-        );
-
-    const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
+  const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
 
   return users.map((user, idx) => {
     const scales = metricsValues.map((col) => col[idx]);
@@ -201,6 +253,7 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
     return { name: user.name, score: Math.round(score * 100) / 100 };
   });
 }
+
 
 //
 // ---------- Main exported function ----------
