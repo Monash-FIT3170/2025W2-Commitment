@@ -144,47 +144,85 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
           className="space-y-6"
         >
           {/* METRICS CHECKBOXES */}
-          <FormField
-            control={form.control}
-            name="metrics"
-            render={() => (
-              <FormItem>
-                <FormLabel className="font-bold justify-center">
-                  Select scaling metrics<span className="text-red-500">*</span>
-                </FormLabel>
-                <div className="flex flex-col gap-2">
-                  {metricOptions.map((metric) => (
-                    <FormField
-                      key={metric}
-                      control={form.control}
-                      name="metrics"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(metric)}
-                              onCheckedChange={(checked) => {
-                                const value = field.value || [];
-                                field.onChange(
-                                  checked
-                                    ? [...value, metric]
-                                    : value.filter((v) => v !== metric)
-                                );
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {metric}
-                          </FormLabel>
-                        </FormItem>
-                      )}
+          {/* METRICS CHECKBOXES */}
+          {selectedMethod !== "Ranged Scaling" && (
+            <FormField
+              control={form.control}
+              name="metrics"
+              render={() => (
+                <FormItem>
+                  <FormLabel className="font-bold justify-center">
+                    Select scaling metrics
+                    <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <div className="flex flex-col gap-2">
+                    {metricOptions.map((metric) => (
+                      <FormField
+                        key={metric}
+                        control={form.control}
+                        name="metrics"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(metric)}
+                                onCheckedChange={(checked) => {
+                                  const value = field.value || [];
+                                  field.onChange(
+                                    checked
+                                      ? [...value, metric]
+                                      : value.filter((v) => v !== metric)
+                                  );
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              {metric}
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {/* RANGED SCALING INPUTS */}
+          {selectedMethod === "Ranged Scaling" && (
+            <FormItem>
+              <FormLabel className="font-bold justify-center">
+                Enter metric ranges
+              </FormLabel>
+              <div className="flex flex-col gap-2">
+                {metricOptions.map((metric) => (
+                  <div key={metric} className="flex items-center gap-2">
+                    <span className="w-40">{metric}</span>
+                    <input
+                      type="number"
+                      placeholder="Lower"
+                      className="border rounded px-2 py-1 w-24"
+                      onChange={(e) => {
+                        const val = e.target.valueAsNumber;
+                        form.setValue(`ranges.${metric}.lower` as any, val);
+                      }}
                     />
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    <input
+                      type="number"
+                      placeholder="Upper"
+                      className="border rounded px-2 py-1 w-24"
+                      onChange={(e) => {
+                        const val = e.target.valueAsNumber;
+                        form.setValue(`ranges.${metric}.upper` as any, val);
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </FormItem>
+          )}
 
           {/* METHOD RADIO BUTTONS */}
           <FormField
