@@ -62,12 +62,6 @@ function ScalingView(): JSX.Element {
 
   const isLoggedIn = useAuth();
 
-  // useEffect(() => {
-  //   if (isLoggedIn === false) {
-  //     navigate("/dashboard");
-  //   }
-  // }, [isLoggedIn, navigate]);
-
   useEffect(() => {
     if (!repoUrl) return;
 
