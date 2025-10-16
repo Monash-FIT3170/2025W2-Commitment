@@ -6,6 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@base/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
 interface DropdownMenuCheckboxesProps {
   branches: string[];
@@ -19,13 +20,16 @@ export default function BranchDropdownMenu({
   onChange,
 }: DropdownMenuCheckboxesProps): React.JSX.Element {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
           className="w-[300px] justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40"
         >
-          {selected ?? "Select a branch"}
+          <span className="w-full truncate text-left flex justify-between items-center">
+            {selected ?? "Select a branch"}
+            <ChevronDown className="h-4 w-4 opacity-50" />
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[280px]  focus:ring-0 border-2 border-git-stroke-primary/40">

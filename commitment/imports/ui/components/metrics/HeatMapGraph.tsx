@@ -5,6 +5,14 @@ import { CardHeader, CardTitle } from "@base/card";
 import InfoButton from "@base/infoButton";
 import { HeatMapData } from "@api/types";
 import { ModeToggle } from "./ModeToggle";
+import type { ApexOptions } from "apexcharts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@base/select";
 
 // Types
 interface HeatmapPoint<X extends string | number = string> {
@@ -28,9 +36,10 @@ interface NormalizedSeries<X extends string | number = string> {
 interface Props {
   data: HeatMapData[];
   title?: string;
+  setGraphType?: (v: "percentile" | "heatmap") => void;
 }
 
-type Mode =  "week" | "month";
+type Mode = "week" | "month";
 
 // ------- helpers -------
 function startOfDay(d: Date) {
@@ -100,8 +109,12 @@ function buildContinuousMonthCategories(data: HeatMapData[]): string[] {
   if (data.length === 0) return [];
 
   const dates = data.map((d) => new Date(d.date));
-  const minDate = startOfMonth(new Date(Math.min(...dates.map((d) => d.getTime()))));
-  const maxDate = startOfMonth(new Date(Math.max(...dates.map((d) => d.getTime()))));
+  const minDate = startOfMonth(
+    new Date(Math.min(...dates.map((d) => d.getTime())))
+  );
+  const maxDate = startOfMonth(
+    new Date(Math.max(...dates.map((d) => d.getTime())))
+  );
 
   const categories: string[] = [];
   for (
@@ -113,7 +126,6 @@ function buildContinuousMonthCategories(data: HeatMapData[]): string[] {
   }
   return categories;
 }
-
 
 function getMonthLabel(dateStr: string) {
   const d = new Date(dateStr);
@@ -130,13 +142,8 @@ function processHeatMapData(data: HeatMapData[], mode: Mode) {
   const keyToFirstDay = new Map<string, Date>();
   const makeKeyAndFirstDate = (dateStr: string) => {
     const d = new Date(dateStr);
-    if ( mode === "week-fill") {
-      const monday = alignToMonday(d);
-      return { key: getWeekLabel(dateStr), first: monday };
-    } 
-      const first = startOfMonth(d);
-      return { key: getMonthLabel(dateStr), first };
-    
+    const first = startOfMonth(d);
+    return { key: getMonthLabel(dateStr), first };
   };
 
   for (const r of data) {
@@ -240,6 +247,7 @@ function getLevels() {
 export default function HeatMapGraph({
   data,
   title,
+  setGraphType,
 }: Props): React.ReactElement {
   const [mode, setMode] = React.useState<Mode>("week");
   const { series, categories, users } = useMemo(
@@ -262,7 +270,7 @@ export default function HeatMapGraph({
   );
 
   const rowHeight = 50;
-  const minHeight = 408;
+  const minHeight = 594;
   const maxHeight = 800;
   const dynamicHeight = Math.max(
     minHeight,
@@ -286,7 +294,14 @@ export default function HeatMapGraph({
 
   const totals = useMemo(() => computeRowTotals(sortedSeries), [sortedSeries]);
 
-  const chartOptions = useMemo(
+  const apexSeries = React.useMemo<ApexAxisChartSeries>(() => {
+    return chartSeries.map((s) => ({
+      name: s.name,
+      data: s.data.map((p) => ({ x: p.x as any, y: p.y, raw: p.raw } as any)),
+    }));
+  }, [chartSeries]);
+
+  const chartOptions = useMemo<ApexOptions>(
     () => ({
       chart: {
         type: "heatmap" as const,
@@ -359,7 +374,7 @@ export default function HeatMapGraph({
           style: {
             fontSize: "14px",
             fontWeight: 500,
-            colors: getCssVarValue("--color-foreground"),
+            colors: [getCssVarValue("--color-foreground")],
           },
         },
       },
@@ -371,7 +386,7 @@ export default function HeatMapGraph({
           style: {
             fontSize: "0.875rem",
             fontWeight: "300",
-            colors: getCssVarValue("--color-foreground"),
+            colors: [getCssVarValue("--color-foreground")],
           },
 
           formatter: (label: string) => {
@@ -397,10 +412,9 @@ export default function HeatMapGraph({
         style: {
           fontSize: "14px",
           fontFamily: "inherit",
-          color: getCssVarValue("--color-foreground"), // 👈 custom text color
         },
         x: {
-          formatter: (label: string) => label,
+          formatter: (val: number) => String(val),
         },
         y: {
           formatter(
@@ -452,18 +466,34 @@ export default function HeatMapGraph({
       <CardHeader className="pb-0">
         <CardTitle className="flex justify-between flex-wrap text-xl mt-0 font-bold gap-2">
           <div className="flex gap-2">
-            <span className="whitespace-nowrap">{title ?? "Contributions Heatmap"}</span>
+            <span className="">
+              {title ?? "Contributions Heatmap"}
+            </span>
             <div className="relative -mt-3">
               <InfoButton description="Each cell represents a user's contributions during a specific time period. The color intensity reflects how close their activity is to the highest contribution made by any user in that period" />
             </div>
           </div>
-          <ModeToggle value={mode} onChange={(v: Mode) => setMode(v)} />
+            <ModeToggle value={mode} onChange={(v: Mode) => setMode(v)} />
+          <div >
+            <Select defaultValue="heatmap"
+              onValueChange={setGraphType ? (v: "percentile" | "heatmap") => setGraphType(v) : undefined}
+             
+            >
+              <SelectTrigger className="w-[180px] bg-git-bg-elevated text-git-foreground font-normal shadow-none"  >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="heatmap">Heatmap</SelectItem>
+                <SelectItem value="percentile">Percentile</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardTitle>
       </CardHeader>
 
       <Chart
         options={chartOptions}
-        series={chartSeries}
+        series={apexSeries}
         type="heatmap"
         width="100%"
         height={dynamicHeight}

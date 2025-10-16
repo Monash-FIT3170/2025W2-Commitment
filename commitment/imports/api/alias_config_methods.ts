@@ -1,8 +1,10 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { AliasConfigsCollection, StudentAlias } from './alias_configs';
-import { ContributorData, SerializableRepoData, UnmappedContributor } from './types';
+import { ContributorData, RepositoryData, SerializableRepoData, UnmappedContributor } from './types';
 import { applyAliasMappingIfNeeded } from '/server/alias_mapping';
+import { tryFromDatabaseSerialised } from '/server/api/caching';
+import { meteorCallAsync } from './meteor_interface';
 
 Meteor.methods({
     /**
@@ -129,7 +131,7 @@ Meteor.methods({
         }
 
         // Get repo data
-        const repo: SerializableRepoData = await Meteor.callAsync("repoCollection.getData", repoUrl);
+        const repo = tryFromDatabaseSerialised(repoUrl, null);
 
         // Apply alias mapping if user has a config
         const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId);

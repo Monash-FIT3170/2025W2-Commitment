@@ -12,6 +12,7 @@ import {
   Selections,
   AllMetricsData,
   MetricType,
+  RepositoryData,
 } from "@api/types";
 
 import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
@@ -19,10 +20,11 @@ import { applyAliasMappingIfNeeded } from "./alias_mapping";
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
 import { spawn } from "child_process";
+import { getNumberOfContributors } from "./helper_functions";
 
 export async function getFilteredRepoData(  repoUrl:string, startDate:Date, endDate:Date, branch:string, contributor:string[]):Promise<FilteredData>{
     // Get full repository data from db
-    const repo = await Meteor.callAsync("repoCollection.getData", repoUrl) as SerializableRepoData;
+    const repo =  tryFromDatabaseSerialised(repoUrl, null);
 
     // Apply alias mapping if user has config
     const userId = Meteor.userId();
@@ -125,10 +127,24 @@ Meteor.methods({
     return getScaledResults(
       await tryFromDatabaseSerialised(repoUrl, null),
       data,
-      repoUrl,
-      "" // null string for now as Yoonus is TODO fix this
+      repoUrl
     );
   },
+
+
+  async isSmallContributorGroup(repoUrl: string = "", largestSize: number = 4): Promise<boolean> {
+
+    const n = new Subject<string>();
+
+    const result = getNumberOfContributors(await tryFromDatabaseSerialised(repoUrl, n));
+
+    console.log("result: ",result);
+    
+    if (result <= largestSize)
+      return true;
+
+    return false;
+  }
 });
 
 export const getFilteredData = async ({
@@ -223,8 +239,7 @@ export const getAnalyticsData = async ({
         : metadata.branches.includes("master")
         ? "master"
         : metadata.branches[0]),
-    selectedContributors:
-      !contributors || contributors.length === 0 ? metadata.contributors : contributors,
+    selectedContributors: contributors ?? metadata.contributors,
     selectedMetrics: metric,
     selectedDateRange: {
       from: startDate || metadata.dateRange.from,
