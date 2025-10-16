@@ -231,30 +231,34 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
                         <FormControl>
                           <input
-                            type="number"
+                            type="text"
                             placeholder="Lower"
-                            className="border rounded px-1 py-0.1 w-24"
+                            className="border rounded px-2 py-1 w-24"
                             disabled={!selectedMetrics.includes(metric)}
+                            maxLength={5} // limit to 5 characters
                             onChange={(e) => {
-                              const val = e.target.valueAsNumber;
+                              // Only allow digits
+                              const val = e.target.value.replace(/\D/g, "");
                               form.setValue(
                                 `ranges.${metric}.lower` as any,
-                                val
+                                val ? parseInt(val) : undefined
                               );
                             }}
                           />
                         </FormControl>
+
                         <FormControl>
                           <input
-                            type="number"
+                            type="text"
                             placeholder="Upper"
-                            className="border rounded px-2 py-0.1 w-24"
+                            className="border rounded px-2 py-1 w-24"
                             disabled={!selectedMetrics.includes(metric)}
+                            maxLength={5} // limit to 5 characters
                             onChange={(e) => {
-                              const val = e.target.valueAsNumber;
+                              const val = e.target.value.replace(/\D/g, "");
                               form.setValue(
                                 `ranges.${metric}.upper` as any,
-                                val
+                                val ? parseInt(val) : undefined
                               );
                             }}
                           />
