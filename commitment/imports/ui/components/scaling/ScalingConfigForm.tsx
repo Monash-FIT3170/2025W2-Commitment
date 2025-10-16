@@ -33,7 +33,7 @@ interface ScalingConfigFormProps {
 }
 
 interface ScalingViewLocationState {
-repoUrl?: string;
+  repoUrl?: string;
 }
 
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
@@ -43,7 +43,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const repoUrl: string | null = state?.repoUrl ?? null;
 
   //   Make a repo call here to get the number of contributors
-  
+
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
@@ -83,7 +83,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
       if (isSmallGroupCache[repoUrl] !== undefined) {
         setMethodOptions(
           isSmallGroupCache[repoUrl]
-            ? ["Compact Scaling, Ranged Scaling"]
+            ? ["Compact Scaling", "Ranged Scaling"]
             : ["Percentiles", "Mean +/- Std", "Quartiles"]
         );
         return;
