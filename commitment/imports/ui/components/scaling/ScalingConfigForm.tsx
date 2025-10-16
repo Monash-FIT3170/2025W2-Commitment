@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Meteor } from "meteor/meteor";
 import {
   Form,
@@ -8,20 +8,14 @@ import {
   FormControl,
   FormMessage,
 } from "@base/form";
-import { UploadIcon } from "lucide-react";
 import { Checkbox } from "@base/checkbox";
 import { RadioGroup, RadioGroupItem } from "@base/radio-group";
 import { Button } from "@base/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  RepositoryData,
-  FilteredData,
-  UserScalingSummary,
-  SerialisableMapObject,
-} from "@api/types";
 import { useLocation } from "react-router-dom";
+import { UserScalingSummary } from "/imports/api/types";
 
 const scalingConfigSchema = z.object({
   metrics: z.array(z.string()).min(1, "Select at least one metric"),
@@ -49,9 +43,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const repoUrl: string | null = state?.repoUrl ?? null;
 
   //   Make a repo call here to get the number of contributors
-
-  const [script, setScript] = useState<File[] | undefined>();
-
+  
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
