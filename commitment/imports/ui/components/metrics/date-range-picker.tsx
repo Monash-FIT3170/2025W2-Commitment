@@ -18,7 +18,7 @@ type Props = {
 };
 
 export function DatePicker({ onChange, defaultValue }: Props) {
-  const [date, setDate] = React.useState<DateRange>() ?? defaultValue;
+  const [date, setDate] = React.useState<DateRange | undefined>(defaultValue);
 
   // constant to set 'from' date
   const [fromInput, setFromInput] = React.useState<string>(
