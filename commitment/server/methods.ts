@@ -22,7 +22,7 @@ import { spawn } from "child_process";
 
 export async function getFilteredRepoData(  repoUrl:string, startDate:Date, endDate:Date, branch:string, contributor:string[]):Promise<FilteredData>{
     // Get full repository data from db
-    const repo = await Meteor.callAsync("repoCollection.getData", repoUrl) as SerializableRepoData;
+    const repo =  tryFromDatabaseSerialised(repoUrl, null);
 
     // Apply alias mapping if user has config
     const userId = Meteor.userId();
@@ -223,8 +223,7 @@ export const getAnalyticsData = async ({
         : metadata.branches.includes("master")
         ? "master"
         : metadata.branches[0]),
-    selectedContributors:
-      !contributors || contributors.length === 0 ? metadata.contributors : contributors,
+    selectedContributors: contributors ?? metadata.contributors,
     selectedMetrics: metric,
     selectedDateRange: {
       from: startDate || metadata.dateRange.from,

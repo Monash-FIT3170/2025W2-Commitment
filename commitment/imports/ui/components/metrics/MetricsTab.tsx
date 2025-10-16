@@ -1,9 +1,4 @@
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@base/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@base/tabs";
 import React from "react";
 import { AnalyticsView } from "./AnalyticsView";
 import ScalingView from "../scaling/ScalingView";

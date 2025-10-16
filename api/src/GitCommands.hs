@@ -57,7 +57,7 @@ getContributorEmails name = doNotLogData
 
 getCommitDetails :: String -> Command
 getCommitDetails hash = doNotLogData
-  { command = "git show \"--pretty=format:%H" ++ delim ++ "%an" ++ delim ++ "%ad" ++ delim ++ "%s" ++ delim ++ "%b" ++ delim ++ "\" \"--name-status\" " ++ hash 
+  { command = "git show \"--pretty=format:%H" ++ delim ++ "%an" ++ delim ++ "%cI" ++ delim ++ "%s" ++ delim ++ "%b" ++ delim ++ "\" \"--name-status\" " ++ hash 
   }
 
 getCommitDiff :: String -> Command

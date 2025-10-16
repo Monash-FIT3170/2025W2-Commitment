@@ -18,7 +18,7 @@ import {
   LineGraph,
   Leaderboard,
   ScalingDistributionResult,
-  ScalingDistributionGraph
+  ScalingDistributionGraph,
 } from "@api/types";
 
 import {
@@ -31,6 +31,7 @@ import {
   getCommitPerDayPerContributor,
   getNumberOfContributors,
   getTotalBranches,
+  getAllCommits,
 } from "./helper_functions";
 
 import {
@@ -62,7 +63,6 @@ import { getScalingDistributionResult } from "./scaling_distribution";
 /**
  * FUNCTIONS FOR HIGHLIGHTS
  */
-
 
 /**
  * Returns the total commits in a repository for a highlight card.
@@ -143,7 +143,7 @@ export const highlightTotalLinesOfCode = (
   }
 
   return {
-    total: getTotalLinesOfCode(unfilteredData),
+    total: getTotalLinesOfCode(getAllCommits(unfilteredData)),
     percentageChange,
     isPositive: percentageChange > 0,
     data: linesOfCodeOverTime,
@@ -159,10 +159,7 @@ export const returnHighlightData = (data: SerializableRepoData): Highlights =>
   } as Highlights);
 
 // -------- THIS FUNCTION NEEDS TO BE CALLED FIRST -----------------------
-export function getAllGraphData(
-  data: FilteredData,
-  selectedMetric: MetricType
-): MetricsData {
+export function getAllGraphData(data: FilteredData, selectedMetric: MetricType): MetricsData {
   // get all the metrics based on the AnalyticsData structure
 
   let leaderboard: Leaderboard;
@@ -170,7 +167,6 @@ export function getAllGraphData(
   let pieChart: PieChart;
   let heatMap: Heatmap;
   let scalingDistribution: ScalingDistributionGraph;
-
 
   switch (selectedMetric) {
     case MetricType.LOC:
@@ -335,7 +331,6 @@ export const getAllMetricsFromData = (repoData: SerializableRepoData): AllMetric
 
   return allMetricData;
 };
-
 
 export function getMetricString(): string[] {
   return ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
