@@ -219,8 +219,7 @@ export const getAnalyticsData = async ({
         : metadata.branches.includes("master")
         ? "master"
         : metadata.branches[0]),
-    selectedContributors:
-      !contributors || contributors.length === 0 ? metadata.contributors : contributors,
+    selectedContributors: contributors ?? metadata.contributors,
     selectedMetrics: metric,
     selectedDateRange: {
       from: startDate || metadata.dateRange.from,
