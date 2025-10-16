@@ -144,7 +144,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
           className="space-y-6"
         >
           {/* METRICS CHECKBOXES */}
-          {/* METRICS CHECKBOXES */}
           {selectedMethod !== "Ranged Scaling" && (
             <FormField
               control={form.control}
@@ -192,36 +191,57 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
           {/* RANGED SCALING INPUTS */}
           {selectedMethod === "Ranged Scaling" && (
-            <FormItem>
-              <FormLabel className="font-bold justify-center">
-                Enter metric ranges
-              </FormLabel>
-              <div className="flex flex-col gap-2">
-                {metricOptions.map((metric) => (
-                  <div key={metric} className="flex items-center gap-2">
-                    <span className="w-40">{metric}</span>
-                    <input
-                      type="number"
-                      placeholder="Lower"
-                      className="border rounded px-2 py-1 w-24"
-                      onChange={(e) => {
-                        const val = e.target.valueAsNumber;
-                        form.setValue(`ranges.${metric}.lower` as any, val);
-                      }}
-                    />
-                    <input
-                      type="number"
-                      placeholder="Upper"
-                      className="border rounded px-2 py-1 w-24"
-                      onChange={(e) => {
-                        const val = e.target.valueAsNumber;
-                        form.setValue(`ranges.${metric}.upper` as any, val);
-                      }}
-                    />
+            <FormField
+              control={form.control}
+              name="metrics"
+              render={() => (
+                <FormItem>
+                  <FormLabel className="font-bold justify-center mb-2">
+                    Enter metric ranges
+                  </FormLabel>
+                  <div className="flex flex-col gap-2">
+                    {metricOptions.map((metric) => (
+                      <FormItem
+                        key={metric}
+                        className="flex items-center space-x-2"
+                      >
+                        <FormLabel className="font-normal w-40">
+                          {metric}
+                        </FormLabel>
+                        <FormControl>
+                          <input
+                            type="number"
+                            placeholder="Lower"
+                            className="border rounded px-2 py-1 w-24"
+                            onChange={(e) => {
+                              const val = e.target.valueAsNumber;
+                              form.setValue(
+                                `ranges.${metric}.lower` as any,
+                                val
+                              );
+                            }}
+                          />
+                        </FormControl>
+                        <FormControl>
+                          <input
+                            type="number"
+                            placeholder="Upper"
+                            className="border rounded px-2 py-1 w-24"
+                            onChange={(e) => {
+                              const val = e.target.valueAsNumber;
+                              form.setValue(
+                                `ranges.${metric}.upper` as any,
+                                val
+                              );
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </FormItem>
+                </FormItem>
+              )}
+            />
           )}
 
           {/* METHOD RADIO BUTTONS */}
