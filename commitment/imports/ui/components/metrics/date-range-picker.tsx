@@ -134,9 +134,24 @@ export function DatePicker({ onChange, defaultValue }: Props) {
 
   const [warning, setWarning] = React.useState<string | null>(null);
 
+  const [currentMonth, setCurrentMonth] = React.useState<Date>(
+    date?.from ?? date?.to ?? new Date()
+  );
+
+  const [open, setOpen] = React.useState(false);
+
   return (
     <div className={cn("grid gap-2 ")}>
-      <Popover>
+      <Popover
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+
+          if (o && (date?.from || date?.to)) {
+            setCurrentMonth(date?.from ?? date?.to ?? new Date());
+          }
+        }}
+      >
         <PopoverTrigger asChild>
           <Button
             id="date"
@@ -189,7 +204,8 @@ export function DatePicker({ onChange, defaultValue }: Props) {
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={subMonths(new Date(), 1)}
+            month={currentMonth}
+            onMonthChange={setCurrentMonth}
             selected={date}
             onSelect={handleCalendarSelect}
             numberOfMonths={2}
