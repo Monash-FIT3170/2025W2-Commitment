@@ -48,7 +48,7 @@ export const updateRepo = async (
   notifier.next(upToDate);
   if (!upToDate) {
     const ret = await fetchRepo(url, msgs, false);
-    msgs !== null ? msgs.next("Data is ready for viewing!") : null;
+    emitValue(msgs)("Data is ready for viewing!")
     return ret;
   }
   return false;

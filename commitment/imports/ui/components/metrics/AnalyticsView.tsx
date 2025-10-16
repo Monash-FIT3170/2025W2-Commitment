@@ -28,8 +28,7 @@ type MainGraphType = "heatmap" | "percentile";
 // -----------------------------
 export function AnalyticsView(): React.JSX.Element {
   const location = useLocation();
-  const repoUrl: string | null =
-    location.state?.repoUrl ?? localStorage.getItem("lastRepoUrl");
+  const repoUrl: string | null = location.state?.repoUrl ?? localStorage.getItem("lastRepoUrl");
   const metricsPageDescription =
     "This page gives an overview of key metrics and performance trends.";
 
@@ -43,15 +42,9 @@ export function AnalyticsView(): React.JSX.Element {
     return { from, to };
   });
 
-  const [selectedBranch, setSelectedBranch] = useState<string | undefined>(
-    undefined
-  );
-  const [selectedContributors, setSelectedContributors] = useState<string[]>(
-    []
-  );
-  const [selectedMetrics, setSelectedMetrics] = useState<MetricType>(
-    MetricType.TOTAL_COMMITS
-  );
+  const [selectedBranch, setSelectedBranch] = useState<string | undefined>(undefined);
+  const [selectedContributors, setSelectedContributors] = useState<string[]>([]);
+  const [selectedMetrics, setSelectedMetrics] = useState<MetricType>(MetricType.TOTAL_COMMITS);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -158,13 +151,7 @@ export function AnalyticsView(): React.JSX.Element {
         setLoading(false);
       }
     );
-  }, [
-    repoUrl,
-    selectedBranch,
-    selectedContributors,
-    dateRange,
-    selectedMetrics,
-  ]);
+  }, [repoUrl, selectedBranch, selectedContributors, dateRange, selectedMetrics]);
 
   // Fetch when component mounts or filters change
   useEffect(() => {
@@ -172,9 +159,7 @@ export function AnalyticsView(): React.JSX.Element {
   }, [fetchAnalyticsData]);
 
   useEffect(() => {
-    const navEntries = performance.getEntriesByType(
-      "navigation"
-    ) as PerformanceNavigationTiming[];
+    const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
     const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
 
     if (!isReload || !repoUrl) return;
@@ -211,9 +196,7 @@ export function AnalyticsView(): React.JSX.Element {
           <div className="mb-6 flex justify-between">
             <div className="flex flex-col pr-20">
               <div className="flex items-center gap-4 ">
-                <h1 className="text-3xl text-foreground font-robotoFlex mt-4">
-                  Metrics
-                </h1>
+                <h1 className="text-3xl text-foreground font-robotoFlex mt-4">Metrics</h1>
                 <InfoButton description={metricsPageDescription} />
               </div>
               <div className="h-[2px] bg-git-stroke-primary w-full mt-2" />
@@ -238,9 +221,7 @@ export function AnalyticsView(): React.JSX.Element {
                 />
               </div>
               <div className="flex flex-col">
-                <div className="text-sm text-git-text-secondary">
-                  Contributors*
-                </div>
+                <div className="text-sm text-git-text-secondary">Contributors*</div>
                 <ContributorDropdownMenu
                   contributors={analytics.metadata.contributors}
                   selected={selectedContributors}
@@ -252,9 +233,7 @@ export function AnalyticsView(): React.JSX.Element {
                 <MetricDropdownMenu
                   metrics={metricNames}
                   selected={selectedMetrics}
-                  onChange={(value: string) =>
-                    setSelectedMetrics(value as MetricType)
-                  }
+                  onChange={(value: string) => setSelectedMetrics(value as MetricType)}
                 />
               </div>
             </div>
@@ -267,12 +246,8 @@ export function AnalyticsView(): React.JSX.Element {
                 <HighlightCardWithGraph
                   title="Total Commits"
                   value={analytics.metrics.highlights.totalCommits.total}
-                  percentageChange={
-                    analytics.metrics.highlights.totalCommits.percentageChange
-                  }
-                  isPositive={
-                    analytics.metrics.highlights.totalCommits.isPositive
-                  }
+                  percentageChange={analytics.metrics.highlights.totalCommits.percentageChange}
+                  isPositive={analytics.metrics.highlights.totalCommits.isPositive}
                   data={analytics.metrics.highlights.totalCommits.data}
                 />
                 {/* <HighlightCardWithGraph
@@ -282,13 +257,8 @@ export function AnalyticsView(): React.JSX.Element {
                 <HighlightCardWithGraph
                   title="Total Lines of Code"
                   value={analytics.metrics.highlights.totalLinesOfCode.total}
-                  percentageChange={
-                    analytics.metrics.highlights.totalLinesOfCode
-                      .percentageChange
-                  }
-                  isPositive={
-                    analytics.metrics.highlights.totalLinesOfCode.isPositive
-                  }
+                  percentageChange={analytics.metrics.highlights.totalLinesOfCode.percentageChange}
+                  isPositive={analytics.metrics.highlights.totalLinesOfCode.isPositive}
                   data={analytics.metrics.highlights.totalLinesOfCode.data}
                 />
               </div>
@@ -313,9 +283,7 @@ export function AnalyticsView(): React.JSX.Element {
                 <ContributionPieChart
                   data={analytics.metrics.contributors.pieChart.data}
                   title={analytics.metrics.contributors.pieChart.title}
-                  xAxisLabel={
-                    analytics.metrics.contributors.leaderboard.xAxisLabel
-                  }
+                  xAxisLabel={analytics.metrics.contributors.leaderboard.xAxisLabel}
                 />
               </div>
             </div>
@@ -325,9 +293,7 @@ export function AnalyticsView(): React.JSX.Element {
               {mainGraph === "percentile" ? (
                 <PercentileGraph
                   data={analytics.metrics.contributors.scalingDistribution.data}
-                  title={
-                    analytics.metrics.contributors.scalingDistribution.title
-                  }
+                  title={analytics.metrics.contributors.scalingDistribution.title}
                   setGraphType={setMainGraph}
                 />
               ) : (
