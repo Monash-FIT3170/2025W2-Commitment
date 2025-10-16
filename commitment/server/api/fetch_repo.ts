@@ -201,7 +201,9 @@ const fetchDataFromHaskellAppFromSocket =
       };
 
       socket.onerror = (e: WebSocket.ErrorEvent) => {
-        const s = `Encountered a Websocket Error: ${e}`;
+        const s = e.error
+          ? `Encountered a WebSocket error: ${e.error.message}`
+          : "Encountered an unknown WebSocket error";
         emit(s);
         reject(s);
         socket.close();
@@ -209,7 +211,7 @@ const fetchDataFromHaskellAppFromSocket =
     });
 
 const SOCKET_PATH = "/tmp/haskell-ipc.sock";
-const MAX_PAYLOAD_SIZE_MB = 100;
+const MAX_PAYLOAD_SIZE_MB = 250;
 
 /**
  * Fetches the repository data structure from the Haskell API
