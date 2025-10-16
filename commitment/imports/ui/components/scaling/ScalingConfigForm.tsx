@@ -45,6 +45,8 @@ interface ScalingViewLocationState {
   repoUrl?: string;
 }
 
+const smallGroupCache: Record<string, boolean> = {};
+
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
 
@@ -75,9 +77,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     }
   };
 
-  const [isSmallGroupCache, setIsSmallGroupCache] = useState<
-    Record<string, boolean>
-  >({});
   const [methodOptions, setMethodOptions] = useState<string[]>([
     "Percentiles",
     "Mean +/- Std",
@@ -88,19 +87,18 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const selectedMetrics = form.watch("metrics");
 
   useEffect(() => {
-    const fetchSmallGroup = async () => {
-      if (!repoUrl) return;
+    if (!repoUrl) return;
 
-      // check cache first
-      if (isSmallGroupCache[repoUrl] !== undefined) {
-        setMethodOptions(
-          isSmallGroupCache[repoUrl]
-            ? ["Compact Scaling", "Ranged Scaling"]
-            : ["Percentiles", "Mean +/- Std", "Quartiles"]
-        );
-        return;
-      }
+    if (smallGroupCache[repoUrl] !== undefined) {
+      setMethodOptions(
+        smallGroupCache[repoUrl]
+          ? ["Compact Scaling", "Ranged Scaling"]
+          : ["Percentiles", "Mean +/- Std", "Quartiles"]
+      );
+      return; // skip Meteor call
+    }
 
+    (async () => {
       try {
         const result = (await Meteor.callAsync(
           "isSmallContributorGroup",
@@ -108,21 +106,19 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
           15
         )) as boolean;
 
-        // update cache
-        setIsSmallGroupCache((prev) => ({ ...prev, [repoUrl]: result }));
+        // store in module-level cache
+        smallGroupCache[repoUrl] = result;
 
         setMethodOptions(
           result
-            ? ["Compact Scaling"]
+            ? ["Compact Scaling", "Ranged Scaling"]
             : ["Percentiles", "Mean +/- Std", "Quartiles"]
         );
       } catch (err) {
         console.error("Error checking contributor group size:", err);
       }
-    };
-
-    void fetchSmallGroup();
-  }, [repoUrl, isSmallGroupCache]);
+    })();
+  }, [repoUrl]);
 
   // Automatically select the first method option whenever it changes
   useEffect(() => {
