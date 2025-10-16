@@ -77,6 +77,20 @@ function percentileRank(values: number[], value: number): number {
   return index === -1 ? 0.5 : index / (sorted.length - 1 || 1);
 }
 
+function tanhScale(value: number, lower: number, upper: number, floor = 0.5, ceil = 1.2) {
+  const mid = (upper + lower) / 2;
+  const range = upper - lower || 1;
+
+  const normalized = (value - mid) / (range / 2); // maps range -> [-1, 1]
+  const scaled = Math.tanh(normalized);          // smooth [-1,1] curve
+
+  console.log("scaled",scaled)
+  console.log("final scale:",(floor + ((scaled + 1) / 2) * (ceil - floor)))
+  return floor + ((scaled + 1) / 2) * (ceil - floor); // map to [floor, ceil]
+}
+
+
+
 //
 // ---------- User building ----------
 //
@@ -90,11 +104,7 @@ function buildUsers(
   allMetrics: AllMetricsData,
   selectedMetrics: string[],
   ranges?: Record<string, { lower?: number; upper?: number }>
-): { 
-  name: string; 
-  values: (number | null)[]; 
-  metricRanges?: Record<string, { lower?: number; upper?: number }>
-}[] {
+): UserWithRanges[] {
 
   return Object.entries(allMetrics).map(([name, metrics]) => ({
     name,
@@ -186,27 +196,18 @@ const scoringStrategies: Record<string, ScoreFn> = {
         const scaledMetrics: number[] = [];
 
         rawValues.forEach((v, i) => {
-            const metricRange = (users[idx] as UserWithRanges).metricRanges?.[selectedMetrics[i]];
-            if (v == null || !metricRange || metricRange.lower == null || metricRange.upper == null) {
-            
-            return;
-            }
+            const metricRange = users[idx].metricRanges?.[selectedMetrics[i]];
+
+            if (v == null || !metricRange || metricRange.lower == null || metricRange.upper == null) return;
 
             const { lower, upper } = metricRange;
-            const range = upper - lower || 1;
 
-            let scale: number;
+            // use tanh or sigmoid for smooth scaling
+            const scale = tanhScale(v, lower, upper);
 
-            if (v < lower) {
-            scale = 1 + (v - lower) / (range * 0.5);
-            } else if (v > upper) {
-            scale = 1 + (v - upper) / (range * 0.5);
-            } else {
-            scale = 1 + ((v - lower) / range - 0.5) * 0.4;
-            }
-
-            scaledMetrics.push(Math.min(Math.max(scale, 0), 1.2));
+            scaledMetrics.push(scale);
         });
+
 
         if (!scaledMetrics.length) return 1; // fallback if no metric had ranges
         return scaledMetrics.reduce((a, b) => a + b, 0) / scaledMetrics.length;
@@ -235,7 +236,12 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   const method = config.method ?? "Percentiles";
 
   // Build users and optionally attach metricRanges
-  const users = buildUsers(allMetrics, selectedMetrics, method === "Ranged Scaling" ? config.ranges : undefined);
+  const users: UserWithRanges[] = buildUsers(
+    allMetrics,
+    selectedMetrics,
+    method === "Ranged Scaling" ? config.ranges : undefined
+    );
+
   if (!users.length) return [];
 
   // Build normalized/scaled metric values
