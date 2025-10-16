@@ -28,7 +28,7 @@ export async function getFilteredRepoData(
   contributor: string[]
 ): Promise<FilteredData> {
   // Get full repository data from db
-  const repo = (await Meteor.callAsync("repoCollection.getData", repoUrl)) as SerializableRepoData;
+  const repo = await tryFromDatabaseSerialised(repoUrl, null);
 
   // Apply alias mapping if user has config
   const userId = Meteor.userId();
