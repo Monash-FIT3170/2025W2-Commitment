@@ -104,6 +104,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
     const to = new Date();
     const from = subWeeks(to, 12);
     const range = { from, to };
+    setWarning(null);
     setDate(range);
     onChange?.(range);
   };
@@ -112,7 +113,7 @@ export function DatePicker({ onChange, defaultValue }: Props) {
     const to = new Date();
     const from = startOfDay(subMonths(to, 1));
     const range = { from, to };
-
+    setWarning(null);
     setDate(range);
     onChange?.(range);
   };
@@ -121,11 +122,13 @@ export function DatePicker({ onChange, defaultValue }: Props) {
     const to = new Date();
     const from = startOfDay(addDays(to, -7));
     const range = { from, to };
+    setWarning(null);
     setDate(range);
     onChange?.(range);
   };
 
   const clearDates = () => {
+    setWarning(null);
     setDate(undefined);
     setFromInput("");
     setToInput("");
