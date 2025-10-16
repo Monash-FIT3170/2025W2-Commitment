@@ -75,6 +75,9 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     "Quartiles",
   ]);
 
+  const selectedMethod = form.watch("method");
+  const selectedMetrics = form.watch("metrics");
+
   useEffect(() => {
     const fetchSmallGroup = async () => {
       if (!repoUrl) return;
