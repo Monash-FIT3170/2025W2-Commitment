@@ -159,7 +159,7 @@ function GitRepoInputSection() {
         // Check if repository exists before processing
         const exists = await checkRepositoryExists(repoUrl);
         setIsCheckingExistence(false);
-        
+      
         if (!exists) {
           setValidationError('Repository not found or not accessible. Please check the URL and try again.');
           setIsProcessing(false);

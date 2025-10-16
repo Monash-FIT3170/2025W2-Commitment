@@ -6,7 +6,11 @@ import dotenv from "dotenv";
 
 import { RepositoryData, SerializableRepoData } from "@api/types";
 import { assertRepoTyping, serializeRepoData } from "@api/serialisation";
-import { cacheIntoDatabase, tryFromDatabaseViaLatest, isInDatabase } from "./caching";
+import {
+  cacheIntoDatabase,
+  tryFromDatabaseViaLatest,
+  isInDatabase,
+} from "./caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -67,8 +71,10 @@ Meteor.methods({
 // Load environment variables
 dotenv.config();
 const DEV_API_CONN_ENDPOINT = "haskell-api:8081";
-const DEPLOYMENT_API_CONN_ENDPOINT = process.env.API_CONN_ENDPOINT; // "54.66.80.27:8081";
+const DEPLOYMENT_API_CONN_ENDPOINT = process.env.API_CONN_ENDPOINT;
 const API_CONN_ENDPOINT = DEPLOYMENT_API_CONN_ENDPOINT || DEV_API_CONN_ENDPOINT;
+
+console.log("HERE IS THE ENDPOINT!!!", API_CONN_ENDPOINT)
 
 /**
  * Fetches repository data from an external source.
@@ -83,20 +89,29 @@ export const getRepoData = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
-  tryFromDatabaseViaLatest(url, notifier).catch((_e1: Error) => fetchRepoData(url, notifier));
+  tryFromDatabaseViaLatest(url, notifier).catch((_e1: Error) =>
+    fetchRepoData(url, notifier)
+  );
 
 export const getSerialisedRepoData = (
   url: string,
   notifier: Subject<string> | null
-): Promise<SerializableRepoData> => getRepoData(url, notifier).then(serializeRepoData);
+): Promise<SerializableRepoData> =>
+  getRepoData(url, notifier).then(serializeRepoData);
 
 export const pipeRepoDataVia =
-  (f: (url: string, notifier: Subject<string> | null) => Promise<RepositoryData>) =>
+  (
+    f: (
+      url: string,
+      notifier: Subject<string> | null
+    ) => Promise<RepositoryData>
+  ) =>
   (url: string, notifier: Subject<string> | null): Promise<RepositoryData> =>
     f(url, notifier)
       .then(assertRepoTyping) // enforces strong typing for the entire data structure
       .then((data: RepositoryData) => {
-        if (notifier !== null) notifier.next("Consolidating new data into database...");
+        if (notifier !== null)
+          notifier.next("Consolidating new data into database...");
         cacheIntoDatabase(url, data);
         return data;
       })
@@ -142,7 +157,11 @@ export const fetchDataFromHaskellAppWS = (
   url: string,
   notifier: Subject<string> | null
 ): Promise<RepositoryData> =>
-  fetchDataFromHaskellAppFromSocket(url, notifier, new WebSocket("ws://" + API_CONN_ENDPOINT));
+  fetchDataFromHaskellAppFromSocket(
+    url,
+    notifier,
+    new WebSocket("ws://" + API_CONN_ENDPOINT)
+  );
 
 export const fetchRepoData = pipeRepoDataVia(fetchDataFromHaskellAppWS);
 
@@ -180,7 +199,8 @@ const fetchDataFromHaskellAppFromSocket = async (
         const { data } = event;
         const parsed = JSON.parse(data);
 
-        if (parsed.type === "text_update" && notifier !== null) notifier.next(parsed.data);
+        if (parsed.type === "text_update" && notifier !== null)
+          notifier.next(parsed.data);
         else if (parsed.type === "error") reject(parsed.message);
         else if (parsed.type === "value") {
           resolve(parsed.data);
@@ -207,14 +227,17 @@ const fetchDataFromHaskellAppFromSocket = async (
  * @param url url to run the API on
  * @returns Promise<RepositoryData>: a promise of the API completion
  */
-export const fetchDataFromHaskellAppHTTP = (url: string): Promise<RepositoryData> =>
+export const fetchDataFromHaskellAppHTTP = (
+  url: string
+): Promise<RepositoryData> =>
   new Promise<RepositoryData>((resolve, reject) =>
     fetch("http://" + API_CONN_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     }).then((response) => {
-      if (!response.ok) reject(`Haskell API returned status ${response.status}`);
+      if (!response.ok)
+        reject(`Haskell API returned status ${response.status}`);
       response.json().then((d) => resolve(d.data));
     })
   );
