@@ -34,7 +34,7 @@ export default function MetricsTabs() {
     <Tabs
       value={activeTab} // ✅ Use controlled tab value
       onValueChange={setActiveTab} // ✅ Allow switching
-      className="w-full bg-git-bg-elevated justify-items-start"
+      className="w-full bg-git-bg-elevated dark:bg-git-bg-primary justify-items-start"
     >
       <TabsList className="w-full flex justify-start bg-git-bg-elevated">
         {visibleTabs.map(({ value, label }) => (
