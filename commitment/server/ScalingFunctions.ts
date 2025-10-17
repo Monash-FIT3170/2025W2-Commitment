@@ -180,29 +180,50 @@ const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits 
  * @returns array of {name, scale} 
  */
 async function scaleUsers(repoUrl: string, config: ScalingConfig) {
+  const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // ✅ casting is fine here
 
-    const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // IS CASTING LIKE THIS OKAY?
+  const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
+  const method = config.method ?? "Percentiles";
 
-    const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
-    const method = config.method ?? "Percentiles";
+  const users = buildUsers(allMetrics, selectedMetrics);
+  if (!users.length) return [];
 
-    const users = buildUsers(allMetrics, selectedMetrics);
-    if (!users.length) return [];
+  const metricsValues = selectedMetrics.map((_, i) =>
+    normaliseMetric(users.map((u) => u.values[i]))
+  );
 
-    const metricsValues = selectedMetrics.map((_, i) =>
-        normaliseMetric(users.map((u) => u.values[i]))
-        );
+  const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
 
-    const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
-
-  return users.map((user, idx) => {
-
-    //normalisation to happen with the scales of users here
+  const rawScores = users.map((user, idx) => {
     const scales = metricsValues.map((col) => col[idx]);
-    const score = scoreFn(scales, idx, users, selectedMetrics);
-    return { name: user.name, score: Math.round(score * 100) / 100 };
+    return scoreFn(scales, idx, users, selectedMetrics);
   });
+
+    //post normalisation
+  const mean =
+    rawScores.reduce((a, b) => a + b, 0) / rawScores.length;
+  const variance =
+    rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) /
+    rawScores.length;
+  const std = Math.sqrt(variance);
+
+  function normalize(score: number) {
+    const diff = score - mean;
+
+    if (diff <= -3 * std) return 0;
+    if (diff <= -2 * std) return 0.5;
+    if (diff <= -1 * std) return 0.9;
+    if (diff <= 2 * std) return 1;
+    if (diff <= 3 * std) return 1.1;
+    return 1.2;
+  }
+
+  return users.map((user, i) => ({
+    name: user.name,
+    score: Math.round(normalize(rawScores[i]) * 100) / 100,
+  }));
 }
+
 
 //
 // ---------- Main exported function ----------
