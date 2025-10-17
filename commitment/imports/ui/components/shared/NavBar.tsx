@@ -73,6 +73,14 @@ export const NavBar: React.FC = () => {
                   How-To
                 </NavigationMenuLink>
               </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link to="/developer-docs">Developer Docs</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
             </>
           ) : (
             // App navigation items

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ExternalLink, Github, Star, GitFork, Calendar, Code, Users, FileText, BookOpen } from "lucide-react";
 import { Button } from "@base/button";
+import { getAPIReadmeAsHtml } from "@ui/utils/READMEUtils";
 
 interface GitHubRepoInfo {
   name: string;
@@ -19,6 +20,9 @@ const DeveloperDocsView: React.FC = () => {
   const [repoInfo, setRepoInfo] = useState<GitHubRepoInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [readmeContent, setReadmeContent] = useState<string>("");
+  const [readmeLoading, setReadmeLoading] = useState(true);
+  const [readmeError, setReadmeError] = useState<string | null>(null);
 
   const REPO_OWNER = "Monash-FIT3170";
   const REPO_NAME = "2025W2-Commitment";
@@ -39,7 +43,22 @@ const DeveloperDocsView: React.FC = () => {
       }
     };
 
+    const fetchReadmeContent = async () => {
+      try {
+        console.log('Fetching README content...');
+        const html = await getAPIReadmeAsHtml();
+        console.log('README content received:', html.substring(0, 100) + '...');
+        setReadmeContent(html);
+      } catch (err) {
+        console.error('Error fetching README:', err);
+        setReadmeError(err instanceof Error ? err.message : "Failed to load API documentation");
+      } finally {
+        setReadmeLoading(false);
+      }
+    };
+
     fetchRepoInfo();
+    fetchReadmeContent();
   }, []);
 
   const formatDate = (dateString: string) => {
@@ -185,15 +204,49 @@ const DeveloperDocsView: React.FC = () => {
             </div>
           </div>
 
-          {/* API Documentation Placeholder */}
+          {/* API Documentation */}
           <div className="p-6 bg-git-bg-elevated border border-git-stroke-primary rounded-lg">
-            <h2 className="text-2xl font-semibold text-git-text-primary mb-4">REST API Documentation</h2>
-            <div className="bg-git-bg-secondary border border-git-stroke-secondary rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-git-text-primary mb-3">Coming Soon</h3>
-              <p className="text-git-text-secondary mb-4">
-                Our REST API endpoints are currently under development. 
-              </p>
+            <div className="flex items-center gap-2 mb-4">
+              <FileText className="h-6 w-6 text-git-accent-primary" />
+              <h2 className="text-2xl font-semibold text-git-text-primary">REST API Documentation</h2>
             </div>
+            <p className="text-git-text-secondary mb-4">
+              Live API documentation fetched directly from the API repository README.
+            </p>
+            
+            {readmeLoading ? (
+              <div className="bg-git-bg-primary border border-git-stroke-secondary rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-git-accent-primary"></div>
+                  <p className="text-git-text-secondary">Loading API documentation...</p>
+                </div>
+              </div>
+            ) : readmeError ? (
+              <div className="bg-git-bg-primary border border-git-stroke-secondary rounded-lg p-4">
+                <p className="text-git-text-secondary">
+                  Unable to load API documentation: {readmeError}
+                </p>
+                <p className="text-git-text-secondary text-sm mt-2">
+                  The API README file may not exist yet or there was an error reading it.
+                </p>
+              </div>
+            ) : readmeContent.trim() === "" ? (
+              <div className="bg-git-bg-primary border border-git-stroke-secondary rounded-lg p-4">
+                <p className="text-git-text-secondary">
+                  The API README file is currently empty.
+                </p>
+                <p className="text-git-text-secondary text-sm mt-2">
+                  Documentation will appear here once your teammate adds content to the API README file.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-git-bg-primary border border-git-stroke-secondary rounded-lg p-4">
+                <div 
+                  className="prose prose-sm max-w-none text-git-text-secondary"
+                  dangerouslySetInnerHTML={{ __html: readmeContent }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
