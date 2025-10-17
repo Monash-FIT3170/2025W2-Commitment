@@ -285,59 +285,54 @@ export async function getScaledResults(
   }));
 }
 
-// ---------- TESTING COMPACT SCALING ----------
-if (require.main === module) {
-  (async () => {
-    console.log("🧪 Running Compact Scaling Test with dummy data...");
+Meteor.startup(async () => {
+  console.log("COMPACT SCALING TEST");
 
-    const fakeMetrics = {
-  alice: { "Total No. Commits": 10, LOC: 200, "LOC Per Commit": 20, "Commits Per Day": 1 },
-  bob: { "Total No. Commits": 30, LOC: 400, "LOC Per Commit": 20, "Commits Per Day": 2 },
-  charlie: { "Total No. Commits": 50, LOC: 600, "LOC Per Commit": 30, "Commits Per Day": 3 },
-};
+  const fakeMetrics = {
+    alice: { "Total No. Commits": 10, LOC: 200, "LOC Per Commit": 20, "Commits Per Day": 1 },
+    bob: { "Total No. Commits": 30, LOC: 400, "LOC Per Commit": 20, "Commits Per Day": 2 },
+    charlie: { "Total No. Commits": 50, LOC: 600, "LOC Per Commit": 30, "Commits Per Day": 3 },
+  };
 
-    const config: ScalingConfig = {
-      method: "Compact Scaling",
-      metrics: ["commits", "loc"],
-    };
+  const config: ScalingConfig = {
+    method: "Compact Scaling",
+    metrics: ["Total No. Commits", "LOC"], // match keys in fakeMetrics
+  };
 
-    // Build users manually instead of calling Meteor
-    const selectedMetrics = config.metrics;
-    const users = Object.entries(fakeMetrics).map(([name, metrics]) => ({
-      name,
-      values: selectedMetrics.map((m) => metrics[m as keyof typeof metrics] ?? null),
-    }));
+  const selectedMetrics = config.metrics;
+  const users = Object.entries(fakeMetrics).map(([name, metrics]) => ({
+    name,
+    values: selectedMetrics.map((m) => metrics[m as keyof typeof metrics] ?? null),
+  }));
 
-    const metricsValues = selectedMetrics.map((_, i) =>
-      normaliseMetric(users.map((u) => u.values[i]))
-    );
+  const metricsValues = selectedMetrics.map((_, i) =>
+    normaliseMetric(users.map((u) => u.values[i]))
+  );
 
-    const scoreFn = scoringStrategies[config.method] ?? scoringStrategies.Default;
+  const scoreFn = scoringStrategies[config.method] ?? scoringStrategies.Default;
 
-    const rawScores = users.map((_, idx) => {
-      const scales = metricsValues.map((col) => col[idx]);
-      return scoreFn(scales, idx, users, selectedMetrics);
-    });
+  const rawScores = users.map((_, idx) => {
+    const scales = metricsValues.map((col) => col[idx]);
+    return scoreFn(scales, idx, users, selectedMetrics);
+  });
 
-    // Post scaling normalization
-    const mean = rawScores.reduce((a, b) => a + b, 0) / rawScores.length;
-    const std = Math.sqrt(rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length);
+  const mean = rawScores.reduce((a, b) => a + b, 0) / rawScores.length;
+  const std = Math.sqrt(rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length);
 
-    function normalise_scale(score: number) {
-      const diff = score - mean;
-      if (diff <= -3 * std) return 0;
-      if (diff <= -2 * std) return 0.5;
-      if (diff <= -1 * std) return 0.9;
-      if (diff <= 2 * std) return 1;
-      if (diff <= 3 * std) return 1.1;
-      return 1.2;
-    }
+  function normalise_scale(score: number) {
+    const diff = score - mean;
+    if (diff <= -3 * std) return 0;
+    if (diff <= -2 * std) return 0.5;
+    if (diff <= -1 * std) return 0.9;
+    if (diff <= 2 * std) return 1;
+    if (diff <= 3 * std) return 1.1;
+    return 1.2;
+  }
 
-    const scaledUsers = users.map((user, i) => ({
-      name: user.name,
-      score: Math.round(normalise_scale(rawScores[i]) * 100) / 100,
-    }));
+  const scaledUsers = users.map((user, i) => ({
+    name: user.name,
+    score: Math.round(normalise_scale(rawScores[i]) * 100) / 100,
+  }));
 
-    console.log("THE DUMMY USERS:", scaledUsers);
-  })();
-}
+  console.log("THE DUMMY USERS:", scaledUsers);
+});
