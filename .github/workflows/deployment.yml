@@ -2,7 +2,7 @@ name: Deploy to Machine Instance
 
 on:
   push:
-    branches: ["asfsdfs"]
+    branches: ["fix/deployment"]
 
 jobs:
   build-and-deploy:
