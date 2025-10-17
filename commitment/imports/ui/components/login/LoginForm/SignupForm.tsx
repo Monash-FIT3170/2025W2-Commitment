@@ -9,8 +9,8 @@ import LoginFormErrorMessage from "@ui/components/login/LoginForm/LoginFormError
 import { Accounts } from "meteor/accounts-base";
 import FormInputWithErrors from "@ui/components/shared/FormInputWithErrors";
 import { Eye, EyeOff } from "lucide-react";
-import GoogleLoginWidget from "@ui/components/widgets/login/GoogleLoginWidget";
-import GithubLoginWidget from "@ui/components/widgets/login/GithubLoginWidget";
+import GoogleLoginWidget from "/imports/ui/components/login/LoginForm/GoogleLoginWidget";
+import GithubLoginWidget from "/imports/ui/components/login/LoginForm/GithubLoginWidget";
 
 export interface SignupFormProps {
   className?: string;

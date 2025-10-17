@@ -3,7 +3,6 @@ import { cx } from "class-variance-authority";
 import { Button } from "@base/button";
 import { Meteor } from "meteor/meteor";
 import { useNavigate } from "react-router-dom";
-import { Chrome } from "lucide-react";
 
 export interface GoogleLoginWidgetProps {
   className?: string;
@@ -32,7 +31,7 @@ const GoogleLoginWidget: FC<GoogleLoginWidgetProps> = (props) => {
       onClick={handleGoogleLogin}
       className={cx("w-full flex items-center justify-center gap-2", props.className)}
     >
-      <Chrome className="w-4 h-4" />
+      <img src="/google_icon.svg" alt="Google" className="w-4 h-4" />
       {buttonText}
     </Button>
   );

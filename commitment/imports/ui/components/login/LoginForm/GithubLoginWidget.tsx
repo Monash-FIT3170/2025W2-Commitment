@@ -3,7 +3,7 @@ import { cx } from "class-variance-authority";
 import { Button } from "@base/button";
 import { Meteor } from "meteor/meteor";
 import { useNavigate } from "react-router-dom";
-import { Github } from "lucide-react";
+import { useTheme } from "@hook/useTheme";
 
 export interface GithubLoginWidgetProps {
     className?: string;
@@ -12,6 +12,7 @@ export interface GithubLoginWidgetProps {
 
 const GithubLoginWidget: FC<GithubLoginWidgetProps> = (props) => {
     const navigate = useNavigate();
+    const { isDark } = useTheme();
 
     const handleGithubLogin = () => {
     Meteor.loginWithGithub({}, (err) => {
@@ -32,7 +33,7 @@ const GithubLoginWidget: FC<GithubLoginWidgetProps> = (props) => {
             onClick={handleGithubLogin}
             className={cx("w-full flex items-center justify-center gap-2", props.className)}
         >
-            <Github className="w-4 h-4" />
+            <img src="/github_dark.svg" alt="GitHub" className="w-4 h-4" />
             {buttonText}
         </Button>
     );
