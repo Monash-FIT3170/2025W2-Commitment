@@ -179,7 +179,7 @@ const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits 
  * @param config 
  * @returns array of {name, scale} 
  */
-async function scaleUsers(repoUrl: string, config: ScalingConfig) {
+export async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // ✅ casting is fine here
 
   const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
