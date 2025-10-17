@@ -60,8 +60,6 @@ export const getLatestDate = (data: Date[]): Maybe<Date> =>
 export const getLinesOfCodeFromCommit = (commit: CommitData): number =>
   commit.fileData.reduce((acc, f) => acc + f.newLines - f.deletedLines, 0);
 
-// FUNCTIONS THAT USE SerializableRepoData
-
 export const getBranchNames = (data: SerializableRepoData): string[] =>
   data.branches.map((b) => b.branchName);
 

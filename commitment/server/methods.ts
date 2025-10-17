@@ -18,26 +18,34 @@ import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
 import { getScaledResults } from "./ScalingFunctions";
 import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm";
-import { spawn } from "child_process";
+import { executeCommand, assertSuccess } from "./api/shell";
+import { checkIfExists } from "./api/git_commands";
+import { getNumberOfContributors } from "./helper_functions";
 
-export async function getFilteredRepoData(  repoUrl:string, startDate:Date, endDate:Date, branch:string, contributor:string[]):Promise<FilteredData>{
-    // Get full repository data from db
-    const repo =  tryFromDatabaseSerialised(repoUrl, null);
+export async function getFilteredRepoData(
+  repoUrl: string,
+  startDate: Date,
+  endDate: Date,
+  branch: string,
+  contributor: string[]
+): Promise<FilteredData> {
+  // Get full repository data from db
+  const repo = await tryFromDatabaseSerialised(repoUrl, null);
 
-    // Apply alias mapping if user has config
-    const userId = Meteor.userId();
-    const mappedRepo = await applyAliasMappingIfNeeded(repo, userId || "");
+  // Apply alias mapping if user has config
+  const userId = Meteor.userId();
+  const mappedRepo = await applyAliasMappingIfNeeded(repo, userId || "");
 
-    // Apply filtering
-    const filteredData = getFilteredRepoDataServer(
-      repoUrl,
-      startDate,
-      endDate,
-      mappedRepo,
-      branch,
-      contributor
-    );
-    return filteredData;
+  // Apply filtering
+  const filteredData = getFilteredRepoDataServer(
+    repoUrl,
+    startDate,
+    endDate,
+    mappedRepo,
+    branch,
+    contributor
+  );
+  return filteredData;
 }
 
 Meteor.methods({
@@ -47,20 +55,10 @@ Meteor.methods({
    * @returns Promise<boolean> True if repository exists and is accessible
    */
   async "repo.checkExists"(repoUrl: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      const git = spawn("git", ["ls-remote", repoUrl], {
-        stdio: ["ignore", "pipe", "pipe"],
-        env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
-      });
-
-      git.on("close", (code) => {
-        resolve(code === 0);
-      });
-
-      git.on("error", () => {
-        resolve(false);
-      });
-    });
+    return executeCommand("")(checkIfExists(repoUrl))
+      .then(assertSuccess("Repository does not exist"))
+      .then(() => true)
+      .catch(() => false);
   },
 
   /**
@@ -81,13 +79,13 @@ Meteor.methods({
 
     return getFilteredData({
       ...a,
-      userId: this.userId,
+      userId: this.userId !== null ? this.userId : undefined,
     });
   },
 
   async "repo.getMetadata"(repoUrl: string): Promise<Metadata> {
     // TODO do type checks here if needed
-    return getMetaData(repoUrl, this.userId);
+    return getMetaData(repoUrl, this.userId !== null ? this.userId : undefined);
   },
 
   async "repo.getAnalyticsData"(d: {
@@ -102,7 +100,7 @@ Meteor.methods({
 
     return getAnalyticsData({
       ...d,
-      userId: this.userId,
+      userId: this.userId !== null ? this.userId : undefined,
     });
   },
 
@@ -122,12 +120,19 @@ Meteor.methods({
   },
 
   async getScalingResults(data: ScalingConfig, repoUrl: string) {
-    return getScaledResults(
-      await tryFromDatabaseSerialised(repoUrl, null),
-      data,
-      repoUrl,
-      "" // null string for now as Yoonus is TODO fix this
-    );
+    return getScaledResults(await tryFromDatabaseSerialised(repoUrl, null), data, repoUrl);
+  },
+
+  async isSmallContributorGroup(repoUrl: string = "", largestSize: number = 4): Promise<boolean> {
+    const n = new Subject<string>();
+
+    const result = getNumberOfContributors(await tryFromDatabaseSerialised(repoUrl, n));
+
+    console.log("result: ", result);
+
+    if (result <= largestSize) return true;
+
+    return false;
   },
 });
 
@@ -233,8 +238,8 @@ export const getAnalyticsData = async ({
 
   const filteredRepo: FilteredData = await getFilteredData({
     repoUrl,
-    startDate: selections.selectedDateRange.from,
-    endDate: selections.selectedDateRange.to,
+    startDate: selections.selectedDateRange.from!,
+    endDate: selections.selectedDateRange.to!,
     branch: selections.selectedBranch,
     contributor: selections.selectedContributors,
   });

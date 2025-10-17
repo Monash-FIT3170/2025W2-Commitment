@@ -1,8 +1,6 @@
-import React, { useState } from "react";
-import { Subject } from "rxjs";
+import React from "react";
 import MetricsTabs from "../components/metrics/MetricsTab";
 import TopBar from "../components/metrics/TopBar";
-import { useToast } from "../hooks/useToast";
 
 const MetricsPage: React.FC = () => {
   return (

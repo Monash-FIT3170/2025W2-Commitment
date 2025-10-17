@@ -14,8 +14,9 @@ extra-source-files:  README.md
                      CHANGELOG.md
 
 executable commitment-api
-  hs-source-dirs:      src
   main-is:             Main.hs
+  hs-source-dirs:      src
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
   other-modules:
       Api

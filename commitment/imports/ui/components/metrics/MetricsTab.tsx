@@ -22,12 +22,14 @@ const allTabData: TabData[] = [
 ];
 
 export default function MetricsTabs() {
+  const [activeTab, setActiveTab] = React.useState("metrics");
 
 
   return (
     <Tabs
-      defaultValue="metrics"
-      className="w-full  bg-git-bg-elevated justify-items-start "
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full bg-git-bg-secondary dark:bg-git-bg-primary justify-items-start"
     >
       <TabsList className="w-full flex justify-start bg-git-bg-elevated ">
         {allTabData.map(({ value, label }) => (
@@ -36,7 +38,7 @@ export default function MetricsTabs() {
             value={value}
             className={`
               relative px-4 text-lg font-medium text-foreground
-              bg-git-bg-elevated hover:bg-git-tabs-hovered
+              bg-git-bg-elevated dark:bg-git-bg-tertiary hover:bg-git-tabs-hovered
               border-b border-git-stroke-primary/40
               data-[state=active]:bg-git-tabs-active
               data-[state=active]:git-tabs-hovered
@@ -61,7 +63,8 @@ export default function MetricsTabs() {
       </TabsContent>
 
         <TabsContent value="scaling" className="w-full">
-          <ScalingView />
+          {/* ✅ Pass down a callback to go back to metrics */}
+          <ScalingView onNavigateToMetrics={() => setActiveTab("metrics")} />
         </TabsContent>
     </Tabs>
   );

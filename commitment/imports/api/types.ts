@@ -52,6 +52,7 @@ export type SerializableRepoData = Readonly<{
   allCommits: SerialisableMapObject<string, CommitData>[]; // Map converted to a list of objects
   contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
 }>;
+
 export interface FilteredData {
   repoUrl: string;
   dateRange: {
@@ -179,6 +180,7 @@ export type UnmappedContributor = {
   rawIdentifiers: string[];
 };
 
+
 export type AllMetricsData = {
   contributorName: string;
   metrics: {
@@ -250,3 +252,10 @@ export interface MetricsData {
     scalingDistribution: ScalingDistributionGraph;
   };
 }
+
+export type ScoreFn = (
+  scales: number[],
+  idx: number,
+  users: { name: string; values: (number | null)[] }[],
+  selectedMetrics: string[]
+) => number;
