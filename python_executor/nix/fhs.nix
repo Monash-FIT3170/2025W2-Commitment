@@ -39,7 +39,7 @@ let
       runScript
     ];
 
-    runScript = runScript + "/bin/${fhsEnvName}-runScript";
+#    runScript = runScript + "/bin/${fhsEnvName}-runScript";
   };
 in
   fhs

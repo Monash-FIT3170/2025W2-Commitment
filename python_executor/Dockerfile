@@ -14,7 +14,7 @@ COPY . .
 # Build the nix project
 RUN nix-build
 
-EXPOSE 8000
+EXPOSE 8002
 
 # Keep container interactive for testing
 CMD ["bash"]
