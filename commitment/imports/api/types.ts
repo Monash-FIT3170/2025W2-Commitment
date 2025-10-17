@@ -1,26 +1,15 @@
 import { DateRange } from "react-day-picker";
 
+export type RepositoryData = Readonly<{
+  name: string;
+  branches: BranchData[];
+  allCommits: Map<string, CommitData>;
+  contributors: Map<string, ContributorData>;
+}>;
 
 export type BranchData = Readonly<{
   branchName: string;
   commitHashes: string[];
-}>;
-
-export type ContributorData = Readonly<{
-  name: string;
-  emails: string[];
-}>;
-
-export type ChangeType = "A" | "M" | "D" | "R" | "C";
-
-export type FileChanges = Readonly<{
-  filepath: string    
-  oldFilePath: string 
-  char: ChangeType        
-  likeness: number    
-  newLines: number    
-  deletedLines: number
-  diff: string[]        
 }>;
 
 // make a kind of commit where you hazve a snapshot of all contributors per line
@@ -29,16 +18,28 @@ export type CommitData = Readonly<{
   commitTitle: string;
   contributorName: string;
   description: string;
-  timestamp: Date;
+  timestamp: string;
   fileData: FileChanges[];
 }>;
 
-export type RepositoryData = Readonly<{
+export type FileChanges = Readonly<{
+  filepath: string;
+  oldFilePath: string;
+  char: ChangeType;
+  likeness: number;
+  newLines: number;
+  deletedLines: number;
+  diff: string[];
+}>;
+
+export type ChangeType = "A" | "M" | "D" | "R" | "C";
+
+export type ContributorData = Readonly<{
   name: string;
-  branches: BranchData[];
-  allCommits: Map<string, CommitData>;
-  contributors: Map<string, ContributorData>;
-}>; 
+  emails: string[];
+}>;
+
+export type Maybe<T> = T | null;
 
 export type SerialisableMapObject<K, V> = {
   key: K;
@@ -51,6 +52,7 @@ export type SerializableRepoData = Readonly<{
   allCommits: SerialisableMapObject<string, CommitData>[]; // Map converted to a list of objects
   contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
 }>;
+
 export interface FilteredData {
   repoUrl: string;
   dateRange: {
@@ -142,8 +144,6 @@ export interface PieChart {
   title: string;
 }
 
-
-
 export interface Selections {
   selectedBranch: string;
   selectedContributors: string[];
@@ -180,55 +180,56 @@ export type UnmappedContributor = {
   rawIdentifiers: string[];
 };
 
+
 export type AllMetricsData = {
   contributorName: string;
   metrics: {
     "Total No. Commits": number;
-    "LOC": number;
+    LOC: number;
     "LOC Per Commit": number;
     "Commits Per Day": number;
   };
-}
+};
 
 export type ContributorMetrics = {
-  contributorName : string; 
-  metrics: Record<MetricType, number>; 
-}
+  contributorName: string;
+  metrics: Record<MetricType, number>;
+};
 
-export type ContributorScaledMetric ={
-  metric: MetricType; 
-  value: number; 
-  percentile: number ; 
-}
+export type ContributorScaledMetric = {
+  metric: MetricType;
+  value: number;
+  percentile: number;
+};
 
 export type ContributorScaledData = {
   contributor: ContributorData;
   scaledMetric: ContributorScaledMetric;
-}
+};
 
-export type RepoMetricDistribution= {
+export type RepoMetricDistribution = {
   metric: MetricType;
   min: number;
   Q1: number;
   median: number;
   Q3: number;
   max: number;
-  mean: number; 
-}
+  mean: number;
+};
 
 // for contributor metric scaling graph
 export type ScalingDistributionResult = {
-  contributors: ContributorScaledData[]; 
+  contributors: ContributorScaledData[];
   repoDistributions: RepoMetricDistribution;
-}
+};
 
-export type ScalingDistributionGraph = { 
+export type ScalingDistributionGraph = {
   data: ScalingDistributionResult;
   title: string;
-}
+};
 
 /**
- * Example of Scaling Distribution Result: 
+ * Example of Scaling Distribution Result:
  * {
  *  contributors: [
  *   {
@@ -251,3 +252,10 @@ export interface MetricsData {
     scalingDistribution: ScalingDistributionGraph;
   };
 }
+
+export type ScoreFn = (
+  scales: number[],
+  idx: number,
+  users: { name: string; values: (number | null)[] }[],
+  selectedMetrics: string[]
+) => number;

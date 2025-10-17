@@ -37,7 +37,7 @@ data CommitData = CommitData
   , commitTitle     :: String
   , contributorName :: String
   , description     :: String
-  , timestamp       :: UTCTime
+  , timestamp       :: String
   , fileData        :: [FileChanges]
   } deriving (Show, Eq, Generic, ToJSON, FromJSON)
 

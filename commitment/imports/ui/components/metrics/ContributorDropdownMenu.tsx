@@ -8,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@base/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
 import { ScrollArea } from "@base/scroll-area";
 
@@ -46,14 +47,15 @@ export function ContributorDropdownMenu({
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
           className="w-[300px] justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40"
         >
-          <span className="block w-full truncate text-left">
+          <span className="w-full truncate text-left flex justify-between items-center">
             {buttonText()}
+            <ChevronDown className="h-4 w-4 opacity-50" />
           </span>
         </Button>
       </DropdownMenuTrigger>

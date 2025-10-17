@@ -1,9 +1,4 @@
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@base/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@base/tabs";
 import React from "react";
 import { AnalyticsView } from "./AnalyticsView";
 import ScalingView from "../scaling/ScalingView";
@@ -29,25 +24,26 @@ const allTabData: TabData[] = [
 
 export default function MetricsTabs() {
   const isLoggedIn = useAuth();
+  const [activeTab, setActiveTab] = React.useState("metrics");
 
-  // Show scaling only if authenticated
   const visibleTabs = allTabData.filter(
     (tab) => !tab.requiresAuth || isLoggedIn
   );
 
   return (
     <Tabs
-      defaultValue="metrics"
-      className="w-full  bg-git-bg-elevated justify-items-start "
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full bg-git-bg-secondary dark:bg-git-bg-primary justify-items-start"
     >
-      <TabsList className="w-full flex justify-start bg-git-bg-elevated ">
+      <TabsList className="w-full flex justify-start bg-git-bg-elevated dark:bg-git-bg-tertiary">
         {visibleTabs.map(({ value, label }) => (
           <TabsTrigger
             key={value}
             value={value}
             className={`
               relative px-4 text-lg font-medium text-foreground
-              bg-git-bg-elevated hover:bg-git-tabs-hovered
+              bg-git-bg-elevated dark:bg-git-bg-tertiary hover:bg-git-tabs-hovered
               border-b border-git-stroke-primary/40
               data-[state=active]:bg-git-tabs-active
               data-[state=active]:git-tabs-hovered
@@ -73,7 +69,8 @@ export default function MetricsTabs() {
 
       {isLoggedIn && (
         <TabsContent value="scaling" className="w-full">
-          <ScalingView />
+          {/* ✅ Pass down a callback to go back to metrics */}
+          <ScalingView onNavigateToMetrics={() => setActiveTab("metrics")} />
         </TabsContent>
       )}
     </Tabs>

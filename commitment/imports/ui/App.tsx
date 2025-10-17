@@ -10,10 +10,12 @@ import DashboardView from "./views/DashboardView";
 import SettingsPage from "./components/settings/SettingsPage";
 import Layout from "./components/shared/Layout";
 import DeveloperDocsView from "./views/DeveloperDocsView";
+import { Toaster } from "@base/toaster";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Toaster />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<LandingPage />} />
@@ -34,11 +36,15 @@ export default function App() {
               </Authorized>
             }
           />
-                  <Route path="/settings" element={<Authorized>
-          <SettingsPage /></Authorized>
-        } />
+          <Route
+            path="/settings"
+            element={
+              <Authorized>
+                <SettingsPage />
+              </Authorized>
+            }
+          />
         </Route>
-
       </Routes>
     </BrowserRouter>
   );
