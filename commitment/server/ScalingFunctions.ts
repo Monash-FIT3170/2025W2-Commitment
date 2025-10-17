@@ -209,7 +209,7 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
 /***
 normalises scales to be relative to the scales of other contributors 
 */
-  function normalize(score: number) {
+  function normalise_scale(score: number) {
     // we find how far away the value is from the mean.
     const diff = score - mean;
 
@@ -224,7 +224,7 @@ normalises scales to be relative to the scales of other contributors
 
   return users.map((user, i) => ({
     name: user.name,
-    score: Math.round(normalize(rawScores[i]) * 100) / 100,
+    score: Math.round(normalise_scale(rawScores[i]) * 100) / 100,
   }));
 }
 
