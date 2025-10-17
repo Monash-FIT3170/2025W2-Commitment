@@ -213,13 +213,13 @@ normalises scales to be relative to the scales of other contributors
     // we find how far away the value is from the mean.
     const diff = score - mean;
 
-    
+    // we then scale accordingly
     if (diff <= -3 * std) return 0;
     if (diff <= -2 * std) return 0.5;
     if (diff <= -1 * std) return 0.9;
     if (diff <= 2 * std) return 1;
     if (diff <= 3 * std) return 1.1;
-    return 1.2; 
+    return 1.2; //that means their value is greater than 3std + mean
   }
 
   return users.map((user, i) => ({
