@@ -2,7 +2,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@base/tabs";
 import React from "react";
 import { AnalyticsView } from "./AnalyticsView";
 import ScalingView from "../scaling/ScalingView";
-import { useAuth } from "@hook/useAuth";
 
 interface TabData {
   value: string;
@@ -23,12 +22,8 @@ const allTabData: TabData[] = [
 ];
 
 export default function MetricsTabs() {
-  const isLoggedIn = useAuth();
   const [activeTab, setActiveTab] = React.useState("metrics");
 
-  const visibleTabs = allTabData.filter(
-    (tab) => !tab.requiresAuth || isLoggedIn
-  );
 
   return (
     <Tabs
@@ -36,8 +31,8 @@ export default function MetricsTabs() {
       onValueChange={setActiveTab}
       className="w-full bg-git-bg-secondary dark:bg-git-bg-primary justify-items-start"
     >
-      <TabsList className="w-full flex justify-start bg-git-bg-elevated dark:bg-git-bg-tertiary">
-        {visibleTabs.map(({ value, label }) => (
+      <TabsList className="w-full flex justify-start bg-git-bg-elevated ">
+        {allTabData.map(({ value, label }) => (
           <TabsTrigger
             key={value}
             value={value}
@@ -67,12 +62,10 @@ export default function MetricsTabs() {
         <AnalyticsView />
       </TabsContent>
 
-      {isLoggedIn && (
         <TabsContent value="scaling" className="w-full">
           {/* ✅ Pass down a callback to go back to metrics */}
           <ScalingView onNavigateToMetrics={() => setActiveTab("metrics")} />
         </TabsContent>
-      )}
     </Tabs>
   );
 }
