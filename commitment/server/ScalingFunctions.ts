@@ -196,6 +196,8 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
     const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
 
   return users.map((user, idx) => {
+
+    //normalisation to happen with the scales of users here
     const scales = metricsValues.map((col) => col[idx]);
     const score = scoreFn(scales, idx, users, selectedMetrics);
     return { name: user.name, score: Math.round(score * 100) / 100 };
