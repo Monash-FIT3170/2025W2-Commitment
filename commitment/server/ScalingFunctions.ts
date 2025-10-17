@@ -194,7 +194,7 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
 
   const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
 
-  const rawScores = users.map((user, idx) => {
+  const rawScores = users.map((_, idx) => {
     const scales = metricsValues.map((col) => col[idx]);
     return scoreFn(scales, idx, users, selectedMetrics);
   });
@@ -206,15 +206,20 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   
   const std = Math.sqrt(variance);
 
+/***
+normalises scales to be relative to the scales of other contributors 
+*/
   function normalize(score: number) {
+
     const diff = score - mean;
+
     
     if (diff <= -3 * std) return 0;
     if (diff <= -2 * std) return 0.5;
     if (diff <= -1 * std) return 0.9;
     if (diff <= 2 * std) return 1;
     if (diff <= 3 * std) return 1.1;
-    return 1.2;
+    return 1.2; 
   }
 
   return users.map((user, i) => ({
