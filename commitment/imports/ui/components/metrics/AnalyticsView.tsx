@@ -154,7 +154,7 @@ export function AnalyticsView(): React.JSX.Element {
   }, [repoUrl, selectedBranch, selectedContributors, dateRange, selectedMetrics]);
 
   // Fetch when component mounts or filters change
-  useEffect(() => {
+  useEffect(() => { //REPLACE THIS WITH A SUBMIT BUTTON
     fetchAnalyticsData();
   }, [fetchAnalyticsData]);
 
