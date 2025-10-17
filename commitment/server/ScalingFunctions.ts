@@ -210,7 +210,7 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
 normalises scales to be relative to the scales of other contributors 
 */
   function normalize(score: number) {
-
+    // we find how far away the value is from the mean.
     const diff = score - mean;
 
     
