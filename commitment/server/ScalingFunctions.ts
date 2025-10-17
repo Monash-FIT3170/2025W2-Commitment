@@ -199,17 +199,16 @@ async function scaleUsers(repoUrl: string, config: ScalingConfig) {
     return scoreFn(scales, idx, users, selectedMetrics);
   });
 
-    //post normalisation
-  const mean =
-    rawScores.reduce((a, b) => a + b, 0) / rawScores.length;
-  const variance =
-    rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) /
-    rawScores.length;
+    //post scaling normalisation
+  const mean = rawScores.reduce((a, b) => a + b, 0) / rawScores.length;
+
+  const variance = rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length;
+  
   const std = Math.sqrt(variance);
 
   function normalize(score: number) {
     const diff = score - mean;
-
+    
     if (diff <= -3 * std) return 0;
     if (diff <= -2 * std) return 0.5;
     if (diff <= -1 * std) return 0.9;
