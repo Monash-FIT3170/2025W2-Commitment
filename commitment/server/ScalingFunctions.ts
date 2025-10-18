@@ -171,54 +171,56 @@ const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits 
  * @returns array of {name, scale} 
  */
 export async function scaleUsers(repoUrl: string, config: ScalingConfig) {
-  const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // ✅ casting is fine here
+    const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // ✅ casting is fine here
 
-  const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
-  const method = config.method ?? "Percentiles";
+    const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
+    const method = config.method ?? "Percentiles";
 
-  const users = buildUsers(allMetrics, selectedMetrics);
-  if (!users.length) return [];
+    const users = buildUsers(allMetrics, selectedMetrics);
 
-   const metricsValues = selectedMetrics.map((_, i) =>
-  users.map((u) => (Number.isFinite(u.values[i]) ? u.values[i]! : 0))
-);
+    if (!users.length) return [];
 
-
-
-  const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
-
-  const rawScores = users.map((_, idx) => {
-    const scales = metricsValues.map((col) => col[idx]);
-    return scoreFn(scales, idx, users, selectedMetrics);
-  });
-  
-
-  console.log("RAW SCORES", rawScores)
-  const mean = rawScores.length ? rawScores.reduce((a, b) => a + b, 0) / rawScores.length : 0;
-const std = rawScores.length
-  ? Math.sqrt(rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length)
-  : 0;
-
-const safeStd = std || 1; // if std = 0, assume 1 so thresholds work
+    const metricsValues = selectedMetrics.map((_, i) =>
+        users.map((u) => (Number.isFinite(u.values[i]) ? u.values[i]! : 0))
+    );
 
 
-  function normalise_scale(score: number) {
+
+    const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
+
+    const rawScores = users.map((_, idx) => {
+        const scales = metricsValues.map((col) => col[idx]);
+        return scoreFn(scales, idx, users, selectedMetrics);
+    });
+
+
+    console.log("RAW SCORES", rawScores)
+
+    const mean = rawScores.length ? rawScores.reduce((a, b) => a + b, 0) / rawScores.length : 0;
+
+    const std = rawScores.length
+        ? Math.sqrt(rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length)
+        : 0;
+
+    const safeStd = std || 1; // if std = 0, assume 1 so thresholds work
+
+    function normalise_scale(score: number) {
 
     const diff = score - mean;
 
-if (diff <= -3 * safeStd) return 0;
-if (diff <= -2 * safeStd) return 0.5;
-if (diff <= -1 * safeStd) return 0.9;
-if (diff <= 1.2 * safeStd) return 1;
-if (diff <= 3 * safeStd) return 1.1;
-return 1.2;
+    if (diff <= -3 * safeStd) return 0;
+    if (diff <= -2 * safeStd) return 0.5;
+    if (diff <= -1 * safeStd) return 0.9;
+    if (diff <= 1.2 * safeStd) return 1;
+    if (diff <= 3 * safeStd) return 1.1;
+    return 1.2;
 
-  }
+    }
 
-  return users.map((user, i) => ({
+    return users.map((user, i) => ({
     name: user.name,
     score: Math.round(normalise_scale(rawScores[i]) * 100) / 100,
-  }));
+    }));
 }
 
 
