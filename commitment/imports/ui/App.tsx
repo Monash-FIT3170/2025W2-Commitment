@@ -9,6 +9,7 @@ import MetricsPage from "./views/MetricsView";
 import DashboardView from "./views/DashboardView";
 import SettingsPage from "./components/settings/SettingsPage";
 import Layout from "./components/shared/Layout";
+import DeveloperDocsView from "./views/DeveloperDocsView";
 import { Toaster } from "@base/toaster";
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
 
           <Route path="/loading" element={<LoadingPage />} />
           <Route path="/metrics" element={<MetricsPage />} />
+          <Route path="/developer-docs" element={<DeveloperDocsView />} />
           <Route
             path="/dashboard"
             element={
