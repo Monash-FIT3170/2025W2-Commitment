@@ -134,6 +134,7 @@ const scoringStrategies: Record<string, ScoreFn> = {
     },
 
     "Compact Scaling": (scales: number[]) => {
+        ///REMOVE reliance on mean, std -> as they will always be very very small
         if (!scales.length) return 1;
 
         const maxScale = 1.2;
@@ -294,8 +295,13 @@ Meteor.startup(async () => {
     charlie: { "Total No. Commits": 50, LOC: 600, "LOC Per Commit": 30, "Commits Per Day": 3 },
   };
 
+//     "Percentiles",
+//     "Mean +/- Std",
+//     "Quartiles",
+//     "Compact Scaling",
+
   const config: ScalingConfig = {
-    method: "Compact Scaling",
+    method: "Quartiles",
     metrics: ["Total No. Commits", "LOC"], // match keys in fakeMetrics
   };
 
@@ -306,8 +312,9 @@ Meteor.startup(async () => {
   }));
 
   const metricsValues = selectedMetrics.map((_, i) =>
-    normaliseMetric(users.map((u) => u.values[i]))
-  );
+  // normaliseMetric(users.map((u) => u.values[i]))  // comment out
+  users.map((u) => u.values[i] as number)
+);
 
   const scoreFn = scoringStrategies[config.method] ?? scoringStrategies.Default;
 
