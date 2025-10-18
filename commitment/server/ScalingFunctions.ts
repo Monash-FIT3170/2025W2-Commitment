@@ -282,6 +282,8 @@ Meteor.startup(async () => {
   const fakeMetrics = {
     alice: { "Total No. Commits": 10, LOC: 200, "LOC Per Commit": 20, "Commits Per Day": 1 },
     bob: { "Total No. Commits": 30, LOC: 400, "LOC Per Commit": 20, "Commits Per Day": 2 },
+    boeb: { "Total No. Commits": 50, LOC: 400, "LOC Per Commit": 240, "Commits Per Day": 3 },
+    boba: { "Total No. Commits": 1000, LOC: 450, "LOC Per Commit": 40, "Commits Per Day": 5 },
     charlie: { "Total No. Commits": 5000, LOC: 6000, "LOC Per Commit": 3000, "Commits Per Day": 30 },
 
   };
