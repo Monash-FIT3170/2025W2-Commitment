@@ -298,7 +298,7 @@ export async function getScaledResults(
 // //     "Compact Scaling",
 
 //   const config: ScalingConfig = {
-//     method: "Percentiles",
+//     method: "Compact Scaling",
 //     metrics: ["Total No. Commits", "LOC"], // match keys in fakeMetrics
 //   };
 
