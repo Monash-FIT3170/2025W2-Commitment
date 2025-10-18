@@ -134,26 +134,19 @@ const scoringStrategies: Record<string, ScoreFn> = {
     },
 
     "Compact Scaling": (scales: number[], idx: number) => {
-    if (!scales.length) return 1;
+        if (!scales.length) return 1;
 
-    const maxScale = 1.2;
-    const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
-    const variance = scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length;
-    const std = Math.sqrt(variance);
+        const min = Math.min(...scales);
+        const max = Math.max(...scales);
 
-    if (std < 1e-6) {
-        const value = scales[idx]; // pick this user's value
-        return 0.5 + value * 0.7;
-    }
+        if (min === max) return 1; // all same -> neutral 1
 
-    const smoothScale = (x: number) => {
-        const normalized = (x - mean) / std;
-        const scale = 0.5 + Math.tanh(normalized * 0.8) * 0.5;
-        return 0.5 + scale * 0.7;
-    };
+        // linear mapping from min..max -> 0.5..1.2
+        const value = scales[idx];
+        const normalized = (value - min) / (max - min);
+        return 0.5 + normalized * (1.2 - 0.5); // 0.5 -> min, 1.2 -> max
+    },
 
-    return Math.min(smoothScale(scales[idx]), maxScale);
-},
 
 
     Default: (scales) => scales.reduce((a, b) => a + b, 0) / scales.length, // just calculates the mean (average) of the user’s normalized metric values
@@ -293,7 +286,7 @@ Meteor.startup(async () => {
 //     "Compact Scaling",
 
   const config: ScalingConfig = {
-    method: "Compact Scaling",
+    method: "Percentiles",
     metrics: ["Total No. Commits", "LOC"], // match keys in fakeMetrics
   };
 
@@ -304,9 +297,9 @@ Meteor.startup(async () => {
   }));
 
   const metricsValues = selectedMetrics.map((_, i) =>
-  // normaliseMetric(users.map((u) => u.values[i]))  // comment out
-  users.map((u) => u.values[i] as number)
+  users.map((u) => u.values[i] as number) // raw numbers
 );
+
 
   const scoreFn = scoringStrategies[config.method] ?? scoringStrategies.Default;
 
@@ -319,7 +312,12 @@ Meteor.startup(async () => {
   const std = Math.sqrt(rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length);
 
   function normalise_scale(score: number) {
+
     const diff = score - mean;
+    console.log("MEAN", mean)
+
+    console.log("THIS IS SCORE", score , "THIS IS DIFF", diff);
+
     if (diff <= -3 * std) return 0;
     if (diff <= -2 * std) return 0.5;
     if (diff <= -1 * std) return 0.9;
