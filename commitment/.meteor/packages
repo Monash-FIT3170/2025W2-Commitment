@@ -24,3 +24,5 @@ zodern:types            # Pull in type declarations from other Meteor packages
 accounts-base@3.1.2
 accounts-password@3.2.1
 meteortesting:mocha
+accounts-google
+accounts-github
