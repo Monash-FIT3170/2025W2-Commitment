@@ -47,15 +47,17 @@ def execute():
     data.save(data_path)
 
     # Perform execution
-    result = make_response(exec_in_sandbox(["python3", "/home/python/script.py"], [(execution_dir, "/home/python/")]))
+    result = make_response(exec_in_sandbox(["python3", "/home/python/script.py"], cwd=execution_dir))
 
     # Clean up temporary resources
     shutil.rmtree(execution_dir, True)
     return result
 
 
-def exec_in_sandbox(command: List[str], overlays: List[Tuple[str, str]]):
-    overlay_arg_sets = [["--overlay-src", x[0], "--tmp-overlay", x[1]] for x in overlays]
+def exec_in_sandbox(command: List[str],
+                    overlays: List[Tuple[str, str]] | None = None,
+                    cwd: str | None = None):
+    overlay_arg_sets = [["--overlay-src", x[0], "--tmp-overlay", x[1]] for x in overlays] if overlays else []
     overlay_args = [arg for sublist in overlay_arg_sets for arg in sublist]
 
     try:
@@ -64,7 +66,8 @@ def exec_in_sandbox(command: List[str], overlays: List[Tuple[str, str]]):
             capture_output=True,
             start_new_session=True,
             timeout=1,
-            text=True
+            text=True,
+            cwd=cwd,
         )
     except subprocess.TimeoutExpired as ex:
         stderr = ex.stderr.decode('ascii') if ex.stderr else ""
