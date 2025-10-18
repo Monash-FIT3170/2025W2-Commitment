@@ -27,7 +27,7 @@ module Parsing (
 
 import Text.Read (readMaybe)
 import Data.List (isPrefixOf, isSuffixOf, nub, dropWhileEnd, intercalate)
-import Data.Char (isSpace)
+import Data.Char (isSpace, toLower)
 import Data.Time (UTCTime)
 import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Control.Applicative (Alternative, empty, (<|>))
@@ -88,12 +88,12 @@ successful (CommandResult res _          (Just stdErr)) =
 successful (CommandResult res _          _            ) = Result res
 
 parsed :: String -> ParseResult a -> a
-parsed _ (Result r)   = r
-parsed "" (Error "")  = error "Got blank string"
-parsed "" (Error msg) = error msg
-parsed msg (Error e)  = error $ msg 
---                    = error $ msg 
---                    = error $ msg ++ ":\n" ++ e
+parsed _   (Result r)  = r
+parsed ""  (Error "")  = error "Got blank string"
+parsed ""  (Error msg) = error msg
+parsed msg (Error e)   = error $ msg ++ ":\n" ++ e
+--                     = error $ msg 
+--                     = error $ msg ++ ":\n" ++ e
 
 parsedLists :: String -> [ParseResult a] -> [a]
 parsedLists msg = map (parsed msg)
@@ -101,16 +101,19 @@ parsedLists msg = map (parsed msg)
 parsedNestedLists :: String -> [[ParseResult a]] -> [[a]]
 parsedNestedLists msg = map (parsedLists msg)
 
+toLowerString :: String -> String
+toLowerString = map toLower
+
 -- Failure detector
 failedOutput :: String -> Bool
-failedOutput txt = any (`isPrefixOf` txt)
+failedOutput txt = any (`isPrefixOf` toLowerString txt)
   [ "fatal:"
   , "error:"
   , "could not"
   , "not a git repository"
-  , "Process exited with code"
-  , "Encountered error"
-  , "Process timed out"
+  , "process exited with code"
+  , "encountered error"
+  , "process timed out"
   ]
 
 exactText :: String -> ParseResult String
@@ -168,7 +171,7 @@ data InbetweenCommitData = InbetweenCommitData
   , ibCommitTitle     :: String
   , ibContributorName :: String
   , ibDescription     :: String
-  , ibTimestamp       :: UTCTime
+  , ibTimestamp       :: String
   , involvedFiles     :: [[String]]
   } deriving (Show, Eq)
 
@@ -177,11 +180,10 @@ parseCommitData txt
   | failedOutput txt  = Error txt
   | length blocks < 6 = Error ("has less than 6 blocks: \"" ++ show blocks ++ "\" | txt: \"" ++ txt ++ "\"")
   | otherwise = do
-      ts <- parseTimeM True defaultTimeLocale "%a %b %-d %T %Y %z" (trim $ blocks !! 2)
       return InbetweenCommitData
         { ibCommitHash      = trim $ blocks !! 0
         , ibContributorName = trim $ blocks !! 1
-        , ibTimestamp       = ts
+        , ibTimestamp       = trim $ blocks !! 2
         , ibCommitTitle     = trim $ blocks !! 3
         , ibDescription     = trim $ blocks !! 4
         , involvedFiles     = parseFileLines (drop 5 blocks)
@@ -298,15 +300,15 @@ pairByFilePath infos diffs =
 
 mergeFileMetaData :: [(MetaFileChanges, MetaFileChangesDiff)] -> [FileChanges]
 mergeFileMetaData = map (
-    \(changes, diffTxt) -> FileChanges 
+    \(changes, diffTxt) -> FileChanges
         (filepathM       changes)
-        (oldFilePathM    changes)  
-        (charM           changes)         
-        (likenessM       changes)     
+        (oldFilePathM    changes)
+        (charM           changes)
+        (likenessM       changes)
         (newLinesMD      diffTxt)
         (deletedLinesMD  diffTxt)
         (diffMD          diffTxt)
-    ) 
+    )
 
 -- Helpers
 splitOn1 :: Eq a => [a] -> [a] -> [[a]]

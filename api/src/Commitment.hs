@@ -6,19 +6,40 @@
 {-# HLINT ignore "Use tuple-section" #-}
 
 module Commitment (
-    fetchDataFrom
+    fetchDataFrom,
+    parsingPool,
+    commandPool
 ) where
 
 import Control.Concurrent.STM
-import Control.Exception (catch, SomeException (SomeException), displayException, finally)
+import Control.Exception (
+    catch,
+    SomeException (SomeException),
+    displayException,
+    bracket)
 import Data.List (sortBy, isPrefixOf)
 import Data.Maybe (fromMaybe)
 import Data.Map.Strict ()
 import qualified Data.Map.Strict as Map
-import System.FilePath
+import System.FilePath ((</>))
 import System.IO.Unsafe (unsafePerformIO)
-import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
-import Control.Concurrent (getNumCapabilities)
+import System.Directory (
+    getTemporaryDirectory,
+    createDirectoryIfMissing,
+    doesDirectoryExist)
+import Control.Concurrent (
+    MVar,
+    newMVar,
+    modifyMVar_,
+    modifyMVar,
+    withMVar,
+    readMVar,
+    putMVar,
+    tryTakeMVar,
+    getNumCapabilities,
+    newEmptyMVar )
+import Control.Monad (when, void)
+import Data.IORef
 
 import Types
 import Threading
@@ -27,16 +48,91 @@ import GitCommands
 import Parsing
 
 -- Create global thread pools
+-- Initialize RTS and return pools
+{-# NOINLINE globalPools #-}
+globalPools :: (WorkerPool, WorkerPool)
+globalPools = unsafePerformIO $ do
+    cap <- getNumCapabilities
+    -- Create the pools
+    parsing <- createThreadPool cap "Parsing Pool"
+    command <- createThreadPool (cap * 4) "Command Pool"
+    pure (parsing, command)
+
+-- Expose them as pure values
 {-# NOINLINE parsingPool #-}
 parsingPool :: WorkerPool
-parsingPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool n "Parsing Pool"
+parsingPool = fst globalPools
 
 {-# NOINLINE commandPool #-}
 commandPool :: WorkerPool
-commandPool = unsafePerformIO $ getNumCapabilities >>= \n -> createThreadPool (n * 8) "Command Pool"
+commandPool = snd globalPools
 
-zipWithFunctions :: [[[a]]] -> [[a] -> b] -> [[([a], [a] -> b)]]
-zipWithFunctions = zipWith (\inner f -> map (\x -> (x, f)) inner)
+-- global Disk resource registeries
+type RefCountMap = Map.Map FilePath Int
+type SemaphoreMap = Map.Map FilePath (MVar ())
+
+-- Global registry of per-directory locks
+{-# NOINLINE directoryRefCount #-}
+directoryRefCount :: MVar RefCountMap
+directoryRefCount = unsafePerformIO (newMVar Map.empty)
+
+-- Global registry of per-directory semaphores to store whether it exists or not
+{-# NOINLINE directorySemaphores #-}
+directorySemaphores :: MVar SemaphoreMap
+directorySemaphores = unsafePerformIO (newMVar Map.empty)
+
+-- | Get the semaphore for a directory, creating one if it doesn't exist.
+getDirSemaphore :: FilePath -> IO (MVar ())
+getDirSemaphore path = modifyMVar directorySemaphores $ \semMap ->
+    case Map.lookup path semMap of
+        Just sem -> pure (semMap, sem)
+        Nothing -> do
+            sem <- newMVar ()
+            pure (Map.insert path sem semMap, sem)
+
+-- | Acquire the per-directory lock and run an action.
+withDirectoryLock :: FilePath -> IO a -> IO a
+withDirectoryLock path action = do
+    sem <- getDirSemaphore path
+    withMVar sem $ const action
+
+-- | Create a directory if needed and run a task, tracking refcount.
+createDirectory :: FilePath -> (FilePath -> IO a) -> IO (Maybe a)
+createDirectory path task = do
+    -- Update refcount
+    isCreator <- modifyMVar directoryRefCount $ \refMap ->
+        case Map.lookup path refMap of
+            Nothing -> pure (Map.insert path 1 refMap, True)        -- add entry to map
+            Just n  -> pure (Map.insert path (n + 1) refMap, False) -- increment entry
+
+    -- Run actual IO task only if this call is the creator and 
+    -- the path does not already exist
+    if isCreator
+       then withDirectoryLock path $ do
+            -- delete it if it already exists, it should not exist yet
+            exists <- doesDirectoryExist path
+            if exists then deleteDirectoryIfExists path (pure ()) else pure False
+            -- create fresh directory
+            createDirectoryIfMissing True path
+            -- do task to initialise directory
+            Just <$> task path
+       else pure Nothing
+
+-- | Delete a directory safely (only one thread per dir at a time)
+deleteDirectory :: FilePath -> IO () -> IO Bool
+deleteDirectory path callback = do
+    mDelete <- modifyMVar directoryRefCount $ \refMap ->
+        case Map.lookup path refMap of
+            Nothing -> pure (refMap, False)                       -- nothing to do
+            Just 1  -> pure (Map.delete path refMap, True)        -- remove entry 
+            Just n  -> if n > 0
+                then pure (Map.insert path (n - 1) refMap, False) -- decrement entry if valid
+                else pure (refMap, False)                         -- do nothing if n <= 0
+
+    -- Only delete if this call actually drops refcount to zero
+    if mDelete
+        then withDirectoryLock path $ deleteDirectoryIfExists path callback
+        else pure False
 
 -- automatically execute shell scripts in the command pool whilst the command result is extracted and passed to the parsing pool
 execAndParse :: TBQueue String -> FilePath -> Command -> (String -> ParseResult a) -> String -> IO a
@@ -48,14 +144,15 @@ execAndParse notifier cwd cmd parser msg = await (
     )
 
 execAndParseAll :: TBQueue String -> FilePath -> [Command] -> (String -> ParseResult a) -> String -> IO [a]
-execAndParseAll notifier cwd cmds parser msg = passAllAsync commandPool parsingPool
+execAndParseAll notifier cwd cmds parser msg = 
+    passAllAsync commandPool parsingPool
     (executeCommand notifier cwd)
     (pure . parsed msg . parser . parsed msg . successful)
     cmds
 
 fetchDataFrom :: String -> TBQueue String -> IO (Either String RepositoryData)
-fetchDataFrom url notifier = (do
-        workingDir <- getCurrentDirectory
+fetchDataFrom url notifier = do
+        workingDir <- getTemporaryDirectory
         let cloneRoot = workingDir </> "cloned-repos"
 
         awaitOutsideCloneDir <- createDirectoryIfMissing True cloneRoot
@@ -67,38 +164,43 @@ fetchDataFrom url notifier = (do
         emit notifier "Found the repo!"
 
         let parts = splitOn '/' url
-            repoNameFromUrl = last (init parts) ++ "/" ++ last parts
-            repoRelativePath = "cloned-repos" </> repoNameFromUrl
-            repoAbsPath = workingDir </> repoRelativePath
+            repoRelativePath = last (init parts) ++ "/" ++ last parts
+            repoAbsPath      = cloneRoot </> repoRelativePath
 
-        awaitRepoDirDeletion <- deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
-        awaitCreateRepoDir   <- createDirectoryIfMissing True repoAbsPath
+            cloneFunction = createDirectory repoAbsPath (\_ -> do
+                    -- clone the repo in this case, otherwise we don't actually need to clone it as
+                    -- it already exists and another request is using it rn
+                    emit notifier "Cloning repo..."
 
-        emit notifier "Cloning repo..."
-        awaitCloneResult <- parsed "Failed to clone the repo" <$> await (submitTaskAsync commandPool
-            (\path -> successful <$> executeCommandTimedOut 5 notifier workingDir (cloneRepo url path))
-            repoAbsPath) 
+                    -- creating the directory to clone into
+                    createDirectoryIfMissing True repoAbsPath
 
-        emit notifier "Getting repository data..."
-        repoData <- formulateRepoData url repoAbsPath notifier
-        emit notifier "Data processed!"
-        pure (Right repoData)
-    )
-    `catch` \(e :: SomeException) -> do
-        let errMsg = displayException e
-        emit notifier ("Error occurred:\n" ++ errMsg)
-        pure (Left errMsg)
-    `finally` do
-        
-        -- cleanup no matter what
-        workingDir <- getCurrentDirectory
-        let parts = splitOn '/' url
-            repoNameFromUrl = last (init parts) ++ "/" ++ last parts
-            repoRelativePath = "cloned-repos" </> repoNameFromUrl
-            repoAbsPath = workingDir </> repoRelativePath
+                    -- clones git repo into directory 
+                    commandResult <- executeCommandTimedOut 10 notifier cloneRoot (cloneRepo url repoAbsPath)
+                    let parsedCloneResult = parsed "Failed to clone the repo" $ successful commandResult
 
-        deleteDirectoryIfExists repoAbsPath (emit notifier "Cleaning Up Directory...")
-    
+                    pure ()
+                )
+
+            deleteFunction _ = deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
+
+        bracket
+            -- clone the repository if it has not already been
+            cloneFunction
+            -- delete the repository if it can be
+            deleteFunction
+            -- run this part inside to purify any side effects
+            (\_ -> do
+                emit notifier "Getting repository data..."
+                repoData <- formulateRepoData url repoAbsPath notifier
+                emit notifier "Data processed!"
+                pure (Right repoData)
+            )
+            `catch` \(e :: SomeException) -> do
+            let errMsg = displayException e
+            emit notifier ("Error occurred:\n" ++ errMsg)
+            pure (Left errMsg)
+
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
 formulateRepoData :: String -> FilePath -> TBQueue String -> IO RepositoryData
@@ -110,7 +212,7 @@ formulateRepoData _url path notifier = do
     collectedBranchNames <- execCmd getBranches parseRepoBranches "Failed to parse git branch names"
     let branchNameFilter = replace "remotes/" "" . replace "origin/" ""
         branchNames = unique collectedBranchNames
-        filteredBranchNames = map branchNameFilter branchNames 
+        filteredBranchNames = map branchNameFilter branchNames
 
     emit notifier "Searching for commit hashes..."
     allCommitHashesListOfList <- execAll (map getAllCommitsFrom branchNames) parseCommitHashes "Failed to parse commit hashes from branches"
@@ -128,7 +230,7 @@ formulateRepoData _url path notifier = do
             pure (r1, r2)
         )
         (\(r1, r2) -> do
-            let msg              = "Failed to formulate all commit data" 
+            let msg              = "Failed to formulate all commit data"
                 checkPass        = parsed msg . successful
                 raw1             = checkPass r1
                 raw2             = checkPass r2
@@ -143,8 +245,8 @@ formulateRepoData _url path notifier = do
                 modifyTVar' commitCounter (+1)
                 readTVar commitCounter
             emit notifier $ "Formulating all commit data (" ++ show count ++ "/" ++ show commitsFound ++ ")..."
-            
-            pure $ CommitData 
+
+            pure $ CommitData
                 (ibCommitHash      ibCommitData ) --commitHash        
                 (ibCommitTitle     ibCommitData ) --commitTitle     
                 (ibContributorName ibCommitData ) --contributorName 
@@ -152,7 +254,7 @@ formulateRepoData _url path notifier = do
                 (ibTimestamp       ibCommitData ) --timestamp       
                 (fileData                       ) --fileData
             )
-        (map (\h -> (getCommitDetails h, getCommitDiff h)) allCommitHashes)    
+        (map (\h -> (getCommitDetails h, getCommitDiff h)) allCommitHashes)
 
     emit notifier "Formulating all contributors..."
     let uniqueNames = unique $ map contributorName allCommitData
