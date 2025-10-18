@@ -134,18 +134,23 @@ const scoringStrategies: Record<string, ScoreFn> = {
     },
 
     "Compact Scaling": (scales: number[], idx: number) => {
-        if (!scales.length) return 1;
+    // Filter only finite numbers
+    const validScales = scales.filter((v) => Number.isFinite(v));
+    if (!validScales.length) return 1; // fallback if all invalid
 
-        const min = Math.min(...scales);
-        const max = Math.max(...scales);
+    const min = Math.min(...validScales);
+    const max = Math.max(...validScales);
 
-        if (min === max) return 1; // all same -> neutral 1
+    if (min === max) return 1; // all same -> neutral 1
 
-        // linear mapping from min..max -> 0.5..1.2
-        const value = scales[idx];
-        const normalized = (value - min) / (max - min);
-        return 0.5 + normalized * (1.2 - 0.5); // 0.5 -> min, 1.2 -> max
-    },
+    const value = scales[idx];
+    if (!Number.isFinite(value)) return 1; // fallback for this user
+
+    // Linear mapping from min..max -> 0.5..1.2
+    const normalized = (value - min) / (max - min);
+    return 0.5 + normalized * 0.7; // 0.5 -> min, 1.2 -> max
+},
+
 
 
 
@@ -278,6 +283,7 @@ Meteor.startup(async () => {
     alice: { "Total No. Commits": 10, LOC: 200, "LOC Per Commit": 20, "Commits Per Day": 1 },
     bob: { "Total No. Commits": 30, LOC: 400, "LOC Per Commit": 20, "Commits Per Day": 2 },
     charlie: { "Total No. Commits": 5000, LOC: 6000, "LOC Per Commit": 3000, "Commits Per Day": 30 },
+
   };
 
 //     "Percentiles",
