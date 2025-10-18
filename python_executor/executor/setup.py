@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+from setuptools import setup, find_packages
+
+setup(name='python-executor',
+      version='1.0',
+      # Modules to import from other scripts:
+      packages=find_packages(),
+      # Executables
+      scripts=["python_executor.py"],
+      )
