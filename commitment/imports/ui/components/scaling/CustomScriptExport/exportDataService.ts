@@ -23,21 +23,35 @@ export class ExportDataService {
    */
   async fetchExportData(config: DataSelectionConfig, repoUrl: string): Promise<ExportData> {
     try {
+      console.log('ExportDataService: Fetching data for repoUrl:', repoUrl);
+      console.log('ExportDataService: Config:', config);
+      console.log('ExportDataService: Date range from:', config.dateRange?.from);
+      console.log('ExportDataService: Date range to:', config.dateRange?.to);
+      console.log('ExportDataService: Branch:', config.branch);
+      
       // Get filtered repository data from the server
       const filteredData: FilteredData = await meteorCallAsync<FilteredData>("repo.getFilteredData")({
         repoUrl,
-        startDate: config.startDate,
-        endDate: config.endDate,
+        startDate: config.dateRange?.from || new Date(),
+        endDate: config.dateRange?.to || new Date(),
         branch: config.branch,
-        contributor: [], // Get all contributors for now
+        contributor: undefined, // Get all contributors when undefined
       });
+
+      console.log('ExportDataService: Filtered data:', filteredData);
+      console.log('ExportDataService: Repository data commits count:', filteredData.repositoryData?.allCommits?.length || 0);
+      console.log('ExportDataService: Repository data contributors count:', filteredData.repositoryData?.contributors?.length || 0);
 
       // Get all metrics for the filtered data
       const allMetrics: AllMetricsData = await meteorCallAsync<AllMetricsData>("repo.getAllMetrics")(repoUrl);
+      
+      console.log('ExportDataService: All metrics:', allMetrics);
+      console.log('ExportDataService: All metrics keys:', Object.keys(allMetrics || {}));
 
       // Generate export data from the real repository data
       const exportData = this.generateExportDataFromRepo(config, filteredData, allMetrics);
       
+      console.log('ExportDataService: Generated export data:', exportData);
       return exportData;
     } catch (error) {
       console.error('Error fetching export data:', error);
@@ -53,14 +67,18 @@ export class ExportDataService {
     filteredData: FilteredData, 
     allMetrics: AllMetricsData
   ): ExportData {
-    const { branch, startDate, endDate, selectedMetrics, groupBy, includeRawData } = config;
+    const { branch, dateRange, selectedMetrics, groupBy, includeRawData } = config;
+    const startDate = dateRange?.from || new Date();
+    const endDate = dateRange?.to || new Date();
     const { repositoryData } = filteredData;
     
     // Get contributors from the repository data
     const contributors = this.getContributorsFromRepoData(repositoryData);
+    console.log('ExportDataService: Extracted contributors for export:', contributors);
     
     // Generate headers based on selected metrics and grouping
     const headers = this.generateHeaders(selectedMetrics, groupBy, includeRawData);
+    console.log('ExportDataService: Generated headers:', headers);
     
     // Generate rows based on grouping
     const rows = this.generateRowsFromRepoData(
@@ -73,6 +91,8 @@ export class ExportDataService {
       startDate,
       endDate
     );
+    console.log('ExportDataService: Generated rows count:', rows.length);
+    console.log('ExportDataService: Generated rows:', rows);
 
     return {
       headers,
@@ -90,7 +110,17 @@ export class ExportDataService {
    * Extract contributors from repository data
    */
   private getContributorsFromRepoData(repoData: SerializableRepoData): string[] {
-    return repoData.contributors.map((contributor: any) => contributor.value.name);
+    console.log('ExportDataService: Getting contributors from repo data:', repoData);
+    console.log('ExportDataService: Contributors array:', repoData.contributors);
+    
+    if (!repoData.contributors || !Array.isArray(repoData.contributors)) {
+      console.warn('ExportDataService: No contributors array found in repo data');
+      return [];
+    }
+    
+    const contributors = repoData.contributors.map((contributor: any) => contributor.value.name);
+    console.log('ExportDataService: Extracted contributors:', contributors);
+    return contributors;
   }
 
   private generateHeaders(metrics: string[], groupBy: string, includeRawData: boolean): string[] {
@@ -175,9 +205,15 @@ export class ExportDataService {
         rows.push(row);
       });
     } else if (groupBy === 'date') {
-      // Generate one row per day
-      const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-      for (let i = 0; i < days; i++) {
+      // Generate one row per day (inclusive of both start and end dates)
+      const startDay = new Date(startDate);
+      startDay.setHours(0, 0, 0, 0);
+      const endDay = new Date(endDate);
+      endDay.setHours(0, 0, 0, 0);
+      const msPerDay = 1000 * 60 * 60 * 24;
+      const days = Math.floor((endDay.getTime() - startDay.getTime()) / msPerDay) + 1;
+
+      for (let i = 0; i < Math.max(days, 1); i++) {
         const date = new Date(startDate);
         date.setDate(date.getDate() + i);
         
