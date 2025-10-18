@@ -192,6 +192,21 @@ function useSmoothedProgress(target: number) {
   return progress;
 }
 
+/** Navigate back if there's a previous entry; otherwise fallback to /home */
+function goBackOrHome(navigate: ReturnType<typeof useNavigate>) {
+  try {
+    // In browsers, history.length > 1 usually means we can go back safely.
+    if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+  } catch {
+    // ignore and use fallback
+  }
+  navigate("/home", { replace: true });
+}
+
+
 const LoadingPage: React.FC = () => {
   const navigate = useNavigate();
 
@@ -204,7 +219,6 @@ const LoadingPage: React.FC = () => {
   const [tipIndex, setTipIndex] = useState(0);
   const [hadError, setHadError] = useState(false);
 
-  const modelRef = useRef<ProgressModel>(createEmptyModel());
   const [targetPct, setTargetPct] = useState(0);
 
   const tips = useMemo(
@@ -267,9 +281,10 @@ const LoadingPage: React.FC = () => {
         setHadError(true);
         notifier.next(`Error: ${errMsg}`);
         setTimeout(() => {
-          navigate("/home", { replace: true });
+          goBackOrHome(navigate);
         }, 8000);
       })
+
       .finally(() => {
         notifier.complete();
       });
@@ -280,18 +295,28 @@ const LoadingPage: React.FC = () => {
       notifier.complete();
     };
   }, [repoUrl, navigate]);
-
+    
   return !repoUrl ? (
     <Navigate to="/insert-git-repo" replace />
   ) : (
-    <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
-      <h2 className={`text-3xl font-inconsolata-bold mb-6 ${hadError ? "text-red-500" : ""}`}>
-        {message}
-      </h2>
+    <div className="min-h-screen flex items-center justify-center px-6 pt-24">
+      <div className="w-full max-w-2xl flex flex-col items-center gap-6 bg-git-bg-elevated/0">
+        <h2
+          className={[
+            "text-git-text-primary",
+            "text-2xl md:text-3xl font-mono font-semibold text-center",
+            hadError ? "text-red-500" : "",
+          ].join(" ")}
+        >
+          {message}
+        </h2>
 
-      <LoadingBar progress={progress} indeterminate={indeterminate} />
+        <div className="w-full">
+          <LoadingBar progress={progress} indeterminate={indeterminate} />
+        </div>
 
-      <TipBox tip={tips[tipIndex]} />
+        <TipBox tip={tips[tipIndex]} />
+      </div>
     </div>
   );
 };
