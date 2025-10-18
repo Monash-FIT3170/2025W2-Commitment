@@ -17,18 +17,106 @@ This application supports third-party authentication via Google and GitHub OAuth
 
 ---
 
-## Table of Contents
+## 🔑 Important: Using Repository Secrets for Development
 
-1. [Development Setup](#development-setup)
-2. [Production Setup](#production-setup)
-3. [Troubleshooting](#troubleshooting)
-4. [Security Notes](#security-notes)
+**For development team members:** Instead of creating your own OAuth applications, use the shared development OAuth credentials stored in the GitHub repository secrets. This:
+
+- ✅ Simplifies onboarding for new developers
+- ✅ Prevents proliferation of OAuth applications
+- ✅ Ensures consistent configuration across the team
+- ✅ Centralizes credential management
+
+**Only create new OAuth apps if:**
+- You're deploying to production
+- You don't have access to the repository secrets
+- You need to test with custom OAuth configurations
 
 ---
 
-## Development Setup
+## Table of Contents
 
-Follow these steps to enable Google and GitHub OAuth for local development.
+1. [Development Setup (Using Repository Secrets)](#development-setup-using-repository-secrets)
+2. [Development Setup (Creating Your Own OAuth Apps)](#development-setup-creating-your-own-oauth-apps)
+3. [Production OAuth](#production-oauth)
+4. [Troubleshooting](#troubleshooting)
+5. [Security Notes](#security-notes)
+
+---
+
+## Development Setup (Using Repository Secrets)
+
+**Recommended for development team members.**
+
+### Prerequisites
+
+- Access to the GitHub repository
+- Local development environment running on `http://localhost:3000`
+
+### Step 1: Access Repository Secrets
+
+1. Navigate to the GitHub repository page
+2. Go to **Settings** → **Secrets and variables** → **Actions** (or **Codespaces** depending on setup)
+3. Locate the development OAuth secrets:
+   - `DEV_GOOGLE_CLIENT_ID`
+   - `DEV_GOOGLE_CLIENT_SECRET`
+   - `DEV_GITHUB_CLIENT_ID`
+   - `DEV_GITHUB_CLIENT_SECRET`
+4. Copy these values (you may need repository admin access to view secrets)
+
+> **Note:** If you don't have access to view secrets, contact your team lead or repository administrator.
+
+### Step 2: Configure Environment Variables
+
+1. Navigate to the `commitment` directory:
+   ```bash
+   cd commitment
+   ```
+
+2. Open the `.env` file (create it if it doesn't exist)
+
+3. Add the OAuth credentials from repository secrets:
+   ```bash
+   # Existing variables (keep these)
+   MONGO_URL=mongodb+srv://...
+   SERVER_HOST=0.0.0.0
+   PORT=3000
+   DB_NAME=commitment_db
+   NODE_ENV=development
+
+   # OAuth Configuration (paste from repository secrets)
+   GOOGLE_CLIENT_ID=<value_from_DEV_GOOGLE_CLIENT_ID>
+   GOOGLE_CLIENT_SECRET=<value_from_DEV_GOOGLE_CLIENT_SECRET>
+   GITHUB_CLIENT_ID=<value_from_DEV_GITHUB_CLIENT_ID>
+   GITHUB_CLIENT_SECRET=<value_from_DEV_GITHUB_CLIENT_SECRET>
+   ```
+
+4. Replace the `<value_from_...>` placeholders with the actual values from GitHub repository secrets
+
+### Step 3: Restart the Application
+
+```bash
+# Stop the current Meteor server (Ctrl+C if running)
+# Then restart it
+npm start
+# or
+meteor
+```
+
+The OAuth configuration will be loaded on server startup.
+
+### Step 4: Test OAuth Login
+
+1. Navigate to `http://localhost:3000/login` or `http://localhost:3000/signup`
+2. You should see **Log in with Google** and **Log in with GitHub** buttons
+3. Click either button to test the OAuth flow
+4. You should be redirected to Google/GitHub for authentication
+5. After approving, you'll be redirected back and logged into the application
+
+---
+
+## Development Setup (Creating Your Own OAuth Apps)
+
+**Only use this approach if you cannot access repository secrets or need custom OAuth configuration for testing.**
 
 ### Prerequisites
 
@@ -44,29 +132,29 @@ Follow these steps to enable Google and GitHub OAuth for local development.
 4. Click **Create Credentials** → **OAuth client ID**
 5. Configure the OAuth consent screen if prompted:
    - User Type: **External** (for testing) or **Internal** (for organization use)
-   - App name: `Commitment` (or your preferred name)
+   - App name: `Commitment Dev - Your Name` (use your name to distinguish it)
    - User support email: Your email
    - Developer contact: Your email
 6. Create OAuth client ID:
    - Application type: **Web application**
-   - Name: `Commitment Dev`
+   - Name: `Commitment Dev - Your Name`
    - Authorized JavaScript origins: `http://localhost:3000`
    - Authorized redirect URIs: `http://localhost:3000/_oauth/google`
 7. Click **Create**
-8. Copy the **Client ID** and **Client Secret** (you'll need these for the `.env` file)
+8. Copy the **Client ID** and **Client Secret**
 
 ### Step 2: Create GitHub OAuth App
 
 1. Go to [GitHub Settings](https://github.com/settings/developers)
 2. Click **OAuth Apps** → **New OAuth App**
 3. Fill in the application details:
-   - Application name: `Commitment Dev`
+   - Application name: `Commitment Dev - Your Name`
    - Homepage URL: `http://localhost:3000`
    - Authorization callback URL: `http://localhost:3000/_oauth/github`
 4. Click **Register application**
 5. Copy the **Client ID**
 6. Click **Generate a new client secret**
-7. Copy the **Client Secret** (you won't be able to see it again)
+7. Copy the **Client Secret**
 
 ### Step 3: Configure Environment Variables
 
@@ -77,7 +165,7 @@ Follow these steps to enable Google and GitHub OAuth for local development.
 
 2. Open the `.env` file (create it if it doesn't exist)
 
-3. Add the following OAuth credentials:
+3. Add your OAuth credentials:
    ```bash
    # Existing variables (keep these)
    MONGO_URL=mongodb+srv://...
@@ -86,127 +174,30 @@ Follow these steps to enable Google and GitHub OAuth for local development.
    DB_NAME=commitment_db
    NODE_ENV=development
 
-   # OAuth Configuration (add these)
+   # OAuth Configuration (your personal dev credentials)
    GOOGLE_CLIENT_ID=your_google_client_id_here
    GOOGLE_CLIENT_SECRET=your_google_client_secret_here
    GITHUB_CLIENT_ID=your_github_client_id_here
    GITHUB_CLIENT_SECRET=your_github_client_secret_here
    ```
 
-4. Replace the placeholder values with your actual credentials
+### Step 4: Restart and Test
 
-### Step 4: Restart the Application
-
-```bash
-# Stop the current Meteor server (Ctrl+C if running)
-# Then restart it
-npm start
-# or
-meteor
-```
-
-The OAuth configuration will be loaded on server startup.
-
-### Step 5: Test OAuth Login
-
-1. Navigate to `http://localhost:3000/login` or `http://localhost:3000/signup`
-2. You should see **Log in with Google** and **Log in with GitHub** buttons
-3. Click either button to test the OAuth flow
-4. You should be redirected to Google/GitHub for authentication
-5. After approving, you'll be redirected back and logged into the application
+Follow steps 3-4 from the "Development Setup (Using Repository Secrets)" section above.
 
 ---
 
-## Production Setup
+## Production OAuth
 
-Follow these steps to enable OAuth for the deployed production environment on EC2.
+**Production OAuth credentials are managed by the deployment team only.**
 
-### Prerequisites
+For general developers: You do not need to configure or access production OAuth credentials. The production environment uses separate OAuth applications that are managed and deployed by the deployment team.
 
-- SSH access to the EC2 production server
-- Production domain or IP address (e.g., `http://your-ec2-ip:3000` or `https://your-domain.com`)
-
-### Step 1: Create Google OAuth App for Production
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Navigate to your project → **APIs & Services** → **Credentials**
-3. Either create a new OAuth client ID or add redirect URIs to the existing one:
-   - Click **Create Credentials** → **OAuth client ID** (or edit existing)
-   - Application type: **Web application**
-   - Name: `Commitment Production`
-   - Authorized JavaScript origins:
-     - `http://YOUR_EC2_IP:3000` (replace with actual IP)
-     - `https://your-domain.com` (if using a domain)
-   - Authorized redirect URIs:
-     - `http://YOUR_EC2_IP:3000/_oauth/google`
-     - `https://your-domain.com/_oauth/google` (if using a domain)
-4. Click **Create** or **Save**
-5. Copy the **Client ID** and **Client Secret**
-
-### Step 2: Create GitHub OAuth App for Production
-
-1. Go to [GitHub Settings](https://github.com/settings/developers)
-2. Click **OAuth Apps** → **New OAuth App**
-3. Fill in the application details:
-   - Application name: `Commitment Production`
-   - Homepage URL: `http://YOUR_EC2_IP:3000` (or your domain)
-   - Authorization callback URL:
-     - `http://YOUR_EC2_IP:3000/_oauth/github`
-     - Or `https://your-domain.com/_oauth/github` (if using a domain)
-4. Click **Register application**
-5. Copy the **Client ID**
-6. Generate and copy the **Client Secret**
-
-### Step 3: Configure Production Environment Variables
-
-1. SSH into your EC2 instance:
-   ```bash
-   ssh -i your-key.pem ubuntu@YOUR_EC2_IP
-   ```
-
-2. Navigate to the application directory:
-   ```bash
-   cd ~/app/commitment
-   ```
-
-3. Edit the `.env` file:
-   ```bash
-   nano .env
-   # or
-   vim .env
-   ```
-
-4. Add the OAuth credentials:
-   ```bash
-   # Existing variables (keep these)
-   MONGO_URL=mongodb+srv://...
-   SERVER_HOST=0.0.0.0
-   PORT=3000
-   DB_NAME=commitment_db
-   NODE_ENV=production
-
-   # OAuth Configuration (add these)
-   GOOGLE_CLIENT_ID=your_production_google_client_id
-   GOOGLE_CLIENT_SECRET=your_production_google_client_secret
-   GITHUB_CLIENT_ID=your_production_github_client_id
-   GITHUB_CLIENT_SECRET=your_production_github_client_secret
-   ```
-
-5. Save and exit the file (in nano: `Ctrl+X`, `Y`, `Enter`)
-
-### Step 4: Restart the Production Containers
-
-```bash
-cd ~/app
-sudo docker-compose -f docker-compose.prod.yml down
-sudo docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Step 5: Verify Production OAuth
-
-1. Navigate to your production URL: `http://YOUR_EC2_IP:3000/login`
-2. Test the Google and GitHub login buttons
-3. Verify successful authentication and redirect
+**If you are part of the deployment team:**
+- Production OAuth credentials are stored securely (not in repository secrets)
+- Contact the deployment team lead for access to production credentials
+- Production OAuth apps should use HTTPS and the production domain/IP
+- Follow your organization's production deployment and security procedures
 
 ---
 
@@ -259,26 +250,39 @@ sudo docker-compose -f docker-compose.prod.yml up -d
 1. **Never commit `.env` to Git**
    - The `.env` file is already in `.gitignore`
    - Double-check before committing any changes
+   - Never share secrets in pull requests, issues, or documentation
 
-2. **Use different credentials for dev and production**
-   - Create separate OAuth apps for development and production
+2. **Repository Secrets Management**
+   - Only repository administrators should have access to create/modify secrets
+   - Development OAuth secrets should be stored in GitHub repository secrets
+   - Use the naming convention: `DEV_GOOGLE_CLIENT_ID`, `DEV_GITHUB_CLIENT_SECRET`, etc.
+   - Rotate repository secrets periodically (at least every 6 months)
+
+3. **Use different credentials for dev and production**
+   - Shared development OAuth apps for the team (stored in repository secrets)
+   - Separate production OAuth apps (managed by deployment team)
    - This allows you to revoke/rotate credentials independently
-
-3. **Rotate secrets regularly**
-   - Periodically regenerate OAuth client secrets
-   - Update both the OAuth provider and `.env` file
+   - Development apps should only work with `localhost:3000`
 
 4. **Limit OAuth app permissions**
    - Only request the minimum necessary scopes
    - Current implementation uses default scopes (basic profile info)
+   - Review OAuth app permissions regularly
 
 5. **Use HTTPS in production**
    - Configure SSL/TLS certificates for your production domain
    - Update OAuth redirect URIs to use `https://`
+   - Never use `http://` for production OAuth callbacks
 
 6. **Secure the EC2 instance**
    - Restrict `.env` file permissions: `chmod 600 commitment/.env`
    - Ensure only authorized users have SSH access
+   - Never expose `.env` contents in logs or error messages
+
+7. **Personal OAuth Apps (if created)**
+   - Delete your personal development OAuth apps when no longer needed
+   - Don't share your personal OAuth credentials with other developers
+   - Use repository secrets instead of creating personal OAuth apps
 
 ---
 
