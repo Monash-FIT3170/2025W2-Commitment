@@ -322,12 +322,12 @@ Meteor.startup(async () => {
     const diff = score - mean;
     console.log("MEAN", mean)
 
-    console.log("THIS IS SCORE", score , "THIS IS DIFF", diff);
+    console.log("THIS IS diff", diff , "THIS IS std", 1.3*std);
 
     if (diff <= -3 * std) return 0;
     if (diff <= -2 * std) return 0.5;
     if (diff <= -1 * std) return 0.9;
-    if (diff <= 2 * std) return 1;
+    if (diff <= 1.2 * std) return 1;
     if (diff <= 3 * std) return 1.1;
     return 1.2;
   }
