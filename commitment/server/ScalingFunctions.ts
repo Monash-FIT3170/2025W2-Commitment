@@ -133,36 +133,28 @@ const scoringStrategies: Record<string, ScoreFn> = {
         return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     },
 
-    "Compact Scaling": (scales: number[]) => {
-        ///REMOVE reliance on mean, std -> as they will always be very very small
-        if (!scales.length) return 1;
+    "Compact Scaling": (scales: number[], idx: number) => {
+    if (!scales.length) return 1;
 
-        const maxScale = 1.2;
+    const maxScale = 1.2;
+    const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
+    const variance = scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length;
+    const std = Math.sqrt(variance);
 
-        // Compute mean and std
-        const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
-        const variance = scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length;
-        const std = Math.sqrt(variance);
+    if (std < 1e-6) {
+        const value = scales[idx]; // pick this user's value
+        return 0.5 + value * 0.7;
+    }
 
-        // Handle tiny variance or single value
-        if (std < 1e-6) {
-            // Map single or identical values proportionally to [0.5, 1.2] baseline
-            const value = scales[0];
-            return 0.5 + value * 0.7; // ensures floor at 0.5, max at 1.2
-        }
+    const smoothScale = (x: number) => {
+        const normalized = (x - mean) / std;
+        const scale = 0.5 + Math.tanh(normalized * 0.8) * 0.5;
+        return 0.5 + scale * 0.7;
+    };
 
-        // Smooth scaling using tanh
-        const smoothScale = (x: number) => {
-            const normalized = (x - mean) / std;
-            const scale = 0.5 + Math.tanh(normalized * 0.8) * 0.5; // between 0 and 1
-            return 0.5 + scale * 0.7; // floor 0.5, max ~1.2
-        };
+    return Math.min(smoothScale(scales[idx]), maxScale);
+},
 
-        const scaledValues = scales.map(smoothScale);
-        const avgScaled = scaledValues.reduce((a, b) => a + b, 0) / scaledValues.length;
-
-        return Math.min(avgScaled, maxScale);
-    },
 
     Default: (scales) => scales.reduce((a, b) => a + b, 0) / scales.length, // just calculates the mean (average) of the user’s normalized metric values
 };
@@ -292,7 +284,7 @@ Meteor.startup(async () => {
   const fakeMetrics = {
     alice: { "Total No. Commits": 10, LOC: 200, "LOC Per Commit": 20, "Commits Per Day": 1 },
     bob: { "Total No. Commits": 30, LOC: 400, "LOC Per Commit": 20, "Commits Per Day": 2 },
-    charlie: { "Total No. Commits": 50, LOC: 600, "LOC Per Commit": 30, "Commits Per Day": 3 },
+    charlie: { "Total No. Commits": 5000, LOC: 6000, "LOC Per Commit": 3000, "Commits Per Day": 30 },
   };
 
 //     "Percentiles",
@@ -301,7 +293,7 @@ Meteor.startup(async () => {
 //     "Compact Scaling",
 
   const config: ScalingConfig = {
-    method: "Quartiles",
+    method: "Compact Scaling",
     metrics: ["Total No. Commits", "LOC"], // match keys in fakeMetrics
   };
 
