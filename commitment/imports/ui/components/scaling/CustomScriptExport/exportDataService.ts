@@ -3,8 +3,7 @@ import { ExportData } from './ExportPreview';
 import { meteorCallAsync } from '../../../../api/meteor_interface';
 import { 
   FilteredData, 
-  SerializableRepoData, 
-  AllMetricsData
+  SerializableRepoData
 } from '../../../../api/types';
 
 // Real data service using actual API calls
@@ -41,15 +40,18 @@ export class ExportDataService {
       console.log('ExportDataService: Filtered data:', filteredData);
       console.log('ExportDataService: Repository data commits count:', filteredData.repositoryData?.allCommits?.length || 0);
       console.log('ExportDataService: Repository data contributors count:', filteredData.repositoryData?.contributors?.length || 0);
-
-      // Get all metrics for the filtered data
-      const allMetrics: AllMetricsData = await meteorCallAsync<AllMetricsData>("repo.getAllMetrics")(repoUrl);
       
-      console.log('ExportDataService: All metrics:', allMetrics);
-      console.log('ExportDataService: All metrics keys:', Object.keys(allMetrics || {}));
+      // Metrics for the filtered data
+      const allCommits = filteredData.repositoryData?.allCommits || [];
+      if (allCommits.length > 0) {
+        const commitDates = allCommits.map((commit: any) => commit.value.timestamp);
+        const minDate = new Date(Math.min(...commitDates.map((d: any) => new Date(d).getTime())));
+        const maxDate = new Date(Math.max(...commitDates.map((d: any) => new Date(d).getTime())));
+        console.log('ExportDataService: Actual commit date range:', minDate.toISOString(), 'to', maxDate.toISOString());
+      }
 
       // Generate export data from the real repository data
-      const exportData = this.generateExportDataFromRepo(config, filteredData, allMetrics);
+      const exportData = this.generateExportDataFromRepoDirect(config, filteredData);
       
       console.log('ExportDataService: Generated export data:', exportData);
       return exportData;
@@ -60,12 +62,11 @@ export class ExportDataService {
   }
 
   /**
-   * Generate export data from real repository data
+   * Generate export data directly from repository data 
    */
-  private generateExportDataFromRepo(
+  private generateExportDataFromRepoDirect(
     config: DataSelectionConfig, 
-    filteredData: FilteredData, 
-    allMetrics: AllMetricsData
+    filteredData: FilteredData
   ): ExportData {
     const { branch, dateRange, selectedMetrics, groupBy, includeRawData } = config;
     const startDate = dateRange?.from || new Date();
@@ -74,20 +75,19 @@ export class ExportDataService {
     
     // Get contributors from the repository data
     const contributors = this.getContributorsFromRepoData(repositoryData);
-    console.log('ExportDataService: Extracted contributors for export:', contributors);
+    console.log('ExportDataService: Extracted contributors for direct export:', contributors);
     
     // Generate headers based on selected metrics and grouping
     const headers = this.generateHeaders(selectedMetrics, groupBy, includeRawData);
     console.log('ExportDataService: Generated headers:', headers);
     
     // Generate rows based on grouping
-    const rows = this.generateRowsFromRepoData(
+    const rows = this.generateRowsFromRepoDataDirect(
       selectedMetrics, 
       groupBy, 
       includeRawData, 
       contributors, 
       repositoryData,
-      allMetrics,
       startDate,
       endDate
     );
@@ -105,6 +105,7 @@ export class ExportDataService {
       }
     };
   }
+
 
   /**
    * Extract contributors from repository data
@@ -166,13 +167,12 @@ export class ExportDataService {
     return metricHeaders[metric] || metric;
   }
 
-  private generateRowsFromRepoData(
+  private generateRowsFromRepoDataDirect(
     metrics: string[], 
     groupBy: string, 
     includeRawData: boolean, 
     contributors: string[], 
     repoData: SerializableRepoData,
-    allMetrics: AllMetricsData,
     startDate: Date,
     endDate: Date
   ): (string | number)[][] {
@@ -187,9 +187,9 @@ export class ExportDataService {
         row.push(contributor);
         row.push(contributor); // Use name as both email and name for now
         
-        // Get metrics for this contributor from allMetrics
+        // Get metrics for this contributor directly from repository data
         metrics.forEach(metric => {
-          const value = this.getMetricValueFromData(metric, contributor, allMetrics, repoData);
+          const value = this.getMetricValueFromRepoData(metric, contributor, repoData, startDate, endDate);
           row.push(value);
         });
         
@@ -245,7 +245,7 @@ export class ExportDataService {
       
       // Generate total metrics
       metrics.forEach(metric => {
-        const value = this.getTotalMetricValue(metric, allMetrics, repoData);
+        const value = this.getTotalMetricValueDirect(metric, repoData, startDate, endDate);
         row.push(value);
       });
       
@@ -264,49 +264,263 @@ export class ExportDataService {
     return rows;
   }
 
+
   /**
-   * Get metric value from allMetrics data for a specific contributor
+   * Get metric value directly from repository data for a specific contributor
    */
-  private getMetricValueFromData(
+  private getMetricValueFromRepoData(
     metric: string, 
     contributor: string, 
-    allMetrics: AllMetricsData, 
-    repoData: SerializableRepoData
+    repoData: SerializableRepoData,
+    startDate: Date,
+    endDate: Date
   ): number {
-    const contributorMetrics = allMetrics[contributor];
-    if (!contributorMetrics) return 0;
+    // Filter commits for this contributor within the date range
+    const allCommits = repoData.allCommits || [];
+    console.log(`ExportDataService: Calculating ${metric} for ${contributor}`);
+    console.log(`ExportDataService: Total commits in repo: ${allCommits.length}`);
+    console.log(`ExportDataService: Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    
+    const commits = allCommits.filter((commit: any) => {
+      const commitDate = new Date(commit.value.timestamp);
+      return commit.value.contributorName === contributor &&
+        commitDate >= startDate &&
+        commitDate <= endDate;
+    });
+    
+    console.log(`ExportDataService: Commits for ${contributor} in date range: ${commits.length}`);
+    if (commits.length > 0) {
+      console.log(`ExportDataService: Sample commit for ${contributor}:`, commits[0]);
+    } else {
+      // Let's see what commits exist for this contributor
+      const contributorCommits = allCommits.filter((commit: any) => 
+        commit.value.contributorName === contributor
+      );
+      console.log(`ExportDataService: Total commits for ${contributor}: ${contributorCommits.length}`);
+      if (contributorCommits.length > 0) {
+        console.log(`ExportDataService: Sample commit date: ${contributorCommits[0].value.timestamp}`);
+        const sampleCommitDate = new Date(contributorCommits[0].value.timestamp);
+        console.log(`ExportDataService: Is within range? ${sampleCommitDate >= startDate && sampleCommitDate <= endDate}`);
+      }
+    }
 
     switch (metric) {
       case 'total_commits':
-        return contributorMetrics["Total No. Commits"] || 0;
+        return commits.length;
+        
       case 'commit_frequency':
-        return contributorMetrics["Commits Per Day"] || 0;
+        // Commits per day
+        const days = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+        return commits.length / days;
+        
       case 'commit_size':
-        return contributorMetrics["LOC Per Commit"] || 0;
+        // Average LOC per commit
+        if (commits.length === 0) return 0;
+        const totalLines = commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.newLines, 0
+          );
+        }, 0);
+        return totalLines / commits.length;
+        
       case 'lines_added':
-        return contributorMetrics.LOC || 0;
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.newLines, 0
+          );
+        }, 0);
+        
       case 'lines_deleted':
-        return 0; // Not directly available in current metrics
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.deletedLines, 0
+          );
+        }, 0);
+        
       case 'lines_modified':
-        return contributorMetrics.LOC || 0;
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.newLines + file.deletedLines, 0
+          );
+        }, 0);
+        
       case 'net_lines':
-        return contributorMetrics.LOC || 0;
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.newLines - file.deletedLines, 0
+          );
+        }, 0);
+        
       case 'file_count':
-        return 0; // Not directly available in current metrics
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.length;
+        }, 0);
+        
       case 'contributors':
-        return Object.keys(allMetrics).length;
+        // Count unique contributors in the date range
+        const uniqueContributors = new Set();
+        (repoData.allCommits || []).forEach((commit: any) => {
+          if (commit.value.timestamp >= startDate && commit.value.timestamp <= endDate) {
+            uniqueContributors.add(commit.value.contributorName);
+          }
+        });
+        return uniqueContributors.size;
+        
       case 'collaboration_score':
-        return 0; // Would need to be calculated
+        // Simple collaboration score based on unique contributors vs total commits
+        const uniqueContributorsCount = new Set();
+        (repoData.allCommits || []).forEach((commit: any) => {
+          if (commit.value.timestamp >= startDate && commit.value.timestamp <= endDate) {
+            uniqueContributorsCount.add(commit.value.contributorName);
+          }
+        });
+        const totalCommits = (repoData.allCommits || []).filter((commit: any) => 
+          commit.value.timestamp >= startDate && commit.value.timestamp <= endDate
+        ).length;
+        return totalCommits > 0 ? uniqueContributorsCount.size / totalCommits : 0;
+        
       case 'active_days':
-        return this.getActiveDaysForContributor(contributor, repoData);
+        // Count unique days with commits
+        const uniqueDays = new Set();
+        commits.forEach((commit: any) => {
+          const day = commit.value.timestamp.toDateString();
+          uniqueDays.add(day);
+        });
+        return uniqueDays.size;
+        
       case 'first_commit':
-        return this.getFirstCommitDateForContributor(contributor, repoData);
+        // Timestamp of first commit
+        if (commits.length === 0) return 0;
+        const firstCommit = commits.reduce((earliest: any, commit: any) => 
+          commit.value.timestamp < earliest.value.timestamp ? commit : earliest
+        );
+        return firstCommit.value.timestamp.getTime();
+        
       case 'last_commit':
-        return this.getLastCommitDateForContributor(contributor, repoData);
+        // Timestamp of last commit
+        if (commits.length === 0) return 0;
+        const lastCommit = commits.reduce((latest: any, commit: any) => 
+          commit.value.timestamp > latest.value.timestamp ? commit : latest
+        );
+        return lastCommit.value.timestamp.getTime();
+        
       default:
         return 0;
     }
   }
+
+  /**
+   * Get total metric value directly from repository data
+   */
+  private getTotalMetricValueDirect(
+    metric: string, 
+    repoData: SerializableRepoData,
+    startDate: Date,
+    endDate: Date
+  ): number {
+    const commits = (repoData.allCommits || []).filter((commit: any) => 
+      commit.value.timestamp >= startDate &&
+      commit.value.timestamp <= endDate
+    );
+
+    switch (metric) {
+      case 'total_commits':
+        return commits.length;
+        
+      case 'commit_frequency':
+        // Average commits per day across all contributors
+        const days = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+        return commits.length / days;
+        
+      case 'commit_size':
+        // Average LOC per commit across all contributors
+        if (commits.length === 0) return 0;
+        const totalLines = commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.newLines, 0
+          );
+        }, 0);
+        return totalLines / commits.length;
+        
+      case 'lines_added':
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.newLines, 0
+          );
+        }, 0);
+        
+      case 'lines_deleted':
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.deletedLines, 0
+          );
+        }, 0);
+        
+      case 'lines_modified':
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.newLines + file.deletedLines, 0
+          );
+        }, 0);
+        
+      case 'net_lines':
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+            fileSum + file.newLines - file.deletedLines, 0
+          );
+        }, 0);
+        
+      case 'file_count':
+        return commits.reduce((sum: number, commit: any) => {
+          return sum + commit.value.fileData.length;
+        }, 0);
+        
+      case 'contributors':
+        // Count unique contributors in the date range
+        const uniqueContributors = new Set();
+        commits.forEach((commit: any) => {
+          uniqueContributors.add(commit.value.contributorName);
+        });
+        return uniqueContributors.size;
+        
+      case 'collaboration_score':
+        // Simple collaboration score based on unique contributors vs total commits
+        const uniqueContributorsCount = new Set();
+        commits.forEach((commit: any) => {
+          uniqueContributorsCount.add(commit.value.contributorName);
+        });
+        return commits.length > 0 ? uniqueContributorsCount.size / commits.length : 0;
+        
+      case 'active_days':
+        // Count unique days with commits
+        const uniqueDays = new Set();
+        commits.forEach((commit: any) => {
+          const day = commit.value.timestamp.toDateString();
+          uniqueDays.add(day);
+        });
+        return uniqueDays.size;
+        
+      case 'first_commit':
+        // Timestamp of first commit
+        if (commits.length === 0) return 0;
+        const firstCommit = commits.reduce((earliest: any, commit: any) => 
+          commit.value.timestamp < earliest.value.timestamp ? commit : earliest
+        );
+        return firstCommit.value.timestamp.getTime();
+        
+      case 'last_commit':
+        // Timestamp of last commit
+        if (commits.length === 0) return 0;
+        const lastCommit = commits.reduce((latest: any, commit: any) => 
+          commit.value.timestamp > latest.value.timestamp ? commit : latest
+        );
+        return lastCommit.value.timestamp.getTime();
+        
+      default:
+        return 0;
+    }
+  }
+
 
   /**
    * Get metric value for a specific date
@@ -319,7 +533,7 @@ export class ExportDataService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
     
-    const commitsForDate = repoData.allCommits.filter((commit: any) => 
+    const commitsForDate = (repoData.allCommits || []).filter((commit: any) => 
       commit.value.timestamp >= startOfDay &&
       commit.value.timestamp <= endOfDay
     );
@@ -416,49 +630,6 @@ export class ExportDataService {
     }
   }
 
-  /**
-   * Get total metric value across all contributors
-   */
-  private getTotalMetricValue(metric: string, allMetrics: AllMetricsData, repoData: SerializableRepoData): number {
-    const contributors = Object.keys(allMetrics);
-    
-    switch (metric) {
-      case 'total_commits':
-        return contributors.reduce((sum, contributor) => 
-          sum + (allMetrics[contributor]["Total No. Commits"] || 0), 0);
-      case 'commit_frequency':
-        return contributors.reduce((sum, contributor) => 
-          sum + (allMetrics[contributor]["Commits Per Day"] || 0), 0) / contributors.length;
-      case 'commit_size':
-        return contributors.reduce((sum, contributor) => 
-          sum + (allMetrics[contributor]["LOC Per Commit"] || 0), 0) / contributors.length;
-      case 'lines_added':
-        return contributors.reduce((sum, contributor) => 
-          sum + (allMetrics[contributor].LOC || 0), 0);
-      case 'lines_deleted':
-        return 0; // Not directly available
-      case 'lines_modified':
-        return contributors.reduce((sum, contributor) => 
-          sum + (allMetrics[contributor].LOC || 0), 0);
-      case 'net_lines':
-        return contributors.reduce((sum, contributor) => 
-          sum + (allMetrics[contributor].LOC || 0), 0);
-      case 'file_count':
-        return 0; // Not directly available
-      case 'contributors':
-        return contributors.length;
-      case 'collaboration_score':
-        return 0; // Would need to be calculated
-      case 'active_days':
-        return this.getTotalActiveDays(repoData);
-      case 'first_commit':
-        return this.getFirstCommitDate(repoData);
-      case 'last_commit':
-        return this.getLastCommitDate(repoData);
-      default:
-        return 0;
-    }
-  }
 
   /**
    * Get raw data for a specific contributor
@@ -469,7 +640,7 @@ export class ExportDataService {
     startDate: Date, 
     endDate: Date
   ): { commitCount: number; filesChanged: number; linesAdded: number; linesDeleted: number } {
-    const commits = repoData.allCommits.filter((commit: any) => 
+    const commits = (repoData.allCommits || []).filter((commit: any) => 
       commit.value.contributorName === contributor &&
       commit.value.timestamp >= startDate &&
       commit.value.timestamp <= endDate
@@ -504,7 +675,7 @@ export class ExportDataService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const commits = repoData.allCommits.filter((commit: any) => 
+    const commits = (repoData.allCommits || []).filter((commit: any) => 
       commit.value.timestamp >= startOfDay &&
       commit.value.timestamp <= endOfDay
     );
@@ -533,7 +704,7 @@ export class ExportDataService {
    * Get total raw data across all contributors
    */
   private getTotalRawData(repoData: SerializableRepoData, startDate: Date, endDate: Date): { commitCount: number; filesChanged: number; linesAdded: number; linesDeleted: number } {
-    const commits = repoData.allCommits.filter((commit: any) => 
+    const commits = (repoData.allCommits || []).filter((commit: any) => 
       commit.value.timestamp >= startDate &&
       commit.value.timestamp <= endDate
     );
@@ -558,95 +729,6 @@ export class ExportDataService {
     };
   }
 
-  /**
-   * Get active days for a specific contributor
-   */
-  private getActiveDaysForContributor(contributor: string, repoData: SerializableRepoData): number {
-    const commits = repoData.allCommits.filter((commit: any) => 
-      commit.value.contributorName === contributor
-    );
-
-    const uniqueDays = new Set();
-    commits.forEach((commit: any) => {
-      const day = commit.value.timestamp.toDateString();
-      uniqueDays.add(day);
-    });
-
-    return uniqueDays.size;
-  }
-
-  /**
-   * Get first commit date for a specific contributor
-   */
-  private getFirstCommitDateForContributor(contributor: string, repoData: SerializableRepoData): number {
-    const commits = repoData.allCommits.filter((commit: any) => 
-      commit.value.contributorName === contributor
-    );
-
-    if (commits.length === 0) return 0;
-
-    const firstCommit = commits.reduce((earliest: any, commit: any) => 
-      commit.value.timestamp < earliest.value.timestamp ? commit : earliest
-    );
-
-    return firstCommit.value.timestamp.getTime();
-  }
-
-  /**
-   * Get last commit date for a specific contributor
-   */
-  private getLastCommitDateForContributor(contributor: string, repoData: SerializableRepoData): number {
-    const commits = repoData.allCommits.filter((commit: any) => 
-      commit.value.contributorName === contributor
-    );
-
-    if (commits.length === 0) return 0;
-
-    const lastCommit = commits.reduce((latest: any, commit: any) => 
-      commit.value.timestamp > latest.value.timestamp ? commit : latest
-    );
-
-    return lastCommit.value.timestamp.getTime();
-  }
-
-  /**
-   * Get total active days across all contributors
-   */
-  private getTotalActiveDays(repoData: SerializableRepoData): number {
-    const uniqueDays = new Set();
-    repoData.allCommits.forEach((commit: any) => {
-      const day = commit.value.timestamp.toDateString();
-      uniqueDays.add(day);
-    });
-
-    return uniqueDays.size;
-  }
-
-  /**
-   * Get first commit date across all contributors
-   */
-  private getFirstCommitDate(repoData: SerializableRepoData): number {
-    if (repoData.allCommits.length === 0) return 0;
-
-    const firstCommit = repoData.allCommits.reduce((earliest: any, commit: any) => 
-      commit.value.timestamp < earliest.value.timestamp ? commit : earliest
-    );
-
-    return firstCommit.value.timestamp.getTime();
-  }
-
-  /**
-   * Get last commit date across all contributors
-   */
-  private getLastCommitDate(repoData: SerializableRepoData): number {
-    if (repoData.allCommits.length === 0) return 0;
-
-    const lastCommit = repoData.allCommits.reduce((latest: any, commit: any) => 
-      commit.value.timestamp > latest.value.timestamp ? commit : latest
-    );
-
-    return lastCommit.value.timestamp.getTime();
-  }
 }
 
 // Export singleton instance

@@ -93,10 +93,15 @@ Meteor.methods({
       repoName: mappedRepo.name,
       branches: mappedRepo.branches.map((b) => b.branchName),
       contributors: mappedRepo.contributors.map((c) => c.key),
-      dateRange: {
+      dateRange: mappedRepo.allCommits.length > 0 ? {
         from: new Date(
           Math.min(...mappedRepo.allCommits.map((c) => new Date(c.value.timestamp).getTime()))
         ),
+        to: new Date(
+          Math.max(...mappedRepo.allCommits.map((c) => new Date(c.value.timestamp).getTime()))
+        ),
+      } : {
+        from: new Date(),
         to: new Date(),
       },
     };

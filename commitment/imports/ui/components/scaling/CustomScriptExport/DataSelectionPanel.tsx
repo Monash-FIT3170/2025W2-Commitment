@@ -66,7 +66,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
   const [config, setConfig] = useState<DataSelectionConfig>({
     branch: '',
     dateRange: {
-      from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+      from: new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000), // 12 weeks ago (same as metrics page)
       to: new Date()
     },
     selectedMetrics: ['total_commits', 'lines_added', 'lines_deleted'],
@@ -74,7 +74,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
     groupBy: 'contributor'
   });
 
-  // Fetch repository metadata to get actual date range
+  // Fetch repository metadata to get available branches and set a smart default date range
   useEffect(() => {
     if (!repoUrl) return;
 
@@ -84,15 +84,33 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
         return;
       }
 
-      if (metadata && metadata.dateRange) {
+      if (metadata) {
         console.log('Repository metadata:', metadata);
-        setConfig(prev => ({
-          ...prev,
-          dateRange: metadata.dateRange,
-          branch: metadata.branches && metadata.branches.length > 0 
-            ? (metadata.branches.includes('main') ? 'main' : metadata.branches[0])
-            : prev.branch
-        }));
+        
+        // Set branch but use a smart default date range that includes actual commits
+        if (metadata.dateRange && metadata.dateRange.from && metadata.dateRange.to) {
+          const actualFrom = new Date(metadata.dateRange.from);
+          const actualTo = new Date(metadata.dateRange.to);
+
+          setConfig(prev => ({
+            ...prev,
+            dateRange: {
+              from: actualFrom,
+              to: actualTo
+            },
+            branch: metadata.branches && metadata.branches.length > 0 
+              ? (metadata.branches.includes('main') ? 'main' : metadata.branches[0])
+              : prev.branch
+          }));
+        } else {
+          // Fallback to just setting the branch
+          setConfig(prev => ({
+            ...prev,
+            branch: metadata.branches && metadata.branches.length > 0 
+              ? (metadata.branches.includes('main') ? 'main' : metadata.branches[0])
+              : prev.branch
+          }));
+        }
       }
     });
   }, [repoUrl]);
