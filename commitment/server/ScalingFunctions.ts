@@ -179,9 +179,9 @@ export async function scaleUsers(repoUrl: string, config: ScalingConfig) {
   const users = buildUsers(allMetrics, selectedMetrics);
   if (!users.length) return [];
 
-  const metricsValues = selectedMetrics.map((_, i) =>
-    normaliseMetric(users.map((u) => u.values[i]))
-  );
+   const metricsValues = selectedMetrics.map((_, i) =>
+  users.map((u) => u.values[i] as number) // raw numbers
+);
 
   const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
 
@@ -189,28 +189,23 @@ export async function scaleUsers(repoUrl: string, config: ScalingConfig) {
     const scales = metricsValues.map((col) => col[idx]);
     return scoreFn(scales, idx, users, selectedMetrics);
   });
-
-    //post scaling normalisation
-  const mean = rawScores.reduce((a, b) => a + b, 0) / rawScores.length;
-
-  const variance = rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length;
   
-  const std = Math.sqrt(variance);
+  const mean = rawScores.reduce((a, b) => a + b, 0) / rawScores.length;
+  const std = Math.sqrt(rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length);
 
-/***
-normalises scales to be relative to the scales of other contributors 
-*/
   function normalise_scale(score: number) {
-    // we find how far away the value is from the mean.
-    const diff = score - mean;
 
-    // we then scale accordingly
+    const diff = score - mean;
+    console.log("MEAN", mean)
+
+    console.log("THIS IS diff", diff , "THIS IS std", 1.3*std);
+
     if (diff <= -3 * std) return 0;
     if (diff <= -2 * std) return 0.5;
     if (diff <= -1 * std) return 0.9;
-    if (diff <= 2 * std) return 1;
+    if (diff <= 1.2 * std) return 1;
     if (diff <= 3 * std) return 1.1;
-    return 1.2; //that means their value is greater than 3std + mean
+    return 1.2;
   }
 
   return users.map((user, i) => ({
