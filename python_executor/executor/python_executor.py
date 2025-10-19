@@ -5,9 +5,13 @@ import os
 from typing import List, Tuple
 import subprocess
 import shutil
+import ast
+import re
 
 PORT = 8002
 app = Flask(__name__)
+
+ALLOWED_LITERAL_PATTERN = r'^\[\s*(?:\d+(\.\d+)?|\'[^\']*\'|"[^"]*")(?:\s*,\s*(?:\d+(\.\d+)?|\'[^\']*\'|"[^"]*"))*\s*\]$'
 
 
 @app.route('/execute', methods=['POST'])
@@ -91,17 +95,38 @@ def exec_in_sandbox(command: List[str],
     lines = stdout.splitlines()
 
     # Collect any output lines that have a comma in them, and treat them as csv rows
-    csv_rows = []
+    data_rows = []
     for line in lines:
-        split_line = line.split(',')
-        if len(split_line) > 1:
-            csv_rows.append(split_line)
+        if not (line.startswith('(') and line.endswith(')')) or [line.startswith('[') and line.endswith(']')]:
+            continue
+
+        # Convert tuples to arrays
+        if line.startswith('(') and line.endswith(')'):
+            _, line = line.split('(', 1)
+            line, _ = line.rsplit(')', 1)
+            line = '[' + line + ']'
+
+        # Protect against stack overflow attacks by only allowing flat structures
+        if not re.match(ALLOWED_LITERAL_PATTERN, line):
+            return jsonify({
+                "error": f"Program returned a literal with nested structures (not allowed).",
+                "stderr": result.stderr,
+                "stdout": result.stdout,
+            }), 400
+
+        try:
+            line_list = ast.literal_eval(line)
+        except (ValueError, SyntaxError):
+            # Ignore invalid lists
+            continue
+
+        data_rows.append(line_list)
 
     # Return result
     return jsonify({
         "stderr": result.stderr,
         "stdout": stdout,
-        "data": csv_rows,
+        "data": data_rows,
     }), 200
 
 
