@@ -12,6 +12,7 @@ bwrap_opts=()
 # ignored=()
 
 ROOT_FS=""
+VERBOSE=0
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -20,7 +21,9 @@ while [[ $# -gt 0 ]]; do
             STORE_FILE="$1"
             shift
 
-            echo "Reading store paths file $STORE_FILE"
+            if [ $VERBOSE -eq 1 ]; then
+                echo "Reading store paths file $STORE_FILE"
+            fi
 
             STORE_PATHS=$(<"$STORE_FILE")
             for p in $STORE_PATHS; do
@@ -32,7 +35,9 @@ while [[ $# -gt 0 ]]; do
             ROOT_FS="$1"
             shift
 
-            echo "Using $ROOT_FS as root filesystem"
+            if [ $VERBOSE -eq 1 ]; then
+                echo "Using $ROOT_FS as root filesystem"
+            fi
 
             for i in "${ROOT_FS}"/*; do
                 path="${i##*/}"
@@ -46,6 +51,14 @@ while [[ $# -gt 0 ]]; do
                     # ignored+=("$path")
                 fi
             done
+            ;;
+        --verbose)
+            shift
+            VERBOSE=1
+            ;;
+        -v)
+            shift
+            VERBOSE=1
             ;;
         --)
             shift
@@ -69,9 +82,12 @@ done
 # Get the executable to run, so we can symlink it to the container filesystem
 CONTAINER_PATH="/bin:/usr/bin"
 
-echo ""
-echo "Running container:" "$@"
-echo ""
+# Example usage
+if [ $VERBOSE -eq 1 ]; then
+  echo ""
+  echo "Running container:" "$@"
+  echo ""
+fi
 
 # Run bwrap to create/enter a sandbox environment
 # Notes:
