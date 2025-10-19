@@ -22,7 +22,7 @@ export class ExportDataService {
    */
   async fetchExportData(config: DataSelectionConfig, repoUrl: string): Promise<ExportData> {
     try {
-      console.log('ExportDataService: Fetching data for repoUrl:', repoUrl);
+      console.log('ExportDataService: Fetching FRESH data for repoUrl:', repoUrl, 'at', new Date().toISOString());
       console.log('ExportDataService: Config:', config);
       console.log('ExportDataService: Date range from:', config.dateRange?.from);
       console.log('ExportDataService: Date range to:', config.dateRange?.to);
@@ -383,7 +383,7 @@ export class ExportDataService {
         // Count unique days with commits
         const uniqueDays = new Set();
         commits.forEach((commit: any) => {
-          const day = commit.value.timestamp.toDateString();
+          const day = new Date(commit.value.timestamp).toDateString();
           uniqueDays.add(day);
         });
         return uniqueDays.size;
@@ -392,9 +392,9 @@ export class ExportDataService {
         // Timestamp of first commit
         if (commits.length === 0) return 0;
         const firstCommit = commits.reduce((earliest: any, commit: any) => 
-          commit.value.timestamp < earliest.value.timestamp ? commit : earliest
+          new Date(commit.value.timestamp) < new Date(earliest.value.timestamp) ? commit : earliest
         );
-        return firstCommit.value.timestamp.getTime();
+        return new Date(firstCommit.value.timestamp).getTime();
         
       case 'last_commit':
         // Timestamp of last commit
@@ -402,7 +402,7 @@ export class ExportDataService {
         const lastCommit = commits.reduce((latest: any, commit: any) => 
           commit.value.timestamp > latest.value.timestamp ? commit : latest
         );
-        return lastCommit.value.timestamp.getTime();
+        return new Date(lastCommit.value.timestamp).getTime();
         
       default:
         return 0;
@@ -495,7 +495,7 @@ export class ExportDataService {
         // Count unique days with commits
         const uniqueDays = new Set();
         commits.forEach((commit: any) => {
-          const day = commit.value.timestamp.toDateString();
+          const day = new Date(commit.value.timestamp).toDateString();
           uniqueDays.add(day);
         });
         return uniqueDays.size;
@@ -504,9 +504,9 @@ export class ExportDataService {
         // Timestamp of first commit
         if (commits.length === 0) return 0;
         const firstCommit = commits.reduce((earliest: any, commit: any) => 
-          commit.value.timestamp < earliest.value.timestamp ? commit : earliest
+          new Date(commit.value.timestamp) < new Date(earliest.value.timestamp) ? commit : earliest
         );
-        return firstCommit.value.timestamp.getTime();
+        return new Date(firstCommit.value.timestamp).getTime();
         
       case 'last_commit':
         // Timestamp of last commit
@@ -514,7 +514,7 @@ export class ExportDataService {
         const lastCommit = commits.reduce((latest: any, commit: any) => 
           commit.value.timestamp > latest.value.timestamp ? commit : latest
         );
-        return lastCommit.value.timestamp.getTime();
+        return new Date(lastCommit.value.timestamp).getTime();
         
       default:
         return 0;
@@ -613,9 +613,9 @@ export class ExportDataService {
         // Timestamp of first commit on this date
         if (commitsForDate.length === 0) return 0;
         const firstCommit = commitsForDate.reduce((earliest: any, commit: any) => 
-          commit.value.timestamp < earliest.value.timestamp ? commit : earliest
+          new Date(commit.value.timestamp) < new Date(earliest.value.timestamp) ? commit : earliest
         );
-        return firstCommit.value.timestamp.getTime();
+        return new Date(firstCommit.value.timestamp).getTime();
         
       case 'last_commit':
         // Timestamp of last commit on this date
@@ -623,7 +623,7 @@ export class ExportDataService {
         const lastCommit = commitsForDate.reduce((latest: any, commit: any) => 
           commit.value.timestamp > latest.value.timestamp ? commit : latest
         );
-        return lastCommit.value.timestamp.getTime();
+        return new Date(lastCommit.value.timestamp).getTime();
         
       default:
         return 0;

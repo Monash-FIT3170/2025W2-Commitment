@@ -36,6 +36,8 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
   const handleConfigChange = (config: DataSelectionConfig) => {
     setCurrentConfig(config);
     setError(null);
+    // Don't automatically clear preview data on config changes
+    // Let the user explicitly request new preview data
   };
 
   // Handle preview data request
@@ -44,6 +46,8 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
     setIsLoading(true);
     setError(null);
+    // Clear previous preview data to ensure fresh data
+    setPreviewData(null);
 
     const fetchData = async () => {
       try {
