@@ -21,7 +21,6 @@ export interface DataSelectionConfig {
   branch: string;
   dateRange: DateRange | undefined;
   selectedMetrics: string[];
-  includeRawData: boolean;
   groupBy: 'contributor' | 'date' | 'none';
 }
 
@@ -47,8 +46,7 @@ const METRIC_OPTIONS: MetricOption[] = [
   { id: 'file_count', label: 'Files Changed', description: 'Number of files modified', category: 'code' },
   
   // Collaboration category
-  { id: 'contributors', label: 'Contributors', description: 'Number of unique contributors', category: 'collaboration' },
-  { id: 'collaboration_score', label: 'Collaboration Score', description: 'Measure of team collaboration', category: 'collaboration' },
+  { id: 'collaboration_score', label: 'Collaboration Score', description: 'Measure of team collaboration using scaling methodology', category: 'collaboration' },
   
   // Time category
   { id: 'active_days', label: 'Active Days', description: 'Days with commits', category: 'time' },
@@ -70,7 +68,6 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
       to: new Date()
     },
     selectedMetrics: ['total_commits', 'lines_added', 'lines_deleted'],
-    includeRawData: true,
     groupBy: 'contributor'
   });
 
@@ -276,21 +273,6 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
 
         {/* Export Options */}
         <div className="space-y-4">
-          <Label className="text-git-text-primary">Export Options</Label>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="includeRawData"
-              checked={config.includeRawData}
-              onCheckedChange={(checked) => 
-                setConfig(prev => ({ ...prev, includeRawData: checked as boolean }))
-              }
-            />
-            <Label htmlFor="includeRawData" className="text-sm text-git-text-primary">
-              Include raw commit data (individual commits, not just aggregated metrics)
-            </Label>
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="groupBy" className="text-git-text-primary">Group By</Label>
              <Select

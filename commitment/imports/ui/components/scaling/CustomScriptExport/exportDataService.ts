@@ -40,7 +40,7 @@ export class ExportDataService {
       console.log('ExportDataService: Filtered data:', filteredData);
       console.log('ExportDataService: Repository data commits count:', filteredData.repositoryData?.allCommits?.length || 0);
       console.log('ExportDataService: Repository data contributors count:', filteredData.repositoryData?.contributors?.length || 0);
-      
+
       // Metrics for the filtered data
       const allCommits = filteredData.repositoryData?.allCommits || [];
       if (allCommits.length > 0) {
@@ -50,8 +50,20 @@ export class ExportDataService {
         console.log('ExportDataService: Actual commit date range:', minDate.toISOString(), 'to', maxDate.toISOString());
       }
 
+      // Calculate scaling results based on the filtered data for the selected date range
+      let scalingResults: any[] = [];
+      try {
+        // Calculate scaling results directly from the filtered data
+        scalingResults = this.calculateScalingResultsFromFilteredData(filteredData);
+        console.log('ExportDataService: Scaling results for date range:', scalingResults);
+        console.log('ExportDataService: Scaling results names:', scalingResults.map(r => r.name));
+        console.log('ExportDataService: Scaling results scales:', scalingResults.map(r => r.scale));
+      } catch (error) {
+        console.warn('ExportDataService: Could not calculate scaling results, using fallback collaboration scores:', error);
+      }
+
       // Generate export data from the real repository data
-      const exportData = this.generateExportDataFromRepoDirect(config, filteredData);
+      const exportData = this.generateExportDataFromRepoDirect(config, filteredData, scalingResults);
       
       console.log('ExportDataService: Generated export data:', exportData);
       return exportData;
@@ -66,9 +78,10 @@ export class ExportDataService {
    */
   private generateExportDataFromRepoDirect(
     config: DataSelectionConfig, 
-    filteredData: FilteredData
+    filteredData: FilteredData, 
+    scalingResults: any[] = []
   ): ExportData {
-    const { branch, dateRange, selectedMetrics, groupBy, includeRawData } = config;
+    const { branch, dateRange, selectedMetrics, groupBy } = config;
     const startDate = dateRange?.from || new Date();
     const endDate = dateRange?.to || new Date();
     const { repositoryData } = filteredData;
@@ -78,18 +91,18 @@ export class ExportDataService {
     console.log('ExportDataService: Extracted contributors for direct export:', contributors);
     
     // Generate headers based on selected metrics and grouping
-    const headers = this.generateHeaders(selectedMetrics, groupBy, includeRawData);
+    const headers = this.generateHeaders(selectedMetrics, groupBy);
     console.log('ExportDataService: Generated headers:', headers);
     
     // Generate rows based on grouping
     const rows = this.generateRowsFromRepoDataDirect(
       selectedMetrics, 
       groupBy, 
-      includeRawData, 
       contributors, 
       repositoryData,
       startDate,
-      endDate
+      endDate,
+      scalingResults
     );
     console.log('ExportDataService: Generated rows count:', rows.length);
     console.log('ExportDataService: Generated rows:', rows);
@@ -119,12 +132,12 @@ export class ExportDataService {
       return [];
     }
     
-    const contributors = repoData.contributors.map((contributor: any) => contributor.value.name);
+    const contributors = repoData.contributors.map((contributor: any) => contributor.key);
     console.log('ExportDataService: Extracted contributors:', contributors);
     return contributors;
   }
 
-  private generateHeaders(metrics: string[], groupBy: string, includeRawData: boolean): string[] {
+  private generateHeaders(metrics: string[], groupBy: string): string[] {
     const headers: string[] = [];
 
     // Add grouping columns
@@ -139,11 +152,6 @@ export class ExportDataService {
       headers.push(this.getMetricHeader(metric));
     });
 
-    // Add raw data columns if requested
-    if (includeRawData) {
-      headers.push('commit_count', 'files_changed', 'lines_added', 'lines_deleted');
-    }
-
     return headers;
   }
 
@@ -157,7 +165,6 @@ export class ExportDataService {
       'lines_modified': 'lines_modified',
       'net_lines': 'net_lines',
       'file_count': 'files_changed',
-      'contributors': 'contributor_count',
       'collaboration_score': 'collaboration_score',
       'active_days': 'active_days',
       'first_commit': 'first_commit_date',
@@ -170,37 +177,58 @@ export class ExportDataService {
   private generateRowsFromRepoDataDirect(
     metrics: string[], 
     groupBy: string, 
-    includeRawData: boolean, 
     contributors: string[], 
     repoData: SerializableRepoData,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    scalingResults: any[] = []
   ): (string | number)[][] {
     const rows: (string | number)[][] = [];
 
     if (groupBy === 'contributor') {
       // Generate one row per contributor
-      contributors.forEach(contributor => {
+      contributors.forEach(contributorKey => {
         const row: (string | number)[] = [];
         
+        // Get the contributor's display name for the output
+        const contributorData = repoData.contributors.find(c => c.key === contributorKey);
+        const contributorName = contributorData ? contributorData.value.name : contributorKey;
+        
         // Contributor info
-        row.push(contributor);
-        row.push(contributor); // Use name as both email and name for now
+        row.push(contributorName);
+        row.push(contributorName); // Use name as both email and name for now
         
         // Get metrics for this contributor directly from repository data
         metrics.forEach(metric => {
-          const value = this.getMetricValueFromRepoData(metric, contributor, repoData, startDate, endDate);
+          if (metric === 'collaboration_score') {
+            // Use scaling results for collaboration score - match by contributor key
+            let scalingResult = scalingResults.find(result => result.name === contributorKey);
+            
+            // If exact match fails, try case-insensitive match
+            if (!scalingResult) {
+              scalingResult = scalingResults.find(result => 
+                result.name.toLowerCase().trim() === contributorKey.toLowerCase().trim()
+              );
+            }
+            
+            // If still no match, try partial matching
+            if (!scalingResult) {
+              scalingResult = scalingResults.find(result => 
+                result.name.toLowerCase().includes(contributorKey.toLowerCase()) ||
+                contributorKey.toLowerCase().includes(result.name.toLowerCase())
+              );
+            }
+            
+            console.log(`ExportDataService: Looking for collaboration score for ${contributorKey}:`, scalingResult);
+            const value = scalingResult ? scalingResult.scale : 0;
+            console.log(`ExportDataService: Using collaboration score ${value} for ${contributorKey}`);
+            row.push(value);
+          } else {
+            const value = this.getMetricValueFromRepoData(metric, contributorKey, repoData, startDate, endDate);
           row.push(value);
+          }
         });
         
-        // Raw data if requested
-        if (includeRawData) {
-          const rawData = this.getRawDataForContributor(contributor, repoData, startDate, endDate);
-          row.push(rawData.commitCount);
-          row.push(rawData.filesChanged);
-          row.push(rawData.linesAdded);
-          row.push(rawData.linesDeleted);
-        }
         
         rows.push(row);
       });
@@ -224,18 +252,18 @@ export class ExportDataService {
         
         // Generate metrics for this date
         metrics.forEach(metric => {
+          if (metric === 'collaboration_score') {
+            // For date grouping, use average collaboration score
+            const avgCollaborationScore = scalingResults.length > 0 
+              ? scalingResults.reduce((sum, result) => sum + result.scale, 0) / scalingResults.length 
+              : 0;
+            row.push(avgCollaborationScore);
+          } else {
           const value = this.getMetricValueForDate(metric, date, repoData);
           row.push(value);
+          }
         });
         
-        // Raw data if requested
-        if (includeRawData) {
-          const rawData = this.getRawDataForDate(date, repoData);
-          row.push(rawData.commitCount);
-          row.push(rawData.filesChanged);
-          row.push(rawData.linesAdded);
-          row.push(rawData.linesDeleted);
-        }
         
         rows.push(row);
       }
@@ -245,18 +273,18 @@ export class ExportDataService {
       
       // Generate total metrics
       metrics.forEach(metric => {
-        const value = this.getTotalMetricValueDirect(metric, repoData, startDate, endDate);
+        if (metric === 'collaboration_score') {
+          // For no grouping, use average collaboration score
+          const avgCollaborationScore = scalingResults.length > 0 
+            ? scalingResults.reduce((sum, result) => sum + result.scale, 0) / scalingResults.length 
+            : 0;
+          row.push(avgCollaborationScore);
+        } else {
+          const value = this.getTotalMetricValueDirect(metric, repoData, startDate, endDate);
         row.push(value);
+        }
       });
       
-      // Raw data if requested
-      if (includeRawData) {
-        const rawData = this.getTotalRawData(repoData, startDate, endDate);
-        row.push(rawData.commitCount);
-        row.push(rawData.filesChanged);
-        row.push(rawData.linesAdded);
-        row.push(rawData.linesDeleted);
-      }
       
       rows.push(row);
     }
@@ -270,33 +298,33 @@ export class ExportDataService {
    */
   private getMetricValueFromRepoData(
     metric: string, 
-    contributor: string, 
+    contributorKey: string, 
     repoData: SerializableRepoData,
     startDate: Date,
     endDate: Date
-  ): number {
+  ): number | string {
     // Filter commits for this contributor within the date range
     const allCommits = repoData.allCommits || [];
-    console.log(`ExportDataService: Calculating ${metric} for ${contributor}`);
+    console.log(`ExportDataService: Calculating ${metric} for ${contributorKey}`);
     console.log(`ExportDataService: Total commits in repo: ${allCommits.length}`);
     console.log(`ExportDataService: Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
     
     const commits = allCommits.filter((commit: any) => {
       const commitDate = new Date(commit.value.timestamp);
-      return commit.value.contributorName === contributor &&
+      return commit.value.contributorName === contributorKey &&
         commitDate >= startDate &&
         commitDate <= endDate;
     });
     
-    console.log(`ExportDataService: Commits for ${contributor} in date range: ${commits.length}`);
+    console.log(`ExportDataService: Commits for ${contributorKey} in date range: ${commits.length}`);
     if (commits.length > 0) {
-      console.log(`ExportDataService: Sample commit for ${contributor}:`, commits[0]);
+      console.log(`ExportDataService: Sample commit for ${contributorKey}:`, commits[0]);
     } else {
       // Let's see what commits exist for this contributor
       const contributorCommits = allCommits.filter((commit: any) => 
-        commit.value.contributorName === contributor
+        commit.value.contributorName === contributorKey
       );
-      console.log(`ExportDataService: Total commits for ${contributor}: ${contributorCommits.length}`);
+      console.log(`ExportDataService: Total commits for ${contributorKey}: ${contributorCommits.length}`);
       if (contributorCommits.length > 0) {
         console.log(`ExportDataService: Sample commit date: ${contributorCommits[0].value.timestamp}`);
         const sampleCommitDate = new Date(contributorCommits[0].value.timestamp);
@@ -356,28 +384,9 @@ export class ExportDataService {
           return sum + commit.value.fileData.length;
         }, 0);
         
-      case 'contributors':
-        // Count unique contributors in the date range
-        const uniqueContributors = new Set();
-        (repoData.allCommits || []).forEach((commit: any) => {
-          if (commit.value.timestamp >= startDate && commit.value.timestamp <= endDate) {
-            uniqueContributors.add(commit.value.contributorName);
-          }
-        });
-        return uniqueContributors.size;
-        
       case 'collaboration_score':
-        // Simple collaboration score based on unique contributors vs total commits
-        const uniqueContributorsCount = new Set();
-        (repoData.allCommits || []).forEach((commit: any) => {
-          if (commit.value.timestamp >= startDate && commit.value.timestamp <= endDate) {
-            uniqueContributorsCount.add(commit.value.contributorName);
-          }
-        });
-        const totalCommits = (repoData.allCommits || []).filter((commit: any) => 
-          commit.value.timestamp >= startDate && commit.value.timestamp <= endDate
-        ).length;
-        return totalCommits > 0 ? uniqueContributorsCount.size / totalCommits : 0;
+        // Collaboration score is handled by scaling results so just copy from there
+        return 0;
         
       case 'active_days':
         // Count unique days with commits
@@ -419,7 +428,7 @@ export class ExportDataService {
     repoData: SerializableRepoData,
     startDate: Date,
     endDate: Date
-  ): number {
+  ): number | string {
     const commits = (repoData.allCommits || []).filter((commit: any) => 
       commit.value.timestamp >= startDate &&
       commit.value.timestamp <= endDate
@@ -477,21 +486,8 @@ export class ExportDataService {
           return sum + commit.value.fileData.length;
         }, 0);
         
-      case 'contributors':
-        // Count unique contributors in the date range
-        const uniqueContributors = new Set();
-        commits.forEach((commit: any) => {
-          uniqueContributors.add(commit.value.contributorName);
-        });
-        return uniqueContributors.size;
-        
       case 'collaboration_score':
-        // Simple collaboration score based on unique contributors vs total commits
-        const uniqueContributorsCount = new Set();
-        commits.forEach((commit: any) => {
-          uniqueContributorsCount.add(commit.value.contributorName);
-        });
-        return commits.length > 0 ? uniqueContributorsCount.size / commits.length : 0;
+        return 0; // This will be calculated at the contributor level
         
       case 'active_days':
         // Count unique days with commits
@@ -529,7 +525,7 @@ export class ExportDataService {
   /**
    * Get metric value for a specific date
    */
-  private getMetricValueForDate(metric: string, date: Date, repoData: SerializableRepoData): number {
+  private getMetricValueForDate(metric: string, date: Date, repoData: SerializableRepoData): number | string {
     // Filter commits for the specific date
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
@@ -593,21 +589,10 @@ export class ExportDataService {
           return sum + commit.value.fileData.length;
         }, 0);
         
-      case 'contributors':
-        // Count unique contributors for this date
-        const uniqueContributors = new Set();
-        commitsForDate.forEach((commit: any) => {
-          uniqueContributors.add(commit.value.contributorName);
-        });
-        return uniqueContributors.size;
-        
       case 'collaboration_score':
-        // Simple collaboration score based on unique contributors vs total commits
-        const uniqueContributorsCount = new Set();
-        commitsForDate.forEach((commit: any) => {
-          uniqueContributorsCount.add(commit.value.contributorName);
-        });
-        return commitsForDate.length > 0 ? uniqueContributorsCount.size / commitsForDate.length : 0;
+        // Collaboration score using scaling methodology - measures work distribution among contributors
+        // For individual contributor calculation, we need the full repo data
+        return 0; // This will be calculated at the contributor level
         
       case 'active_days':
         // For a specific date, this is 1 if there are commits, 0 otherwise
@@ -637,104 +622,89 @@ export class ExportDataService {
   }
 
 
-  /**
-   * Get raw data for a specific contributor
-   */
-  private getRawDataForContributor(
-    contributor: string, 
-    repoData: SerializableRepoData, 
-    startDate: Date, 
-    endDate: Date
-  ): { commitCount: number; filesChanged: number; linesAdded: number; linesDeleted: number } {
-    const commits = (repoData.allCommits || []).filter((commit: any) => 
-      commit.value.contributorName === contributor &&
-      commit.value.timestamp >= startDate &&
-      commit.value.timestamp <= endDate
-    );
-
-    let filesChanged = 0;
-    let linesAdded = 0;
-    let linesDeleted = 0;
-
-    commits.forEach((commit: any) => {
-      filesChanged += commit.value.fileData.length;
-      commit.value.fileData.forEach((file: any) => {
-        linesAdded += file.newLines;
-        linesDeleted += file.deletedLines;
-      });
-    });
-
-    return {
-      commitCount: commits.length,
-      filesChanged,
-      linesAdded,
-      linesDeleted
-    };
-  }
 
   /**
-   * Get raw data for a specific date
+   * Calculate scaling results directly from filtered data
+   * This ensures collaboration scores are calculated based on the selected date range
    */
-  private getRawDataForDate(date: Date, repoData: SerializableRepoData): { commitCount: number; filesChanged: number; linesAdded: number; linesDeleted: number } {
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+  private calculateScalingResultsFromFilteredData(filteredData: FilteredData): any[] {
+    const { repositoryData } = filteredData;
+    const contributors = this.getContributorsFromRepoData(repositoryData);
+    
+    if (contributors.length === 0) {
+      return [];
+    }
 
-    const commits = (repoData.allCommits || []).filter((commit: any) => 
-      commit.value.timestamp >= startOfDay &&
-      commit.value.timestamp <= endOfDay
-    );
+    // Calculate metrics for each contributor based on the filtered data
+    const contributorMetrics = contributors.map(contributorKey => {
+      const contributorData = repositoryData.contributors.find(c => c.key === contributorKey);
+      const contributorName = contributorData ? contributorData.value.name : contributorKey;
+      
+      // Get commits for this contributor within the filtered date range
+      const commits = (repositoryData.allCommits || []).filter((commit: any) => 
+        commit.value.contributorName === contributorKey
+      );
 
-    let filesChanged = 0;
-    let linesAdded = 0;
-    let linesDeleted = 0;
-
-    commits.forEach((commit: any) => {
-      filesChanged += commit.value.fileData.length;
-      commit.value.fileData.forEach((file: any) => {
-        linesAdded += file.newLines;
-        linesDeleted += file.deletedLines;
-      });
-    });
+      // Calculate metrics for this contributor
+      const totalCommits = commits.length;
+      const totalLines = commits.reduce((sum: number, commit: any) => {
+        return sum + commit.value.fileData.reduce((fileSum: number, file: any) => 
+          fileSum + file.newLines, 0
+        );
+      }, 0);
+      const locPerCommit = totalCommits > 0 ? totalLines / totalCommits : 0;
+      
+      // Calculate commits per day based on the date range
+      const startDate = filteredData.dateRange?.start || new Date();
+      const endDate = filteredData.dateRange?.end || new Date();
+      const days = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+      const commitsPerDay = totalCommits / days;
 
     return {
-      commitCount: commits.length,
-      filesChanged,
-      linesAdded,
-      linesDeleted
-    };
-  }
-
-  /**
-   * Get total raw data across all contributors
-   */
-  private getTotalRawData(repoData: SerializableRepoData, startDate: Date, endDate: Date): { commitCount: number; filesChanged: number; linesAdded: number; linesDeleted: number } {
-    const commits = (repoData.allCommits || []).filter((commit: any) => 
-      commit.value.timestamp >= startDate &&
-      commit.value.timestamp <= endDate
-    );
-
-    let filesChanged = 0;
-    let linesAdded = 0;
-    let linesDeleted = 0;
-
-    commits.forEach((commit: any) => {
-      filesChanged += commit.value.fileData.length;
-      commit.value.fileData.forEach((file: any) => {
-        linesAdded += file.newLines;
-        linesDeleted += file.deletedLines;
-      });
+        name: contributorKey,
+        displayName: contributorName,
+        metrics: {
+          'Total No. Commits': totalCommits,
+          'LOC': totalLines,
+          'LOC Per Commit': locPerCommit,
+          'Commits Per Day': commitsPerDay
+        }
+      };
     });
 
+    // Apply scaling logic (simplified version of the server-side scaling)
+    const selectedMetrics = ['Total No. Commits', 'LOC', 'LOC Per Commit', 'Commits Per Day'] as const;
+
+    // Normalize metrics for each contributor
+    const normalizedScores = contributorMetrics.map(contributor => {
+      // Simple percentile ranking within the group
+      const percentileScores = selectedMetrics.map((metric) => {
+        const allValues = contributorMetrics
+          .map(c => c.metrics[metric])
+          .filter(v => Number.isFinite(v) && v !== null)
+          .sort((a, b) => a - b);
+        
+        const value = contributor.metrics[metric];
+        if (!Number.isFinite(value) || value === null) return 0.5;
+        
+        const index = allValues.indexOf(value);
+        return index / Math.max(allValues.length - 1, 1);
+      });
+
+      // Average the percentile scores
+      const finalScore = percentileScores.reduce((sum, score) => sum + score, 0) / selectedMetrics.length;
+
     return {
-      commitCount: commits.length,
-      filesChanged,
-      linesAdded,
-      linesDeleted
-    };
+        name: contributor.name,
+        displayName: contributor.displayName,
+        scale: Math.round(finalScore * 100) / 100
+      };
+    });
+
+    return normalizedScores;
   }
 
+  
 }
 
 // Export singleton instance
