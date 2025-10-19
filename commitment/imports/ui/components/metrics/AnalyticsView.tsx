@@ -272,10 +272,11 @@ export function AnalyticsView(): React.JSX.Element {
                   }}
                   disabled={!filtersChanged}
                   className={`font-medium px-4 py-2 rounded-md shadow-sm transition-all ${
-                                filtersChanged
-                                ? "bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover cursor-pointer"
-                                : "bg-git-int-primary/50 text-git-int-text/50 cursor-not-allowed"
-                            }`}>
+                    filtersChanged
+                      ? "bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover cursor-pointer"
+                      : "bg-git-int-primary/50 text-git-int-text/50 cursor-not-allowed"
+                  }`}
+                >
                   Apply
                 </button>
               </div>
@@ -297,10 +298,6 @@ export function AnalyticsView(): React.JSX.Element {
                   }
                   data={analytics.metrics.highlights.totalCommits.data}
                 />
-                {/* <HighlightCardWithGraph
-                  title="Number of Branches"
-                  value={analytics.metrics.highlights.numBranches}
-                /> */}
                 <HighlightCardWithGraph
                   title="Total Lines of Code"
                   value={analytics.metrics.highlights.totalLinesOfCode.total}
