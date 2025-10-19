@@ -11,7 +11,7 @@ import re
 PORT = 8002
 app = Flask(__name__)
 
-ALLOWED_LITERAL_PATTERN = r'^\[\s*(?:\d+(\.\d+)?|\'[^\']*\'|"[^"]*")(?:\s*,\s*(?:\d+(\.\d+)?|\'[^\']*\'|"[^"]*"))*\s*\]$'
+ALLOWED_LITERAL_PATTERN = r'\[[^\(\[\{\)\]\}]*\]'
 
 
 @app.route('/execute', methods=['POST'])
@@ -97,7 +97,7 @@ def exec_in_sandbox(command: List[str],
     # Collect any output lines that have a comma in them, and treat them as csv rows
     data_rows = []
     for line in lines:
-        if not (line.startswith('(') and line.endswith(')')) or [line.startswith('[') and line.endswith(']')]:
+        if not ((line.startswith('(') and line.endswith(')')) or (line.startswith('[') and line.endswith(']'))):
             continue
 
         # Convert tuples to arrays
