@@ -17,4 +17,4 @@ RUN nix-build
 EXPOSE 8002
 
 # Keep container interactive for testing
-CMD ["bash"]
+CMD ["/home/python/result/bin/python_executor.py"]
