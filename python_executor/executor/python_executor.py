@@ -13,14 +13,7 @@ app = Flask(__name__)
 @app.route('/execute', methods=['POST'])
 def execute():
     """ Executes a given python script with some data.csv file available to it. """
-    print("Received new /execute request...")
-
-    res = subprocess.run(
-        ['nix-build', '/projects/python_executor', '-o', '/home/python/result'],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-    )
-    print(res.stdout, res.stderr)
-    print("updated")
+    print("\t> Received new /execute request")
 
     if "data.csv" not in request.files:
         return jsonify({"error": "Missing 'data.csv' file"}), 400
@@ -93,11 +86,22 @@ def exec_in_sandbox(command: List[str],
             "stdout": result.stdout,
         }), 400
 
+    # Try parse any csv data from result.stdout
+    stdout = result.stdout
+    lines = stdout.splitlines()
+
+    # Collect any output lines that have a comma in them, and treat them as csv rows
+    csv_rows = []
+    for line in lines:
+        split_line = line.split(',')
+        if len(split_line) > 1:
+            csv_rows.append(split_line)
+
     # Return result
     return jsonify({
         "stderr": result.stderr,
-        "stdout": result.stdout,
-        "data": result.stdout,
+        "stdout": stdout,
+        "data": csv_rows,
     }), 200
 
 
