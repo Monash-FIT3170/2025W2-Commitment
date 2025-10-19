@@ -70,6 +70,8 @@ export function AnalyticsView(): React.JSX.Element {
   const msgHandlerRef = useRef(new Subject<string>());
   const updatedRef = useRef(new Subject<boolean>());
 
+  const [filtersChanged, setFiltersChanged] = useState(false);
+
   useEffect(() => {
     const toastSub = msgHandlerRef.current.subscribe(handleToast);
     const updatedSub = updatedRef.current.subscribe((updated: boolean) => {
