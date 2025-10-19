@@ -167,10 +167,10 @@ export function AnalyticsView(): React.JSX.Element {
   ]);
 
   // Fetch when component mounts or filters change
-//   useEffect(() => {
-//     //REPLACE THIS WITH A SUBMIT BUTTON
-//     fetchAnalyticsData();
-//   }, [fetchAnalyticsData]);
+  //   useEffect(() => {
+  //     //REPLACE THIS WITH A SUBMIT BUTTON
+  //     fetchAnalyticsData();
+  //   }, [fetchAnalyticsData]);
 
   useEffect(() => {
     const navEntries = performance.getEntriesByType(
@@ -258,7 +258,14 @@ export function AnalyticsView(): React.JSX.Element {
                   }
                 />
               </div>
-              
+              <div className="flex flex-col justify-end">
+                <button
+                  onClick={fetchAnalyticsData}
+                  className="bg-git-int-primary text-git-int-text font-medium px-4 py-2 rounded-md shadow-sm hover:bg-git-int-primary-hover transition-all"
+                >
+                  Submit
+                </button>
+              </div>
             </div>
           </div>
 
