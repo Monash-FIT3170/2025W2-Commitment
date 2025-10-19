@@ -12,6 +12,7 @@ PORT = 8002
 app = Flask(__name__)
 
 ALLOWED_LITERAL_PATTERN = r'\[[^\(\[\{\)\]\}]*\]'
+ALLOWED_LITERAL_RE = re.compile(ALLOWED_LITERAL_PATTERN)
 
 
 @app.route('/execute', methods=['POST'])
@@ -106,8 +107,9 @@ def exec_in_sandbox(command: List[str],
             line, _ = line.rsplit(')', 1)
             line = '[' + line + ']'
 
+
         # Protect against stack overflow attacks by only allowing flat structures
-        if not re.match(ALLOWED_LITERAL_PATTERN, line):
+        if not ALLOWED_LITERAL_RE.match(line):
             return jsonify({
                 "error": f"Program returned a literal with nested structures (not allowed).",
                 "stderr": result.stderr,
