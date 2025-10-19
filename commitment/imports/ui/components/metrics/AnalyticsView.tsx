@@ -339,16 +339,6 @@ export function AnalyticsView(): React.JSX.Element {
                   setGraphType={setMainGraph}
                 />
               )}
-
-              {/* <div className="w-full min-h-[300px] h-full ">
-                <LeaderboardGraph
-                  data={analytics.metrics.contributors.leaderboard.data}
-                  title={analytics.metrics.contributors.leaderboard.title}
-                  xAxisLabel={
-                    analytics.metrics.contributors.leaderboard.xAxisLabel
-                  }
-                />
-              </div> */}
             </div>
           </div>
         </div>
