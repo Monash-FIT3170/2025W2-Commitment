@@ -264,19 +264,25 @@ export function AnalyticsView(): React.JSX.Element {
                 <MetricDropdownMenu
                   metrics={metricNames}
                   selected={selectedMetrics}
-                  onChange={(value: string) =>
-                    setSelectedMetrics(value as MetricType)
-                  }
+                  onChange={(value: string) => {
+                    setSelectedMetrics(value as MetricType);
+                    setFiltersChanged(true);
+                  }}
                 />
               </div>
-              <div className="flex flex-col justify-end">
-                <button
-                  onClick={fetchAnalyticsData}
-                  className="bg-git-int-primary text-git-int-text font-medium px-4 py-2 rounded-md shadow-sm hover:bg-git-int-primary-hover transition-all"
-                >
-                  Submit
-                </button>
-              </div>
+              {filtersChanged && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => {
+                      fetchAnalyticsData();
+                      setFiltersChanged(false);
+                    }}
+                    className="bg-git-int-primary text-git-int-text font-medium px-4 py-2 rounded-md shadow-sm hover:bg-git-int-primary-hover transition-all"
+                  >
+                    Submit
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
