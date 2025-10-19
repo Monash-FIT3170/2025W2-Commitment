@@ -194,8 +194,6 @@ export async function scaleUsers(repoUrl: string, config: ScalingConfig) {
     });
 
 
-    console.log("RAW SCORES", rawScores)
-
     const mean = rawScores.length ? rawScores.reduce((a, b) => a + b, 0) / rawScores.length : 0;
 
     const std = rawScores.length
@@ -280,68 +278,78 @@ export async function getScaledResults(
   }));
 }
 
-// Meteor.startup(async () => {
-//   console.log("COMPACT SCALING TEST");
+Meteor.startup(async () => {
+  console.log("COMPACT SCALING TEST");
 
-//   const fakeMetrics = {
-//     alice: { "Total No. Commits": 10, LOC: 200, "LOC Per Commit": 20, "Commits Per Day": 1 },
-//     bob: { "Total No. Commits": 30, LOC: 400, "LOC Per Commit": 20, "Commits Per Day": 2 },
-//     boeb: { "Total No. Commits": 50, LOC: 400, "LOC Per Commit": 240, "Commits Per Day": 3 },
-//     boba: { "Total No. Commits": 1000, LOC: 450, "LOC Per Commit": 40, "Commits Per Day": 5 },
-//     charlie: { "Total No. Commits": 5000, LOC: 6000, "LOC Per Commit": 3000, "Commits Per Day": 30 },
+  const fakeMetrics = {
+//   "alice":    { "Total No. Commits": 12,   "LOC": 240,    "LOC Per Commit": 20,    "Commits Per Day": 1 },
+  "bob":      { "Total No. Commits": 35,   "LOC": 420,    "LOC Per Commit": 12,    "Commits Per Day": 2 },
+//   "carol":    { "Total No. Commits": 50,   "LOC": 750,    "LOC Per Commit": 15,    "Commits Per Day": 3 },
+//   "dave":     { "Total No. Commits": 80,   "LOC": 1600,   "LOC Per Commit": 20,    "Commits Per Day": 4 },
+//   "eve":      { "Total No. Commits": 100,  "LOC": 500,    "LOC Per Commit": 5,     "Commits Per Day": 5 },
+  "frank":    { "Total No. Commits": 120,  "LOC": 1800,   "LOC Per Commit": 15,    "Commits Per Day": 6 },
+  "grace":    { "Total No. Commits": 200,  "LOC": 4000,   "LOC Per Commit": 20,    "Commits Per Day": 10 },
+//   "heidi":    { "Total No. Commits": 250,  "LOC": 6250,   "LOC Per Commit": 25,    "Commits Per Day": 12 },
+  "ivan":     { "Total No. Commits": 300,  "LOC": 6000,   "LOC Per Commit": 20,    "Commits Per Day": 15 },
+//   "judy":     { "Total No. Commits": 400,  "LOC": 12000,  "LOC Per Commit": 30,    "Commits Per Day": 20 },
+//   "karl":     { "Total No. Commits": 500,  "LOC": 15000,  "LOC Per Commit": 30,    "Commits Per Day": 25 },
+  "leo":      { "Total No. Commits": 600,  "LOC": 18000,  "LOC Per Commit": 30,    "Commits Per Day": 30 },
+//   "maria":    { "Total No. Commits": 750,  "LOC": 22500,  "LOC Per Commit": 30,    "Commits Per Day": 35 },
+//   "nancy":    { "Total No. Commits": 900,  "LOC": 27000,  "LOC Per Commit": 30,    "Commits Per Day": 40 },
+  "oscar":    { "Total No. Commits": 1200, "LOC": 36000,  "LOC Per Commit": 30,    "Commits Per Day": 50 }
+}
+;
 
-//   };
+//     "Percentiles",
+//     "Mean +/- Std",
+//     "Quartiles",
+//     "Compact Scaling",
 
-// //     "Percentiles",
-// //     "Mean +/- Std",
-// //     "Quartiles",
-// //     "Compact Scaling",
+  const config: ScalingConfig = {
+    method: "Quartiles",
+    metrics: ["Total No. Commits", "LOC"], // match keys in fakeMetrics
+  };
 
-//   const config: ScalingConfig = {
-//     method: "Compact Scaling",
-//     metrics: ["Total No. Commits", "LOC"], // match keys in fakeMetrics
-//   };
+  const selectedMetrics = config.metrics;
+  const users = Object.entries(fakeMetrics).map(([name, metrics]) => ({
+    name,
+    values: selectedMetrics.map((m) => metrics[m as keyof typeof metrics] ?? null),
+  }));
 
-//   const selectedMetrics = config.metrics;
-//   const users = Object.entries(fakeMetrics).map(([name, metrics]) => ({
-//     name,
-//     values: selectedMetrics.map((m) => metrics[m as keyof typeof metrics] ?? null),
-//   }));
-
-//   const metricsValues = selectedMetrics.map((_, i) =>
-//   users.map((u) => u.values[i] as number) // raw numbers
-// );
+  const metricsValues = selectedMetrics.map((_, i) =>
+  users.map((u) => u.values[i] as number) // raw numbers
+);
 
 
-//   const scoreFn = scoringStrategies[config.method] ?? scoringStrategies.Default;
+  const scoreFn = scoringStrategies[config.method] ?? scoringStrategies.Default;
 
-//   const rawScores = users.map((_, idx) => {
-//     const scales = metricsValues.map((col) => col[idx]);
-//     return scoreFn(scales, idx, users, selectedMetrics);
-//   });
+  const rawScores = users.map((_, idx) => {
+    const scales = metricsValues.map((col) => col[idx]);
+    return scoreFn(scales, idx, users, selectedMetrics);
+  });
 
-//   const mean = rawScores.reduce((a, b) => a + b, 0) / rawScores.length;
-//   const std = Math.sqrt(rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length);
+  const mean = rawScores.reduce((a, b) => a + b, 0) / rawScores.length;
+  const std = Math.sqrt(rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length);
 
-//   function normalise_scale(score: number) {
+  function normalise_scale(score: number) {
 
-//     const diff = score - mean;
-//     console.log("MEAN", mean)
+    const diff = score - mean;
+    console.log("MEAN", mean)
 
-//     console.log("THIS IS diff", diff , "THIS IS std", 1.3*std);
+    console.log("THIS IS diff", diff , "THIS IS std", 1.3*std);
 
-//     if (diff <= -3 * std) return 0;
-//     if (diff <= -2 * std) return 0.5;
-//     if (diff <= -1 * std) return 0.9;
-//     if (diff <= 1.2 * std) return 1;
-//     if (diff <= 3 * std) return 1.1;
-//     return 1.2;
-//   }
+    if (diff <= -3 * std) return 0;
+    if (diff <= -2 * std) return 0.5;
+    if (diff <= -1 * std) return 0.9;
+    if (diff <= 1.2 * std) return 1;
+    if (diff <= 3 * std) return 1.1;
+    return 1.2;
+  }
 
-//   const scaledUsers = users.map((user, i) => ({
-//     name: user.name,
-//     score: Math.round(normalise_scale(rawScores[i]) * 100) / 100,
-//   }));
+  const scaledUsers = users.map((user, i) => ({
+    name: user.name,
+    score: Math.round(normalise_scale(rawScores[i]) * 100) / 100,
+  }));
 
-//   console.log("THE DUMMY USERS:", scaledUsers);
-// });
+  console.log("THE DUMMY USERS:", scaledUsers);
+});
