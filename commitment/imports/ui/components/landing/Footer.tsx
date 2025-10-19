@@ -14,12 +14,14 @@ function Commitment() {
       <h3 className="font-bold font-mono mb-3">Commitment</h3>
       <ul>
         <li>
-          <span className="font-mono cursor-pointer hover:underline">
-            How it Works
-          </span>
-        </li>
-        <li>
-          <span className="font-mono cursor-pointer hover:underline">Docs</span>
+          <a
+            href="https://github.com/Monash-FIT3170/2025W2-Commitment"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono hover:underline"
+          >
+            Docs
+          </a>
         </li>
       </ul>
     </div>
@@ -31,11 +33,6 @@ function Support() {
     <div>
       <h3 className="font-mono font-bold mb-3">Support</h3>
       <ul>
-        <li>
-          <span className="font-mono cursor-pointer hover:underline">
-            Resources
-          </span>
-        </li>
         <li>
           <a
             href="https://github.com/Monash-FIT3170/2025W2-Commitment"
@@ -58,8 +55,7 @@ function Legal() {
       <ul>
         <li>
           <a
-            href="https://github.com/Monash-FIT3170/2025W2-Commitment?tab=Apache-2.0-1-ov-file
-"
+            href="https://github.com/Monash-FIT3170/2025W2-Commitment/blob/main/LICENSE.txt"
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono hover:underline"
