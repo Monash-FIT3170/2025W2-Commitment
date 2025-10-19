@@ -129,7 +129,7 @@ def exec_in_sandbox(command: List[str],
         "stderr": result.stderr,
         "stdout": stdout,
         "data": data_rows,
-    }), 200
+    }), 200 if result.stderr is None or len(result.stderr.strip()) == 0 else 400
 
 
 if __name__ == '__main__':
