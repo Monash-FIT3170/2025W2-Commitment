@@ -228,7 +228,10 @@ export function AnalyticsView(): React.JSX.Element {
                 <DatePicker
                   defaultValue={dateRange}
                   onChange={(range: DateRange | undefined) => {
-                    if (range) setDateRange(range);
+                    if (range) {
+                      setDateRange(range);
+                      setFiltersChanged(true);
+                    }
                   }}
                 />
               </div>
@@ -237,7 +240,10 @@ export function AnalyticsView(): React.JSX.Element {
                 <BranchDropdownMenu
                   branches={analytics.metadata.branches}
                   selected={selectedBranch}
-                  onChange={setSelectedBranch}
+                  onChange={(branch) => {
+                    setSelectedBranch(branch);
+                    setFiltersChanged(true);
+                  }}
                 />
               </div>
               <div className="flex flex-col">
