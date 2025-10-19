@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '../../ui/alert';
 import { DataSelectionPanel, DataSelectionConfig } from './DataSelectionPanel';
 import { ExportPreview, ExportData } from './ExportPreview';
 import { ExportHistory, useExportHistory, ExportHistoryItem } from './ExportHistory';
+import { ScriptExecution } from './ScriptExecution';
 import { useCSVExport, generateFilename } from './ExportButton';
 
 interface CustomScriptExportProps {
@@ -160,7 +161,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-git-int-secondary">
+        <TabsList className="grid w-full grid-cols-4 bg-git-int-secondary">
           <TabsTrigger 
             value="export"
             className="data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text text-git-text-primary"
@@ -179,6 +180,12 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
             className="data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text text-git-text-primary"
           >
             History
+          </TabsTrigger>
+          <TabsTrigger 
+            value="script-execution"
+            className="data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text text-git-text-primary"
+          >
+            Script Execution
           </TabsTrigger>
         </TabsList>
 
@@ -212,6 +219,14 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
             onReExport={handleReExport}
             onDelete={deleteExport}
             onClearHistory={clearHistory}
+            isLoading={isLoading}
+          />
+        </TabsContent>
+
+        {/* Script Execution Tab */}
+        <TabsContent value="script-execution" className="space-y-6">
+          <ScriptExecution
+            history={history}
             isLoading={isLoading}
           />
         </TabsContent>
