@@ -4,7 +4,7 @@
 FROM nixos/nix
 
 # Add dependencies to the environment
-RUN nix-env -iA nixpkgs.bubblewrap nixpkgs.bash
+RUN nix-env -iA nixpkgs.bash
 
 WORKDIR /home/python
 
