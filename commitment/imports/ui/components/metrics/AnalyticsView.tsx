@@ -253,7 +253,10 @@ export function AnalyticsView(): React.JSX.Element {
                 <ContributorDropdownMenu
                   contributors={analytics.metadata.contributors}
                   selected={selectedContributors}
-                  onChange={setSelectedContributors}
+                  onChange={(contributors) => {
+                    setSelectedContributors(contributors);
+                    setFiltersChanged(true);
+                  }}
                 />
               </div>
               <div className="flex flex-col">
