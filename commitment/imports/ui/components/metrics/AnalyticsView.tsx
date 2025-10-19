@@ -168,12 +168,6 @@ export function AnalyticsView(): React.JSX.Element {
     selectedMetrics,
   ]);
 
-  // Fetch when component mounts or filters change
-  //   useEffect(() => {
-  //     //REPLACE THIS WITH A SUBMIT BUTTON
-  //     fetchAnalyticsData();
-  //   }, [fetchAnalyticsData]);
-
   useEffect(() => {
     const navEntries = performance.getEntriesByType(
       "navigation"
