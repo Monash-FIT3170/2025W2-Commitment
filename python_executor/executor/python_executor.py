@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from flask import Flask, jsonify, request, Response, make_response
 import uuid
 import os
@@ -57,14 +56,18 @@ def execute():
 
 
 def exec_in_sandbox(command: List[str],
-                    overlays: List[Tuple[str, str]] | None = None,
                     cwd: str | None = None):
-    overlay_arg_sets = [["--overlay-src", x[0], "--tmp-overlay", x[1]] for x in overlays] if overlays else []
-    overlay_args = [arg for sublist in overlay_arg_sets for arg in sublist]
-
+    """
+    Executes a given shell command in one of our custom nix-based sandbox containers.
+    :param command: The command to run as a list of strings, where each string is a space-separated component of the
+    shell command
+    :param cwd: The directory to use as current directory when executing the command. All files at this directory will
+    be made available to the sandbox environment at /home/python/
+    :return: The API response for the execution
+    """
     try:
         result = subprocess.run(
-            ['/home/python/result/bin/python-executor-env'] + overlay_args + command,
+            ['python-executor-env'] + command,
             capture_output=True,
             start_new_session=True,
             timeout=1,
@@ -89,7 +92,6 @@ def exec_in_sandbox(command: List[str],
             "stderr": result.stderr,
             "stdout": result.stdout,
         }), 400
-
 
     # Return result
     return jsonify({
