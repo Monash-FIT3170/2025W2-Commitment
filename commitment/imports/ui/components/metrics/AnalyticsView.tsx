@@ -314,23 +314,6 @@ export function AnalyticsView(): React.JSX.Element {
                   data={analytics.metrics.highlights.totalLinesOfCode.data}
                 />
               </div>
-              {/* <HighlightCardWithGraph
-                title="Number of Contributors"
-                value={analytics.metrics.highlights.numContributors}
-              /> */}
-
-              {/* <div className="w-full min-h-[300px] h-full ">
-                <ContributorLineGraph
-                  data={analytics.metrics.contributors.lineGraph.data}
-                  title={analytics.metrics.contributors.lineGraph.title}
-                  xAxisLabel={
-                    analytics.metrics.contributors.lineGraph.xAxisLabel
-                  }
-                  yAxisLabel={
-                    analytics.metrics.contributors.lineGraph.yAxisLabel
-                  }
-                />
-              </div> */}
               <div className="w-full min-h-[300px] h-full ">
                 <ContributionPieChart
                   data={analytics.metrics.contributors.pieChart.data}
