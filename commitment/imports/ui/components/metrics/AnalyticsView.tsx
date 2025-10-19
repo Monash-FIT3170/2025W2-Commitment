@@ -270,19 +270,21 @@ export function AnalyticsView(): React.JSX.Element {
                   }}
                 />
               </div>
-              {filtersChanged && (
-                <div className="mt-4">
-                  <button
-                    onClick={() => {
-                      fetchAnalyticsData();
-                      setFiltersChanged(false);
-                    }}
-                    className="bg-git-int-primary text-git-int-text font-medium px-4 py-2 rounded-md shadow-sm hover:bg-git-int-primary-hover transition-all"
-                  >
-                    Submit
-                  </button>
-                </div>
-              )}
+              <div className="mt-4">
+                <button
+                  onClick={() => {
+                    fetchAnalyticsData();
+                    setFiltersChanged(false);
+                  }}
+                  disabled={!filtersChanged}
+                  className={`font-medium px-4 py-2 rounded-md shadow-sm transition-all ${
+                                filtersChanged
+                                ? "bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover cursor-pointer"
+                                : "bg-git-int-primary/50 text-git-int-text/50 cursor-not-allowed"
+                            }`}>
+                  Apply
+                </button>
+              </div>
             </div>
           </div>
 
