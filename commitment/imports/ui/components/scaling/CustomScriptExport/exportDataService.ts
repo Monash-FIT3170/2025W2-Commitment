@@ -389,20 +389,22 @@ export class ExportDataService {
         return uniqueDays.size;
         
       case 'first_commit':
-        // Timestamp of first commit
-        if (commits.length === 0) return 0;
+        // Date of first commit in DD/MM/YYYY format
+        if (commits.length === 0) return '';
         const firstCommit = commits.reduce((earliest: any, commit: any) => 
           new Date(commit.value.timestamp) < new Date(earliest.value.timestamp) ? commit : earliest
         );
-        return new Date(firstCommit.value.timestamp).getTime();
+        const firstDate = new Date(firstCommit.value.timestamp);
+        return firstDate.toLocaleDateString('en-GB'); // DD/MM/YYYY format
         
       case 'last_commit':
-        // Timestamp of last commit
-        if (commits.length === 0) return 0;
+        // Date of last commit in DD/MM/YYYY format
+        if (commits.length === 0) return '';
         const lastCommit = commits.reduce((latest: any, commit: any) => 
-          commit.value.timestamp > latest.value.timestamp ? commit : latest
+          new Date(commit.value.timestamp) > new Date(latest.value.timestamp) ? commit : latest
         );
-        return new Date(lastCommit.value.timestamp).getTime();
+        const lastDate = new Date(lastCommit.value.timestamp);
+        return lastDate.toLocaleDateString('en-GB'); // DD/MM/YYYY format
         
       default:
         return 0;
@@ -501,20 +503,22 @@ export class ExportDataService {
         return uniqueDays.size;
         
       case 'first_commit':
-        // Timestamp of first commit
-        if (commits.length === 0) return 0;
+        // Date of first commit in DD/MM/YYYY format
+        if (commits.length === 0) return '';
         const firstCommit = commits.reduce((earliest: any, commit: any) => 
           new Date(commit.value.timestamp) < new Date(earliest.value.timestamp) ? commit : earliest
         );
-        return new Date(firstCommit.value.timestamp).getTime();
+        const firstDate = new Date(firstCommit.value.timestamp);
+        return firstDate.toLocaleDateString('en-GB'); // DD/MM/YYYY format
         
       case 'last_commit':
-        // Timestamp of last commit
-        if (commits.length === 0) return 0;
+        // Date of last commit in DD/MM/YYYY format
+        if (commits.length === 0) return '';
         const lastCommit = commits.reduce((latest: any, commit: any) => 
-          commit.value.timestamp > latest.value.timestamp ? commit : latest
+          new Date(commit.value.timestamp) > new Date(latest.value.timestamp) ? commit : latest
         );
-        return new Date(lastCommit.value.timestamp).getTime();
+        const lastDate = new Date(lastCommit.value.timestamp);
+        return lastDate.toLocaleDateString('en-GB'); // DD/MM/YYYY format
         
       default:
         return 0;
@@ -615,7 +619,8 @@ export class ExportDataService {
         const firstCommit = commitsForDate.reduce((earliest: any, commit: any) => 
           new Date(commit.value.timestamp) < new Date(earliest.value.timestamp) ? commit : earliest
         );
-        return new Date(firstCommit.value.timestamp).getTime();
+        const firstDate = new Date(firstCommit.value.timestamp);
+        return firstDate.toLocaleDateString('en-GB'); // DD/MM/YYYY format
         
       case 'last_commit':
         // Timestamp of last commit on this date
@@ -623,7 +628,8 @@ export class ExportDataService {
         const lastCommit = commitsForDate.reduce((latest: any, commit: any) => 
           commit.value.timestamp > latest.value.timestamp ? commit : latest
         );
-        return new Date(lastCommit.value.timestamp).getTime();
+        const lastDate = new Date(lastCommit.value.timestamp);
+        return lastDate.toLocaleDateString('en-GB'); // DD/MM/YYYY format
         
       default:
         return 0;
