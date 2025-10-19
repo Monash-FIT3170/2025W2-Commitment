@@ -7,6 +7,7 @@ import InsertGitRepoView from "./views/HomeView";
 import LoadingPage from "./views/LoadingView";
 import MetricsPage from "./views/MetricsView";
 import DashboardView from "./views/DashboardView";
+import DocsView from "./views/DocsView";
 import SettingsPage from "./components/settings/SettingsPage";
 import Layout from "./components/shared/Layout";
 import { Toaster } from "@base/toaster";
@@ -26,6 +27,14 @@ export default function App() {
 
           <Route path="/loading" element={<LoadingPage />} />
           <Route path="/metrics" element={<MetricsPage />} />
+          <Route
+            path="/docs"
+            element={
+              <Authorized>
+                <DocsView />
+              </Authorized>
+            }
+          />
           <Route
             path="/dashboard"
             element={
