@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { type DateRange } from 'react-day-picker';
+import { Meteor } from 'meteor/meteor';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Button } from '../../ui/button';
@@ -7,7 +8,7 @@ import { Label } from '../../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
 import { Checkbox } from '../../ui/checkbox';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../ui/dropdown-menu';
-import { DateRangePicker } from './DateRangePicker';
+import { DatePicker } from './DatePicker';
 
 export interface MetricOption {
   id: string;
@@ -20,12 +21,12 @@ export interface DataSelectionConfig {
   branch: string;
   dateRange: DateRange | undefined;
   selectedMetrics: string[];
-  includeRawData: boolean;
   groupBy: 'contributor' | 'date' | 'none';
 }
 
 interface DataSelectionPanelProps {
   availableBranches: string[];
+  repoUrl?: string;
   onConfigChange: (config: DataSelectionConfig) => void;
   onPreviewData: () => void;
   isLoading?: boolean;
@@ -45,8 +46,7 @@ const METRIC_OPTIONS: MetricOption[] = [
   { id: 'file_count', label: 'Files Changed', description: 'Number of files modified', category: 'code' },
   
   // Collaboration category
-  { id: 'contributors', label: 'Contributors', description: 'Number of unique contributors', category: 'collaboration' },
-  { id: 'collaboration_score', label: 'Collaboration Score', description: 'Measure of team collaboration', category: 'collaboration' },
+  { id: 'collaboration_score', label: 'Collaboration Score', description: 'Measure of team collaboration using scaling methodology', category: 'collaboration' },
   
   // Time category
   { id: 'active_days', label: 'Active Days', description: 'Days with commits', category: 'time' },
@@ -56,6 +56,7 @@ const METRIC_OPTIONS: MetricOption[] = [
 
 export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
   availableBranches,
+  repoUrl,
   onConfigChange,
   onPreviewData,
   isLoading = false
@@ -63,14 +64,53 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
   const [config, setConfig] = useState<DataSelectionConfig>({
     branch: '',
     dateRange: {
-      from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+      from: new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000), // 12 weeks ago (same as metrics page)
       to: new Date()
     },
     selectedMetrics: ['total_commits', 'lines_added', 'lines_deleted'],
-    includeRawData: true,
     groupBy: 'contributor'
   });
 
+  // Fetch repository metadata to get available branches and set a smart default date range
+  useEffect(() => {
+    if (!repoUrl) return;
+
+    Meteor.call('repo.getMetadata', repoUrl, (error: any, metadata: any) => {
+      if (error) {
+        console.error('Error fetching repository metadata:', error);
+        return;
+      }
+
+      if (metadata) {
+        console.log('Repository metadata:', metadata);
+        
+        // Set branch but use a smart default date range that includes actual commits
+        if (metadata.dateRange && metadata.dateRange.from && metadata.dateRange.to) {
+          const actualFrom = new Date(metadata.dateRange.from);
+          const actualTo = new Date(metadata.dateRange.to);
+
+          setConfig(prev => ({
+            ...prev,
+            dateRange: {
+              from: actualFrom,
+              to: actualTo
+            },
+            branch: metadata.branches && metadata.branches.length > 0 
+              ? (metadata.branches.includes('main') ? 'main' : metadata.branches[0])
+              : prev.branch
+          }));
+        } else {
+          // Fallback to just setting the branch
+          setConfig(prev => ({
+            ...prev,
+            branch: metadata.branches && metadata.branches.length > 0 
+              ? (metadata.branches.includes('main') ? 'main' : metadata.branches[0])
+              : prev.branch
+          }));
+        }
+      }
+    });
+  }, [repoUrl]);
 
   // Update parent component when config changes
   useEffect(() => {
@@ -148,7 +188,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
         {/* Date Range Selection */}
         <div className="space-y-2">
           <Label className="text-git-text-primary">Date Range</Label>
-          <DateRangePicker
+          <DatePicker
             defaultValue={config.dateRange}
             onChange={(dateRange) => setConfig(prev => ({ ...prev, dateRange }))}
           />
@@ -233,21 +273,6 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
 
         {/* Export Options */}
         <div className="space-y-4">
-          <Label className="text-git-text-primary">Export Options</Label>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="includeRawData"
-              checked={config.includeRawData}
-              onCheckedChange={(checked) => 
-                setConfig(prev => ({ ...prev, includeRawData: checked as boolean }))
-              }
-            />
-            <Label htmlFor="includeRawData" className="text-sm text-git-text-primary">
-              Include raw commit data (individual commits, not just aggregated metrics)
-            </Label>
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="groupBy" className="text-git-text-primary">Group By</Label>
              <Select

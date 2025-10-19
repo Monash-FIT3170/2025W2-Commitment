@@ -123,7 +123,12 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
         {/* Data Table */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-git-text-primary">Data Preview</p>
+            <div className="flex items-center space-x-2">
+              <p className="text-sm font-medium text-git-text-primary">Data Preview</p>
+              <span className="text-xs text-git-text-secondary bg-git-int-secondary px-2 py-1 rounded">
+                {data.headers.length} columns × {data.rows.length} rows
+              </span>
+            </div>
             {hasMoreRows && !showRawData && (
               <Button
                 variant="ghost"
@@ -136,12 +141,15 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
             )}
           </div>
           
-          <ScrollArea className="h-96 w-full border-git-stroke-primary rounded-md">
-            <Table>
+          <div className="w-full border border-git-stroke-primary rounded-md overflow-auto max-h-96">
+            <Table className="min-w-full">
               <TableHeader>
                 <TableRow>
                   {data.headers.map((header, index) => (
-                    <TableHead key={index} className="sticky top-0 bg-git-int-secondary text-git-text-primary">
+                    <TableHead 
+                      key={index} 
+                      className="sticky top-0 bg-git-int-secondary text-git-text-primary whitespace-nowrap px-3 py-2 text-left font-medium"
+                    >
                       {header}
                     </TableHead>
                   ))}
@@ -151,7 +159,10 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
                 {displayRows.map((row, rowIndex) => (
                   <TableRow key={rowIndex} className="bg-git-int-primary hover:bg-git-int-primary-hover">
                     {row.map((cell, cellIndex) => (
-                      <TableCell key={cellIndex} className="font-mono text-sm text-git-int-text">
+                      <TableCell 
+                        key={cellIndex} 
+                        className="font-mono text-sm text-git-int-text whitespace-nowrap px-3 py-2"
+                      >
                         {formatValue(cell)}
                       </TableCell>
                     ))}
@@ -159,7 +170,13 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
                 ))}
               </TableBody>
             </Table>
-          </ScrollArea>
+          </div>
+          
+          {data.headers.length > 8 && (
+            <p className="text-xs text-git-text-secondary text-center">
+              💡 Scroll horizontally to see all {data.headers.length} columns
+            </p>
+          )}
           
           {!showRawData && hasMoreRows && (
             <p className="text-xs text-git-text-secondary text-center">

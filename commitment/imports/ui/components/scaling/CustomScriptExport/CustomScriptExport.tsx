@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '../../ui/alert';
 import { DataSelectionPanel, DataSelectionConfig } from './DataSelectionPanel';
 import { ExportPreview, ExportData } from './ExportPreview';
 import { ExportHistory, useExportHistory, ExportHistoryItem } from './ExportHistory';
+import { ScriptExecution } from './ScriptExecution';
 import { useCSVExport, generateFilename } from './ExportButton';
 
 interface CustomScriptExportProps {
@@ -19,7 +20,7 @@ interface CustomScriptExportProps {
 
 export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
   availableBranches,
-  repoUrl: _repoUrl,
+  repoUrl,
   onDataRequest,
   className = ''
 }) => {
@@ -36,6 +37,8 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
   const handleConfigChange = (config: DataSelectionConfig) => {
     setCurrentConfig(config);
     setError(null);
+    // Don't automatically clear preview data on config changes
+    // Let the user explicitly request new preview data
   };
 
   // Handle preview data request
@@ -44,6 +47,8 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
     setIsLoading(true);
     setError(null);
+    // Clear previous preview data to ensure fresh data
+    setPreviewData(null);
 
     const fetchData = async () => {
       try {
@@ -62,33 +67,56 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
   // Handle CSV export
   const handleExport = () => {
-    if (!previewData || !currentConfig) return;
+    if (!currentConfig) return;
 
     const exportData = async () => {
       try {
+        // Basic guards
+        if (!currentConfig.branch || currentConfig.selectedMetrics.length === 0) {
+          setError('Please select a branch and at least one metric.');
+          setActiveTab('export');
+          return;
+        }
+
+        // If we don't have preview data yet, fetch it first
+        let dataToExport = previewData;
+        if (!dataToExport) {
+          setIsLoading(true);
+          try {
+            dataToExport = await onDataRequest(currentConfig);
+            setPreviewData(dataToExport);
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load data');
+            return;
+          } finally {
+            setIsLoading(false);
+          }
+        }
+
         const filename = generateFilename(
           currentConfig.branch,
-          currentConfig.startDate,
-          currentConfig.endDate
+          currentConfig.dateRange?.from || new Date(),
+          currentConfig.dateRange?.to || new Date()
         );
 
-        await exportToCSV(previewData, filename);
+        await exportToCSV(dataToExport, filename);
 
         // Add to history
         const historyItem: Omit<ExportHistoryItem, 'id' | 'exportedAt'> = {
           filename,
           branch: currentConfig.branch,
-          dateRange: `${currentConfig.startDate.toLocaleDateString()} - ${currentConfig.endDate.toLocaleDateString()}`,
+          dateRange: currentConfig.dateRange?.from && currentConfig.dateRange?.to 
+            ? `${currentConfig.dateRange.from.toLocaleDateString()} - ${currentConfig.dateRange.to.toLocaleDateString()}`
+            : 'No date range',
           metrics: currentConfig.selectedMetrics,
-          rowCount: previewData.summary.totalRows,
-          fileSize: `${Math.round((previewData.rows.length * 100 + 50) / 1024)} KB`
+          rowCount: dataToExport.summary.totalRows,
+          fileSize: `${Math.round((dataToExport.rows.length * 100 + 50) / 1024)} KB`
         };
 
         addExport(historyItem);
 
-        // Close preview
-        setPreviewData(null);
-        setActiveTab('export');
+        // Return to history tab to show success context
+        setActiveTab('history');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to export CSV');
       }
@@ -133,7 +161,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-git-int-secondary">
+        <TabsList className="grid w-full grid-cols-4 bg-git-int-secondary">
           <TabsTrigger 
             value="export"
             className="data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text text-git-text-primary"
@@ -153,16 +181,23 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
           >
             History
           </TabsTrigger>
+          <TabsTrigger 
+            value="script-execution"
+            className="data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text text-git-text-primary"
+          >
+            Script Execution
+          </TabsTrigger>
         </TabsList>
 
         {/* Data Selection Tab */}
         <TabsContent value="export" className="space-y-6">
-          <DataSelectionPanel
-            availableBranches={availableBranches}
-            onConfigChange={handleConfigChange}
-            onPreviewData={handlePreviewData}
-            isLoading={isLoading}
-          />
+            <DataSelectionPanel
+              availableBranches={availableBranches}
+              repoUrl={repoUrl}
+              onConfigChange={handleConfigChange}
+              onPreviewData={handlePreviewData}
+              isLoading={isLoading}
+            />
         </TabsContent>
 
         {/* Preview Tab */}
@@ -184,6 +219,14 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
             onReExport={handleReExport}
             onDelete={deleteExport}
             onClearHistory={clearHistory}
+            isLoading={isLoading}
+          />
+        </TabsContent>
+
+        {/* Script Execution Tab */}
+        <TabsContent value="script-execution" className="space-y-6">
+          <ScriptExecution
+            history={history}
             isLoading={isLoading}
           />
         </TabsContent>
