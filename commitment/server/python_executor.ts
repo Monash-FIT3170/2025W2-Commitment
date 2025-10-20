@@ -42,7 +42,7 @@ export async function pythonExecutor(script: string, data: string): Promise<Pyth
   formData.append("data.csv", new Blob([data], { type: "text/csv" }), "data.csv");
 
   const base = `http://${PYTHON_EXECUTOR_CONN_ENDPOINT}`;
-  const url = new URL("/upload", base);
+  const url = new URL("/execute", base);
 
   // Make POST request
   let response: Response;
