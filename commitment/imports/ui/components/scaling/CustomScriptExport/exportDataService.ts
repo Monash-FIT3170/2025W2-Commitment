@@ -193,10 +193,12 @@ export class ExportDataService {
         // Get the contributor's display name for the output
         const contributorData = repoData.contributors.find(c => c.key === contributorKey);
         const contributorName = contributorData ? contributorData.value.name : contributorKey;
+        const contributorEmails: string[] = contributorData?.value?.emails || [];
+        const emailsString = contributorEmails.length > 0 ? contributorEmails.join(', ') : '';
         
-        // Contributor info
+        // Contributor info (match header order: contributor_email, contributor_name)
+        row.push(emailsString);
         row.push(contributorName);
-        row.push(contributorName); // Use name as both email and name for now
         
         // Get metrics for this contributor directly from repository data
         metrics.forEach(metric => {
