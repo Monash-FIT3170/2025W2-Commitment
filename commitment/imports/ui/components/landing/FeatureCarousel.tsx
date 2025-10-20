@@ -77,7 +77,8 @@ const features: Feature[] = [
     title: "Moodle Gradebook Integration",
     description:
       "As an educator, upload a gradebook to apply scaling based on metrics for streamlined grading.",
-    image: "/gradebook.png",
+    imageLight: "/gradebook_light.png",
+    imageDark: "/gradebook_dark.png",
     alt: "Upload a gradebook to apply scaling for streamlined grading.",
   },
   {
