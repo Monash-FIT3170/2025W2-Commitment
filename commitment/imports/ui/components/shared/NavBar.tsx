@@ -119,17 +119,17 @@ export const NavBar: React.FC = () => {
         </a>
 
         {!isLoggedIn && (
-          <div>
-            <a href="/login" className={`${navigationMenuTriggerStyle({ kind: "link" })} mr-10`}>
+          <div className="flex items-center space-x-3">
+            <a href="/login" className={navigationMenuTriggerStyle({ kind: "link" })}>
               Log in
             </a>
             {/* Sign up button */}
             <Button
-              className="font-mono w-[100px] h-auto text-white rounded-full  text-center bg-git-int-primary hover:bg-git-int-primary-hover drop-shadow-lg"
+              className="font-mono w-[100px] h-auto text-white rounded-full text-center bg-git-int-primary hover:bg-git-int-primary-hover drop-shadow-lg"
               asChild
             >
               <a href="/signup">Sign Up</a>
-            </Button>{" "}
+            </Button>
           </div>
         )}
         {isLoggedIn && <ProfileMenu onSignOut={handleSignOut} />}
