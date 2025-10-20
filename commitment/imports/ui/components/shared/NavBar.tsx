@@ -35,16 +35,14 @@ export const NavBar: React.FC = () => {
   return (
     <div className="sticky top-0 z-50 flex items-center justify-between py-2 border-b bg-git-bg-bottom relative px-4">
       <NavigationMenu>
-        <NavigationMenuList className="flex space-x-4">
-          <div className="flex items-center space-x-3">
-            <NavigationMenuItem>
-              <NavigationMenuLink>
-                <Link to={isLandingPage ? "/" : "/home"}>
-                  <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-                </Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          </div>
+        <NavigationMenuList className="flex items-center space-x-4">
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild>
+              <Link to={isLandingPage ? "/" : "/home"} className="inline-flex items-center">
+                <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
 
           {isLandingPage ? (
             // Landing page navigation items
@@ -77,11 +75,14 @@ export const NavBar: React.FC = () => {
           ) : (
             // App navigation items
             <>
-              <NavigationMenuItem>
-                <Link to="/dashboard" className={navigationMenuTriggerStyle({ kind: "link" })}>
-                  Dashboard
-                </Link>
-              </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link to="/dashboard" className={navigationMenuTriggerStyle({ kind: "link" })}>
+                      Dashboard
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                
               {/* <NavigationMenuItem>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Docs
