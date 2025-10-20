@@ -21,7 +21,7 @@ import BookmarkFilter from "../components/dashboard/BookmarkFilter";
 import { Input } from "@base/input";
 
 /*
- const fake_bookmarks:Bookmark[] = Array.from({ length: 5 }, (_, i) => ({
+ const fake_bookmarks:Bookmark[] = Array.from({ length: 20 }, (_, i) => ({
    _id: `${i + 1}`,
    title: `Repository ${i + 1}`,
    createdAt: new Date("2024-06-20T10:30:00.000Z"),
@@ -172,6 +172,7 @@ const DashboardView: React.FC = () => {
     );
   }, [bookmarks]);
  
+  
   /*
   useEffect(() => {
     setBookmarks(fake_bookmarks);
@@ -278,13 +279,13 @@ const DashboardView: React.FC = () => {
           <div
             className={
               displayed.length >= 3
-                // Many repos: cap at 3 columns on xl+, auto-fit below
-                ? "grid gap-6 grid-cols-[repeat(auto-fit,minmax(320px,1fr))] xl:[grid-template-columns:repeat(3,minmax(320px,1fr))]"
+                // 3+ repos → flexible grid, max 420px per card
+                ? "grid gap-6 grid-cols-[repeat(auto-fit,minmax(320px,420px))] justify-center"
                 : displayed.length === 2
-                  // Exactly two: clean two-up
-                  ? "grid gap-6 grid-cols-1 md:grid-cols-2"
-                  // Single: center and constrain width so it doesn't look huge
-                  : "grid gap-6 grid-cols-1 md:max-w-3xl lg:max-w-5xl xl:max-w-none w-full mx-auto"
+                  // 2 repos → side by side, centered, capped at 420px each
+                  ? "grid gap-6 justify-center grid-cols-[repeat(auto-fit,minmax(320px,420px))]"
+                  // 1 repo → centered and stretched up to 420px
+                  : "grid gap-6 justify-center grid-cols-[minmax(320px,420px)] mx-auto"
             }
           >
             {displayed.map((b) => (
