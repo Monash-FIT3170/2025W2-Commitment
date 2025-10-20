@@ -126,12 +126,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
               </TableBody>
             </Table>
           </div>
-          
-          {data.headers.length > 8 && (
-            <p className="text-xs text-git-text-secondary text-center">
-              💡 Scroll horizontally to see all {data.headers.length} columns
-            </p>
-          )}
+
           
         </div>
 
