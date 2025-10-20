@@ -152,7 +152,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
               variant="ghost"
               size="icon"
               disabled={loading}
-              className={`${variantOptions[variant]}`}
+              className={`${variantOptions[variant]} rounded-full hover:bg-git-bg-secondary/70 dark:hover:bg-git-bg-tertiary`}
             >
               <Bookmark size={24} fill="currentColor" stroke="currentColor" />
             </Button>
@@ -180,7 +180,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
           size="icon"
           onClick={handleAddBookmark}
           disabled={loading}
-          className={`${variantOptions[variant]}`}
+          className={`${variantOptions[variant]} rounded-full hover:bg-git-bg-secondary/70 dark:hover:bg-git-bg-tertiary`}
         >
           <Bookmark size={24} fill="none" stroke="currentColor" />
         </Button>
