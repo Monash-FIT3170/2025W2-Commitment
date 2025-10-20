@@ -149,7 +149,7 @@ async "regex.evaluate"(params: {
     regex: string;
     scale: number;
     sign: "+" | "-";
-    key?: string;
+    key: string;
     flags?: string;
   }>;
   branch?: string;
@@ -166,7 +166,7 @@ async "regex.evaluate"(params: {
         regex: String,
         scale: Number,
         sign: Match.OneOf("+", "-"),
-        key: Match.Optional(String),
+        key: String,
         flags: Match.Optional(String),
       }),
     ],
@@ -183,7 +183,7 @@ async "regex.evaluate"(params: {
       regex: string;
       scale: number;
       sign: "+" | "-";
-      key?: string;
+      key: string;
       flags?: string;
     }>;
     branch?: string;

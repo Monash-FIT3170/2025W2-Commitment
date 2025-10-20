@@ -7,7 +7,7 @@ export type RegexRule = {
   weight: number; // scaling factor (relative importance of this rule: higher --> more important) only a magnitude
   negate?: boolean; // if true then the scaling factor is reversed; a penalty (i.e regex rule to catch bad behaviour)
   flags?: string; // regex flags, g and y (global/sticky) not allowed as they stateful (only using one regex instance for all commits)
-  key?: string; // name for this regex pattern: maybe a good idea to enforce
+  key: string; // name for this regex pattern 
 };
 
 // structure of the output
@@ -89,7 +89,7 @@ export function evaluateCommitMessageRules(
     let scoreRaw = 0;
 
     rules.forEach((rule) => {
-      const key = rule.key || rule.pattern; // should maybe enforce/encourage a rule.key input to make presentation more clear if we're to show specific commits on UI
+      const { key } = rule;
       const re = compileRegex(rule.pattern, rule.flags);
 
       if (!re) {
