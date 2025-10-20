@@ -124,7 +124,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     // "Use AI to filter out commits",
     "LOC",
     "LOC Per Commit",
-    "Commits Per Day",
   ];
 
   return (
