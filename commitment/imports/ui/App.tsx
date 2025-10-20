@@ -1,18 +1,20 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LandingPage from "@ui/LandingPage";
-import LoginView from "@ui/views/LoginView/LoginView";
-import InsertGitRepoView from "@ui/views/InsertGitRepoView/InsertGitRepo";
 import Authorized from "@ui/components/shared/Authorized";
-import LoadingPage from "./LoadingPage";
-import MetricsPage from "./MetricsPage";
-import DashboardView from "./views/DashboardView/DashboardView";
+import LandingPage from "./views/LandingView";
+import LoginView from "/imports/ui/views/LoginView";
+import InsertGitRepoView from "./views/HomeView";
+import LoadingPage from "./views/LoadingView";
+import MetricsPage from "./views/MetricsView";
+import DashboardView from "./views/DashboardView";
 import SettingsPage from "./components/settings/SettingsPage";
 import Layout from "./components/shared/Layout";
+import { Toaster } from "@base/toaster";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Toaster />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<LandingPage />} />
@@ -32,11 +34,15 @@ export default function App() {
               </Authorized>
             }
           />
-                  <Route path="/settings" element={<Authorized>
-          <SettingsPage /></Authorized>
-        } />
+          <Route
+            path="/settings"
+            element={
+              <Authorized>
+                <SettingsPage />
+              </Authorized>
+            }
+          />
         </Route>
-
       </Routes>
     </BrowserRouter>
   );

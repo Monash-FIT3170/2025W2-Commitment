@@ -1,5 +1,5 @@
-import { AliasConfig, StudentAlias, AliasConfigsCollection } from "../imports/api/alias_configs";
-import { SerializableRepoData, ContributorData } from "../imports/api/types";
+import { AliasConfig, StudentAlias, AliasConfigsCollection } from "@api/alias_configs";
+import { SerializableRepoData, ContributorData } from "@api/types";
 
 /**
  * CORE ALIAS MAPPING ENGINE

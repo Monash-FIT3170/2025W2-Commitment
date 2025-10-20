@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Download, Trash2, Clock, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
+import { Button } from '@base/button';
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../ui/table';
-import { ScrollArea } from '../../ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@base/table';
+import { ScrollArea } from '@base/scroll-area';
 
 export interface ExportHistoryItem {
   id: string;
@@ -147,40 +147,40 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
                 <TableRow key={item.id} className="bg-git-int-primary hover:bg-git-int-primary-hover">
                   <TableCell className="font-medium text-git-int-text">
                     <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-git-text-secondary" />
+                      <FileText className="h-4 w-4 text-git-int-text" />
                       <span className="truncate max-w-[200px] text-git-int-text" title={item.filename}>
                         {item.filename}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-git-int-secondary text-git-text-primary">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-git-int-secondary text-white">
                       {item.branch}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-git-text-secondary">
+                  <TableCell className="text-sm text-white">
                     {item.dateRange}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {item.metrics.slice(0, 2).map((metric) => (
-                        <span key={metric} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-git-int-secondary text-git-text-primary border border-git-stroke-primary">
+                        <span key={metric} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-git-int-secondary text-white border border-git-stroke-primary">
                           {metric}
                         </span>
                       ))}
                       {item.metrics.length > 2 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-git-int-secondary text-git-text-primary border border-git-stroke-primary">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-git-int-secondary text-white border border-git-stroke-primary">
                           +{item.metrics.length - 2} more
                         </span>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-git-text-secondary">
+                  <TableCell className="text-sm text-white">
                     {item.fileSize}
                   </TableCell>
-                  <TableCell className="text-sm text-git-text-secondary">
+                  <TableCell className="text-sm text-white">
                     <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                      <Clock className="h-3 w-3 text-white" />
                       {format(item.exportedAt, 'MMM d, HH:mm')}
                     </div>
                   </TableCell>
@@ -193,7 +193,7 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
                         disabled={isLoading}
                         className="text-git-int-text hover:bg-git-int-primary-hover"
                       >
-                        <Download className="h-4 w-4" />
+                        <Download className="h-4 w-4 text-git-int-text" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -202,7 +202,7 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
                         disabled={isLoading}
                         className="text-git-int-text hover:bg-git-int-primary-hover"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-git-int-text" />
                       </Button>
                     </div>
                   </TableCell>

@@ -1,8 +1,10 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { AliasConfigsCollection, StudentAlias } from './alias_configs';
-import { ContributorData, SerializableRepoData, UnmappedContributor } from './types';
+import { ContributorData, RepositoryData, SerializableRepoData, UnmappedContributor } from './types';
 import { applyAliasMappingIfNeeded } from '/server/alias_mapping';
+import { tryFromDatabaseSerialised } from '/server/api/caching';
+import { meteorCallAsync } from './meteor_interface';
 
 Meteor.methods({
     /**
@@ -128,25 +130,50 @@ Meteor.methods({
         throw new Meteor.Error("not-authorized", "You must be logged in.");
         }
 
-        // Get repo data
-        const repo: SerializableRepoData = await Meteor.callAsync("repoCollection.getData", repoUrl);
+        // Get repo data WITHOUT applying alias mapping first
+        const repo = await tryFromDatabaseSerialised(repoUrl, null);
 
-        // Apply alias mapping if user has a config
-        const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId);
-
-        // All contributors in repo
-        const repoContributors = mappedRepo.contributors.map((c) => c.value);
+        // All contributors in repo (original names, not mapped)
+        const repoContributors = repo.contributors.map((c) => c.value);
 
         // Get user's alias config
         const config = await AliasConfigsCollection.findOneAsync({ ownerId: this.userId });
 
+        if (!config) {
+            // If no config exists, all contributors are unmapped
+            const unmapped: UnmappedContributor[] = repoContributors.map((c) => ({
+                name: c.name,
+                rawIdentifiers: [...c.emails],
+            }));
+            return { unmapped };
+        }
+
+        // Check which contributors are NOT covered by the alias config
         const unmapped: UnmappedContributor[] = repoContributors
-        .filter((c) => !config?.aliases.find((a) => a.officialName === c.name))
+        .filter((contributor) => {
+            // Check if this contributor is covered by any alias in the config
+            const isCovered = config.aliases.some((alias) => {
+                // Check if contributor name matches any git username
+                const nameMatches = alias.gitUsernames.some(username => 
+                    username.toLowerCase() === contributor.name.toLowerCase()
+                );
+                
+                // Check if any contributor email matches any alias email
+                const emailMatches = alias.emails.some(aliasEmail => 
+                    contributor.emails.some(contributorEmail => 
+                        contributorEmail.toLowerCase() === aliasEmail.toLowerCase()
+                    )
+                );
+                
+                return nameMatches || emailMatches;
+            });
+            
+            return !isCovered;
+        })
         .map((c) => ({
             name: c.name,
-            rawIdentifiers: [...c.emails], // we can only find emails. We can't find Janidu's?
-            }));
-
+            rawIdentifiers: [...c.emails],
+        }));
 
         return { unmapped };
     },

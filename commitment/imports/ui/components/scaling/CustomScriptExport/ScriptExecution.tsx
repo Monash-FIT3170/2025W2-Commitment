@@ -1,8 +1,8 @@
 import React from 'react';
 import { Code, FileText, Clock } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
+import { Button } from '@base/button';
 import { ExportHistoryItem } from './ExportHistory';
 
 interface ScriptExecutionProps {

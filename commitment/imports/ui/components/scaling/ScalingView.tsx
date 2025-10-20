@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import { Upload, Download, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import ScalingConfigForm from "./ScalingConfigForm";
-import { Dialog, DialogContent } from "../ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Dialog, DialogContent } from "@base/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@base/tabs";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -16,24 +16,21 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "../ui/alert-dialog";
+} from "@base/alert-dialog";
 import {
   calculateFinalGrades,
   generateScaledGradingSheet,
 } from "./ScalingUtils";
 
-import { Button } from "../ui/button";
+import { Button } from "@base/button";
 import GradingSheetForm from "./GradingSheetForm";
 import ScalingSummary from "./ScalingSummary";
-import type {
-  UnmappedContributor,
-  UserScalingSummary,
-} from "../../../api/types";
+import type { UnmappedContributor, UserScalingSummary } from "@api/types";
 import type { GradingSheetRow, ParseResult } from "../utils/GradingSheetParser";
-import { toast } from "../../hooks/use-toast";
-import InfoButton from "../ui/infoButton";
+import { toast } from "@hook/useToast";
+import InfoButton from "@base/infoButton";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@hook/useAuth";
 import CustomScriptExport from "./CustomScriptExport";
 import { exportDataService } from "./CustomScriptExport/exportDataService";
 
@@ -43,7 +40,11 @@ interface ScalingConfig {
   customScript?: File[];
 }
 
-function ScalingView(): JSX.Element {
+interface ScalingViewProps {
+  onNavigateToMetrics?: () => void;
+}
+
+function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
   const location = useLocation();
   const [completed, setCompleted] = useState(false);
 
@@ -71,13 +72,7 @@ function ScalingView(): JSX.Element {
   const isLoggedIn = useAuth();
 
   useEffect(() => {
-    if (isLoggedIn === false) {
-      navigate("/dashboard");
-    }
-  }, [isLoggedIn, navigate]);
-
-  useEffect(() => {
-    if (!repoUrl) return;
+    if (!repoUrl || !isLoggedIn) return;
 
     Meteor.call(
       "aliasConfigs.validateAllContributors",
@@ -92,11 +87,12 @@ function ScalingView(): JSX.Element {
           setUnmappedUsers(res.unmapped);
           setShowAliasDialog(true);
         } else {
+          setUnmappedUsers([]);
           setShowAliasDialog(false);
         }
       }
     );
-  }, [repoUrl]);
+  }, [repoUrl, isLoggedIn]);
 
   // Fetch available branches from server metadata when repoUrl is set
   useEffect(() => {
@@ -171,7 +167,9 @@ function ScalingView(): JSX.Element {
 
   // Simple initialization with localStorage persistence for core state
   useEffect(() => {
-    const currentRepoUrl: string = location.state?.repoUrl ?? null;
+    const currentRepoUrl: string | null =
+      (location.state as { repoUrl?: string } | null)?.repoUrl ?? null;
+
     setRepoUrl(currentRepoUrl);
 
     // Check if repo has changed - clear localStorage if it has
@@ -186,7 +184,9 @@ function ScalingView(): JSX.Element {
       (hasExistingScalingData && !lastRepoUrl && currentRepoUrl)
     ) {
       clearScalingData();
-      localStorage.setItem("scaling_last_repo_url", currentRepoUrl);
+      if (currentRepoUrl) {
+        localStorage.setItem("scaling_last_repo_url", currentRepoUrl);
+      }
       setCompleted(false);
       setShowDialog(true);
     } else {
@@ -304,7 +304,12 @@ function ScalingView(): JSX.Element {
     } else {
       setScaledResults(results);
     }
-    setStep("sheet");
+
+    if (isLoggedIn) 
+      setStep("sheet");
+    else
+      handleSkipSheet()
+    
   };
 
   const handleSheetSubmit = (
@@ -350,7 +355,6 @@ function ScalingView(): JSX.Element {
         scaledResults
       );
 
-      // Create a filename with "scaled_" prefix
       const originalName = gradingSheet.name;
       const fileExtension = originalName.substring(
         originalName.lastIndexOf(".")
@@ -361,12 +365,10 @@ function ScalingView(): JSX.Element {
       );
       const scaledFileName = `scaled_${nameWithoutExtension}${fileExtension}`;
 
-      // Create a new file with the custom name
       const renamedFile = new File([scaledFile], scaledFileName, {
         type: scaledFile.type,
       });
 
-      // Trigger download
       const url = URL.createObjectURL(renamedFile);
       const link = document.createElement("a");
       link.href = url;
@@ -395,9 +397,9 @@ function ScalingView(): JSX.Element {
   };
 
   return (
-    <div className="w-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated">
+    <div className="w-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated dark:bg-git-bg-primary">
       <div className="flex flex-col gap-32">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-4 rounded-2xl bg-git-bg-elevated">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
           {/* Header */}
           <div className="mb-10">
             <div className="flex items-center gap-4">
@@ -412,8 +414,8 @@ function ScalingView(): JSX.Element {
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "scaling" | "export")} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="scaling">Scaling Configuration</TabsTrigger>
-              <TabsTrigger value="export">Custom Script Export</TabsTrigger>
+              <TabsTrigger value="scaling" className="text-base font-medium">Scaling Configuration</TabsTrigger>
+              <TabsTrigger value="export" className="text-base font-medium">Custom Script Export</TabsTrigger>
             </TabsList>
 
             <TabsContent value="scaling" className="space-y-6">
@@ -422,30 +424,48 @@ function ScalingView(): JSX.Element {
               open={showAliasDialog}
               onOpenChange={setShowAliasDialog}
             >
-              <AlertDialogTrigger asChild>
-                <div></div>
-              </AlertDialogTrigger>
+              <AlertDialogTrigger asChild />
 
               <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Unmapped Contributors</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    The following contributors are not mapped in your alias
-                    config:
-                    <ul className="mt-2 list-disc ml-5">
-                      {unmappedUsers.map((u) => (
-                        <li key={u.name}>
-                          <strong>{u.name}</strong>
-                        </li>
-                      ))}
-                    </ul>
-                    Please upload or update your alias configuration in
-                    settings.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter className="p-0">
-                  <div className="w-full flex justify-center items-center">
+                <div className="flex justify-between items-start">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAliasDialog(false);
+                      if (onNavigateToMetrics) {
+                        onNavigateToMetrics();
+                      }
+                    }}
+                    className="absolute top-2 right-2 p-1 rounded-md hover:bg-gray-100 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+
+                  {/* Optional: maintain centered title alignment visually */}
+                  <AlertDialogHeader className="flex-1 text-center">
+                    <AlertDialogTitle>Unmapped Contributors</AlertDialogTitle>
+                  </AlertDialogHeader>
+                </div>
+
+                <AlertDialogDescription className="mt-3">
+                  The following contributors are not mapped in your alias
+                  config:
+                  <ul className="mt-2 list-disc ml-5">
+                    {unmappedUsers.map((u) => (
+                      <li key={u.name}>
+                        <strong>{u.name}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                  Please upload or update your alias configuration in settings.
+                </AlertDialogDescription>
+
+                <AlertDialogFooter className="p-0 mt-4 flex justify-center">
+                  <div className="flex justify-center w-full">
                     <AlertDialogAction
+                      type="button"
+                      className="inline-flex px-4 py-2 justify-center"
                       onClick={() => {
                         navigate("/settings", {
                           state: { tab: "alias-config" },
@@ -460,30 +480,15 @@ function ScalingView(): JSX.Element {
             </AlertDialog>
           )}
 
-          <div className="flex">
-            <div className="mb-10 mr-auto">
-              <div className="flex items-center gap-4">
-                <h1 className="text-3xl text-foreground font-robotoFlex mt-4">
-                  Scaling
-                </h1>
-                <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
-              </div>
-              <div className="h-[2px] bg-git-stroke-primary w-full mt-2" />
-            </div>
-          </div>
-
-          {/* Always render the scaling summary in the background */}
-          {config && scaledResults.length > 0 && !showAliasDialog && (
-            <div className="mb-6">
-              {/* Header */}
-
-              <ScalingSummary
-                userScalingSummaries={scaledResults}
-                hasGradingSheet={!!gradingSheet}
-              />
-            </div>
-          )}
-
+              {/* Always render the scaling summary in the background */}
+              {config && scaledResults.length > 0 && !showAliasDialog && (
+                <div className="mb-6">
+                  <ScalingSummary
+                    userScalingSummaries={scaledResults}
+                    hasGradingSheet={!!gradingSheet}
+                  />
+                </div>
+              )}
           {/* Buttons for grading sheet or regenerate */}
           {!showAliasDialog && (
             <div className="flex justify-center gap-4 flex-wrap p-4">
@@ -497,18 +502,21 @@ function ScalingView(): JSX.Element {
                 Create New Scaling
               </Button>
 
-              <Button
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                onClick={() => {
-                  setStep("sheet");
-                  setShowDialog(true);
-                }}
-              >
-                <Upload className="h-4 w-4" />
-                {gradingSheet
-                  ? "Replace Grading Sheet"
-                  : "Upload Grading Sheet"}
-              </Button>
+              {/* Display the grading sheet only to logged in users */}
+              {isLoggedIn && (
+                <Button
+                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                  onClick={() => {
+                    setStep("sheet");
+                    setShowDialog(true);
+                  }}
+                >
+                  <Upload className="h-4 w-4" />
+                  {gradingSheet
+                    ? "Replace Grading Sheet"
+                    : "Upload Grading Sheet"}
+                </Button>
+              )}
 
               {gradingSheet && gradingSheetParseResult && (
                 <Button
@@ -553,7 +561,6 @@ function ScalingView(): JSX.Element {
               )}
             </div>
           )}
-
           {/* Multi-Step Dialog */}
           <Dialog
             open={showDialog}

@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { type DateRange } from 'react-day-picker';
 import { Meteor } from 'meteor/meteor';
 
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { Label } from '../../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
-import { Checkbox } from '../../ui/checkbox';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../ui/dropdown-menu';
+import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
+import { Button } from '@base/button';
+import { Label } from '@base/label';
+import { Checkbox } from '@base/checkbox';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@base/dropdown-menu';
 import { DatePicker } from './DatePicker';
 
 export interface MetricOption {
@@ -45,8 +44,7 @@ const METRIC_OPTIONS: MetricOption[] = [
   { id: 'net_lines', label: 'Net Lines', description: 'Net change in lines of code', category: 'code' },
   { id: 'file_count', label: 'Files Changed', description: 'Number of files modified', category: 'code' },
   
-  // Collaboration category
-  { id: 'collaboration_score', label: 'Collaboration Score', description: 'Measure of team collaboration using scaling methodology', category: 'collaboration' },
+  // Collaboration category (empty after removing collaboration_score)
   
   // Time category
   { id: 'active_days', label: 'Active Days', description: 'Days with commits', category: 'time' },
@@ -159,6 +157,44 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
         </p>
       </CardHeader>
       <CardContent className="space-y-6 bg-git-bg-elevated pt-6">
+        {/* All Controls - Single Horizontal Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Group By Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="groupBy" className="text-git-text-primary">Group By</Label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
+                >
+                  {config.groupBy === 'contributor' ? 'Contributor' : 
+                   config.groupBy === 'date' ? 'Date' : 
+                   config.groupBy === 'none' ? 'No Grouping' : 'Group by'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" sideOffset={4} className="w-[280px] focus:ring-0 border-2 border-git-stroke-primary/40">
+                <DropdownMenuCheckboxItem
+                  checked={config.groupBy === 'contributor'}
+                  onCheckedChange={() => setConfig(prev => ({ ...prev, groupBy: 'contributor' }))}
+                >
+                  Contributor
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={config.groupBy === 'date'}
+                  onCheckedChange={() => setConfig(prev => ({ ...prev, groupBy: 'date' }))}
+                >
+                  Date
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={config.groupBy === 'none'}
+                  onCheckedChange={() => setConfig(prev => ({ ...prev, groupBy: 'none' }))}
+                >
+                  No Grouping
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         {/* Branch Selection */}
         <div className="space-y-2">
           <Label htmlFor="branch" className="text-git-text-primary">Branch</Label>
@@ -192,6 +228,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
             defaultValue={config.dateRange}
             onChange={(dateRange) => setConfig(prev => ({ ...prev, dateRange }))}
           />
+          </div>
         </div>
 
         {/* Metrics Selection */}
@@ -200,47 +237,121 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
             <Label className="text-git-text-primary">Metrics to Export</Label>
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: METRIC_OPTIONS.map(m => m.id) }))}
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary"
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
               >
                 Select All
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: [] }))}
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary"
+                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
               >
                 Clear All
               </Button>
             </div>
           </div>
 
-          {/* Group metrics by category */}
-          {['commits', 'code', 'collaboration', 'time'].map((category) => {
+          {/* Group metrics by category in columns */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Column 1: Commits + Collaboration metrics */}
+            <div className="space-y-4">
+              {/* Commits Metrics */}
+              {['commits'].map((category) => {
             const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
+                if (categoryMetrics.length === 0) return null;
 
             return (
               <div key={category} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-git-text-secondary capitalize">{category} Metrics</h4>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSelectAll(category)}
-                    >
-                      All
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeselectAll(category)}
-                    >
-                      None
-                    </Button>
+                    <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
+                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
+                        </div>
+                        <div className="flex gap-1 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSelectAll(category)}
+                            className="border border-git-stroke-primary/40 rounded"
+                          >
+                            All
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeselectAll(category)}
+                            className="border border-git-stroke-primary/40 rounded"
+                          >
+                            None
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-2">
+                      {categoryMetrics.map((metric) => (
+                        <div key={metric.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={metric.id}
+                            checked={config.selectedMetrics.includes(metric.id)}
+                            onCheckedChange={() => handleMetricToggle(metric.id)}
+                          />
+                          <div className="flex-1">
+                            <Label
+                              htmlFor={metric.id}
+                              className="text-sm font-medium text-git-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {metric.label}
+                            </Label>
+                            <p className="text-xs text-git-text-secondary mt-1">
+                              {metric.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Column 2: Code metrics */}
+            <div className="space-y-4">
+              {['code'].map((category) => {
+                const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
+                if (categoryMetrics.length === 0) return null;
+
+                return (
+                  <div key={category} className="space-y-2">
+                    <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
+                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
+                        </div>
+                        <div className="flex gap-1 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSelectAll(category)}
+                            className="border border-git-stroke-primary/40 rounded"
+                          >
+                            All
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeselectAll(category)}
+                            className="border border-git-stroke-primary/40 rounded"
+                          >
+                            None
+                          </Button>
+                        </div>
                   </div>
                 </div>
                 
@@ -271,34 +382,76 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
           })}
         </div>
 
-        {/* Export Options */}
+            {/* Column 3: Time metrics */}
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="groupBy" className="text-git-text-primary">Group By</Label>
-             <Select
-              value={config.groupBy}
-              onValueChange={(value: 'contributor' | 'date' | 'none') => 
-                setConfig(prev => ({ ...prev, groupBy: value }))
-              }
-            >
-               <SelectTrigger className="text-git-text-primary">
-                 <SelectValue placeholder="Group by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="contributor">Contributor</SelectItem>
-                <SelectItem value="date">Date</SelectItem>
-                <SelectItem value="none">No Grouping</SelectItem>
-              </SelectContent>
-            </Select>
+              {['time'].map((category) => {
+                const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
+                if (categoryMetrics.length === 0) return null;
+
+                return (
+                  <div key={category} className="space-y-2">
+                    <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
+                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
+                        </div>
+                        <div className="flex gap-1 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSelectAll(category)}
+                            className="border border-git-stroke-primary/40 rounded"
+                          >
+                            All
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeselectAll(category)}
+                            className="border border-git-stroke-primary/40 rounded"
+                          >
+                            None
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-2">
+                      {categoryMetrics.map((metric) => (
+                        <div key={metric.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={metric.id}
+                            checked={config.selectedMetrics.includes(metric.id)}
+                            onCheckedChange={() => handleMetricToggle(metric.id)}
+                          />
+                          <div className="flex-1">
+                            <Label
+                              htmlFor={metric.id}
+                              className="text-sm font-medium text-git-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {metric.label}
+                            </Label>
+                            <p className="text-xs text-git-text-secondary mt-1">
+                              {metric.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Preview Button */}
-        <div className="pt-4">
+        <div className="pt-4 flex justify-center">
           <Button
             onClick={onPreviewData}
             disabled={!isConfigValid || isLoading}
-            className="w-full bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+            className="w-auto px-8 bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-lg"
           >
             {isLoading ? 'Loading...' : 'Preview Data'}
           </Button>
