@@ -96,7 +96,8 @@ const features: Feature[] = [
     title: "Per-User Contribution Insights",
     description:
       "Track individual contributions such as commit frequency and lines of code.",
-    image: "/peruser.png",
+    imageLight: "/peruser_light.png",
+    imageDark: "/peruser_dark.png",
     alt: "Track individual user contributions.",
   },
 ];
@@ -148,7 +149,8 @@ export function FeatureCarousel() {
                 <FeatureCard
                   title={feature.title}
                   description={feature.description}
-                  image={feature.image}
+                  imageLight={feature.imageLight}
+                  imageDark={feature.imageDark}pe
                   alt={feature.alt}
                   className={isSelected ? "shadow-xl" : ""}
                 />
