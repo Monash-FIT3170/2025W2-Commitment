@@ -65,7 +65,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
       </CardHeader>
       <CardContent className="space-y-4 bg-git-bg-elevated pt-6">
         {/* Summary Information */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4"> 
+              <div className="grid  xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 grid-cols-4 xl:grid-cols-4 gap-4"> 
 
         <HighlightCardWithGraph title={"Total Rows"} value={data.summary.totalRows.toLocaleString()}/>
         <HighlightCardWithGraph title={"Date Range"} value={data.summary.dateRange}/>
