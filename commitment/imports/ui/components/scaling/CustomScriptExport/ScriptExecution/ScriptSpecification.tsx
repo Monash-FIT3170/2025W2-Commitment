@@ -31,6 +31,7 @@ with open("./data.csv", newline="", encoding="utf-8") as data_csv:
 export default function ScriptSpecification() {
   const [code, setCode] = useLocalStorage('custom-execution-script', initial_script);
 
+  console.log(code);
   return (
     <div>
       <ScriptEditor code={code} setCode={setCode} />
