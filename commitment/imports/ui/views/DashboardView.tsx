@@ -21,7 +21,7 @@ import BookmarkFilter from "../components/dashboard/BookmarkFilter";
 import { Input } from "@base/input";
 
 /*
- const fake_bookmarks:Bookmark[] = Array.from({ length: 20 }, (_, i) => ({
+ const fake_bookmarks:Bookmark[] = Array.from({ length: 5 }, (_, i) => ({
    _id: `${i + 1}`,
    title: `Repository ${i + 1}`,
    createdAt: new Date("2024-06-20T10:30:00.000Z"),
@@ -157,7 +157,7 @@ const DashboardView: React.FC = () => {
     });
   };
 
-  
+
   useEffect(() => {
     Meteor.call(
       "bookmarks.getAllBookmarks",
@@ -276,24 +276,14 @@ const DashboardView: React.FC = () => {
       >
         {view === "gallery" ? (
           // Gallery
-          <div
-            className={
-              displayed.length >= 3
-                // 3+ repos → flexible grid, max 420px per card
-                ? "grid gap-6 grid-cols-[repeat(auto-fit,minmax(320px,420px))] justify-center"
-                : displayed.length === 2
-                  // 2 repos → side by side, centered, capped at 420px each
-                  ? "grid gap-6 justify-center grid-cols-[repeat(auto-fit,minmax(320px,420px))]"
-                  // 1 repo → centered and stretched up to 420px
-                  : "grid gap-6 justify-center grid-cols-[minmax(320px,420px)] mx-auto"
-            }
-          >
+          <div className="flex flex-wrap justify-between gap-10 px-12 max-w-[1400px] mx-auto">
             {displayed.map((b) => (
-              <RepoCard
+              <div
                 key={b._id}
-                repository={b}
-                onClick={() => handleViewRepository(b)}
-              />
+                className="basis-[320px] sm:basis-[360px] lg:basis-[400px] xl:basis-[420px] grow-0"
+              >
+                <RepoCard repository={b} onClick={() => handleViewRepository(b)} />
+              </div>
             ))}
           </div>
         ) : (
