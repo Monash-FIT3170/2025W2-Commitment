@@ -1,9 +1,10 @@
 /**
  * This is used for python code syntax highlighting
  *
- * prism.js default theme for JavaScript, CSS and HTML
+ * Modified version of prism.js default theme for JavaScript, CSS and HTML, to use commitment colors
  * Based on dabblet (http://dabblet.com)
  * @author Lea Verou
+ * Modified by Bailey Chessum to use commitment colors
  */
 
 code[class*="language-"],
