@@ -393,3 +393,5 @@
     @apply hidden;
   }
 }
+
+@import './prism-theme.css';

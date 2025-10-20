@@ -3,9 +3,6 @@ import Editor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-python';
 
-import 'prismjs/themes/prism.css';
-
-
 export interface ScriptEditorProps {
   code: string,
   setCode: (code: string) => void,
