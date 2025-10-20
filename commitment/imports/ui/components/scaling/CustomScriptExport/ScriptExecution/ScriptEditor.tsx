@@ -3,8 +3,10 @@ import Editor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-python';
 import useScriptDropzone from './useScriptDropzone';
+import {cn} from "@ui/lib/utils";
 
 export interface ScriptEditorProps {
+  className?: string,
   code: string,
   setCode: (code: string) => void,
   onFocus?: () => void,
@@ -54,7 +56,7 @@ export default function ScriptEditor(props: ScriptEditorProps) {
         props.setDragging?.(false);
       }}
 
-      className="text-foreground w-full h-full rounded-md outline-0 border-0"
+      className={cn("text-foreground w-full h-full rounded-md outline-0 border-0", props.className ?? "")}
       tabSize={2}
       insertSpaces={true}
     />

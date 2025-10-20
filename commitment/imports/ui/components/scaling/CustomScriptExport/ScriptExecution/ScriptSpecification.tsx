@@ -36,9 +36,9 @@ export default function ScriptSpecification() {
 
   console.log(code);
 
-  const className = cn(
-    "bg-background rounded-md border-1 outline-1 mt-3",
-    selected || dragging
+  const editorClassName = cn(
+    "bg-background rounded-md border-1 outline-1 mt-3 h-[50vh]",
+    selected
       ? "outline-primary border-primary"
       : "outline-transparent border-git-stroke-secondary",
     dragging
@@ -47,7 +47,7 @@ export default function ScriptSpecification() {
   )
 
   return (
-    <div className={className}>
+    <div className={editorClassName}>
       <ScriptEditor
         code={code}
         setCode={setCode}
