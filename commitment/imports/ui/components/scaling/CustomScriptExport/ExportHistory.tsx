@@ -92,7 +92,7 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
   }
 
   return (
-    <Card className="w-full bg-git-bg-elevated border-git-stroke-primary">
+    <Card className="w-full bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary">
         <CardHeader className="bg-git-int-primary">
           <div className="flex items-center justify-between">
             <div>
@@ -113,7 +113,7 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="bg-git-bg-elevated pt-6">
+      <CardContent className="bg-git-bg-elevated dark:bg-git-bg-primary pt-6">
         <ScrollArea className="h-96 w-full">
           <Table>
             <TableHeader>

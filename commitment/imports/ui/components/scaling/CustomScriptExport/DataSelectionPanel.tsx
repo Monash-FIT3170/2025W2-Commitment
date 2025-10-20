@@ -149,14 +149,14 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
   const isConfigValid = config.branch && config.selectedMetrics.length > 0;
 
   return (
-    <Card className="w-full bg-git-bg-elevated border-git-stroke-primary">
+    <Card className="w-full bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary">
       <CardHeader className="bg-git-int-primary">
         <CardTitle className="text-git-int-text">Select Data for Export</CardTitle>
         <p className="text-sm text-git-int-text/90">
           Choose the branch, time period, and metrics you want to export for your custom scaling script.
         </p>
       </CardHeader>
-      <CardContent className="space-y-6 bg-git-bg-elevated pt-6">
+      <CardContent className="space-y-6 bg-git-bg-elevated dark:bg-git-bg-primary pt-6">
         {/* All Controls - Single Horizontal Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Group By Selection */}

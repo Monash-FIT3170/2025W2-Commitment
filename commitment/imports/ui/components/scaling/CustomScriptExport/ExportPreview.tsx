@@ -53,7 +53,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
   };
 
   return (
-    <Card className="w-full bg-git-bg-elevated border-git-stroke-primary">
+    <Card className="w-full bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary">
       <CardHeader className="bg-git-int-primary">
         <div className="flex items-center justify-between">
           <CardTitle className="text-git-int-text">Export Preview</CardTitle>
@@ -72,7 +72,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
           Review your data before exporting to CSV
         </p>
       </CardHeader>
-      <CardContent className="space-y-4 bg-git-bg-elevated pt-6">
+      <CardContent className="space-y-4 bg-git-bg-elevated dark:bg-git-bg-primary pt-6">
         {/* Summary Information */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-1">
