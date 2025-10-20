@@ -47,9 +47,14 @@ function PurposeCard() {
             className="shadow-md rounded-[52px] hidden dark:block"
           />
           <img
-            src="/graph.png"
-            alt="Graph of contributions."
-            className="max-h-32"
+            src="/graph_light.png"
+            alt="Graph of contributions"
+            className="max-h-32 block dark:hidden"
+          />
+          <img
+            src="/graph_dark.png"
+            alt="Graph of contributions dark"
+            className="max-h-32 hidden dark:block"
           />
         </div>
 
