@@ -133,35 +133,26 @@ const scoringStrategies: Record<string, ScoreFn> = {
         return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     },
 
-    "Compact Scaling": (scales: number[]) => {
-        if (!scales.length) return 1;
+    "Compact Scaling": (scales: number[], idx: number) => {
+        // Filter only finite numbers
+        const validScales = scales.filter((v) => Number.isFinite(v));
+        if (!validScales.length) return 1; // fallback if all invalid
 
-        const maxScale = 1.2;
+        const min = Math.min(...validScales);
+        const max = Math.max(...validScales);
 
-        // Compute mean and std
-        const mean = scales.reduce((a, b) => a + b, 0) / scales.length;
-        const variance = scales.reduce((sum, x) => sum + (x - mean) ** 2, 0) / scales.length;
-        const std = Math.sqrt(variance);
+        if (min === max) return 1; // all same -> neutral 1
 
-        // Handle tiny variance or single value
-        if (std < 1e-6) {
-            // Map single or identical values proportionally to [0.5, 1.2] baseline
-            const value = scales[0];
-            return 0.5 + value * 0.7; // ensures floor at 0.5, max at 1.2
-        }
+        const value = scales[idx];
+        if (!Number.isFinite(value)) return 1; // fallback for this user
 
-        // Smooth scaling using tanh
-        const smoothScale = (x: number) => {
-            const normalized = (x - mean) / std;
-            const scale = 0.5 + Math.tanh(normalized * 0.8) * 0.5; // between 0 and 1
-            return 0.5 + scale * 0.7; // floor 0.5, max ~1.2
-        };
-
-        const scaledValues = scales.map(smoothScale);
-        const avgScaled = scaledValues.reduce((a, b) => a + b, 0) / scaledValues.length;
-
-        return Math.min(avgScaled, maxScale);
+        // Linear mapping from min..max -> 0.5..1.2
+        const normalized = (value - min) / (max - min);
+        return 0.5 + normalized * 0.7; // 0.5 -> min, 1.2 -> max
     },
+
+
+
 
     Default: (scales) => scales.reduce((a, b) => a + b, 0) / scales.length, // just calculates the mean (average) of the user’s normalized metric values
 };
@@ -170,7 +161,7 @@ const scoringStrategies: Record<string, ScoreFn> = {
 // ---------- Scaling ----------
 //
 
-const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day", "Compact Scaling"];
+const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Compact Scaling"];
 
 /**
  * Builds a matrix of users and their metrics and then uses the chosen scoring method to compute their final scale.
@@ -179,28 +170,57 @@ const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits 
  * @param config 
  * @returns array of {name, scale} 
  */
-async function scaleUsers(repoUrl: string, config: ScalingConfig) {
-
-    const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // IS CASTING LIKE THIS OKAY?
+export async function scaleUsers(repoUrl: string, config: ScalingConfig) {
+    const allMetrics = await Meteor.callAsync("repo.getAllMetrics", { repoUrl }) as AllMetricsData; // ✅ casting is fine here
 
     const selectedMetrics = config.metrics?.length ? config.metrics : DEFAULT_METRICS;
     const method = config.method ?? "Percentiles";
 
     const users = buildUsers(allMetrics, selectedMetrics);
+
     if (!users.length) return [];
 
     const metricsValues = selectedMetrics.map((_, i) =>
-        normaliseMetric(users.map((u) => u.values[i]))
-        );
+        users.map((u) => (Number.isFinite(u.values[i]) ? u.values[i]! : 0))
+    );
+
+
 
     const scoreFn = scoringStrategies[method] ?? scoringStrategies.Default;
 
-  return users.map((user, idx) => {
-    const scales = metricsValues.map((col) => col[idx]);
-    const score = scoreFn(scales, idx, users, selectedMetrics);
-    return { name: user.name, score: Math.round(score * 100) / 100 };
-  });
+    const rawScores = users.map((_, idx) => {
+        const scales = metricsValues.map((col) => col[idx]);
+        return scoreFn(scales, idx, users, selectedMetrics);
+    });
+
+
+    const mean = rawScores.length ? rawScores.reduce((a, b) => a + b, 0) / rawScores.length : 0;
+
+    const std = rawScores.length
+        ? Math.sqrt(rawScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / rawScores.length)
+        : 0;
+
+    const safeStd = std || 1; // if std = 0, assume 1 so thresholds work
+
+    function normalise_scale(score: number) {
+
+    const diff = score - mean;
+
+    if (diff <= -3 * safeStd) return 0;
+    if (diff <= -2 * safeStd) return 0.5;
+    if (diff <= -1 * safeStd) return 0.9;
+    if (diff <= 1.2 * safeStd) return 1;
+    if (diff <= 3 * safeStd) return 1.1;
+    return 1.2;
+
+    }
+
+    return users.map((user, i) => ({
+    name: user.name,
+    score: Math.round(normalise_scale(rawScores[i]) * 100) / 100,
+    }));
 }
+
 
 //
 // ---------- Main exported function ----------
@@ -257,4 +277,3 @@ export async function getScaledResults(
     scale: scaledUsers.find((u) => u.name === c.key)?.score ?? 0,
   }));
 }
-

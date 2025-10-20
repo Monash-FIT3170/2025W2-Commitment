@@ -130,7 +130,6 @@ Meteor.methods({
 
     const result = getNumberOfContributors(await tryFromDatabaseSerialised(repoUrl, n));
 
-    console.log("result: ", result);
 
     if (result <= largestSize) return true;
 
