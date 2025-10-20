@@ -5,11 +5,12 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
 import {Form, FormControl, FormField, FormItem} from "@base/form";
 import { useNavigate } from 'react-router-dom';
-import { Meteor } from 'meteor/meteor';
 import LoginFormErrorMessage from "@ui/components/login/LoginForm/LoginFormErrorMessage";
 import { Accounts } from "meteor/accounts-base";
 import FormInputWithErrors from "@ui/components/shared/FormInputWithErrors";
 import { Eye, EyeOff } from "lucide-react";
+import GoogleLoginWidget from "/imports/ui/components/login/LoginForm/GoogleLoginWidget";
+import GithubLoginWidget from "/imports/ui/components/login/LoginForm/GithubLoginWidget";
 
 export interface SignupFormProps {
   className?: string;
@@ -72,16 +73,20 @@ const SignupForm: FC<SignupFormProps> = (props) => {
           name: values.username,
         },
       },
-      (err?: Meteor.Error) => {
+      (err: unknown) => {
         if (err) {
-          // Handle different types of login errors
-          let errorMessage = `Signup failed: ${err.reason}`;
+          // Normalize reason/message from possible Meteor.Error or generic Error
+          const reason =
+            (err as any)?.reason ??
+            ((err instanceof Error) ? err.message : String(err));
 
-          if (err.reason === "User not found") {
+          let errorMessage = `Signup failed: ${reason}`;
+
+          if (reason === "User not found") {
             errorMessage = "No account found with this email address.";
-          } else if (err.reason === "Incorrect password") {
+          } else if (reason === "Incorrect password") {
             errorMessage = "Incorrect password. Please try again.";
-          } else if (err.reason === "User has no password set") {
+          } else if (reason === "User has no password set") {
             errorMessage = "Please reset your password to continue.";
           }
 
@@ -205,7 +210,7 @@ const SignupForm: FC<SignupFormProps> = (props) => {
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground focus:outline-none"
                     tabIndex={-1}
                   >
-                    {showPassword ? (
+                    {showRetypePassword ? (
                       <EyeOff className="h-4 w-4" />
                     ) : (
                       <Eye className="h-4 w-4" />
@@ -221,6 +226,22 @@ const SignupForm: FC<SignupFormProps> = (props) => {
         <Button type="submit" className="w-full">
           Submit
         </Button>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-git-bg-tertiary px-2 text-muted-foreground">
+              Or instead
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <GoogleLoginWidget mode="signup" />
+          <GithubLoginWidget mode="signup" />
+        </div>
       </form>
     </Form>
   );

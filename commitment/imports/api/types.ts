@@ -18,26 +18,28 @@ export type CommitData = Readonly<{
   commitTitle: string;
   contributorName: string;
   description: string;
-  timestamp: Date;
+  timestamp: string;
   fileData: FileChanges[];
 }>;
+
+export type FileChanges = Readonly<{
+  filepath: string;
+  oldFilePath: string;
+  char: ChangeType;
+  likeness: number;
+  newLines: number;
+  deletedLines: number;
+  diff: string[];
+}>;
+
+export type ChangeType = "A" | "M" | "D" | "R" | "C";
 
 export type ContributorData = Readonly<{
   name: string;
   emails: string[];
 }>;
 
-export type FileChanges = Readonly<{
-  filepath: string    
-  oldFilePath: string 
-  char: ChangeType        
-  likeness: number    
-  newLines: number    
-  deletedLines: number
-  diff: string[]        
-}>;
-
-export type ChangeType = "A" | "M" | "D" | "R" | "C";
+export type Maybe<T> = T | null;
 
 export type SerialisableMapObject<K, V> = {
   key: K;
@@ -50,6 +52,7 @@ export type SerializableRepoData = Readonly<{
   allCommits: SerialisableMapObject<string, CommitData>[]; // Map converted to a list of objects
   contributors: SerialisableMapObject<string, ContributorData>[]; // Map converted to a list of objects
 }>;
+
 export interface FilteredData {
   repoUrl: string;
   dateRange: {
@@ -141,16 +144,6 @@ export interface PieChart {
   title: string;
 }
 
-export interface MetricsData {
-  highlights: Highlights;
-  contributors: {
-    leaderboard: Leaderboard;
-    lineGraph: LineGraph;
-    pieChart: PieChart;
-    heatMap: Heatmap;
-  };
-}
-
 export interface Selections {
   selectedBranch: string;
   selectedContributors: string[];
@@ -167,7 +160,6 @@ export interface AnalyticsData {
 export enum MetricType {
   LOC = "LOC",
   LOC_PER_COMMIT = "LOC Per Commit",
-  COMMITS_PER_DAY = "Commits per Day",
   TOTAL_COMMITS = "Total No. Commits",
 }
 
@@ -175,15 +167,6 @@ export enum MetricType {
 export const metricNames: string[] = Object.values(MetricType);
 
 // add a type for getAllMetrics.
-
-export interface AllMetricsData {
-  [contributorName: string]: {
-    "Total No. Commits": number;
-    LOC: number;
-    "LOC Per Commit": number;
-    "Commits Per Day": number;
-  };
-}
 
 export type ContributorValueWithAliases = {
   name: string;
@@ -195,3 +178,82 @@ export type UnmappedContributor = {
   name: string;
   rawIdentifiers: string[];
 };
+
+
+export type AllMetricsData = {
+  contributorName: string;
+  metrics: {
+    "Total No. Commits": number;
+    LOC: number;
+    "LOC Per Commit": number;
+  };
+};
+
+export type ContributorMetrics = {
+  contributorName: string;
+  metrics: Record<MetricType, number>;
+};
+
+export type ContributorScaledMetric = {
+  metric: MetricType;
+  value: number;
+  percentile: number;
+};
+
+export type ContributorScaledData = {
+  contributor: ContributorData;
+  scaledMetric: ContributorScaledMetric;
+};
+
+export type RepoMetricDistribution = {
+  metric: MetricType;
+  min: number;
+  Q1: number;
+  median: number;
+  Q3: number;
+  max: number;
+  mean: number;
+};
+
+// for contributor metric scaling graph
+export type ScalingDistributionResult = {
+  contributors: ContributorScaledData[];
+  repoDistributions: RepoMetricDistribution;
+};
+
+export type ScalingDistributionGraph = {
+  data: ScalingDistributionResult;
+  title: string;
+};
+
+/**
+ * Example of Scaling Distribution Result:
+ * {
+ *  contributors: [
+ *   {
+ *      contributorName: "Alice",
+ *      scaledMetrics: [
+ *        { metric: "LOC", value: 1500, percentile: 85},
+ *      ... other contributors
+ *  repoDistributions: [
+ *  { metric: "LOC", min: 100, Q1: 500, median: 1000, Q3: 2000, max: 5000, mean: 1200},
+ * ]
+ */
+
+export interface MetricsData {
+  highlights: Highlights;
+  contributors: {
+    leaderboard: Leaderboard;
+    lineGraph: LineGraph;
+    pieChart: PieChart;
+    heatMap: Heatmap;
+    scalingDistribution: ScalingDistributionGraph;
+  };
+}
+
+export type ScoreFn = (
+  scales: number[],
+  idx: number,
+  users: { name: string; values: (number | null)[] }[],
+  selectedMetrics: string[]
+) => number;

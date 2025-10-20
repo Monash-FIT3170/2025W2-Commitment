@@ -1,3 +1,4 @@
+import 'module-alias/register';
 import { Meteor } from "meteor/meteor";
 import { BookmarksCollection } from "@api/bookmarks";
 import { RepositoriesCollection } from "@api/repositories";
@@ -10,6 +11,7 @@ import "@api/alias_config_methods";
 import "./api/fetch_repo";
 import "./api/caching";
 import "./methods";
+import "./oauth-config";
 
 Meteor.startup(() => {
   Meteor.publish("bookmarks", function () {

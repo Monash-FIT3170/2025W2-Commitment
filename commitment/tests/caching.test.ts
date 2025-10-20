@@ -8,7 +8,6 @@ import {
   isInDatabase,
   removeRepo,
   tryFromDatabase,
-  allUrls,
   voidDatabase,
 } from "../server/api/caching";
 
@@ -47,13 +46,6 @@ describe("Caching Tests", () => {
 
     // Retrieve data
     expect(await tryFromDatabase(testUrl, null)).to.deep.equal(testData);
-  });
-
-  it("should return all URLs", async () => {
-    // Store data
-    await cacheIntoDatabase(testUrl, testData);
-
-    expect(await allUrls()).to.include(testUrl);
   });
 
   it("should remove repository data", async () => {
