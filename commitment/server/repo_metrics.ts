@@ -221,32 +221,6 @@ export function getAllGraphData(data: FilteredData, selectedMetric: MetricType):
       };
       break;
 
-    case MetricType.COMMITS_PER_DAY:
-      leaderboard = {
-        data: leaderboardCommitsPerDay(data),
-        title: "Top Contributors by Commits per Day",
-        xAxisLabel: "Commits / Day",
-      };
-      lineGraph = {
-        data: linegraphCommitsPerDay(data),
-        title: "Commits per Day Over Time",
-        xAxisLabel: "Date",
-        yAxisLabel: "Commits per Day",
-      };
-      pieChart = {
-        data: pieChartCommitsPerDay(data),
-        title: "Distribution of Commits per Day",
-      };
-      heatMap = {
-        data: heatMapTotalCommits(data),
-        title: "Commit Activity (Commits per Day)",
-      };
-      scalingDistribution = {
-        data: getScalingDistributionResult(data, MetricType.COMMITS_PER_DAY),
-        title: "Distribution of Commits Per Day per Contributor",
-      };
-      break;
-
     case MetricType.TOTAL_COMMITS:
       leaderboard = {
         data: leaderboardTotalCommits(data),
@@ -302,7 +276,6 @@ export const getAllMetrics = (filteredData: SerializableRepoData): AllMetricsDat
       "Total No. Commits": getTotalCommitsPerContributor(filteredData, contributor),
       LOC: getLOCperContributor(filteredData, contributor),
       "LOC Per Commit": getLocPerCommitPerContributor(filteredData, contributor),
-      "Commits Per Day": getCommitPerDayPerContributor(filteredData, contributor),
     };
   });
 
@@ -325,7 +298,6 @@ export const getAllMetricsFromData = (repoData: SerializableRepoData): AllMetric
       "Total No. Commits": getTotalCommitsPerContributor(repoData, contributor),
       LOC: getLOCperContributor(repoData, contributor),
       "LOC Per Commit": getLocPerCommitPerContributor(repoData, contributor),
-      "Commits Per Day": getCommitPerDayPerContributor(repoData, contributor),
     };
   });
 
@@ -333,5 +305,5 @@ export const getAllMetricsFromData = (repoData: SerializableRepoData): AllMetric
 };
 
 export function getMetricString(): string[] {
-  return ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
+  return ["Total No. Commits", "LOC", "LOC Per Commit"];
 }

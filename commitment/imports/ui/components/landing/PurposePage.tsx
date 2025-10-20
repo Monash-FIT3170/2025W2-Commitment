@@ -5,10 +5,10 @@ import GetStartedButton from "./getStartedButton";
 
 const Header = () => (
   <div className="flex flex-col justify-center items-center">
-    <h4 className="font-mono text text-git-500 text-lg font-semibold">
+    <h4 className="font-mono text text-git-500 text-lg font-semibold tracking-wide">
       HOW TO USE?
     </h4>
-    <h1 className="font-mono text-5xl">Get Started in Three Steps</h1>
+    <h1 className="font-mono text-5xlx">Get Started in Three Steps</h1>
   </div>
 );
 
@@ -37,18 +37,28 @@ function PurposeCard() {
         <div className="grid grid-cols-3 gap-4 items-center justify-items-center">
           <img src="/github_logo.svg" alt="Github Logo" className="max-h-32" />
           <img
-            src="/insert.png"
+            src="/insert_light.png"
             alt="Commitment Search Bar"
-            className="shadow-md rounded-[52px]"
+            className="shadow-md rounded-[52px] block dark:hidden"
           />
           <img
-            src="/graph.png"
-            alt="Graph of contributions."
-            className="max-h-32"
+            src="/insert_dark.png"
+            alt="Commitment Search Bar Dark"
+            className="shadow-md rounded-[52px] hidden dark:block"
+          />
+          <img
+            src="/graph_light.png"
+            alt="Graph of contributions"
+            className="max-h-32 block dark:hidden"
+          />
+          <img
+            src="/graph_dark.png"
+            alt="Graph of contributions dark"
+            className="max-h-32 hidden dark:block"
           />
         </div>
 
-        <div className="font-mono grid grid-cols-3 gap-4 items-start justify-items-center pt1 italic font-light">
+        <div className="font-mono grid grid-cols-3 gap-4 items-start justify-items-center pt1 italic font-semibold text-git-text-primary dark:text-git-text-secondary">
           <div>
             Find the
             <br />
