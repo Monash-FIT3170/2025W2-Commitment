@@ -27,7 +27,7 @@ export async function pythonExecutor(script: string, data: string): Promise<Pyth
   formData.append("data.csv", new Blob([data], { type: "text/csv" }), "data.csv");
 
   // Make POST request
-  const response = await fetch(PYTHON_EXECUTOR_CONN_ENDPOINT + "/upload", {
+  const response = await fetch("http://" + PYTHON_EXECUTOR_CONN_ENDPOINT + "/upload", {
     method: "POST",
     body: formData,
   });

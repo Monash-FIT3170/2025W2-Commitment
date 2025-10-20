@@ -21,6 +21,7 @@ import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm"
 import { executeCommand, assertSuccess } from "./api/shell";
 import { checkIfExists } from "./api/git_commands";
 import { getNumberOfContributors } from "./helper_functions";
+import { pythonExecutor } from "/server/python_executor";
 
 export async function getFilteredRepoData(
   repoUrl: string,
@@ -133,6 +134,8 @@ Meteor.methods({
 
     return false;
   },
+
+  pythonExecutor
 });
 
 export const getFilteredData = async ({
