@@ -6,6 +6,7 @@ import {cn} from "@ui/lib/utils";
 import Prism from 'prismjs';
 import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-markup';
+import 'prismjs/components/prism-json';
 
 Prism.languages.csv = {
   'string': /"[^"]*"/,

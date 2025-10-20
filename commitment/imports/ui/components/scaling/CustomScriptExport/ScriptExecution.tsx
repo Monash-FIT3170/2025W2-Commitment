@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {Clock, Code, FileText} from 'lucide-react';
+import React, {useMemo, useState} from 'react';
+import {Clock, Code, FileText, Terminal} from 'lucide-react';
 
 import {Card, CardContent, CardHeader, CardTitle} from '@base/card';
 import {Button} from '@base/button';
@@ -15,6 +15,8 @@ import {
 import {useLocalStorage} from "@hook/useLocalStorage";
 import {ExportData} from "@ui/components/scaling/CustomScriptExport/ExportPreview";
 import useAsync from "@hook/useAsync";
+import {FilteredData, PythonExecutorResponse} from "@api/types";
+import {meteorCallAsync} from "@api/meteor_interface";
 
 interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
@@ -30,6 +32,13 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
   const [code, setCode] = useLocalStorage('custom-execution-script', initialScript);
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
+  const [response, setResponse] = useState<PythonExecutorResponse>({});
+
+  const responseDataJson = useMemo(() => {
+    if (response.data)
+      return JSON.stringify(response.data, null, 2);
+    return "";
+  }, [response.data]);
 
   const csv = useAsync<string | null, string>(async () => {
     if (currentConfig === null)
@@ -53,12 +62,20 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
       return;
 
     console.log("Executing...", code, currentConfig)
+
+    // Call the API!
+    meteorCallAsync<PythonExecutorResponse>("pythonExecutor")(code, currentConfig)
+      .then(setResponse)
+      .catch((e) => {
+        console.error("Caught error trying to use python executor: ", e);
+        setResponse({
+          error: "Failed to call python executor API"
+        })
+      })
   }
 
   return (
     <div className="space-y-6">
-      
-
       {/* Main Script Execution Card */}
       <Card className="bg-git-bg-elevated border-git-stroke-primary">
         <CardHeader className="bg-git-int-primary">
@@ -96,6 +113,26 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
               name={"data.csv"}
               icon={<FileText size="sm"/>}
               language="csv"
+              readonly
+            />
+
+            <ScriptSpecification
+              className="mb-6"
+              code={[response.stdout ?? "", response.stderr ?? "", response.error ?? ""].join('\n')}
+              setCode={() => {}}
+              name={"Execution Output"}
+              icon={<Terminal size="sm"/>}
+              language="python"
+              readonly
+            />
+
+            <ScriptSpecification
+              className="mb-6"
+              code={responseDataJson}
+              setCode={() => {}}
+              name={"data.json"}
+              icon={<FileText size="sm"/>}
+              language="json"
               readonly
             />
           </div>

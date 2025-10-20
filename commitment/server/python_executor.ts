@@ -26,11 +26,23 @@ export async function pythonExecutor(script: string, data: string): Promise<Pyth
   formData.append("script.py", new Blob([script], { type: "text/x-python" }), "script.py");
   formData.append("data.csv", new Blob([data], { type: "text/csv" }), "data.csv");
 
+  const base = `http://${PYTHON_EXECUTOR_CONN_ENDPOINT}`;
+  const url = new URL("/upload", base);
+
   // Make POST request
-  const response = await fetch("http://" + PYTHON_EXECUTOR_CONN_ENDPOINT + "/upload", {
-    method: "POST",
-    body: formData,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
+  }
+  catch (e) {
+    return {
+      error: `An error occurred while making the request to ${url.toString()} :(\n` +
+        "Please inform a server admin.\n\n" + e.toString(),
+    } as PythonExecutorResponse;
+  }
 
   if (response.body === null) {
     return {
