@@ -1,6 +1,7 @@
 import React from 'react'
 import {useLocalStorage} from "@hook/useLocalStorage";
 import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptEditor";
+import {cn} from "@ui/lib/utils";
 
 const initial_script = `
 import os
@@ -30,12 +31,30 @@ with open("./data.csv", newline="", encoding="utf-8") as data_csv:
 
 export default function ScriptSpecification() {
   const [code, setCode] = useLocalStorage('custom-execution-script', initial_script);
+  const [selected, setSelected] = React.useState<boolean>(false);
+  const [dragging, setDragging] = React.useState<boolean>(false);
 
   console.log(code);
-  return (
-    <div>
-      <ScriptEditor code={code} setCode={setCode} />
 
+  const className = cn(
+    "bg-background rounded-md border-1 outline-1 mt-3",
+    selected || dragging
+      ? "outline-primary border-primary"
+      : "outline-transparent border-git-stroke-secondary",
+    dragging
+      ? "outline-dashed outline-2 outline-primary animate-pulse"
+      : "",
+  )
+
+  return (
+    <div className={className}>
+      <ScriptEditor
+        code={code}
+        setCode={setCode}
+        onBlur={() => setSelected(false)}
+        onFocus={() => setSelected(true)}
+        setDragging={setDragging}
+      />
     </div>
   )
 }
