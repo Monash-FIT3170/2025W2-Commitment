@@ -5,7 +5,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface FeatureCardProps {
   title: string;
   description: string;
-  image: string;
+  imageLight: string;
+  imageDark?: string;
   alt: string;
   className?: string;
 }
@@ -13,7 +14,8 @@ interface FeatureCardProps {
 export function FeatureCard({
   title,
   description,
-  image,
+  imageLight,
+  imageDark,
   alt,
   className = "",
 }: FeatureCardProps) {
@@ -31,10 +33,17 @@ export function FeatureCard({
           {title}
         </h2>
         <img
-          src={image}
+          src={imageLight}
           alt={alt}
-          className="object-cover rounded-md mb-4 scale-75 sm:scale-90 lg:scale-100 mx-auto"
+          className="object-cover rounded-md mb-4 scale-75 sm:scale-90 lg:scale-100 mx-auto block dark:hidden"
         />
+        {imageDark &&  (
+        <img
+          src={imageDark}
+          alt={alt}
+          className="object-cover rounded-md mb-4 scale-75 sm:scale-90 lg:scale-100 mx-auto hidden dark:block"
+        />
+        )}
       </div>
       <p className="text-sm sm:text-base font-mono">{description}</p>
     </div>
@@ -45,7 +54,7 @@ interface Feature {
   title: string;
   description: string;
   imageLight: string;
-  imageDark: string;
+  imageDark?: string;
   alt: string;
 }
 
