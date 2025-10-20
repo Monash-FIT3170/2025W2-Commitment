@@ -141,7 +141,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <Card className="bg-git-bg-elevated border-git-stroke-primary">
+      <Card className="bg-git-bg-elevated border-git-stroke-primary rounded-lg">
         <CardHeader className="bg-git-int-primary">
           <CardTitle className="text-git-int-text">Custom Script Data Export</CardTitle>
           <p className="text-sm text-git-int-text/90">
@@ -149,6 +149,47 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
             preview it, and download as CSV for use in external tools or scripts.
           </p>
         </CardHeader>
+      </Card>
+
+      {/* Help Section - moved here */}
+      <Card className="bg-git-bg-elevated border-git-stroke-primary rounded-lg">
+        <CardHeader className="bg-git-int-primary">
+          <CardTitle className="text-lg text-git-int-text">How to Use</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 bg-git-bg-elevated pt-6">
+          <div className="grid md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <h4 className="font-medium mb-2 text-git-text-primary">1. Select Data</h4>
+              <p className="text-git-text-secondary">
+                Choose the branch, time period, and metrics you want to export. 
+                You can include raw commit data or just aggregated metrics.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-git-text-primary">2. Preview & Export</h4>
+              <p className="text-git-text-secondary">
+                Review your data in the preview table, then export as CSV. 
+                The file will be downloaded to your computer.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-git-text-primary">3. Use in Scripts</h4>
+              <p className="text-git-text-secondary">
+                Import the CSV into your preferred tool (Python, R, Excel, etc.) 
+                to create custom scaling algorithms.
+              </p>
+            </div>
+          </div>
+          
+          <div className="pt-4 border-t border-git-stroke-primary">
+            <h4 className="font-medium mb-2 text-git-text-primary">CSV Format</h4>
+            <p className="text-sm text-git-text-secondary">
+              The exported CSV includes headers and data rows. Each row represents either a contributor 
+              (if grouped by contributor) or a time period (if grouped by date). Raw commit data 
+              includes individual commit details when enabled.
+            </p>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Error Alert */}
@@ -232,48 +273,6 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
         </TabsContent>
       </Tabs>
 
-      {/* Help Section */}
-      <div className="mt-6">
-        <Card className="bg-git-bg-elevated border-git-stroke-primary">
-        <CardHeader className="bg-git-int-primary">
-          <CardTitle className="text-lg text-git-int-text">How to Use</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 bg-git-bg-elevated pt-6">
-          <div className="grid md:grid-cols-3 gap-4 text-sm">
-            <div>
-              <h4 className="font-medium mb-2 text-git-text-primary">1. Select Data</h4>
-              <p className="text-git-text-secondary">
-                Choose the branch, time period, and metrics you want to export. 
-                You can include raw commit data or just aggregated metrics.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2 text-git-text-primary">2. Preview & Export</h4>
-              <p className="text-git-text-secondary">
-                Review your data in the preview table, then export as CSV. 
-                The file will be downloaded to your computer.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2 text-git-text-primary">3. Use in Scripts</h4>
-              <p className="text-git-text-secondary">
-                Import the CSV into your preferred tool (Python, R, Excel, etc.) 
-                to create custom scaling algorithms.
-              </p>
-            </div>
-          </div>
-          
-          <div className="pt-4 border-t border-git-stroke-primary">
-            <h4 className="font-medium mb-2 text-git-text-primary">CSV Format</h4>
-            <p className="text-sm text-git-text-secondary">
-              The exported CSV includes headers and data rows. Each row represents either a contributor 
-              (if grouped by contributor) or a time period (if grouped by date). Raw commit data 
-              includes individual commit details when enabled.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-      </div>
     </div>
   );
 };
