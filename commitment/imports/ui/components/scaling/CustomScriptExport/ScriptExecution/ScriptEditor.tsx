@@ -12,6 +12,7 @@ export interface ScriptEditorProps {
   onFocus?: () => void,
   onBlur?: () => void,
   setDragging?: (dragging: boolean) => void,
+  readonly?: boolean
 }
 
 /**
@@ -53,6 +54,7 @@ export default function ScriptEditor(props: ScriptEditorProps) {
       onDragLeave={() => {
         props.setDragging?.(false);
       }}
+      readOnly={props.readonly}
 
       className={cn("text-foreground w-full rounded-md outline-0 border-0", props.className ?? "")}
       tabSize={2}

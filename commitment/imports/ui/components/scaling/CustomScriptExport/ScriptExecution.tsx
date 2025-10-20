@@ -1,23 +1,66 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Code, FileText, Clock } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
 import { Button } from '@base/button';
 import { ExportHistoryItem } from './ExportHistory';
-import ScriptSpecification from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptSpecification";
-import {DataSelectionPanel, DataSelectionPanelProps} from "@ui/components/scaling/CustomScriptExport/DataSelectionPanel";
+import ScriptSpecification, {
+  initialScript
+} from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptSpecification";
+import {
+  DataSelectionConfig,
+  DataSelectionPanel,
+  DataSelectionPanelProps
+} from "@ui/components/scaling/CustomScriptExport/DataSelectionPanel";
+import {useLocalStorage} from "@hook/useLocalStorage";
+import {ExportData} from "@ui/components/scaling/CustomScriptExport/ExportPreview";
 
 interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
+  onDataRequest: (config: DataSelectionConfig) => Promise<ExportData>;
 }
 
 export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   history,
+  onDataRequest,
   ...dataSelectionPanelProps
 }: ScriptExecutionProps) => {
   const latestExport = history.length > 0 ? history[0] : null;
 
+  const [code, setCode] = useLocalStorage('custom-execution-script', initialScript);
+  const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [previewData, setPreviewData] = useState<ExportData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
+  const onExecuteButton = () => {
+    if (!currentConfig) return;
+
+    setIsLoading(true);
+    setError(null);
+    // Clear previous preview data to ensure fresh data
+    // setPreviewData(null);
+    console.log(currentConfig);
+
+    const fetchData = async () => {
+      try {
+        const data = await onDataRequest(currentConfig);
+        setIsLoading(false);
+        return data;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load data');
+        setIsLoading(false);
+        return null;
+      }
+    };
+
+    void fetchData();
+  }
+
+
+
+  const handlePreviewData = () => {
+  };
 
   return (
     <div className="space-y-6">
@@ -32,14 +75,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
           </p>
         </CardHeader>
         <CardContent className="bg-git-bg-elevated pt-6">
-          <div className="py-8">
-
-            <h3 className="text-lg font-medium text-git-text-primary mb-2">Script Execution </h3>
-            <p className="text-git-text-secondary mb-6">
-              This section will allow you to execute custom scripts using the exported CSV data.
-              The functionality is currently being developed.
-            </p>
-            
+          <div className="py-3">
             {latestExport && (
               <div className="mt-6 p-4 bg-git-int-secondary rounded-lg border border-git-stroke-primary">
                 <h4 className="font-medium text-git-text-primary mb-2">Latest Export Available</h4>
@@ -55,13 +91,11 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
               </div>
             )}
 
-
-
-            <ScriptSpecification className="mb-6">
-
-            </ScriptSpecification>
-
-
+            <ScriptSpecification
+              className="mb-6"
+              code={code}
+              setCode={setCode}
+            />
           </div>
 
           <div className="space-y-6">
@@ -69,9 +103,13 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
               {...dataSelectionPanelProps}
               minimal={true}
               buttonLabel="Execute Script"
+              onPreviewData={onExecuteButton}
+              onConfigChange={(config) => {
+                setCurrentConfig(config);
+                dataSelectionPanelProps.onConfigChange?.(config);
+              }}
             />
           </div>
-
         </CardContent>
       </Card>
 

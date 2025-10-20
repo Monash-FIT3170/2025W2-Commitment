@@ -1,10 +1,9 @@
-import React from 'react'
-import {useLocalStorage} from "@hook/useLocalStorage";
+import React, { useState } from 'react'
 import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptEditor";
 import {cn} from "@ui/lib/utils";
 import {FileCode2} from "lucide-react";
 
-const initial_script = `import csv
+export const initialScript = `import csv
 
 # If you print a List or Tuple, it will be added to the data field returned by the API.
 # print(("Joe", 0.8))
@@ -32,6 +31,8 @@ export interface ScriptSpecificationProps {
   className?: string,
   code?: string,
   setCode?: (code: string) => void,
+  icon?: React.ReactNode,
+  name?: string
 }
 
 /**
@@ -42,11 +43,11 @@ export interface ScriptSpecificationProps {
  */
 export default function ScriptSpecification(props: ScriptSpecificationProps) {
   // If code and set code aren't provided, we call a hook ourselves.
-  const [code, setCode] = props.code && props.setCode
-    ? [props.code, props.setCode]
-    : useLocalStorage('custom-execution-script', initial_script);
-  const [selected, setSelected] = React.useState<boolean>(false);
-  const [dragging, setDragging] = React.useState<boolean>(false);
+  const [code, setCode] = props.code || props.setCode
+    ? [props.code ?? "", props.setCode ?? (() => {})]
+    : useState<string>(initialScript);
+  const [selected, setSelected] = useState<boolean>(false);
+  const [dragging, setDragging] = useState<boolean>(false);
 
   const editorClassName = cn(
     "bg-git-bg-primary rounded-md border-1 outline-1 mt-3 min-h-[50vh] inset-shadow-md overflow-clip",
@@ -59,11 +60,16 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
       : "",
   )
 
+  const icon = props.icon ?? <FileCode2 size='sm'/>;
+  const name = props.name ?? "script.py";
+
   return (
     <div className={editorClassName}>
       <p className="text-git-text-secondary bg-git-bg-bottom text-sm pt-1 pb-0.5 pl-1 pr-3 w-fit border-git-stroke-tertiary border-0 border-b-1 border-e-1  rounded-br-md flex flex-row items-center gap-1 justify-center">
-        <FileCode2 className="text-git-text-secondary opacity-75 pb-1 pt-0.5" />
-        <span>script.py</span>
+        <div className="text-git-text-secondary opacity-75 pb-1 pt-0.5 w-6 h-6" >
+          {icon}
+        </div>
+        <span>{name}</span>
       </p>
       <ScriptEditor
         className="grow h-auto text-sm"

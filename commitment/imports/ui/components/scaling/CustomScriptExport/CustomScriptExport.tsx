@@ -287,6 +287,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
           <ScriptExecution
             history={history}
             isLoading={isLoading}
+            onDataRequest={onDataRequest}
 
             availableBranches={availableBranches}
             repoUrl={repoUrl}
