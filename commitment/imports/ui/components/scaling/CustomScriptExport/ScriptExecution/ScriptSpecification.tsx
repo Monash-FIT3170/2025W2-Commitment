@@ -32,7 +32,8 @@ export interface ScriptSpecificationProps {
   code?: string,
   setCode?: (code: string) => void,
   icon?: React.ReactNode,
-  name?: string
+  name?: string,
+  readonly?: boolean,
 }
 
 /**
@@ -46,8 +47,11 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
   const [code, setCode] = props.code || props.setCode
     ? [props.code ?? "", props.setCode ?? (() => {})]
     : useState<string>(initialScript);
-  const [selected, setSelected] = useState<boolean>(false);
-  const [dragging, setDragging] = useState<boolean>(false);
+  const [selectedRaw, setSelected] = useState<boolean>(false);
+  const [draggingRaw, setDragging] = useState<boolean>(false);
+
+  const selected = selectedRaw && !props.readonly;
+  const dragging = draggingRaw && !props.readonly;
 
   const editorClassName = cn(
     "bg-git-bg-primary rounded-md border-1 outline-1 mt-3 min-h-[50vh] inset-shadow-md overflow-clip",
@@ -84,7 +88,8 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
           setDragging(false)
         }}
 
-        setDragging={setDragging}
+        setDragging={props.readonly ? undefined : setDragging}
+        readonly={props.readonly}
       />
     </div>
   )
