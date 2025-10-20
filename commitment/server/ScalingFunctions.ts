@@ -161,7 +161,7 @@ const scoringStrategies: Record<string, ScoreFn> = {
 // ---------- Scaling ----------
 //
 
-const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day", "Compact Scaling"];
+const DEFAULT_METRICS = ["Total No. Commits", "LOC", "LOC Per Commit", "Compact Scaling"];
 
 /**
  * Builds a matrix of users and their metrics and then uses the chosen scoring method to compute their final scale.
