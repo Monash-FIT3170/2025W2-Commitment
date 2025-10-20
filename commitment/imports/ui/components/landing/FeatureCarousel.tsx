@@ -44,7 +44,8 @@ export function FeatureCard({
 interface Feature {
   title: string;
   description: string;
-  image: string;
+  imageLight: string;
+  imageDark: string;
   alt: string;
 }
 
@@ -67,8 +68,10 @@ const features: Feature[] = [
     title: "Custom Filtering",
     description:
       "Filter analytics by time frame, contributor or branch to focus on different analytics.",
-    image: "/filter.png",
+    imageLight: "/filter_light.png",
+    imageDark: "/filter_dark.png",
     alt: "Filter analytics by different stats.",
+    
   },
   {
     title: "Moodle Gradebook Integration",
