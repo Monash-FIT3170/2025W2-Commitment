@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import GalleryCard from "/imports/ui/components/dashboard/GalleryCard";
+import RepoCard from "../components/home/RepoCard";
 import { Search, ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,13 +20,15 @@ import { FiltersState, FilterValue } from "@base/filter";
 import BookmarkFilter from "../components/dashboard/BookmarkFilter";
 import { Input } from "@base/input";
 
-// const fake_bookmarks:Bookmark[] = Array.from({ length: 12 }, (_, i) => ({
-//   _id: `${i + 1}`,
-//   title: `Repository ${i + 1}`,
-//   createdAt: new Date("2024-06-20T10:30:00.000Z"),
-//   url: "git@github.com:Monash-FIT3170/2025W2-Commitment.git",
-//   userID:"1"
-// }));
+/*
+ const fake_bookmarks:Bookmark[] = Array.from({ length: 5 }, (_, i) => ({
+   _id: `${i + 1}`,
+   title: `Repository ${i + 1}`,
+   createdAt: new Date("2024-06-20T10:30:00.000Z"),
+   url: "git@github.com:Monash-FIT3170/2025W2-Commitment.git",
+   userID:"1"
+  }));
+*/
 
 type SortKey = "createdAt" | "lastViewed" | null;
 type SortDir = "asc" | "desc" | null;
@@ -154,6 +157,7 @@ const DashboardView: React.FC = () => {
     });
   };
 
+  
   useEffect(() => {
     Meteor.call(
       "bookmarks.getAllBookmarks",
@@ -167,11 +171,18 @@ const DashboardView: React.FC = () => {
       }
     );
   }, [bookmarks]);
+ 
+  /*
+  useEffect(() => {
+    setBookmarks(fake_bookmarks);
+  }, []);
+  */
 
   const displayed = useMemo(() => {
     const filtered = bookmarks.filter((bm) => applyFilter(bm, filters));
     return applySort(filtered);
   }, [bookmarks, filters, sortKey, sortDir]);
+
 
   return (
     <>
@@ -253,19 +264,35 @@ const DashboardView: React.FC = () => {
       {/* Outer scrollable container */}
       <div
         className="
-          mx-auto mt-6
-          w-full max-w-[77%]
-          bg-git-bg-elevated border border-border rounded-lg shadow
-          px-6 py-5
-          h-[480px]
-          overflow-y-auto
-        "
+        mx-auto mt-6
+        w-full max-w-[77%]
+        bg-git-bg-secondary/20 dark:bg-git-bg-secondary
+        border border-border rounded-lg shadow
+        px-6 py-5
+        h-[480px]
+        overflow-y-auto
+      "
       >
         {view === "gallery" ? (
           // Gallery
-          <div className="flex flex-wrap justify-evenly gap-10">
+          <div
+            className={
+              displayed.length >= 3
+                // Many repos: cap at 3 columns on xl+, auto-fit below
+                ? "grid gap-6 grid-cols-[repeat(auto-fit,minmax(320px,1fr))] xl:[grid-template-columns:repeat(3,minmax(320px,1fr))]"
+                : displayed.length === 2
+                  // Exactly two: clean two-up
+                  ? "grid gap-6 grid-cols-1 md:grid-cols-2"
+                  // Single: center and constrain width so it doesn't look huge
+                  : "grid gap-6 grid-cols-1 md:max-w-3xl lg:max-w-5xl xl:max-w-none w-full mx-auto"
+            }
+          >
             {displayed.map((b) => (
-              <GalleryCard key={b._id} bookmark={b} onclick={() => handleViewRepository(b)} />
+              <RepoCard
+                key={b._id}
+                repository={b}
+                onClick={() => handleViewRepository(b)}
+              />
             ))}
           </div>
         ) : (
