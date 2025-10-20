@@ -33,7 +33,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
         </CardHeader>
         <CardContent className="bg-git-bg-elevated pt-6">
           <div className="py-8">
-            <Code className="h-12 w-12 mx-auto mb-4 text-git-text-secondary opacity-50" />
+
             <h3 className="text-lg font-medium text-git-text-primary mb-2">Script Execution </h3>
             <p className="text-git-text-secondary mb-6">
               This section will allow you to execute custom scripts using the exported CSV data.
@@ -65,7 +65,11 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
           </div>
 
           <div className="space-y-6">
-            <DataSelectionPanel {...dataSelectionPanelProps} minimal={true} />
+            <DataSelectionPanel
+              {...dataSelectionPanelProps}
+              minimal={true}
+              buttonLabel="Execute Script"
+            />
           </div>
 
         </CardContent>

@@ -2,6 +2,7 @@ import React from 'react'
 import {useLocalStorage} from "@hook/useLocalStorage";
 import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptEditor";
 import {cn} from "@ui/lib/utils";
+import {FileCode2} from "lucide-react";
 
 const initial_script = `import csv
 
@@ -48,7 +49,7 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
   const [dragging, setDragging] = React.useState<boolean>(false);
 
   const editorClassName = cn(
-    "bg-git-bg-bottom rounded-md border-1 outline-1 mt-3 min-h-[50vh] inset-shadow-md overflow-clip",
+    "bg-git-bg-primary rounded-md border-1 outline-1 mt-3 min-h-[50vh] inset-shadow-md overflow-clip",
     "flex flex-col",
     selected
       ? "outline-primary border-primary"
@@ -60,7 +61,8 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
 
   return (
     <div className={editorClassName}>
-      <p className="text-git-text-secondary bg-git-bg-primary text-sm pt-1 pb-0.5 px-3 w-fit border-git-stroke-tertiary border-0 border-b-1 border-e-1  rounded-br-md flex flex-row items-center gap-3">
+      <p className="text-git-text-secondary bg-git-bg-bottom text-sm pt-1 pb-0.5 pl-1 pr-3 w-fit border-git-stroke-tertiary border-0 border-b-1 border-e-1  rounded-br-md flex flex-row items-center gap-1 justify-center">
+        <FileCode2 className="text-git-text-secondary opacity-75 pb-1 pt-0.5" />
         <span>script.py</span>
       </p>
       <ScriptEditor

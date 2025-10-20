@@ -30,6 +30,7 @@ export interface DataSelectionPanelProps {
   onPreviewData: () => void;
   isLoading?: boolean;
   minimal?: boolean;
+  buttonLabel?: string;
 }
 
 const METRIC_OPTIONS: MetricOption[] = [
@@ -60,6 +61,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
   onPreviewData,
   isLoading = false,
   minimal = false,
+  buttonLabel = 'Preview Data',
 }) => {
   const [config, setConfig] = useState<DataSelectionConfig>({
     branch: '',
@@ -448,7 +450,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
         disabled={!isConfigValid || isLoading}
         className="w-auto px-8 bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-lg"
       >
-        {isLoading ? 'Loading...' : 'Preview Data'}
+        {isLoading ? 'Loading...' : buttonLabel}
       </Button>
     </div>
   </>)
