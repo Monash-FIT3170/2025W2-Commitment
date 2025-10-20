@@ -29,7 +29,7 @@ export function FeatureCard({
         ${className}`}
     >
       <div>
-        <h2 className="text-lg sm:text-xl lg:text-2xl font-mono font-semibold git-card-text-secondary mb-4">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-mono font-semibold mb-4 text-gray-900 dark:text-gray-100">
           {title}
         </h2>
         <img
@@ -45,7 +45,9 @@ export function FeatureCard({
         />
         )}
       </div>
-      <p className="text-sm sm:text-base font-mono">{description}</p>
+      <p className="text-sm sm:text-base font-mono text-gray-700 dark:text-gray-300">
+        {description}
+      </p>
     </div>
   );
 }
@@ -150,7 +152,7 @@ export function FeatureCarousel() {
                   title={feature.title}
                   description={feature.description}
                   imageLight={feature.imageLight}
-                  imageDark={feature.imageDark}pe
+                  imageDark={feature.imageDark}
                   alt={feature.alt}
                   className={isSelected ? "shadow-xl" : ""}
                 />
