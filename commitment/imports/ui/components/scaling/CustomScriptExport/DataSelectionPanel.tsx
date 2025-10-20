@@ -195,39 +195,39 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          {/* Branch Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="branch" className="text-git-text-primary">Branch</Label>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
+        {/* Branch Selection */}
+        <div className="space-y-2">
+          <Label htmlFor="branch" className="text-git-text-primary">Branch</Label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
+              >
+                {config.branch || 'Select a branch'}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" sideOffset={4} className="w-[280px] focus:ring-0 border-2 border-git-stroke-primary/40">
+              {availableBranches.map((branch) => (
+                <DropdownMenuCheckboxItem
+                  key={branch}
+                  checked={config.branch === branch}
+                  onCheckedChange={() => setConfig(prev => ({ ...prev, branch }))}
                 >
-                  {config.branch || 'Select a branch'}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" sideOffset={4} className="w-[280px] focus:ring-0 border-2 border-git-stroke-primary/40">
-                {availableBranches.map((branch) => (
-                  <DropdownMenuCheckboxItem
-                    key={branch}
-                    checked={config.branch === branch}
-                    onCheckedChange={() => setConfig(prev => ({ ...prev, branch }))}
-                  >
-                    {branch}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                  {branch}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
-          {/* Date Range Selection */}
-          <div className="space-y-2">
-            <Label className="text-git-text-primary">Date Range</Label>
-            <DatePicker
-              defaultValue={config.dateRange}
-              onChange={(dateRange) => setConfig(prev => ({ ...prev, dateRange }))}
-            />
+        {/* Date Range Selection */}
+        <div className="space-y-2">
+          <Label className="text-git-text-primary">Date Range</Label>
+          <DatePicker
+            defaultValue={config.dateRange}
+            onChange={(dateRange) => setConfig(prev => ({ ...prev, dateRange }))}
+          />
           </div>
         </div>
 
@@ -261,15 +261,18 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
             <div className="space-y-4">
               {/* Commits Metrics */}
               {['commits'].map((category) => {
-                const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
+            const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
                 if (categoryMetrics.length === 0) return null;
 
-                return (
-                  <div key={category} className="space-y-2">
-                    <div className="bg-git-int-secondary rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium text-git-text-primary capitalize">{category} Metrics</h4>
-                        <div className="flex gap-1">
+            return (
+              <div key={category} className="space-y-2">
+                    <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
+                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
+                        </div>
+                        <div className="flex gap-1 ml-4">
                           <Button
                             variant="outline"
                             size="sm"
@@ -325,10 +328,13 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
 
                 return (
                   <div key={category} className="space-y-2">
-                    <div className="bg-git-int-secondary rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium text-git-text-primary capitalize">{category} Metrics</h4>
-                        <div className="flex gap-1">
+                    <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
+                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
+                        </div>
+                        <div className="flex gap-1 ml-4">
                           <Button
                             variant="outline"
                             size="sm"
@@ -346,48 +352,51 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                             None
                           </Button>
                         </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-2">
+                  {categoryMetrics.map((metric) => (
+                    <div key={metric.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={metric.id}
+                        checked={config.selectedMetrics.includes(metric.id)}
+                        onCheckedChange={() => handleMetricToggle(metric.id)}
+                      />
+                      <div className="flex-1">
+                        <Label
+                          htmlFor={metric.id}
+                          className="text-sm font-medium text-git-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {metric.label}
+                        </Label>
+                        <p className="text-xs text-git-text-secondary mt-1">
+                          {metric.description}
+                        </p>
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-1 gap-2">
-                      {categoryMetrics.map((metric) => (
-                        <div key={metric.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={metric.id}
-                            checked={config.selectedMetrics.includes(metric.id)}
-                            onCheckedChange={() => handleMetricToggle(metric.id)}
-                          />
-                          <div className="flex-1">
-                            <Label
-                              htmlFor={metric.id}
-                              className="text-sm font-medium text-git-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              {metric.label}
-                            </Label>
-                            <p className="text-xs text-git-text-secondary mt-1">
-                              {metric.description}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
             {/* Column 3: Time metrics */}
-            <div className="space-y-4">
+        <div className="space-y-4">
               {['time'].map((category) => {
                 const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
                 if (categoryMetrics.length === 0) return null;
 
                 return (
                   <div key={category} className="space-y-2">
-                    <div className="bg-git-int-secondary rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium text-git-text-primary capitalize">{category} Metrics</h4>
-                        <div className="flex gap-1">
+                    <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
+                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
+                        </div>
+                        <div className="flex gap-1 ml-4">
                           <Button
                             variant="outline"
                             size="sm"
