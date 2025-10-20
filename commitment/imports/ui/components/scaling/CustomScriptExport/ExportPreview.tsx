@@ -73,17 +73,6 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
         <HighlightCardWithGraph title={"Estimated Size"} value={getFileSize()}/>
         </div> 
 
-        {/* Metrics Summary */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-git-text-primary">Selected Metrics</p>
-          <div className="flex flex-wrap gap-2">
-            {data.summary.metrics.map((metric) => (
-              <span key={metric} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-git-int-primary text-git-int-text border border-git-stroke-primary">
-                {metric}
-              </span>
-            ))}
-          </div>
-        </div>
 
         {/* Data Table */}
         <div className="space-y-2">
