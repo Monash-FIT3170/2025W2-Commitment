@@ -30,7 +30,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   const [code, setCode] = useLocalStorage('custom-execution-script', initialScript);
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [previewData, setPreviewData] = useState<ExportData | null>(null);
+  const [previewCsv, setPreviewCsv] = useState<string>(null);
   const [error, setError] = useState<string | null>(null);
 
   const onExecuteButton = () => {
@@ -45,6 +45,12 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
     const fetchData = async () => {
       try {
         const data = await onDataRequest(currentConfig);
+
+        const csv_headers = data.headers.join(',');
+        const csv_rows = data.rows.map(row => row.join(',')).join('\n');
+        const csv_data = `${csv_headers}\n${csv_rows}`;
+
+        setPreviewCsv(csv_data);
         setIsLoading(false);
         return data;
       } catch (err) {
@@ -76,20 +82,6 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
         </CardHeader>
         <CardContent className="bg-git-bg-elevated pt-6">
           <div className="py-3">
-            {latestExport && (
-              <div className="mt-6 p-4 bg-git-int-secondary rounded-lg border border-git-stroke-primary">
-                <h4 className="font-medium text-git-text-primary mb-2">Latest Export Available</h4>
-                <div className="flex items-center gap-2 text-sm text-git-text-secondary">
-                  <FileText className="h-4 w-4" />
-                  <span>{latestExport.filename}</span>
-                  <Clock className="h-4 w-4 ml-2" />
-                  <span>Exported {latestExport.exportedAt.toLocaleDateString()}</span>
-                </div>
-                <p className="text-xs text-git-text-secondary mt-1">
-                  {latestExport.rowCount} rows • {latestExport.fileSize} • {latestExport.branch}
-                </p>
-              </div>
-            )}
 
             <ScriptSpecification
               className="mb-6"
@@ -108,6 +100,14 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                 setCurrentConfig(config);
                 dataSelectionPanelProps.onConfigChange?.(config);
               }}
+            />
+
+            <ScriptSpecification
+              className="mb-6"
+              code={previewCsv}
+              setCode={setPreviewCsv}
+              name={"data.csv"}
+              icon={<FileText size="sm"/>}
             />
           </div>
         </CardContent>
@@ -160,6 +160,21 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                   <Code className="h-4 w-4 mr-2" />
                   Execute Script (Coming Soon)
                 </Button>
+              </div>
+            )}
+
+            {latestExport && (
+              <div className="mt-6 p-4 bg-git-int-secondary rounded-lg border border-git-stroke-primary">
+                <h4 className="font-medium text-git-text-primary mb-2">Latest Export Available</h4>
+                <div className="flex items-center gap-2 text-sm text-git-text-secondary">
+                  <FileText className="h-4 w-4" />
+                  <span>{latestExport.filename}</span>
+                  <Clock className="h-4 w-4 ml-2" />
+                  <span>Exported {latestExport.exportedAt.toLocaleDateString()}</span>
+                </div>
+                <p className="text-xs text-git-text-secondary mt-1">
+                  {latestExport.rowCount} rows • {latestExport.fileSize} • {latestExport.branch}
+                </p>
               </div>
             )}
           </div>

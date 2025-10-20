@@ -62,6 +62,7 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
     dragging
       ? "outline-dashed outline-2 outline-primary animate-pulse"
       : "",
+    props.className ?? ""
   )
 
   const icon = props.icon ?? <FileCode2 size='sm'/>;
