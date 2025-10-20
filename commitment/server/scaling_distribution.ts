@@ -10,7 +10,6 @@ import {
   ScalingDistributionResult,
 } from "../imports/api/types";
 import {
-  getCommitPerDayPerContributor,
   getTotalCommitsPerContributor,
   getLOCperContributor,
   getLocPerCommitPerContributor,
@@ -43,10 +42,6 @@ export function getContributorMetrics(data: FilteredData): ContributorMetrics[] 
       ),
       [MetricType.LOC]: getLOCperContributor(repositoryData, contributor.value.name),
       [MetricType.LOC_PER_COMMIT]: getLocPerCommitPerContributor(
-        repositoryData,
-        contributor.value.name
-      ),
-      [MetricType.COMMITS_PER_DAY]: getCommitPerDayPerContributor(
         repositoryData,
         contributor.value.name
       ),
