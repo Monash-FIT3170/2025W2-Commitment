@@ -34,6 +34,7 @@ export interface ScriptSpecificationProps {
   icon?: React.ReactNode,
   name?: string,
   readonly?: boolean,
+  language?: string;
 }
 
 /**
@@ -54,7 +55,7 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
   const dragging = draggingRaw && !props.readonly;
 
   const editorClassName = cn(
-    "bg-git-bg-primary rounded-md border-1 outline-1 mt-3 min-h-[50vh] inset-shadow-md overflow-clip",
+    "bg-git-bg-primary rounded-md border-1 outline-1 mt-3 inset-shadow-md overflow-clip",
     "flex flex-col",
     selected
       ? "outline-primary border-primary"
@@ -91,6 +92,7 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
 
         setDragging={props.readonly ? undefined : setDragging}
         readonly={props.readonly}
+        language={props.language}
       />
     </div>
   )

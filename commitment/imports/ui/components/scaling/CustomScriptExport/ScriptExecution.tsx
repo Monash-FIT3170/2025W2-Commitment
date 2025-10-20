@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import { Code, FileText, Clock } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
@@ -32,6 +32,38 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [previewCsv, setPreviewCsv] = useState<string>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const csvFetchDataRef = useRef<Promise<string>>();
+
+  const displayCsvForConfig = (config: DataSelectionConfig) => {
+    if (!config) return;
+
+    setIsLoading(true);
+    setError(null);
+    // Clear previous preview data to ensure fresh data
+    // setPreviewData(null);
+    console.log(config);
+
+    const fetchData = async () => {
+      try {
+        const data = await onDataRequest(config);
+
+        const csv_headers = data.headers.join(',');
+        const csv_rows = data.rows.map(row => row.join(',')).join('\n');
+        const csv_data = `${csv_headers}\n${csv_rows}`;
+
+        setPreviewCsv(csv_data);
+        setIsLoading(false);
+        return data;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load data');
+        setIsLoading(false);
+        return null;
+      }
+    };
+
+    void fetchData();
+  }
 
   const onExecuteButton = () => {
     if (!currentConfig) return;
@@ -108,6 +140,8 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
               setCode={setPreviewCsv}
               name={"data.csv"}
               icon={<FileText size="sm"/>}
+              language="csv"
+              readonly
             />
           </div>
         </CardContent>

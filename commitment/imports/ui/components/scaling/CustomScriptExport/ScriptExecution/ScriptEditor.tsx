@@ -1,9 +1,19 @@
 import React from 'react';
 import Editor from 'react-simple-code-editor';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-python';
 import useScriptDropzone from './useScriptDropzone';
 import {cn} from "@ui/lib/utils";
+
+import Prism from 'prismjs';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-markup';
+
+Prism.languages.csv = {
+  'string': /"[^"]*"/,
+  'number': /\b\d+(\.\d+)?\b/,
+  'punctuation': /,/,
+  'keyword': /\b[A-Za-z_][A-Za-z0-9_]*\b/
+};
+
 
 export interface ScriptEditorProps {
   className?: string,
@@ -12,7 +22,8 @@ export interface ScriptEditorProps {
   onFocus?: () => void,
   onBlur?: () => void,
   setDragging?: (dragging: boolean) => void,
-  readonly?: boolean
+  readonly?: boolean,
+  language?: string;
 }
 
 /**
@@ -20,8 +31,9 @@ export interface ScriptEditorProps {
  * @constructor
  */
 export default function ScriptEditor(props: ScriptEditorProps) {
+  const language = props.language ?? "python";
   const highlightWithLineNumbers = (code: string) => {
-    return Prism.highlight(code, Prism.languages.python, 'python');
+    return Prism.highlight(code, Prism.languages[language], language);
   };
 
   // Allow files to be drag and dropped in
