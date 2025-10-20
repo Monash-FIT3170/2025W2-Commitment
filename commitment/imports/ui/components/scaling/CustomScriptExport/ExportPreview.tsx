@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
 import { Button } from '@base/button';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@base/table';
-import { ScrollArea } from '@base/scroll-area';
+import { HighlightCardWithGraph } from '../../metrics/HighlightCard';
 
 export interface ExportData {
   headers: string[];
@@ -74,26 +74,13 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
       </CardHeader>
       <CardContent className="space-y-4 bg-git-bg-elevated pt-6">
         {/* Summary Information */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-git-text-primary">Total Rows</p>
-            <p className="text-2xl font-bold text-git-text-primary">{data.summary.totalRows.toLocaleString()}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-git-text-primary">Date Range</p>
-            <p className="text-sm text-git-text-secondary">{data.summary.dateRange}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-git-text-primary">Branch</p>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-git-int-primary text-git-int-text">
-              {data.summary.branch}
-            </span>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-git-text-primary">Estimated Size</p>
-            <p className="text-sm text-git-text-secondary">{getFileSize()}</p>
-          </div>
-        </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4"> 
+
+        <HighlightCardWithGraph title={"Total Rows"} value={data.summary.totalRows.toLocaleString()}/>
+        <HighlightCardWithGraph title={"Date Range"} value={data.summary.dateRange}/>
+        <HighlightCardWithGraph title={"Branch"} value={data.summary.branch}/>
+        <HighlightCardWithGraph title={"Estimated Size"} value={getFileSize()}/>
+        </div> 
 
         {/* Metrics Summary */}
         <div className="space-y-2">
