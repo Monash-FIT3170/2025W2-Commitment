@@ -257,3 +257,11 @@ export type ScoreFn = (
   users: { name: string; values: (number | null)[] }[],
   selectedMetrics: string[]
 ) => number;
+
+// The object returned by the python executor API
+export interface PythonExecutorResponse {
+  error?: string,
+  stdout?: string,
+  stderr?: string,
+  data?: unknown[],
+}
