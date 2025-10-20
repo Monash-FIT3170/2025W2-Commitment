@@ -6,13 +6,13 @@ import { CalendarIcon } from "lucide-react";
 import { type DateRange } from "react-day-picker";
 
 import { cn } from "@ui/lib/utils";
-import { Button } from "@ui/components/ui/button";
-import { Calendar } from "@ui/components/ui/calendar";
+import { Button } from "@base/button";
+import { Calendar } from "@base/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@ui/components/ui/popover";
+} from "@base/popover";
 
 type Props = {
   onChange?: (range: DateRange | undefined) => void;

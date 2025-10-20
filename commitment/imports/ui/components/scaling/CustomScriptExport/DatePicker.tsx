@@ -7,9 +7,9 @@ import { type DateRange } from "react-day-picker";
 import { startOfDay } from "date-fns";
 
 import { cn } from "../../../lib/utils";
-import { Button } from "../../ui/button";
+import { Button } from "@base/button";
 import { Calendar } from "./Calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@base/popover";
 // import "react-day-picker/dist/style.css";
 
 type Props = {

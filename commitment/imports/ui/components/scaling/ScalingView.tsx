@@ -72,7 +72,7 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
   const isLoggedIn = useAuth();
 
   useEffect(() => {
-    if (!repoUrl) return;
+    if (!repoUrl || !isLoggedIn) return;
 
     Meteor.call(
       "aliasConfigs.validateAllContributors",
@@ -87,11 +87,12 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
           setUnmappedUsers(res.unmapped);
           setShowAliasDialog(true);
         } else {
+          setUnmappedUsers([]);
           setShowAliasDialog(false);
         }
       }
     );
-  }, [repoUrl]);
+  }, [repoUrl, isLoggedIn]);
 
   // Fetch available branches from server metadata when repoUrl is set
   useEffect(() => {

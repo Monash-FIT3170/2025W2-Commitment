@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { InfoIcon } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
-import { Alert, AlertDescription } from '../../ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@base/tabs';
+import { Alert, AlertDescription } from '@base/alert';
 
 import { DataSelectionPanel, DataSelectionConfig } from './DataSelectionPanel';
 import { ExportPreview, ExportData } from './ExportPreview';

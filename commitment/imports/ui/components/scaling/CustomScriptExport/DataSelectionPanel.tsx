@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { type DateRange } from 'react-day-picker';
 import { Meteor } from 'meteor/meteor';
 
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { Label } from '../../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
-import { Checkbox } from '../../ui/checkbox';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '../../ui/dropdown-menu';
+import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
+import { Button } from '@base/button';
+import { Label } from '@base/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@base/select';
+import { Checkbox } from '@base/checkbox';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@base/dropdown-menu';
 import { DatePicker } from './DatePicker';
 
 export interface MetricOption {
