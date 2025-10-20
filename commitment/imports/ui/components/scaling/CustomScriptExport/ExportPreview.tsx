@@ -88,11 +88,11 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
           <div className="w-full border border-git-stroke-primary rounded-md overflow-auto max-h-96">
             <Table className="min-w-full">
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-git-int-primary hover:bg-git-int-primary-hover">
                   {data.headers.map((header, index) => (
                     <TableHead 
                       key={index} 
-                      className="sticky top-0 bg-git-int-secondary text-git-text-primary whitespace-nowrap px-3 py-2 text-left font-medium"
+                      className="sticky top-0 text-git-int-text whitespace-nowrap px-3 py-2 text-left font-medium"
                     >
                       {header}
                     </TableHead>
@@ -101,11 +101,11 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
               </TableHeader>
               <TableBody>
                 {displayRows.map((row, rowIndex) => (
-                  <TableRow key={rowIndex} className="bg-git-int-primary hover:bg-git-int-primary-hover">
+                  <TableRow key={rowIndex} >
                     {row.map((cell, cellIndex) => (
                       <TableCell 
                         key={cellIndex} 
-                        className="font-mono text-sm text-git-int-text whitespace-nowrap px-3 py-2"
+                        className="font-mono text-git-text-primary text-sm whitespace-nowrap px-3 py-2"
                       >
                         {formatValue(cell)}
                       </TableCell>
