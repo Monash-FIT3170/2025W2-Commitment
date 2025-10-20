@@ -3,30 +3,28 @@ import {useLocalStorage} from "@hook/useLocalStorage";
 import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptEditor";
 import {cn} from "@ui/lib/utils";
 
-const initial_script = `
-import os
-import csv
+const initial_script = `import csv
 
-print("This is an example script output")
+# If you print a List or Tuple, it will be added to the data field returned by the API.
+# print(("Joe", 0.8))
+# print(["John", 1.12])
 
-print("If you print a List or Tuple, it will be added to the data field returned by the API.")
-print(("Joe", 0.8))
-print(["John", 1.12])
-
-print("Displaying all files in current directory:")
-current_dir = os.getcwd()
-files = [f for f in os.listdir(current_dir) if os.path.isfile(os.path.join(current_dir, f))]
-
-# Print each file
-for f in files:
-  print(f)
-
-print("Getting data from the csv:")
+# Getting data from the csv:
 with open("./data.csv", newline="", encoding="utf-8") as data_csv:
-  data = csv.reader(data_csv)
+  csv_rows = csv.reader(data_csv)
+  headers = next(csv_rows)
+  print("found headers: ", headers)
+  
+  data = [row for row in csv_rows]
+  
+  idx_name = headers.index("contributor_name")
+  idx_total_commits = headers.index("total_commits")
+  
+  max_total_commits = max((row[idx_total_commits] for row in data))
+  
   for row in data:
-    # each row is a list of strings
-    print(row)
+    # output scaling for each name as total_commits / max_total_commits
+    print([row[idx_name], row[idx_total_commits] / max_total_commits])
 `;
 
 export interface ScriptSpecificationProps {
@@ -69,8 +67,15 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
         className="grow h-auto text-sm"
         code={code}
         setCode={setCode}
-        onBlur={() => setSelected(false)}
-        onFocus={() => setSelected(true)}
+        onBlur={() => {
+          setSelected(false)
+          setDragging(false)
+        }}
+        onFocus={() => {
+          setSelected(true)
+          setDragging(false)
+        }}
+
         setDragging={setDragging}
       />
     </div>
