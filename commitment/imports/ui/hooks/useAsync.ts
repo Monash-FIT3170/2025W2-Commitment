@@ -10,7 +10,7 @@ interface UseAsyncState<T> {
  * @param asyncFn The async function to calculate derived data from
  * @param deps The list of dependencies to the given async function. The method will re-run whenever any dep changes.
  */
-function useAsync<T, TErr=unknown>(asyncFn: () => Promise<T>, deps: DependencyList) {
+export default function useAsync<T, TErr=unknown>(asyncFn: () => Promise<T>, deps: DependencyList) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<TErr | null>(null);
   const [state, setState] = useState<UseAsyncState<T>>({

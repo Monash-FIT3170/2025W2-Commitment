@@ -1,9 +1,9 @@
-import React, {useState, useRef} from 'react';
-import { Code, FileText, Clock } from 'lucide-react';
+import React, {useState} from 'react';
+import {Clock, Code, FileText} from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
-import { Button } from '@base/button';
-import { ExportHistoryItem } from './ExportHistory';
+import {Card, CardContent, CardHeader, CardTitle} from '@base/card';
+import {Button} from '@base/button';
+import {ExportHistoryItem} from './ExportHistory';
 import ScriptSpecification, {
   initialScript
 } from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptSpecification";
@@ -14,6 +14,7 @@ import {
 } from "@ui/components/scaling/CustomScriptExport/DataSelectionPanel";
 import {useLocalStorage} from "@hook/useLocalStorage";
 import {ExportData} from "@ui/components/scaling/CustomScriptExport/ExportPreview";
+import useAsync from "@hook/useAsync";
 
 interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
@@ -29,54 +30,29 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
   const [code, setCode] = useLocalStorage('custom-execution-script', initialScript);
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [previewCsv, setPreviewCsv] = useState<string>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  const csvFetchDataRef = useRef<Promise<string | null>>(
-    new Promise<string>((resolve) => resolve(""))
-  );
+  const csv = useAsync<string | null, string>(async () => {
+    if (currentConfig === null)
+      return null;
 
-  const displayCsvForConfig = (config: DataSelectionConfig) => {
-    if (!config)
-      return new Promise<string | null>((resolve) => resolve(null));
+    console.log(currentConfig);
 
-    setIsLoading(true);
-    setError(null);
-    console.log(config);
+    try {
+      const data = await onDataRequest(currentConfig);
 
-    const fetchData = async () => {
-      try {
-        const data = await onDataRequest(config);
-
-        const csv_headers = data.headers.join(',');
-        const csv_rows = data.rows.map(row => row.join(',')).join('\n');
-        const csv_data = `${csv_headers}\n${csv_rows}`;
-
-        setPreviewCsv(csv_data);
-        setIsLoading(false);
-        return csv_data;
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-        setIsLoading(false);
-        return null;
-      }
-    };
-
-    csvFetchDataRef.current = fetchData();
-    return csvFetchDataRef.current;
-  }
+      const csv_headers = data.headers.join(',');
+      const csv_rows = data.rows.map(row => row.join(',')).join('\n');
+      return `${csv_headers}\n${csv_rows}`;
+    } catch (err) {
+      throw (err instanceof Error ? err.message : 'Failed to load data');
+    }
+  }, [currentConfig])
 
   const onExecuteButton = () => {
     if (currentConfig === null || currentConfig === undefined)
       return;
 
-    displayCsvForConfig(currentConfig).then(csv_data => {
-      if (csv_data === null)
-        return;
-
-      console.log("Executing...", code, csv_data)
-    });
+    console.log("Executing...", code, currentConfig)
   }
 
   return (
@@ -115,8 +91,8 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
             <ScriptSpecification
               className="mb-6"
-              code={previewCsv}
-              setCode={setPreviewCsv}
+              code={csv.data ?? ""}
+              setCode={() => {}}
               name={"data.csv"}
               icon={<FileText size="sm"/>}
               language="csv"
