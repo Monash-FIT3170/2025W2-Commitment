@@ -46,6 +46,11 @@ FROM node:23-slim
 WORKDIR /app
 COPY --from=build /projects/build/bundle /app
 
+# Include README.md, LICENSE and CHANGELOG.md
+COPY --from=build /projects/commitment/api/README.md    /app
+COPY --from=build /projects/commitment/api/CHANGELOG.md /app
+COPY --from=build /projects/commitment/api/LICENSE      /app
+
 # Install runtime dependencies (including git)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

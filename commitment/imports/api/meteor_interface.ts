@@ -41,7 +41,10 @@ export const overrideValue =
   (_err: Error) =>
     value;
 
+export const extractErrMsg = (err: Error): string => err.message;
+
 export const emitValue =
   <T>(n: Subject<T> | null | undefined) =>
-  (v: T): null =>
+  (v: T): void => {
     n ? n.next(v) : null;
+  };
