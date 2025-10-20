@@ -57,16 +57,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
       <CardHeader className="bg-git-int-primary">
         <div className="flex items-center justify-between">
           <CardTitle className="text-git-int-text">Export Preview</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onClose}
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary"
-            >
-              Close
-            </Button>
-          </div>
+
         </div>
         <p className="text-sm text-git-text-secondary">
           Review your data before exporting to CSV
