@@ -1,3 +1,4 @@
+import 'module-alias/register';
 import { Meteor } from "meteor/meteor";
 import { BookmarksCollection } from "@api/bookmarks";
 import { RepositoriesCollection } from "@api/repositories";
