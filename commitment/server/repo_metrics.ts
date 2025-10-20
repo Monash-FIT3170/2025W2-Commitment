@@ -221,32 +221,6 @@ export function getAllGraphData(data: FilteredData, selectedMetric: MetricType):
       };
       break;
 
-    case MetricType.COMMITS_PER_DAY:
-      leaderboard = {
-        data: leaderboardCommitsPerDay(data),
-        title: "Top Contributors by Commits per Day",
-        xAxisLabel: "Commits / Day",
-      };
-      lineGraph = {
-        data: linegraphCommitsPerDay(data),
-        title: "Commits per Day Over Time",
-        xAxisLabel: "Date",
-        yAxisLabel: "Commits per Day",
-      };
-      pieChart = {
-        data: pieChartCommitsPerDay(data),
-        title: "Distribution of Commits per Day",
-      };
-      heatMap = {
-        data: heatMapTotalCommits(data),
-        title: "Commit Activity (Commits per Day)",
-      };
-      scalingDistribution = {
-        data: getScalingDistributionResult(data, MetricType.COMMITS_PER_DAY),
-        title: "Distribution of Commits Per Day per Contributor",
-      };
-      break;
-
     case MetricType.TOTAL_COMMITS:
       leaderboard = {
         data: leaderboardTotalCommits(data),
