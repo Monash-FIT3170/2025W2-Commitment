@@ -33,7 +33,7 @@ interface ScalingConfigFormProps {
 }
 
 interface ScalingViewLocationState {
-repoUrl?: string;
+  repoUrl?: string;
 }
 
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
@@ -43,7 +43,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const repoUrl: string | null = state?.repoUrl ?? null;
 
   //   Make a repo call here to get the number of contributors
-  
+
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
@@ -93,7 +93,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         const result = (await Meteor.callAsync(
           "isSmallContributorGroup",
           repoUrl,
-          15
+          7
         )) as boolean;
 
         // update cache
@@ -124,7 +124,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     // "Use AI to filter out commits",
     "LOC",
     "LOC Per Commit",
-    "Commits Per Day",
   ];
 
   return (
