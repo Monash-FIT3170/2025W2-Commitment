@@ -414,8 +414,8 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "scaling" | "export")} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="scaling">Scaling Configuration</TabsTrigger>
-              <TabsTrigger value="export">Custom Script Export</TabsTrigger>
+              <TabsTrigger value="scaling" className="text-base font-medium">Scaling Configuration</TabsTrigger>
+              <TabsTrigger value="export" className="text-base font-medium">Custom Script Export</TabsTrigger>
             </TabsList>
 
             <TabsContent value="scaling" className="space-y-6">
