@@ -276,7 +276,6 @@ export const getAllMetrics = (filteredData: SerializableRepoData): AllMetricsDat
       "Total No. Commits": getTotalCommitsPerContributor(filteredData, contributor),
       LOC: getLOCperContributor(filteredData, contributor),
       "LOC Per Commit": getLocPerCommitPerContributor(filteredData, contributor),
-      "Commits Per Day": getCommitPerDayPerContributor(filteredData, contributor),
     };
   });
 
@@ -299,7 +298,6 @@ export const getAllMetricsFromData = (repoData: SerializableRepoData): AllMetric
       "Total No. Commits": getTotalCommitsPerContributor(repoData, contributor),
       LOC: getLOCperContributor(repoData, contributor),
       "LOC Per Commit": getLocPerCommitPerContributor(repoData, contributor),
-      "Commits Per Day": getCommitPerDayPerContributor(repoData, contributor),
     };
   });
 
@@ -307,5 +305,5 @@ export const getAllMetricsFromData = (repoData: SerializableRepoData): AllMetric
 };
 
 export function getMetricString(): string[] {
-  return ["Total No. Commits", "LOC", "LOC Per Commit", "Commits Per Day"];
+  return ["Total No. Commits", "LOC", "LOC Per Commit"];
 }
