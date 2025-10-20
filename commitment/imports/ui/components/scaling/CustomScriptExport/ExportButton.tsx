@@ -1,7 +1,7 @@
 import React from 'react';
 import { Download, FileText } from 'lucide-react';
 
-import { Button } from '../../ui/button';
+import { Button } from '@base/button';
 
 interface ExportButtonProps {
   onExport: () => void;

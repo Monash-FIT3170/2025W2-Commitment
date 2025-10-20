@@ -1,11 +1,11 @@
 import React from 'react';
-import { Download, Eye, EyeOff } from 'lucide-react';
+import { Download } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
+import { Button } from '@base/button';
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../ui/table';
-import { ScrollArea } from '../../ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@base/table';
+import { ScrollArea } from '@base/scroll-area';
 
 export interface ExportData {
   headers: string[];
@@ -31,15 +31,11 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
   onClose,
   isLoading = false
 }) => {
-  const [showRawData, setShowRawData] = React.useState(false);
-  const [maxRows, setMaxRows] = React.useState(50);
-
   if (!data) {
     return null;
   }
 
-  const displayRows = showRawData ? data.rows : data.rows.slice(0, maxRows);
-  const hasMoreRows = data.rows.length > maxRows;
+  const displayRows = data.rows;
 
   const formatValue = (value: string | number) => {
     if (typeof value === 'number') {
@@ -62,15 +58,6 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
         <div className="flex items-center justify-between">
           <CardTitle className="text-git-int-text">Export Preview</CardTitle>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowRawData(!showRawData)}
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary"
-            >
-              {showRawData ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-              {showRawData ? 'Hide Raw Data' : 'Show Raw Data'}
-            </Button>
             <Button 
               variant="outline" 
               size="sm" 
@@ -129,16 +116,6 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
                 {data.headers.length} columns × {data.rows.length} rows
               </span>
             </div>
-            {hasMoreRows && !showRawData && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setMaxRows(prev => Math.min(prev + 50, data.rows.length))}
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-              >
-                Show More ({data.rows.length - maxRows} more rows)
-              </Button>
-            )}
           </div>
           
           <div className="w-full border border-git-stroke-primary rounded-md overflow-auto max-h-96">
@@ -178,11 +155,6 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
             </p>
           )}
           
-          {!showRawData && hasMoreRows && (
-            <p className="text-xs text-git-text-secondary text-center">
-              Showing {maxRows} of {data.rows.length} rows. Enable "Show Raw Data" to see all rows.
-            </p>
-          )}
         </div>
 
         {/* Export Actions */}
