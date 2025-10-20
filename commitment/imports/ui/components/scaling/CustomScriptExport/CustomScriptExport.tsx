@@ -10,7 +10,7 @@ import { DataSelectionPanel, DataSelectionConfig } from './DataSelectionPanel';
 import { ExportPreview, ExportData } from './ExportPreview';
 import { ExportHistory, useExportHistory, ExportHistoryItem } from './ExportHistory';
 import { ScriptExecution } from './ScriptExecution';
-import { useCSVExport, generateFilename } from './ExportButton';
+import { useCSVExport, generateFilename, generateCSV } from './ExportButton';
 
 interface CustomScriptExportProps {
   availableBranches: string[];
@@ -103,6 +103,12 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
         await exportToCSV(dataToExport, filename);
 
+        // compute a more accurate file size for the history entry
+        const csvForSize = generateCSV({ headers: dataToExport.headers, rows: dataToExport.rows });
+        const bytes = new Blob([csvForSize]).size;
+        const kb = bytes / 1024;
+        const sizeLabel = kb < 1024 ? `${kb.toFixed(2)} KB` : `${(kb / 1024).toFixed(2)} MB`;
+
         // Add to history
         const historyItem: Omit<ExportHistoryItem, 'id' | 'exportedAt'> = {
           filename,
@@ -112,7 +118,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
             : 'No date range',
           metrics: currentConfig.selectedMetrics,
           rowCount: dataToExport.summary.totalRows,
-          fileSize: `${Math.round((dataToExport.rows.length * 100 + 50) / 1024)} KB`
+          fileSize: sizeLabel
         };
 
         addExport(historyItem);

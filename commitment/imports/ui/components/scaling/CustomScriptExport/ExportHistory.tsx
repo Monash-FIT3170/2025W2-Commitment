@@ -163,16 +163,11 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {item.metrics.slice(0, 2).map((metric) => (
+                      {item.metrics.map((metric) => (
                         <span key={metric} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-git-int-secondary text-white border border-git-stroke-primary">
                           {metric}
                         </span>
                       ))}
-                      {item.metrics.length > 2 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-git-int-secondary text-white border border-git-stroke-primary">
-                          +{item.metrics.length - 2} more
-                        </span>
-                      )}
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-white">
