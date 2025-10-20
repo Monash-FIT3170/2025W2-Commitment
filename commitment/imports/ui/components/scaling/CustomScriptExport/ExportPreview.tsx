@@ -135,14 +135,37 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
               <TableBody>
                 {displayRows.map((row, rowIndex) => (
                   <TableRow key={rowIndex} className="bg-git-int-primary hover:bg-git-int-primary-hover">
-                    {row.map((cell, cellIndex) => (
-                      <TableCell 
-                        key={cellIndex} 
-                        className="font-mono text-sm text-git-int-text whitespace-nowrap px-3 py-2"
-                      >
-                        {formatValue(cell)}
-                      </TableCell>
-                    ))}
+                    {row.map((cell, cellIndex) => {
+                      const isEmailCol = data.headers[cellIndex] === 'contributor_email';
+                      if (isEmailCol) {
+                        const emails = String(cell)
+                          .split(',')
+                          .map((e) => e.trim())
+                          .filter((e) => e.length > 0);
+                        return (
+                          <TableCell key={cellIndex} className="text-sm text-git-int-text px-3 py-2 align-top">
+                            <div className="flex flex-wrap gap-1">
+                              {emails.map((email, idx) => (
+                                <span
+                                  key={`${email}-${idx}`}
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-git-int-secondary text-white border border-git-stroke-primary"
+                                >
+                                  {email}
+                                </span>
+                              ))}
+                            </div>
+                          </TableCell>
+                        );
+                      }
+                      return (
+                        <TableCell
+                          key={cellIndex}
+                          className="font-mono text-sm text-git-int-text whitespace-nowrap px-3 py-2"
+                        >
+                          {formatValue(cell)}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))}
               </TableBody>
