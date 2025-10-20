@@ -5,22 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
 import { Button } from '@base/button';
 import { ExportHistoryItem } from './ExportHistory';
 import ScriptSpecification from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptSpecification";
+import {DataSelectionPanel, DataSelectionPanelProps} from "@ui/components/scaling/CustomScriptExport/DataSelectionPanel";
 
-interface ScriptExecutionProps {
+interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
-  isLoading?: boolean;
 }
 
 export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   history,
-  isLoading = false
-}) => {
+  ...dataSelectionPanelProps
+}: ScriptExecutionProps) => {
   const latestExport = history.length > 0 ? history[0] : null;
 
 
 
   return (
     <div className="space-y-6">
+      
+
       {/* Main Script Execution Card */}
       <Card className="bg-git-bg-elevated border-git-stroke-primary">
         <CardHeader className="bg-git-int-primary">
@@ -30,7 +32,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
           </p>
         </CardHeader>
         <CardContent className="bg-git-bg-elevated pt-6">
-          <div className="text-center py-8">
+          <div className="py-8">
             <Code className="h-12 w-12 mx-auto mb-4 text-git-text-secondary opacity-50" />
             <h3 className="text-lg font-medium text-git-text-primary mb-2">Script Execution </h3>
             <p className="text-git-text-secondary mb-6">
@@ -55,12 +57,17 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
 
 
-            <ScriptSpecification>
+            <ScriptSpecification className="mb-6">
 
             </ScriptSpecification>
 
 
           </div>
+
+          <div className="space-y-6">
+            <DataSelectionPanel {...dataSelectionPanelProps} minimal={true} />
+          </div>
+
         </CardContent>
       </Card>
 
@@ -102,7 +109,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={isLoading}
+                  disabled={dataSelectionPanelProps.isLoading}
                   className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary"
                   onClick={() => {
                     // add logic to execute the script :)
@@ -113,9 +120,6 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                 </Button>
               </div>
             )}
-
-
-
           </div>
 
         </CardContent>

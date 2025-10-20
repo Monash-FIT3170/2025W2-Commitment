@@ -23,12 +23,13 @@ export interface DataSelectionConfig {
   groupBy: 'contributor' | 'date' | 'none';
 }
 
-interface DataSelectionPanelProps {
+export interface DataSelectionPanelProps {
   availableBranches: string[];
   repoUrl?: string;
   onConfigChange: (config: DataSelectionConfig) => void;
   onPreviewData: () => void;
   isLoading?: boolean;
+  minimal?: boolean;
 }
 
 const METRIC_OPTIONS: MetricOption[] = [
@@ -57,7 +58,8 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
   repoUrl,
   onConfigChange,
   onPreviewData,
-  isLoading = false
+  isLoading = false,
+  minimal = false,
 }) => {
   const [config, setConfig] = useState<DataSelectionConfig>({
     branch: '',
@@ -148,213 +150,144 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
 
   const isConfigValid = config.branch && config.selectedMetrics.length > 0;
 
-  return (
-    <Card className="w-full bg-git-bg-elevated border-git-stroke-primary">
-      <CardHeader className="bg-git-int-primary">
-        <CardTitle className="text-git-int-text">Select Data for Export</CardTitle>
-        <p className="text-sm text-git-int-text/90">
-          Choose the branch, time period, and metrics you want to export for your custom scaling script.
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-6 bg-git-bg-elevated pt-6">
-        {/* All Controls - Single Horizontal Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Group By Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="groupBy" className="text-git-text-primary">Group By</Label>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
-                >
-                  {config.groupBy === 'contributor' ? 'Contributor' : 
-                   config.groupBy === 'date' ? 'Date' : 
-                   config.groupBy === 'none' ? 'No Grouping' : 'Group by'}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" sideOffset={4} className="w-[280px] focus:ring-0 border-2 border-git-stroke-primary/40">
-                <DropdownMenuCheckboxItem
-                  checked={config.groupBy === 'contributor'}
-                  onCheckedChange={() => setConfig(prev => ({ ...prev, groupBy: 'contributor' }))}
-                >
-                  Contributor
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={config.groupBy === 'date'}
-                  onCheckedChange={() => setConfig(prev => ({ ...prev, groupBy: 'date' }))}
-                >
-                  Date
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={config.groupBy === 'none'}
-                  onCheckedChange={() => setConfig(prev => ({ ...prev, groupBy: 'none' }))}
-                >
-                  No Grouping
-                </DropdownMenuCheckboxItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        {/* Branch Selection */}
-        <div className="space-y-2">
-          <Label htmlFor="branch" className="text-git-text-primary">Branch</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
+  const cardContent = (<>
+
+    {/* All Controls - Single Horizontal Row */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Group By Selection */}
+      <div className="space-y-2">
+        <Label htmlFor="groupBy" className="text-git-text-primary">Group By</Label>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
+            >
+              {config.groupBy === 'contributor' ? 'Contributor' :
+                config.groupBy === 'date' ? 'Date' :
+                  config.groupBy === 'none' ? 'No Grouping' : 'Group by'}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" sideOffset={4} className="w-[280px] focus:ring-0 border-2 border-git-stroke-primary/40">
+            <DropdownMenuCheckboxItem
+              checked={config.groupBy === 'contributor'}
+              onCheckedChange={() => setConfig(prev => ({ ...prev, groupBy: 'contributor' }))}
+            >
+              Contributor
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={config.groupBy === 'date'}
+              onCheckedChange={() => setConfig(prev => ({ ...prev, groupBy: 'date' }))}
+            >
+              Date
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={config.groupBy === 'none'}
+              onCheckedChange={() => setConfig(prev => ({ ...prev, groupBy: 'none' }))}
+            >
+              No Grouping
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      {/* Branch Selection */}
+      <div className="space-y-2">
+        <Label htmlFor="branch" className="text-git-text-primary">Branch</Label>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
+            >
+              {config.branch || 'Select a branch'}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" sideOffset={4} className="w-[280px] focus:ring-0 border-2 border-git-stroke-primary/40">
+            {availableBranches.map((branch) => (
+              <DropdownMenuCheckboxItem
+                key={branch}
+                checked={config.branch === branch}
+                onCheckedChange={() => setConfig(prev => ({ ...prev, branch }))}
               >
-                {config.branch || 'Select a branch'}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" sideOffset={4} className="w-[280px] focus:ring-0 border-2 border-git-stroke-primary/40">
-              {availableBranches.map((branch) => (
-                <DropdownMenuCheckboxItem
-                  key={branch}
-                  checked={config.branch === branch}
-                  onCheckedChange={() => setConfig(prev => ({ ...prev, branch }))}
-                >
-                  {branch}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                {branch}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
-        {/* Date Range Selection */}
-        <div className="space-y-2">
-          <Label className="text-git-text-primary">Date Range</Label>
-          <DatePicker
-            defaultValue={config.dateRange}
-            onChange={(dateRange) => setConfig(prev => ({ ...prev, dateRange }))}
-          />
-          </div>
-        </div>
+      {/* Date Range Selection */}
+      <div className="space-y-2">
+        <Label className="text-git-text-primary">Date Range</Label>
+        <DatePicker
+          defaultValue={config.dateRange}
+          onChange={(dateRange) => setConfig(prev => ({ ...prev, dateRange }))}
+        />
+      </div>
+    </div>
 
-        {/* Metrics Selection */}
+    {/* Metrics Selection */}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-git-text-primary">Metrics to Export</Label>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: METRIC_OPTIONS.map(m => m.id) }))}
+            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+          >
+            Select All
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: [] }))}
+            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+          >
+            Clear All
+          </Button>
+        </div>
+      </div>
+
+      {/* Group metrics by category in columns */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Column 1: Commits + Collaboration metrics */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-git-text-primary">Metrics to Export</Label>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: METRIC_OPTIONS.map(m => m.id) }))}
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-              >
-                Select All
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: [] }))}
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-              >
-                Clear All
-              </Button>
-            </div>
-          </div>
-
-          {/* Group metrics by category in columns */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Column 1: Commits + Collaboration metrics */}
-            <div className="space-y-4">
-              {/* Commits Metrics */}
-              {['commits'].map((category) => {
+          {/* Commits Metrics */}
+          {['commits'].map((category) => {
             const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
-                if (categoryMetrics.length === 0) return null;
+            if (categoryMetrics.length === 0) return null;
 
             return (
               <div key={category} className="space-y-2">
-                    <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
-                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
-                        </div>
-                        <div className="flex gap-1 ml-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSelectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
-                          >
-                            All
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeselectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
-                          >
-                            None
-                          </Button>
-                        </div>
-                      </div>
+                <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
+                      <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
                     </div>
-                    
-                    <div className="grid grid-cols-1 gap-2">
-                      {categoryMetrics.map((metric) => (
-                        <div key={metric.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={metric.id}
-                            checked={config.selectedMetrics.includes(metric.id)}
-                            onCheckedChange={() => handleMetricToggle(metric.id)}
-                          />
-                          <div className="flex-1">
-                            <Label
-                              htmlFor={metric.id}
-                              className="text-sm font-medium text-git-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              {metric.label}
-                            </Label>
-                            <p className="text-xs text-git-text-secondary mt-1">
-                              {metric.description}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="flex gap-1 ml-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSelectAll(category)}
+                        className="border border-git-stroke-primary/40 rounded"
+                      >
+                        All
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeselectAll(category)}
+                        className="border border-git-stroke-primary/40 rounded"
+                      >
+                        None
+                      </Button>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Column 2: Code metrics */}
-            <div className="space-y-4">
-              {['code'].map((category) => {
-                const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
-                if (categoryMetrics.length === 0) return null;
-
-                return (
-                  <div key={category} className="space-y-2">
-                    <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
-                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
-                        </div>
-                        <div className="flex gap-1 ml-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSelectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
-                          >
-                            All
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeselectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
-                          >
-                            None
-                          </Button>
-                        </div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-2">
                   {categoryMetrics.map((metric) => (
                     <div key={metric.id} className="flex items-center space-x-2">
@@ -382,80 +315,154 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
           })}
         </div>
 
-            {/* Column 3: Time metrics */}
+        {/* Column 2: Code metrics */}
         <div className="space-y-4">
-              {['time'].map((category) => {
-                const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
-                if (categoryMetrics.length === 0) return null;
+          {['code'].map((category) => {
+            const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
+            if (categoryMetrics.length === 0) return null;
 
-                return (
-                  <div key={category} className="space-y-2">
-                    <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
-                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
-                        </div>
-                        <div className="flex gap-1 ml-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSelectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
-                          >
-                            All
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeselectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
-                          >
-                            None
-                          </Button>
-                        </div>
-                      </div>
+            return (
+              <div key={category} className="space-y-2">
+                <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
+                      <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
                     </div>
-                    
-                    <div className="grid grid-cols-1 gap-2">
-                      {categoryMetrics.map((metric) => (
-                        <div key={metric.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={metric.id}
-                            checked={config.selectedMetrics.includes(metric.id)}
-                            onCheckedChange={() => handleMetricToggle(metric.id)}
-                          />
-                          <div className="flex-1">
-                            <Label
-                              htmlFor={metric.id}
-                              className="text-sm font-medium text-git-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              {metric.label}
-                            </Label>
-                            <p className="text-xs text-git-text-secondary mt-1">
-                              {metric.description}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="flex gap-1 ml-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSelectAll(category)}
+                        className="border border-git-stroke-primary/40 rounded"
+                      >
+                        All
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeselectAll(category)}
+                        className="border border-git-stroke-primary/40 rounded"
+                      >
+                        None
+                      </Button>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  {categoryMetrics.map((metric) => (
+                    <div key={metric.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={metric.id}
+                        checked={config.selectedMetrics.includes(metric.id)}
+                        onCheckedChange={() => handleMetricToggle(metric.id)}
+                      />
+                      <div className="flex-1">
+                        <Label
+                          htmlFor={metric.id}
+                          className="text-sm font-medium text-git-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {metric.label}
+                        </Label>
+                        <p className="text-xs text-git-text-secondary mt-1">
+                          {metric.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Preview Button */}
-        <div className="pt-4 flex justify-center">
-          <Button
-            onClick={onPreviewData}
-            disabled={!isConfigValid || isLoading}
-            className="w-auto px-8 bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-lg"
-          >
-            {isLoading ? 'Loading...' : 'Preview Data'}
-          </Button>
+        {/* Column 3: Time metrics */}
+        <div className="space-y-4">
+          {['time'].map((category) => {
+            const categoryMetrics = METRIC_OPTIONS.filter(metric => metric.category === category);
+            if (categoryMetrics.length === 0) return null;
+
+            return (
+              <div key={category} className="space-y-2">
+                <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
+                      <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
+                    </div>
+                    <div className="flex gap-1 ml-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSelectAll(category)}
+                        className="border border-git-stroke-primary/40 rounded"
+                      >
+                        All
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeselectAll(category)}
+                        className="border border-git-stroke-primary/40 rounded"
+                      >
+                        None
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  {categoryMetrics.map((metric) => (
+                    <div key={metric.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={metric.id}
+                        checked={config.selectedMetrics.includes(metric.id)}
+                        onCheckedChange={() => handleMetricToggle(metric.id)}
+                      />
+                      <div className="flex-1">
+                        <Label
+                          htmlFor={metric.id}
+                          className="text-sm font-medium text-git-text-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {metric.label}
+                        </Label>
+                        <p className="text-xs text-git-text-secondary mt-1">
+                          {metric.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
+      </div>
+    </div>
+
+    {/* Preview Button */}
+    <div className="pt-4 flex justify-center">
+      <Button
+        onClick={onPreviewData}
+        disabled={!isConfigValid || isLoading}
+        className="w-auto px-8 bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-lg"
+      >
+        {isLoading ? 'Loading...' : 'Preview Data'}
+      </Button>
+    </div>
+  </>)
+
+  return minimal ? cardContent : (
+    <Card className="w-full bg-git-bg-elevated border-git-stroke-primary">
+      <CardHeader className="bg-git-int-primary">
+        <CardTitle className="text-git-int-text">Select Data for Export</CardTitle>
+        <p className="text-sm text-git-int-text/90">
+          Choose the branch, time period, and metrics you want to export for your custom scaling script.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-6 bg-git-bg-elevated pt-6">
+        {cardContent}
       </CardContent>
     </Card>
   );

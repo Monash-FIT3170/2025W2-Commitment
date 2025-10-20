@@ -38,8 +38,6 @@ export default function ScriptEditor(props: ScriptEditorProps) {
       highlight={highlightWithLineNumbers}
       padding={10}
       style={{
-        fontFamily: '"Fira code", "Fira Mono", monospace',
-        fontSize: 12,
         outline: 'none',
         border: 'none',
         boxShadow: 'none'
@@ -56,7 +54,7 @@ export default function ScriptEditor(props: ScriptEditorProps) {
         props.setDragging?.(false);
       }}
 
-      className={cn("text-foreground w-full h-full rounded-md outline-0 border-0", props.className ?? "")}
+      className={cn("text-foreground w-full rounded-md outline-0 border-0", props.className ?? "")}
       tabSize={2}
       insertSpaces={true}
     />

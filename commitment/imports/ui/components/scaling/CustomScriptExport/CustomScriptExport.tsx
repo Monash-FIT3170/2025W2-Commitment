@@ -287,6 +287,11 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
           <ScriptExecution
             history={history}
             isLoading={isLoading}
+
+            availableBranches={availableBranches}
+            repoUrl={repoUrl}
+            onConfigChange={handleConfigChange}
+            onPreviewData={handlePreviewData}
           />
         </TabsContent>
       </Tabs>
