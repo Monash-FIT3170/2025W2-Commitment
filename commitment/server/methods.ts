@@ -140,20 +140,18 @@ Meteor.methods({
    * @returns Promise<string> The README content as a string
    */
   async "api.getReadme"(): Promise<string> {
-    const cwd = process.cwd();
-    // Try multiple possible paths for the API README file
-    const possiblePaths = [
-      // From Meteor build directory
-      path.join(cwd, "..", "..", "..", "..", "..", "api", "README.md"),
-      // From project root (if we can find it)
-      path.join(cwd, "..", "..", "..", "..", "..", "..", "api", "README.md"),
+    const fileLocation = "/api/README.md";
+    const searchPaths = [
+      // If running from Meteor dev mode or Docker bind mount
+      path.resolve("/projects" + fileLocation),
+      // Relative to Meteor project (use environment var or known structure)
+      path.resolve(process.cwd(), ".." + fileLocation),
+      path.resolve(process.cwd(), "../.." + fileLocation),
     ];
-
-    const existingPaths = possiblePaths.filter(fs.existsSync);
+    const existingPaths = searchPaths.filter(fs.existsSync);
     if (existingPaths.length === 0) throw Error("Failed to fetch the API readme :(");
 
-    const chosenpath = existingPaths[0];
-    return fs.readFileSync(chosenpath, "utf8");
+    return fs.readFileSync(existingPaths[0], "utf8");
   },
 });
 
