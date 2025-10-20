@@ -63,7 +63,8 @@ const features: Feature[] = [
     title: "Repository Analytics Dashboard",
     description:
       "View summary analytics for each Git repository, including activity levels and trends.",
-    image: "/dashboard.png",
+    imageLight: "/dashboard_light.png",
+    imageDark: "/dashboard_dark.png",
     alt: "Alt image.",
   },
   {
