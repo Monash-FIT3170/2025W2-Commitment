@@ -13,10 +13,10 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@ui/components/ui/form";
-import { Button } from "@ui/components/ui/button";
-import { Alert, AlertDescription } from "@ui/components/ui/alert";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../ui/dropzone";
+} from "@base/form";
+import { Button } from "@base/button";
+import { Alert, AlertDescription } from "@base/alert";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@base/dropzone";
 import {
   GradingSheetParserService,
   type GradingSheetRow,
@@ -107,10 +107,6 @@ function GradingSheetForm({
 
   return (
     <div className="w-full">
-      <div className="absolute top-2 left-2 flex space-x-1">
-        <span className="w-2 h-2 rounded-full bg-[#F1502F]/30" />
-        <span className="w-2 h-2 rounded-full bg-[#F1502F]/50" />
-      </div>
 
       <Form {...form}>
         <div className="text-2xl font-bold mb-4 text-center">

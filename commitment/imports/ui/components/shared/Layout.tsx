@@ -1,11 +1,11 @@
 import React from "react";
 import { Outlet } from 'react-router-dom';
-import NavBar from "../landing-page/NavBar";
+import NavBar from "./NavBar";
 
 
 export default function Layout() {
   return (
-    <div className="w-screen h-screen overflow-scroll bg-bottom ">
+    <div className="w-full h-screen">
           <NavBar />
 
           <Outlet />

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { Button } from '@ui/components/ui/button';
+import { Button } from '@base/button';
 import { Upload, FileText, X, CheckCircle, AlertCircle, Download, Play, ArrowLeft } from 'lucide-react';
-import InfoButton from '../ui/infoButton';
+import InfoButton from '@base/infoButton';
 import { useNavigate } from 'react-router-dom';
 
 export const AliasConfigPage: React.FC = () => {
