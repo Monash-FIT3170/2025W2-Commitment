@@ -58,13 +58,13 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   }, [currentConfig])
 
   const onExecuteButton = () => {
-    if (currentConfig === null || currentConfig === undefined)
+    if (csv.data === null)
       return;
 
-    console.log("Executing...", code, currentConfig)
+    console.log("Executing...", code, csv)
 
     // Call the API!
-    meteorCallAsync<PythonExecutorResponse>("pythonExecutor")(code, currentConfig)
+    meteorCallAsync<PythonExecutorResponse>("pythonExecutor")(code, csv.data)
       .then(setResponse)
       .catch((e) => {
         console.error("Caught error trying to use python executor: ", e);

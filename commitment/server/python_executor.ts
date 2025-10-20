@@ -10,6 +10,21 @@ function isObject(value: unknown): boolean {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+function messageForUnknownError(e: unknown): string {
+  let msg: string;
+
+  if (e instanceof Error) {
+    msg = e.message;
+  } else if (typeof e === "string") {
+    msg = e;
+  } else {
+    // I give up -- JSON base case
+    msg = JSON.stringify(e);
+  }
+
+  return msg;
+}
+
 // can have a case here to see if it is deployment or a docker localhost
 // this means that the API can be connected to without the connection being hard coded
 // Load environment variables
@@ -40,7 +55,7 @@ export async function pythonExecutor(script: string, data: string): Promise<Pyth
   catch (e) {
     return {
       error: `An error occurred while making the request to ${url.toString()} :(\n` +
-        "Please inform a server admin.\n\n" + e.toString(),
+        "Please inform a server admin.\n\n" + messageForUnknownError(e),
     } as PythonExecutorResponse;
   }
 
@@ -50,6 +65,23 @@ export async function pythonExecutor(script: string, data: string): Promise<Pyth
     } as PythonExecutorResponse;
   }
 
+  const contentType = response.headers.get("content-type")
+  if (contentType !== null && contentType !== undefined && !contentType.startsWith("application/json")) {
+    try {
+      return {
+        stdout: await response.text(),
+        error: `Unexpected response content type ${contentType} from the python_executor server :(\n` +
+          "Please inform a server admin.",
+      } as PythonExecutorResponse;
+    }
+    catch (e) {
+      return {
+        error: `Response from python_executor in unexpected format ${contentType} also failed to be read :(\n` +
+          "Please inform a server admin.\n\n" + messageForUnknownError(e),
+      }
+    }
+  }
+
   let bodyRaw: unknown;
   try {
     bodyRaw = await response.json();
@@ -57,7 +89,7 @@ export async function pythonExecutor(script: string, data: string): Promise<Pyth
   catch (e) {
     return {
       error: "An error occurred while parsing the response from the python_executor server :(\n" +
-        "Please inform a server admin.",
+        "Please inform a server admin.\n\n" + messageForUnknownError(e),
     }
   }
 
