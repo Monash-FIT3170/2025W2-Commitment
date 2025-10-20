@@ -33,15 +33,16 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   const [previewCsv, setPreviewCsv] = useState<string>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const csvFetchDataRef = useRef<Promise<string>>();
+  const csvFetchDataRef = useRef<Promise<string | null>>(
+    new Promise<string>((resolve) => resolve(""))
+  );
 
   const displayCsvForConfig = (config: DataSelectionConfig) => {
-    if (!config) return;
+    if (!config)
+      return new Promise<string | null>((resolve) => resolve(null));
 
     setIsLoading(true);
     setError(null);
-    // Clear previous preview data to ensure fresh data
-    // setPreviewData(null);
     console.log(config);
 
     const fetchData = async () => {
@@ -54,7 +55,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
         setPreviewCsv(csv_data);
         setIsLoading(false);
-        return data;
+        return csv_data;
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
         setIsLoading(false);
@@ -62,43 +63,21 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
       }
     };
 
-    void fetchData();
+    csvFetchDataRef.current = fetchData();
+    return csvFetchDataRef.current;
   }
 
   const onExecuteButton = () => {
-    if (!currentConfig) return;
+    if (currentConfig === null || currentConfig === undefined)
+      return;
 
-    setIsLoading(true);
-    setError(null);
-    // Clear previous preview data to ensure fresh data
-    // setPreviewData(null);
-    console.log(currentConfig);
+    displayCsvForConfig(currentConfig).then(csv_data => {
+      if (csv_data === null)
+        return;
 
-    const fetchData = async () => {
-      try {
-        const data = await onDataRequest(currentConfig);
-
-        const csv_headers = data.headers.join(',');
-        const csv_rows = data.rows.map(row => row.join(',')).join('\n');
-        const csv_data = `${csv_headers}\n${csv_rows}`;
-
-        setPreviewCsv(csv_data);
-        setIsLoading(false);
-        return data;
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-        setIsLoading(false);
-        return null;
-      }
-    };
-
-    void fetchData();
+      console.log("Executing...", code, csv_data)
+    });
   }
-
-
-
-  const handlePreviewData = () => {
-  };
 
   return (
     <div className="space-y-6">
