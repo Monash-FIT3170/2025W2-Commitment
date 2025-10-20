@@ -4,6 +4,7 @@ import { Code, FileText, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
 import { Button } from '@base/button';
 import { ExportHistoryItem } from './ExportHistory';
+import ScriptSpecification from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptSpecification";
 
 interface ScriptExecutionProps {
   history: ExportHistoryItem[];
@@ -15,6 +16,8 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   isLoading = false
 }) => {
   const latestExport = history.length > 0 ? history[0] : null;
+
+
 
   return (
     <div className="space-y-6">
@@ -49,6 +52,14 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                 </p>
               </div>
             )}
+
+
+
+            <ScriptSpecification>
+
+            </ScriptSpecification>
+
+
           </div>
         </CardContent>
       </Card>
@@ -102,7 +113,11 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                 </Button>
               </div>
             )}
+
+
+
           </div>
+
         </CardContent>
       </Card>
     </div>

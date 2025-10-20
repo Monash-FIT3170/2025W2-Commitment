@@ -1,7 +1,6 @@
 import React from 'react'
-import Editor from 'react-simple-code-editor';
-import { highlight, languages } from 'prismjs/components/prism-core';
 import {useLocalStorage} from "@hook/useLocalStorage";
+import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptEditor";
 
 const initial_script = `
 import os
@@ -32,10 +31,9 @@ with open("./data.csv", newline="", encoding="utf-8") as data_csv:
 export default function ScriptSpecification() {
   const [code, setCode] = useLocalStorage('custom-execution-script', initial_script);
 
-
   return (
     <div>
-      TODO -- script upload / editor
+      <ScriptEditor code={code} setCode={setCode} />
 
     </div>
   )
