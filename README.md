@@ -365,7 +365,8 @@ Below are useful links for learning a little more about the project from the REA
 | ------------------ | -------------------------------------------------------------- | ---------------------------------------------------- |
 | Mongo Setup        | More information on playing with Mongo.                        | [View README](commitment/atlas/README_DATA_ENTRY.md) |
 | Mongo Architecture | Documentation on the architecture of Mongo in our application. | [View README](commitment/ARCHITECTURE.md)            |
-| Tailwind How-To    | Example usage and demos for applying tailwind in the project.  | [View README](README.tailwind-colors.md)             |
+| Tailwind How-To    | Example usage and demos for applying tailwind in the project.  | [View README](docs/TAILWIND_COLOURS.md)              |
+| ESLint Guide       | Usage and documentation of eslint in the project.              | [View README](docs/ESLINT.md)                        |
 | Contribution Guide | Guidelines for contributing to the project                     | [View README](CONTRIBUTING.md)                       |
 
 ## Contributors ✨
