@@ -71,7 +71,8 @@ const features: Feature[] = [
     title: "Team Comparison View",
     description:
       "Compare multiple users across contribution metrics for peer review or group assessment.",
-    image: "/comparison.png",
+    imageLight: "/comparison_light.png",
+    imageDark: "/comparison_dark.png",
     alt: "Compare multiple users across a repository.",
   },
   {
