@@ -36,7 +36,6 @@ export const isUpToDate = async (
   try {
     const latestCommit = getLatestCommit(getAllCommits(data));
     if (latestCommit === null) return false;
-    console.log("string latest date: ", latestCommit.timestamp);
     const lastDate: Date = new Date(latestCommit.timestamp);
 
     // execute commands in local directory
