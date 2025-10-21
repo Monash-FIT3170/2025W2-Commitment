@@ -19,18 +19,21 @@ RUN npm install -g npm@11.6.2
 RUN useradd -ms /bin/bash -G node devuser
 USER devuser
 
-RUN pwd
-RUN ls -a
-
 WORKDIR /projects/commitment
 
 # Copy project files
 COPY --chown=devuser:devuser . .
 
+RUN pwd
+RUN ls -a
+
 # --- Build Stage ---
 FROM base AS build
 
 WORKDIR /projects/commitment
+
+RUN pwd
+RUN ls -a
 
 # Install dependencies before build
 RUN meteor npm install
