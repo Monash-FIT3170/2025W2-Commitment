@@ -4,7 +4,6 @@ import { InfoIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@base/tabs';
 import { Alert, AlertDescription } from '@base/alert';
-import { Button } from '@base/button';
 
 import { DataSelectionPanel, DataSelectionConfig } from './DataSelectionPanel';
 import { ExportPreview, ExportData } from './ExportPreview';
@@ -149,21 +148,19 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
       {/* Help Section - collapsible */}
       <Card className="bg-git-bg-elevated border-git-stroke-primary rounded-lg">
-        <CardHeader className="bg-git-int-primary">
+        <CardHeader 
+          className="bg-git-int-primary rounded-t-lg cursor-pointer hover:bg-git-int-primary-hover transition-colors"
+          onClick={() => setIsHelpExpanded(!isHelpExpanded)}
+        >
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg text-git-int-text">How to Use</CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsHelpExpanded(!isHelpExpanded)}
-              className="text-git-int-text hover:bg-git-int-primary-hover p-1"
-            >
+            <div className="flex items-center">
               {isHelpExpanded ? (
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUp className="h-6 w-6 text-git-int-text" />
               ) : (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-6 w-6 text-git-int-text" />
               )}
-            </Button>
+            </div>
           </div>
         </CardHeader>
         {isHelpExpanded && (
