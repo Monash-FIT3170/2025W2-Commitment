@@ -267,12 +267,9 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
             return (
               <div key={category} className="space-y-2">
                     <div className="bg-git-bg-primary border border-git-stroke-primary rounded-xl p-3 shadow-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-git-text-primary capitalize mb-0">{category}</h4>
-                          <p className="text-sm font-semibold text-git-text-primary capitalize mt-0">Metrics</p>
-                        </div>
-                        <div className="flex gap-1 ml-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category} Metrics</h4>
+                        <div className="flex gap-1">
                           <Button
                             variant="outline"
                             size="sm"
@@ -329,12 +326,9 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                 return (
                   <div key={category} className="space-y-2">
                     <div className="bg-git-bg-primary border border-git-stroke-primary rounded-xl p-3 shadow-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-git-text-primary capitalize mb-0">{category}</h4>
-                          <p className="text-sm font-semibold text-git-text-primary capitalize mt-0">Metrics</p>
-                        </div>
-                        <div className="flex gap-1 ml-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category} Metrics</h4>
+                        <div className="flex gap-1">
                           <Button
                             variant="outline"
                             size="sm"
@@ -391,12 +385,9 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                 return (
                   <div key={category} className="space-y-2">
                     <div className="bg-git-bg-primary border border-git-stroke-primary rounded-xl p-3 shadow-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-git-text-primary capitalize mb-0">{category}</h4>
-                          <p className="text-sm font-semibold text-git-text-primary capitalize mt-0">Metrics</p>
-                        </div>
-                        <div className="flex gap-1 ml-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category} Metrics</h4>
+                        <div className="flex gap-1">
                           <Button
                             variant="outline"
                             size="sm"
