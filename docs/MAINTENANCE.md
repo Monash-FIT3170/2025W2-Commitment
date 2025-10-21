@@ -11,6 +11,9 @@
     - [Infrastructure (Docker + CI/CD)](#infrastructure-docker--cicd)
   - [Hosting and Deployment](#hosting-and-deployment)
     - [Current Hosting Environment](#current-hosting-environment)
+      - [Nectar ARDC](#nectar-ardc)
+      - [MongoDB Atlas](#mongodb-atlas)
+      - [Domains](#domains)
     - [Post-Semester Plan](#post-semester-plan)
     - [Redeployment Instructions](#redeployment-instructions)
   - [Costs and Responsibilities](#costs-and-responsibilities)
@@ -36,8 +39,6 @@ The system integrates several core technologies:
 
 This maintenance plan provides a clear record of the project’s operational setup, post-submission expectations, and guidance for any future contributors who may wish to continue development.
 
----
-
 ## System Architecture
 
 ### Frontend (Meteor Application)
@@ -58,9 +59,9 @@ This maintenance plan provides a clear record of the project’s operational set
 - **Deployment:** Docker container that runs concurrently with the Meteor app in production.
 
 ### Database (MongoDB Atlas)
-- **Description:** Cloud-hosted MongoDB instance storing persistent data, such as repository and user information.
+- **Description:** Cloud-hosted MongoDB instance storing persistent data, such as repository, user information, and alias configuration.
 - **Responsibilities:**
-  - Manages user and repository collections.
+  - Manages different collections.
   - Provides persistent storage independent of container lifecycles.
 - **Maintenance Notes:**
   - The project currently uses the **free-tier cluster**.
@@ -75,18 +76,32 @@ This maintenance plan provides a clear record of the project’s operational set
   - Automatic image builds and deployment to production.
 - **Deployment Scripts:** Included in the `README` with detailed setup steps.
 
----
-
 ## Hosting and Deployment
 
 ### Current Hosting Environment
-- **Provider:** Nectar ARDC (Australian Research Data Commons)
+#### Nectar ARDC
+
+ Nectar ARDC (Australian Research Data Commons) provides free large scale computing infrastructure, software and data access to eligible Australian researchers, Monash students also fall under this. The Meteor Container and Haskell API Container are hosted on this solution.
 - **Type:** Free student cloud allocation
-- **Services Running:**
-  - Meteor container (frontend)
-  - Haskell API container (backend)
-  - MongoDB Atlas (remote database)
 - **Access:** Deployed using Docker Compose over SSH with environment variables stored securely.
+
+#### MongoDB Atlas
+A fully managed cloud database service that simplifies deploying, managing, and scaling MongoDB databases. The data fetched from GitHub repositories is stored here. Steps for setting this up are found in the [Atlas Setup README](/docs/ATLAS_SETUP.md).
+- **Type:** Free student cloud allocation
+- **Access:** Hosted on Atlas, can be accessed via login or remotely through a Mongo connection.
+
+#### Domains
+Currently the project uses [this domain](commitmentfit310.net) to allow users to access the web application. This requires a domain to be purchased and a DNS registrar set up to resolve the domain name. Steps for this are outline in the [Deployment README](/docs/DEPLOYMENT.md).
+
+- **Domain Name:**
+  - Domain name was purchased on [Squarespace Domains](https://domains.squarespace.com/?channel=pbr&subchannel=go&campaign=pbr-go-au-en-core_category-e&subcampaign=(domains-en_squarespace-domains_e)&gclsrc=aw.ds&&cid=16750987370&aid=133807081854&tid=aud-307746717000:kwd-95472161576&mt=e&eid=&loc_p_ms=9071445&loc_i_ms=&nw=g&d=c&adid=602205694451&channel2=pbr&subchannel2=go&gad_source=1&gad_campaignid=16750987370&gbraid=0AAAAADxS_FKppSxP1k2Gh0o6Z7rzi4HUd&gclid=CjwKCAjwu9fHBhAWEiwAzGRC_51ix7197voPgVy5CcTJ85GtTbS-E4L6lGuYsKi_XMXbj43svKEPShoCnmwQAvD_BwE)
+  - Incurs a yearly cost that is registered to the Commitment email
+- **DNS Registrar:**
+  - Managed through [Cloudflare](https://www.cloudflare.com/en-au/application-services/products/dns/)
+  - Uses the free-tier
+  - Only accessibly via the Commitment email
+
+
 
 ### Post-Semester Plan
 - The **Nectar instance will be terminated** after the semester ends as part of the student allocation lifecycle.
