@@ -68,6 +68,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
   const [methodOptions, setMethodOptions] = useState<string[]>([]);
 
+  // This useEffect() is for getting the small contributor group and changing available metrics accordingly
   useEffect(() => {
     const fetchSmallGroup = async () => {
       if (!repoUrl) return;
