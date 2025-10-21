@@ -17,6 +17,9 @@
   - [Maintenance](#maintenance)
   - [Other Useful Reading](#other-useful-reading)
   - [Contributors ✨](#contributors-)
+    - [System Architects](#system-architects)
+    - [Product Managers](#product-managers)
+    - [Release Train Engineers](#release-train-engineers)
 
 # 2025W2-Commitment
 
@@ -157,6 +160,18 @@ Below are useful links for learning a little more about the project from the REA
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+### System Architects
+
+System Architects were responsible for the technical architecture, software design patterns, and infrastructure decisions. They ensured scalability, maintainability, and adherence to clean coding standards (including consistent variable naming, code commenting, and documentation practices).
+
+### Product Managers
+
+Product Managers oversaw project direction, user requirements, and alignment with stakeholder needs. They managed backlog prioritisation, coordinated user testing, and ensured the product met design and functionality goals.
+
+### Release Train Engineers
+
+Release Train Engineers acted as a servant leader and coach for an Agile Release Train (ART) within the Scaled Agile Framework, ensuring multiple teams work together to deliver value. Their main responsibilities include facilitating key ART events like PI Planning, removing impediments, managing risks, and driving continuous improvement across the train.
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
