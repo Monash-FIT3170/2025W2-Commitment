@@ -268,7 +268,12 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
               <div key={category} className="space-y-2">
                     <div className="bg-git-bg-primary border border-git-stroke-primary rounded-xl p-3 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category} Metrics</h4>
+                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">
+                          {category === 'commits' ? 'Commit Metrics' : 
+                           category === 'code' ? 'Code Metrics' : 
+                           category === 'time' ? 'Time Metrics' : 
+                           `${category} Metrics`}
+                        </h4>
                         <div className="flex gap-1">
                           <Button
                             variant="outline"
@@ -327,7 +332,12 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                   <div key={category} className="space-y-2">
                     <div className="bg-git-bg-primary border border-git-stroke-primary rounded-xl p-3 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category} Metrics</h4>
+                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">
+                          {category === 'commits' ? 'Commit Metrics' : 
+                           category === 'code' ? 'Code Metrics' : 
+                           category === 'time' ? 'Time Metrics' : 
+                           `${category} Metrics`}
+                        </h4>
                         <div className="flex gap-1">
                           <Button
                             variant="outline"
@@ -386,7 +396,12 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                   <div key={category} className="space-y-2">
                     <div className="bg-git-bg-primary border border-git-stroke-primary rounded-xl p-3 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category} Metrics</h4>
+                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">
+                          {category === 'commits' ? 'Commit Metrics' : 
+                           category === 'code' ? 'Code Metrics' : 
+                           category === 'time' ? 'Time Metrics' : 
+                           `${category} Metrics`}
+                        </h4>
                         <div className="flex gap-1">
                           <Button
                             variant="outline"

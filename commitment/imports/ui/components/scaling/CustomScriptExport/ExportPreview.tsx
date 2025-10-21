@@ -109,7 +109,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
           <div className="w-full border border-git-stroke-primary rounded-xl overflow-auto max-h-96">
             <Table className="min-w-full">
               <TableHeader>
-                <TableRow className="bg-git-int-primary hover:bg-git-int-primary-hover">
+                <TableRow className="bg-git-int-primary hover:bg-git-int-primary">
                   {data.headers.map((header, index) => (
                     <TableHead 
                       key={index} 
@@ -122,7 +122,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
               </TableHeader>
               <TableBody>
                 {displayRows.map((row, rowIndex) => (
-                  <TableRow key={rowIndex} className="bg-git-int-primary hover:bg-git-int-primary-hover">
+                  <TableRow key={rowIndex} className="bg-git-int-primary hover:bg-git-int-primary">
                     {row.map((cell, cellIndex) => {
                       const isEmailCol = data.headers[cellIndex] === 'contributor_email';
                       if (isEmailCol) {
