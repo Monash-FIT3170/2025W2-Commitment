@@ -86,12 +86,11 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
       </CardHeader>
       <CardContent className="space-y-4 bg-git-bg-elevated dark:bg-git-bg-primary pt-6">
         {/* Summary Information */}
-              <div className="grid   grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 text-2xl"> 
-
-        <HighlightCardWithGraph title={"Total Rows"} value={data.summary.totalRows.toLocaleString()}/>
-        <HighlightCardWithGraph title={"Date Range"} value={data.summary.dateRange}/>
-        <HighlightCardWithGraph title={"Branch"} value={data.summary.branch}/>
-        <HighlightCardWithGraph title={"Estimated Size"} value={getFileSize()}/>
+        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5 mb-6">
+          <HighlightCardWithGraph title={"Total Rows"} value={data.summary.totalRows.toLocaleString()}/>
+          <HighlightCardWithGraph title={"Date Range"} value={data.summary.dateRange}/>
+          <HighlightCardWithGraph title={"Branch"} value={data.summary.branch}/>
+          <HighlightCardWithGraph title={"Estimated Size"} value={getFileSize()}/>
         </div> 
 
 
