@@ -22,7 +22,7 @@ USER devuser
 WORKDIR /projects/commitment
 
 # Copy project files
-COPY --chown=devuser:devuser . .
+COPY --chown=devuser:devuser commtiment/ .
 
 # --- Build Stage ---
 FROM base AS build
