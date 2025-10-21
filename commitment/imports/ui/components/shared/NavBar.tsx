@@ -38,7 +38,7 @@ export const NavBar: React.FC = () => {
         <NavigationMenuList className="flex space-x-4">
           <div className="flex items-center space-x-3">
             <NavigationMenuItem>
-              <NavigationMenuLink>
+              <NavigationMenuLink asChild>
                 <Link to={isLandingPage ? "/" : "/home"}>
                   <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
                 </Link>
