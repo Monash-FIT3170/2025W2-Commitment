@@ -87,7 +87,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         const result = (await Meteor.callAsync(
           "isSmallContributorGroup",
           repoUrl,
-          11
+          7
         )) as boolean;
 
         // Save the result in the cache
