@@ -16,7 +16,7 @@
   - [Post-Semester Plan](#post-semester-plan)
     - [Costs and Responsibilities](#costs-and-responsibilities)
   - [Maintenance and Update Recommendations](#maintenance-and-update-recommendations)
-    - [Issues](#issues)
+    - [Known Issues](#known-issues)
     - [Future Work](#future-work)
   - [Ending Notes](#ending-notes)
 
@@ -100,6 +100,8 @@ After submission:
 - The **GitHub repository** will still remain accessible for viewing and forking.
 - Ongoing costs **will not be** maintained and all hosting solutions **will cease to run**.
 
+All accounts, credentials and affiliated management details will be decomissioned, they will not be archived for security reasons. Any new contributor/maintainer must create new accounts and credentials in order to restart all services. Instructions for all setup are provided to users.
+
 ### Costs and Responsibilities
 
 The below are all the related costs/responsibilities that are associated with the project. 
@@ -124,14 +126,14 @@ Interested individuals or teams can:
 
 Relevant documentation for developers to read are below:
 
-| README Name  | Description                                     | Link                               |
-| ------------ | ----------------------------------------------- | ---------------------------------- |
+| README Name  | Description                                      | Link                               |
+| ------------ | ------------------------------------------------ | ---------------------------------- |
 | README       | Setup instructions and introduction to project.  | [View README](/README.md)          |
 | DEPLOYMENT   | Instructions on setting up automated deployment. | [View README](/docs/DEPLOYMENT.md) |
-| CONTRIBUTING | Details on code contribution standards. | [View README](/CONTRIBUTING.md)                 |
+| CONTRIBUTING | Details on code contribution standards.          | [View README](/CONTRIBUTING.md)    |
 
 
-### Issues
+### Known Issues
 
 Although the project has reached the concluding stage in its lifecycle, issues still remain with the current implementation of the system. Several issues have been identified by developers and testers that could not be addressed during the lifetime of the project. As such these issues still remain and can be addressed by any future developers. Issues are divided into either a `bug` or `feature`, these issues can be addressed by any future developers/maintainers.
 
@@ -162,4 +164,6 @@ Although no active maintenance is planned post-submission, the following updates
 
 ## Ending Notes
 
-This project has been the culmination of the work of 15 people over the course of a year. For those who plan to continue to maintain this repository please treat it with as much care as those who have developed before you.
+This project represents the collaborative effort of 15 dedicated contributors over a full academic year.  
+For those who choose to continue its development, we encourage maintaining the same level of care, attention to detail, and collaborative spirit that defined its creation.  
+While active maintenance will cease, the repository will remain as a record of best practices, teamwork, and innovation.
