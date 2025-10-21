@@ -237,18 +237,18 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
             <Label className="text-git-text-primary">Metrics to Export</Label>
             <div className="flex gap-2">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: METRIC_OPTIONS.map(m => m.id) }))}
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                className="border border-git-stroke-primary/40 rounded hover:bg-git-int-primary hover:text-git-int-text"
               >
                 Select All
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: [] }))}
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                className="border border-git-stroke-primary/40 rounded hover:bg-git-int-primary hover:text-git-int-text"
               >
                 Clear All
               </Button>
@@ -267,17 +267,14 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
             return (
               <div key={category} className="space-y-2">
                     <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
-                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
-                        </div>
-                        <div className="flex gap-1 ml-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category} Metrics</h4>
+                        <div className="flex gap-1">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleSelectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
+                            className="border border-git-stroke-primary/40 rounded hover:bg-git-int-primary hover:text-git-int-text"
                           >
                             All
                           </Button>
@@ -285,7 +282,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                             variant="outline"
                             size="sm"
                             onClick={() => handleDeselectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
+                            className="border border-git-stroke-primary/40 rounded hover:bg-git-int-primary hover:text-git-int-text"
                           >
                             None
                           </Button>
@@ -329,17 +326,14 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                 return (
                   <div key={category} className="space-y-2">
                     <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
-                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
-                        </div>
-                        <div className="flex gap-1 ml-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category} Metrics</h4>
+                        <div className="flex gap-1">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleSelectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
+                            className="border border-git-stroke-primary/40 rounded hover:bg-git-int-primary hover:text-git-int-text"
                           >
                             All
                           </Button>
@@ -347,13 +341,13 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                             variant="outline"
                             size="sm"
                             onClick={() => handleDeselectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
+                            className="border border-git-stroke-primary/40 rounded hover:bg-git-int-primary hover:text-git-int-text"
                           >
                             None
                           </Button>
                         </div>
-                  </div>
-                </div>
+                      </div>
+                    </div>
                 
                 <div className="grid grid-cols-1 gap-2">
                   {categoryMetrics.map((metric) => (
@@ -391,17 +385,14 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                 return (
                   <div key={category} className="space-y-2">
                     <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
-                          <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
-                        </div>
-                        <div className="flex gap-1 ml-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category} Metrics</h4>
+                        <div className="flex gap-1">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleSelectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
+                            className="border border-git-stroke-primary/40 rounded hover:bg-git-int-primary hover:text-git-int-text"
                           >
                             All
                           </Button>
@@ -409,7 +400,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                             variant="outline"
                             size="sm"
                             onClick={() => handleDeselectAll(category)}
-                            className="border border-git-stroke-primary/40 rounded"
+                            className="border border-git-stroke-primary/40 rounded hover:bg-git-int-primary hover:text-git-int-text"
                           >
                             None
                           </Button>
