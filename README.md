@@ -8,9 +8,13 @@
       - [Select Target Platform](#select-target-platform)
       - [Install Docker Desktop](#install-docker-desktop)
       - [Install Verification](#install-verification)
+    - [Atlas Mongo Setup](#atlas-mongo-setup)
+    - [OAuth Setup](#oauth-setup)
     - [Building the Environment](#building-the-environment)
   - [Running Project](#running-project)
     - [Docker Commands](#docker-commands)
+  - [Deployment](#deployment)
+  - [Maintenance](#maintenance)
   - [Other Useful Reading](#other-useful-reading)
   - [Contributors ✨](#contributors-)
 
@@ -71,7 +75,15 @@ Depending on your device you can choose the target platform:
 
 _If there are any issues please contact an SA for help._
 
+### Atlas Mongo Setup
 
+This project uses the Atlas service to host the database. Instructions can be found in [this README](/docs/ATLAS_SETUP.md).
+Instructions on what to put in the `.env` file are also provided.
+
+### OAuth Setup
+
+Third-party authentication is setup for user sign in. Instructions for setting this up can be found in [this README](/docs/OAUTH_SETUP.md).
+Instructions on what to put in the `.env` file are also provided.
 
 ### Building the Environment
 
@@ -122,6 +134,13 @@ These commands are useful for working with the container but must be run from th
 | Access Haskell Container     | `docker exec -it haskell-api bash` |
 | Attach Container to Terminal | `docker attach <container>`        |
 
+## Deployment
+
+This project is being hosted on a custom deployment solution. Steps for deployment setup can be found in [this README](/docs/DEPLOYMENT.md).
+
+## Maintenance
+
+This project will not be actively maintained at the conclusion of the second 2025 semester. More information and steps for future maintainers (and contributors) can be found in [this README](/docs/MAINTENANCE.md).
 
 ## Other Useful Reading
 
