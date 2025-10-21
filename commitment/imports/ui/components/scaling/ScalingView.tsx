@@ -403,7 +403,7 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
               <h1 className="text-3xl text-foreground font-robotoFlex">
                 Scaling
               </h1>
-              <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
+              <InfoButton description="Scaling configurations supported by custom scripts and or alias mapping" />
             </div>
             <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
           </div>
@@ -419,6 +419,11 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
             <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="scaling" className="text-base font-medium">
                 Scaling Configuration
+                <InfoButton
+                  className={"mt-0 ml-2"}
+                  variant={activeTab === "scaling" ? "active" : "muted"}
+                  description="Configure scaling by uploading a grading sheet to evaluate contributors"
+                />
               </TabsTrigger>
               <TabsTrigger value="export" className="text-base font-medium flex flex-row align-middle">
                 Custom Script Export
