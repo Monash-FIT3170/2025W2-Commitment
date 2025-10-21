@@ -53,11 +53,10 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
   };
 
   return (
-    <Card className="w-full bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary">
-      <CardHeader className="bg-git-int-primary">
+    <Card className="w-full bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary rounded-xl">
+      <CardHeader className="bg-git-int-primary rounded-t-xl">
         <div className="flex items-center justify-between">
           <CardTitle className="text-git-int-text">Export Preview</CardTitle>
-
         </div>
         <p className="text-sm text-git-int-text/90">
           Review your data before exporting to CSV
@@ -85,7 +84,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
             </div>
           </div>
           
-          <div className="w-full border border-git-stroke-primary rounded-md overflow-auto max-h-96">
+          <div className="w-full border border-git-stroke-primary rounded-xl overflow-auto max-h-96">
             <Table className="min-w-full">
               <TableHeader>
                 <TableRow className="bg-git-int-primary hover:bg-git-int-primary-hover">
@@ -151,14 +150,14 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
             <Button 
               variant="outline" 
               onClick={onClose}
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary"
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary rounded-xl"
             >
               Cancel
             </Button>
             <Button 
               onClick={onExport} 
               disabled={isLoading}
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-xl"
             >
               <Download className="h-4 w-4 mr-2" />
               {isLoading ? 'Exporting...' : 'Export CSV'}
