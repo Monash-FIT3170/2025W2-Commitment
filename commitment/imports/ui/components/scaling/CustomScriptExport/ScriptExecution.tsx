@@ -15,8 +15,9 @@ import {
 import {useLocalStorage} from "@hook/useLocalStorage";
 import {ExportData} from "@ui/components/scaling/CustomScriptExport/ExportPreview";
 import useAsync from "@hook/useAsync";
-import {FilteredData, PythonExecutorResponse} from "@api/types";
+import {PythonExecutorResponse, type UserScalingSummary} from "@api/types";
 import {meteorCallAsync} from "@api/meteor_interface";
+import ScalingSummary from "@ui/components/scaling/ScalingSummary";
 
 interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
@@ -33,6 +34,8 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   const [code, setCode] = useLocalStorage('custom-execution-script', initialScript);
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
   const [response, setResponse] = useState<PythonExecutorResponse>({});
+
+  const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
 
   const responseDataJson = useMemo(() => {
     if (response.data)
@@ -65,7 +68,47 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
     // Call the API!
     meteorCallAsync<PythonExecutorResponse>("pythonExecutor")(code, csv.data)
-      .then(setResponse)
+      .then(v => {
+        setResponse(v);
+        return v;
+      })
+      .then((response) => {
+        // Get first row to be able to convert indexed values back to identifiers
+        if (csv.data === null || response.data === undefined)
+          return;
+        const csvLines = csv.data
+          .split('\n')
+        if (csvLines.length < 2)
+          return;
+        const csvFirstCol = csvLines
+          .slice(1)
+          .map(row => row.split(',')[0]);
+
+        // Turn response data into usable UserScalingSummary objects
+        const filteredData = response.data
+          .filter((row: unknown) => {
+            // Ensure entries are arrays
+            if (row === null || !Array.isArray(row))
+              return false;
+            // Ensure entries are of the right size
+            if (row.length !== 2)
+              return false;
+
+            // Only accept arrays of [number, number] or [string, number]
+            return !((typeof row[0] !== "string" || typeof row[1] !== "number") &&
+                     (typeof row[0] !== "number" || typeof row[1] !== "number"));
+          })
+          .map(row => row as [number | string, number])
+          .map((row: [number | string, number]) => {
+            return {
+              name: (typeof row[0] === "number") ? csvFirstCol[row[0]] : row[0],
+              scale: row[1]
+            } as UserScalingSummary;
+          });
+
+        setScaledResults(filteredData);
+        return filteredData;
+      })
       .catch((e) => {
         console.error("Caught error trying to use python executor: ", e);
         setResponse({
@@ -126,16 +169,27 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
               readonly
             />
 
-            <ScriptSpecification
-              className="mb-6"
-              code={responseDataJson}
-              setCode={() => {}}
-              name={"data.json"}
-              icon={<FileText size="sm"/>}
-              language="json"
-              readonly
-            />
+            {/*<ScriptSpecification*/}
+            {/*  className="mb-6"*/}
+            {/*  code={responseDataJson}*/}
+            {/*  setCode={() => {}}*/}
+            {/*  name={"data.json"}*/}
+            {/*  icon={<FileText size="sm"/>}*/}
+            {/*  language="json"*/}
+            {/*  readonly*/}
+            {/*/>*/}
           </div>
+
+
+          {csv.data && scaledResults.length > 0 && (
+            <div className="mb-6">
+              <ScalingSummary
+                userScalingSummaries={scaledResults}
+                hasGradingSheet={false}
+              />
+            </div>
+          )}
+
         </CardContent>
       </Card>
 
