@@ -75,11 +75,9 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     const fetchSmallGroup = async () => {
       if (!repoUrl) return;
 
-      // check cache first
-      console.log(isSmallGroupCache);
-      if (isSmallGroupCache[repoUrl] !== undefined) {
+      if (smallGroupCache[repoUrl] !== undefined) {
         setMethodOptions(
-          isSmallGroupCache[repoUrl]
+          smallGroupCache[repoUrl]
             ? ["Compact Scaling"]
             : ["Percentiles", "Mean +/- Std", "Quartiles"]
         );
@@ -94,7 +92,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         )) as boolean;
 
         // update cache
-        setIsSmallGroupCache((prev) => ({ ...prev, [repoUrl]: result }));
+        smallGroupCache["repoUrl"] = result;
 
         setMethodOptions(
           result
@@ -107,7 +105,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     };
 
     void fetchSmallGroup();
-  }, [repoUrl, isSmallGroupCache]);
+  }, [repoUrl]);
 
   // Automatically select the first method option whenever it changes
   useEffect(() => {
