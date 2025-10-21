@@ -9,6 +9,8 @@ import ResultsTable from "./ResultsTable";
 import DetailDialog from "./DetailDialog";
 import type { DetailCommit, ResultRow } from "./types";
 import { compileRulesForClient, parseRulesOrThrow } from "./utils";
+import AiSummarySection from "./AiSummarySection";
+
 
 type RepoCommit = {
   value: { commitTitle: string; description: string };
@@ -236,6 +238,12 @@ export default function View(): React.JSX.Element {
 
         <SummaryCards results={results ?? []} />
         <ResultsTable results={results ?? []} onRowClick={openContributorDetail} />
+
+        <AiSummarySection
+          repoUrl={repoUrl!}
+          branches={branches}
+          contributors={contributors}
+        />
 
         <DetailDialog
           open={detailOpen}
