@@ -99,9 +99,13 @@ export const downloadCSV = (csvContent: string, filename: string): void => {
 
 // Utility function to generate filename with timestamp
 export const generateFilename = (repoName: string, branch: string): string => {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0] + '_' + 
-    new Date().toISOString().split('T')[1].split('.')[0].replace(/:/g, '-');
-  
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  const localDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const localTime = `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+  const timestamp = `${localDate}_${localTime}`;
+
   return `${repoName}_${branch}_${timestamp}.csv`;
 };
 
