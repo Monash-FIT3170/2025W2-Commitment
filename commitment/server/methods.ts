@@ -1,8 +1,8 @@
+
 import { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
+import { check, Match } from "meteor/check";
 
-import { getFilteredRepoDataServer } from "./filter";
-import { tryFromDatabaseSerialised } from "./api/caching";
 import {
   SerializableRepoData,
   FilteredData,
@@ -13,6 +13,8 @@ import {
   AllMetricsData,
   MetricType,
 } from "@api/types";
+import { getFilteredRepoDataServer } from "./filter";
+import { tryFromDatabaseSerialised } from "./api/caching";
 
 import { getAllGraphData, getAllMetricsFromData } from "./repo_metrics";
 import { applyAliasMappingIfNeeded } from "./alias_mapping";
@@ -21,6 +23,7 @@ import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm"
 import { executeCommand, assertSuccess } from "./api/shell";
 import { checkIfExists } from "./api/git_commands";
 import { getNumberOfContributors } from "./helper_functions";
+import { evaluateCommitMessageRules, RegexRule, ContributorRegexScore } from "./regex_scoring";
 
 export async function getFilteredRepoData(
   repoUrl: string,
@@ -133,6 +136,108 @@ Meteor.methods({
 
     return false;
   },
+
+async "regex.evaluate"(params: {
+  /**
+   * Analyze commit messages by contributors
+   * Score them according to a user's array of regular expressions, which are weighted and signed ('+' good weight, '-' bad weight)
+   * Standardizes so that commit frequency does not skew the general score
+   * Gives a scaling suggestion based on general score (same approach/scaling as scaling feature)
+   */
+  repoUrl: string;
+  rules: Array<{
+    regex: string;
+    scale: number;
+    sign: "+" | "-";
+    key: string;
+    flags?: string;
+  }>;
+  branch?: string;
+  startDate?: Date;
+  endDate?: Date;
+  contributors?: string[];
+}): Promise<ContributorRegexScore[]> {
+
+  // validate parameters
+  check(params, {
+    repoUrl: String,
+    rules: [
+      Match.ObjectIncluding({
+        regex: String,
+        scale: Number,
+        sign: Match.OneOf("+", "-"),
+        key: String,
+        flags: Match.Optional(String),
+      }),
+    ],
+    branch: Match.Optional(String),
+    startDate: Match.Optional(Date),
+    endDate: Match.Optional(Date),
+    contributors: Match.Optional([String]),
+  });
+
+  // destructure 
+  const typedParams = params as {
+    repoUrl: string;
+    rules: Array<{
+      regex: string;
+      scale: number;
+      sign: "+" | "-";
+      key: string;
+      flags?: string;
+    }>;
+    branch?: string;
+    startDate?: Date;
+    endDate?: Date;
+    contributors?: string[];
+  };
+
+  const { repoUrl, rules, branch, startDate, endDate, contributors } = typedParams;
+
+  // load and alias map repo
+  const repo: SerializableRepoData = await tryFromDatabaseSerialised(repoUrl, null);
+  const mappedRepo = await applyAliasMappingIfNeeded(repo, this.userId || "");
+
+  // branch naming selection (defaults to main/master/first branch)
+  const branchNames = mappedRepo.branches.map((b) => b.branchName);
+  const selectedBranch = (() => {
+    if (branch) return branch;
+    if (branchNames.includes("main")) return "main";
+    if (branchNames.includes("master")) return "master";
+    return branchNames[0];
+  })();
+
+  // time selection - defaults to full history (will double check if this is sound)
+  const timestamps = mappedRepo.allCommits.map((c) =>
+    new Date(c.value.timestamp).getTime()
+  );
+  const defaultFrom =
+    startDate ??
+    (timestamps.length > 0 ? new Date(Math.min(...timestamps)) : new Date(0));
+  const defaultTo = endDate ?? new Date();
+
+  // snapshot of repo with needed attributes
+  const filteredRepo = getFilteredRepoDataServer(
+    repoUrl,
+    defaultFrom,
+    defaultTo,
+    mappedRepo,
+    selectedBranch,
+    contributors
+  );
+
+  // normalize to fit backend structure
+  const internalRules: RegexRule[] = (rules ?? []).map((r) => ({
+    pattern: r.regex,
+    weight: r.scale,
+    negate: r.sign === "-",
+    key: r.key,
+    flags: r.flags,
+  }));
+
+  return evaluateCommitMessageRules(filteredRepo.repositoryData, internalRules);
+},
+
 });
 
 export const getFilteredData = async ({

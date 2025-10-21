@@ -2,6 +2,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@base/tabs";
 import React from "react";
 import { AnalyticsView } from "./AnalyticsView";
 import ScalingView from "../scaling/ScalingView";
+import RegexQualityView from "../regex/View";
 
 interface TabData {
   value: string;
@@ -18,6 +19,11 @@ const allTabData: TabData[] = [
     value: "scaling",
     label: "Scaling",
     requiresAuth: true,
+  },
+  {
+    value: "regex",
+    label: "Commit Messages",
+    // requiresAuth: true,
   },
 ];
 
@@ -65,6 +71,10 @@ export default function MetricsTabs() {
         <TabsContent value="scaling" className="w-full">
           {/* ✅ Pass down a callback to go back to metrics */}
           <ScalingView onNavigateToMetrics={() => setActiveTab("metrics")} />
+        </TabsContent>
+
+        <TabsContent value="regex" className="w-full">
+          <RegexQualityView />
         </TabsContent>
     </Tabs>
   );
