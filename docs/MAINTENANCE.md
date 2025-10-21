@@ -121,7 +121,15 @@ Interested individuals or teams can:
   - Fork the project, setup, and redeploy independently.
   - Build upon existing functionality using Docker.
   - Extend the system using the defined API and architecture.
-  - All [deployment](/docs/DEPLOYMENT.md) and [setup instructions](/README.md) are preserved in the associated READMEs.
+
+Relevant documentation for developers to read are below:
+
+| README Name  | Description                                     | Link                               |
+| ------------ | ----------------------------------------------- | ---------------------------------- |
+| README       | Setup instructions and introduction to project.  | [View README](/README.md)          |
+| DEPLOYMENT   | Instructions on setting up automated deployment. | [View README](/docs/DEPLOYMENT.md) |
+| CONTRIBUTING | Details on code contribution standards. | [View README](/CONTRIBUTING.md)                 |
+
 
 ### Issues
 
