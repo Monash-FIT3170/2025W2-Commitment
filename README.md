@@ -159,7 +159,11 @@ Below are useful links for learning a little more about the project from the REA
 
 ## Contributors ✨
 
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+Thanks goes to these wonderful people that completed this project for **FIT3170 (Semester 2, 2025)** ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+- All contributors participated in development, documentation, and UI design.
+- Role distinctions are based on each member chosen role at the start of the FIT3170 unit, following [SAFe](https://www.atlassian.com/agile/agile-at-scale/what-is-safe).
+- To view detailed contributions, visit the [GitHub repository’s contribution breakdown](https://github.com/Monash-FIT3170/2025W2-Commitment/graphs/contributors).
+.
 
 ### System Architects
 
