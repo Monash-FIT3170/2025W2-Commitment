@@ -36,15 +36,13 @@ interface ScalingViewLocationState {
   repoUrl?: string;
 }
 
-const smallGroupCache: Record<string, boolean> = {}; // potential solution
+const smallGroupCache: Record<string, boolean> = {}; 
 
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
 
   const state = location.state as ScalingViewLocationState | null;
   const repoUrl: string | null = state?.repoUrl ?? null;
-
-  //   Make a repo call here to get the number of contributors
 
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
