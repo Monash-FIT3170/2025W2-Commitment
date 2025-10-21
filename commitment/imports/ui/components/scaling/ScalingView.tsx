@@ -416,8 +416,11 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
             }
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="scaling" className="text-base font-medium">
+            <TabsList className="grid w-full grid-cols-2 mb-8 bg-git-bg-elevated dark:bg-git-bg-secondary rounded-lg p-1 gap-1">
+              <TabsTrigger 
+                value="scaling" 
+                className="text-base font-medium rounded-md data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text data-[state=inactive]:text-git-text-secondary hover:text-git-text-primary transition-all"
+              >
                 Scaling Configuration
                 <InfoButton
                   className={"mt-0 ml-2"}
@@ -425,7 +428,10 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
                   description="Configure scaling by uploading a grading sheet to evaluate contributors"
                 />
               </TabsTrigger>
-              <TabsTrigger value="export" className="text-base font-medium flex flex-row align-middle">
+              <TabsTrigger 
+                value="export" 
+                className="text-base font-medium flex flex-row align-middle rounded-md data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text data-[state=inactive]:text-git-text-secondary hover:text-git-text-primary transition-all"
+              >
                 Custom Script Export
                 <InfoButton
                   className={"mt-0 ml-2"}
