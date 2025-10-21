@@ -314,7 +314,6 @@ NGINX is used to act as a web server for serving the content of the web applicat
           proxy_set_header Host $host;
           proxy_cache_bypass $http_upgrade;
       }
-  }
   ```
 5. Enable the changes on nginx.
   ``` bash
