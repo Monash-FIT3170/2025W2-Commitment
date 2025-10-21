@@ -169,7 +169,7 @@ export default function PercentileGraph({ data, title, setGraphType }: Percentil
               dataKey="x"
               domain={[0, 100]}
               allowDuplicatedCategory={false}
-              ticks={undefined}
+              ticks={[0,10,20,30,40,50,60,70,80,90,100]}
               label={{
                 value: "Percentile",
                 position: "insideBottom",
