@@ -91,7 +91,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
                   {data.headers.map((header, index) => (
                     <TableHead 
                       key={index} 
-                      className="sticky top-0 text-git-int-text whitespace-nowrap px-3 py-2 text-left font-medium"
+                      className="sticky top-0 text-git-int-text whitespace-nowrap px-3 py-2 text-left font-bold"
                     >
                       {header}
                     </TableHead>

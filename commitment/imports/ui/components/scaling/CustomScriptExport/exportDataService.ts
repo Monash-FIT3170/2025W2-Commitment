@@ -145,7 +145,7 @@ export class ExportDataService {
 
     // Add grouping columns
     if (groupBy === 'contributor') {
-      headers.push('contributor_email', 'contributor_name');
+      headers.push('contributor_name', 'contributor_email');
     } else if (groupBy === 'date') {
       headers.push('date');
     }
@@ -202,9 +202,9 @@ export class ExportDataService {
         const allEmails = [...new Set(contributorEmails)];
         const emailsString = allEmails.length > 0 ? allEmails.join(', ') : '';
         
-        // Contributor info (match header order: contributor_email, contributor_name)
-        row.push(emailsString);
+        // Contributor info (match header order: contributor_name, contributor_email)
         row.push(contributorName);
+        row.push(emailsString);
         
         // Get metrics for this contributor directly from repository data
         metrics.forEach(metric => {
