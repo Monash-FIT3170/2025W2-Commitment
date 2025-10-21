@@ -1,5 +1,29 @@
 # Maintenance Plan
 
+## Table of Contents
+- [Maintenance Plan](#maintenance-plan)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [System Architecture](#system-architecture)
+    - [Frontend (Meteor Application)](#frontend-meteor-application)
+    - [Backend (Haskell API)](#backend-haskell-api)
+    - [Database (MongoDB Atlas)](#database-mongodb-atlas)
+    - [Infrastructure (Docker + CI/CD)](#infrastructure-docker--cicd)
+  - [Hosting and Deployment](#hosting-and-deployment)
+    - [Current Hosting Environment](#current-hosting-environment)
+    - [Post-Semester Plan](#post-semester-plan)
+    - [Redeployment Instructions](#redeployment-instructions)
+  - [Costs and Responsibilities](#costs-and-responsibilities)
+  - [Maintenance and Update Recommendations](#maintenance-and-update-recommendations)
+    - [Framework and Dependencies](#framework-and-dependencies)
+    - [Security](#security)
+    - [Infrastructure Improvements](#infrastructure-improvements)
+  - [Access and Credentials](#access-and-credentials)
+  - [Handover and Continuity](#handover-and-continuity)
+  - [Future Recommendations](#future-recommendations)
+  - [Summary](#summary)
+
+
 ## Overview
 
 This document outlines the maintenance and sustainability plan for the **Commitment** project.
