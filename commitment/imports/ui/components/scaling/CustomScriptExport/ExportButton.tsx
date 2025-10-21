@@ -98,16 +98,11 @@ export const downloadCSV = (csvContent: string, filename: string): void => {
 };
 
 // Utility function to generate filename with timestamp
-export const generateFilename = (branch: string, startDate: Date, endDate: Date): string => {
-  const formatDate = (date: Date) => {
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD format
-  };
+export const generateFilename = (repoName: string, branch: string): string => {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0] + '_' + 
+    new Date().toISOString().split('T')[1].split('.')[0].replace(/:/g, '-');
   
-  const start = formatDate(startDate);
-  const end = formatDate(endDate);
-  const timestamp = new Date().toISOString().split('T')[0];
-  
-  return `commitment-data_${branch}_${start}_to_${end}_${timestamp}.csv`;
+  return `${repoName}_${branch}_${timestamp}.csv`;
 };
 
 // Hook for CSV export functionality

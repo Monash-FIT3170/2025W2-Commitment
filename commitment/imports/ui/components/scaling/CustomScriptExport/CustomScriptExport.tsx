@@ -95,11 +95,9 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
           }
         }
 
-        const filename = generateFilename(
-          currentConfig.branch,
-          currentConfig.dateRange?.from || new Date(),
-          currentConfig.dateRange?.to || new Date()
-        );
+        // Extract repo name from repoUrl
+        const repoName = repoUrl.split('/').pop()?.replace('.git', '') || 'repository';
+        const filename = generateFilename(repoName, currentConfig.branch);
 
         await exportToCSV(dataToExport, filename);
 
@@ -181,7 +179,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
               <div>
                 <h4 className="font-medium mb-2 text-git-text-primary">2. Preview & Export</h4>
                 <p className="text-git-text-secondary">
-                  Review your data in the preview table, then export as CSV. 
+                  Review your data in the preview table, then export as CSV. Format will be provided as repo_name-branch_name-timestamp.csv
                   The file will be downloaded to your computer.
                 </p>
               </div>

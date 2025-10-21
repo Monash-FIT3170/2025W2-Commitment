@@ -41,7 +41,10 @@ export class ExportDataService {
       console.log('ExportDataService: Repository data commits count:', filteredData.repositoryData?.allCommits?.length || 0);
       console.log('ExportDataService: Repository data contributors count:', filteredData.repositoryData?.contributors?.length || 0);
 
-      // Metrics for the filtered data
+      // Note: Alias mapping is already applied on the server side in repo.getFilteredData
+      console.log('ExportDataService: Alias mapping already applied on server side');
+
+      // Metrics for the filtered data (already has alias mapping applied)
       const allCommits = filteredData.repositoryData?.allCommits || [];
       if (allCommits.length > 0) {
         const commitDates = allCommits.map((commit: any) => commit.value.timestamp);
@@ -62,7 +65,7 @@ export class ExportDataService {
         console.warn('ExportDataService: Could not calculate scaling results, using fallback collaboration scores:', error);
       }
 
-      // Generate export data from the real repository data
+      // Generate export data from the repository data (already has alias mapping applied)
       const exportData = this.generateExportDataFromRepoDirect(config, filteredData, scalingResults);
       
       console.log('ExportDataService: Generated export data:', exportData);
@@ -194,7 +197,10 @@ export class ExportDataService {
         const contributorData = repoData.contributors.find(c => c.key === contributorKey);
         const contributorName = contributorData ? contributorData.value.name : contributorKey;
         const contributorEmails: string[] = contributorData?.value?.emails || [];
-        const emailsString = contributorEmails.length > 0 ? contributorEmails.join(', ') : '';
+        
+        // Include all emails from aliases if available
+        const allEmails = [...new Set(contributorEmails)];
+        const emailsString = allEmails.length > 0 ? allEmails.join(', ') : '';
         
         // Contributor info (match header order: contributor_email, contributor_name)
         row.push(emailsString);
