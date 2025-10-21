@@ -126,7 +126,6 @@ Deployment can be reproduced following the steps in the project’s `README`. Al
 After Week 12, **no team member is responsible for continuing costs or maintenance**.  
 The domain may expire if not renewed.
 
----
 
 ## Maintenance and Update Recommendations
 
@@ -147,8 +146,6 @@ Although no active maintenance is planned post-submission, the following updates
 - Automate deployment pipelines with environment-based branching.
 - Enable monitoring/logging using Docker Healthchecks or Prometheus.
 
----
-
 ## Access and Credentials
 
 All project credentials (MongoDB Atlas, Squarespace, and Nectar ARDC) are stored securely and are not publicly shared in the repository.
@@ -158,8 +155,6 @@ If credentials are required for redeployment or maintenance, they can be obtaine
 - **GitHub Repository:** Public access (read-only).
 - **Forking:** Permitted for anyone interested in continuing development.
 - **Secrets:** Stored in GitHub Actions for build and deploy pipelines.
-
----
 
 ## Handover and Continuity
 
@@ -176,8 +171,6 @@ Future contributors are encouraged to:
 - Address existing **open issues** on GitHub.
 - Explore **migration paths** to modern frameworks (e.g., Next.js, Express, or FastAPI).
 - Refactor code for modularity and long-term scalability.
-
----
 
 ## Future Recommendations
 
@@ -229,6 +222,3 @@ To ensure long-term viability, maintainability, and modernization, the following
 - **Documentation:** Comprehensive setup and deployment guides in the README.  
 
 This plan ensures that any future developer can easily reproduce, redeploy, or extend the system with minimal friction, even after the original team’s departure.
-````
-
-Would you like me to add a **“Future Recommendations” section** (e.g., migrating away from Meteor, adopting microservices, improving test coverage), or keep this as your final version?
