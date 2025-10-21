@@ -128,7 +128,6 @@ Meteor.methods({
 
     const result = getNumberOfContributors(await tryFromDatabaseSerialised(repoUrl, n));
 
-    console.log("result: ", result);
 
     if (result <= largestSize) return true;
 
@@ -242,6 +241,7 @@ export const getAnalyticsData = async ({
     endDate: selections.selectedDateRange.to!,
     branch: selections.selectedBranch,
     contributor: selections.selectedContributors,
+    userId,
   });
 
   const metricsData: MetricsData = await getAllGraphData(filteredRepo, metric);
