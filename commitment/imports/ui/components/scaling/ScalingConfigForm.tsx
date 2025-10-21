@@ -74,7 +74,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     const fetchSmallGroup = async () => {
       if (!repoUrl) return;
 
-      // ✅ Check persistent cache first
+      // Check the persistent cache first
       if (smallGroupCache[repoUrl] !== undefined) {
         setMethodOptions(
           smallGroupCache[repoUrl]
@@ -91,7 +91,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
           11
         )) as boolean;
 
-        // ✅ Save result in cache
+        // Save the result in the cache
         smallGroupCache[repoUrl] = result;
 
         setMethodOptions(
