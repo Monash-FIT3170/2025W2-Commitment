@@ -144,7 +144,7 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
             </TableHeader>
             <TableBody>
               {sortedHistory.map((item) => (
-                <TableRow key={item.id} className="bg-git-int-primary hover:bg-git-int-primary-hover">
+                <TableRow key={item.id} className="bg-git-int-primary hover:bg-git-int-primary">
                   <TableCell className="font-medium text-git-int-text">
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-git-int-text" />
