@@ -88,10 +88,10 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         const result = (await Meteor.callAsync(
           "isSmallContributorGroup",
           repoUrl,
-          11
+          7
         )) as boolean;
 
-        smallGroupCache["result"] =  result// persist result
+        smallGroupCache["result"] = result; // persist result
 
         setMethodOptions(
           result
