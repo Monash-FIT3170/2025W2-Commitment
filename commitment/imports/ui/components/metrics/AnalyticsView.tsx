@@ -5,10 +5,8 @@ import { subWeeks } from "date-fns";
 import InfoButton from "@base/infoButton";
 import { DatePicker } from "./date-range-picker";
 import BranchDropdownMenu from "./BranchDropdownMenu";
-// import { dark2 } from "./colors";
 import { ContributorDropdownMenu } from "./ContributorDropdownMenu";
 import { HighlightCardWithGraph } from "./HighlightCard";
-import { LeaderboardGraph } from "./LeaderboardGraph";
 import { ContributionPieChart } from "./PieChartGraph";
 import HeatmapGraph from "./HeatMapGraph";
 import { useToast } from "@hook/useToast";
@@ -17,7 +15,7 @@ import { Subject } from "rxjs";
 import { updateRepo } from "@api/call_repo";
 import PercentileGraph from "./PercentileGraph";
 
-import { AnalyticsData, MetricType, metricNames } from "@api/types";
+import { AnalyticsData, MetricType, metricNames, Metadata } from "@api/types";
 import MetricDropdownMenu from "./MetricDropdownMenu";
 
 // Main graph state
@@ -86,22 +84,43 @@ export function AnalyticsView(): React.JSX.Element {
     };
   }, []);
 
-  // Initial fetch only once
-  useEffect(() => {
-    if (!repoUrl) return;
+useEffect(() => {
+  if (!repoUrl) return;
 
-    // Store the repository URL for navigation back to metrics
-    // This only happens when user is actively viewing metrics
-    localStorage.setItem("lastRepoUrl", repoUrl);
+  localStorage.setItem("lastRepoUrl", repoUrl);
 
+  // Fetch metadata first
+  Meteor.call("repo.getMetadata", repoUrl, (metaErr: Error, metaData: Metadata) => {
+    if (metaErr) {
+      setError(metaErr.message);
+      setLoading(false);
+      return;
+    }
+
+    // Set defaults from metadata
+    const defaultBranch =
+      metaData.branches.includes("main")
+        ? "main"
+        : metaData.branches.includes("master")
+        ? "master"
+        : metaData.branches[0];
+
+    const defaultContributors = metaData.contributors;
+    const defaultDateRange = metaData.dateRange;
+
+    setSelectedBranch(defaultBranch);
+    setSelectedContributors(defaultContributors);
+    setDateRange(defaultDateRange);
+
+    // Fetch analytics using these defaults
     Meteor.call(
       "repo.getAnalyticsData",
       {
         repoUrl,
-        startDate: dateRange?.from,
-        endDate: dateRange?.to,
-        branch: selectedBranch,
-        contributors: selectedContributors,
+        startDate: defaultDateRange.from,
+        endDate: defaultDateRange.to,
+        branch: defaultBranch,
+        contributors: defaultContributors,
         metric: selectedMetrics,
       },
       (err: Error, data: AnalyticsData) => {
@@ -109,14 +128,12 @@ export function AnalyticsView(): React.JSX.Element {
           setError(err.message);
         } else {
           setAnalyticsData(data);
-          setSelectedContributors(data.metadata.contributors); // default to all contributors
-          setSelectedBranch(data.selections.selectedBranch);
-          setDateRange(data.selections.selectedDateRange);
         }
         setLoading(false);
       }
     );
-  }, []); // only runs once on mount
+  });
+}, []); // runs once on mount
 
   const fetchAnalyticsDataMeteorCall = () => {
     Meteor.call(
