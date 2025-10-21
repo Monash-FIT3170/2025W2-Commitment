@@ -45,11 +45,33 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
   };
 
   const getFileSize = () => {
-    // Rough estimate: each row ~100 bytes, headers ~50 bytes
-    const estimatedSize = (data.rows.length * 100) + 50;
-    if (estimatedSize < 1024) return `${estimatedSize} B`;
-    if (estimatedSize < 1024 * 1024) return `${(estimatedSize / 1024).toFixed(1)} KB`;
-    return `${(estimatedSize / (1024 * 1024)).toFixed(1)} MB`;
+    // Calculate actual CSV content size
+    const escapeCSVValue = (value: string | number): string => {
+      const stringValue = String(value);
+      
+      // If the value contains comma, newline, or quote, wrap in quotes and escape internal quotes
+      if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      
+      return stringValue;
+    };
+
+    // Calculate headers size
+    const headersRow = data.headers.map(escapeCSVValue).join(',');
+    
+    // Calculate data rows size
+    const dataRows = data.rows.map(row => row.map(escapeCSVValue).join(','));
+    
+    // Total CSV content
+    const csvContent = [headersRow, ...dataRows].join('\n');
+    
+    // Get actual byte size (UTF-8 encoding)
+    const actualSize = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }).size;
+    
+    if (actualSize < 1024) return `${actualSize} B`;
+    if (actualSize < 1024 * 1024) return `${(actualSize / 1024).toFixed(1)} KB`;
+    return `${(actualSize / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
