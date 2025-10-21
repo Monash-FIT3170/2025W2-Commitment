@@ -140,39 +140,18 @@ Meteor.methods({
    * @returns Promise<string> The README content as a string
    */
   async "api.getReadme"(): Promise<string> {
-    // Define possible paths for the README file based on deployment environment
-    const possiblePaths = [
-      // Docker/production paths - configured in docker-compose.yml
-      '/projects/api/README.md',
-      '/app/api/README.md',
-      // Local development paths - try to find project root dynamically
-      ...(() => {
-        // For local development, try to find the actual project root
-        const currentDir = process.cwd();
-        const projectRoot = path.resolve(currentDir, '../../../../..'); // Go up from build/programs/server
-        return [
-          path.join(projectRoot, 'api', 'README.md'),
-          path.resolve(projectRoot, '../api/README.md'), // Alternative structure
-        ];
-      })(),
+    const fileLocation = "/api/README.md";
+    const searchPaths = [
+      // If running from Meteor dev mode or Docker bind mount
+      path.resolve("/projects" + fileLocation),
+      // Relative to Meteor project (use environment var or known structure)
+      path.resolve(process.cwd(), ".." + fileLocation),
+      path.resolve(process.cwd(), "../.." + fileLocation),
     ];
-    
-    // Attempt to locate and read the README file
-    for (const readmePath of possiblePaths) {
-      if (fs.existsSync(readmePath)) {
-        return fs.readFileSync(readmePath, 'utf8');
-      }
-    }
-    
-    // Return informative error message if README cannot be located
-    return `# API Documentation
+    const existingPaths = searchPaths.filter(fs.existsSync);
+    if (existingPaths.length === 0) throw Error("Failed to fetch the API readme :(");
 
-## Error: README File Not Found
-
-The API README file could not be located. Please ensure the Docker configuration properly mounts the \`api\` folder to \`/projects/api\` in the container.
-
----
-*This is a fallback message. The actual README file could not be loaded.*`;
+    return fs.readFileSync(existingPaths[0], "utf8");
   },
 });
 
