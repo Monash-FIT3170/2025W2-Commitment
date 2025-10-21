@@ -15,13 +15,10 @@
     - [Domains](#domains)
   - [Post-Semester Plan](#post-semester-plan)
     - [Costs and Responsibilities](#costs-and-responsibilities)
-    - [Redeployment Instructions](#redeployment-instructions)
   - [Maintenance and Update Recommendations](#maintenance-and-update-recommendations)
-    - [Framework and Dependencies](#framework-and-dependencies)
-    - [Security](#security)
-    - [Infrastructure Improvements](#infrastructure-improvements)
-  - [Future Recommendations](#future-recommendations)
-  - [Summary](#summary)
+    - [Issues](#issues)
+    - [Future Work](#future-work)
+  - [Ending Notes](#ending-notes)
 
 
 ## Overview
@@ -101,17 +98,12 @@ Currently the project uses [this domain](commitmentfit310.net) to allow users to
 After submission:
 - There will be **no designated maintainer or ongoing support**, the project will be abandoned after submission.
 - The **GitHub repository** will still remain accessible for viewing and forking.
-- Ongoing costs will not be maintained and all hosting solutions will cease to run.
-
-The following outlines the 
-
-- The **Nectar instance will be terminated** after the semester ends as part of the student allocation lifecycle.
-- **Domain Name:** Purchased via Squarespace and linked to the app.  
-  - Renewal required **annually** to maintain active access.
-  - Managed through the Commitment team email account.
+- Ongoing costs **will not be** maintained and all hosting solutions **will cease to run**.
 
 ### Costs and Responsibilities
-The below are all the related costs/responsibilities that are associated with the project. Note that all of these will be decomissioned/abandoned at project completion.
+
+The below are all the related costs/responsibilities that are associated with the project. 
+**Note that all of these will be decomissioned/abandoned at project completion.**
 
 | Component          | Description                        | Cost                      | Responsibility                             |
 | ------------------ | ---------------------------------- | ------------------------- | ------------------------------------------ |
@@ -123,97 +115,43 @@ The below are all the related costs/responsibilities that are associated with th
 | GitHub Actions     | CI/CD automation                   | Free for Public Pepos     | None                                       |
 
 
-### Redeployment Instructions
-Deployment can be reproduced following the steps in the project’s `README`. All environment variables (`.env`), database URIs, and API endpoints are defined in the documentation.
+## Maintenance and Update Recommendations
 
-
-
-After Week 12, **no team member is responsible for continuing costs or maintenance**.  
-The domain may expire if not renewed.
-
-
-
-
-- All deployment and setup instructions are preserved in the README.
-- Interested individuals or teams can:
-  - Fork the project and redeploy independently.
+Interested individuals or teams can:
+  - Fork the project, setup, and redeploy independently.
   - Build upon existing functionality using Docker.
   - Extend the system using the defined API and architecture.
+  - All [deployment](/docs/DEPLOYMENT.md) and [setup instructions](/README.md) are preserved in the associated READMEs.
 
-Future contributors are encouraged to:
-- Address existing **open issues** on GitHub.
-- Explore **migration paths** to modern frameworks (e.g., Next.js, Express, or FastAPI).
-- Refactor code for modularity and long-term scalability.
+### Issues
 
-## Maintenance and Update Recommendations
+Although the project has reached the concluding stage in its lifecycle, issues still remain with the current implementation of the system. Several issues have been identified by developers and testers that could not be addressed during the lifetime of the project. As such these issues still remain and can be addressed by any future developers. Issues are divided into either a `bug` or `feature`, these issues can be addressed by any future developers/maintainers.
+
+All current issues can be found on the [repository issue page](https://github.com/Monash-FIT3170/2025W2-Commitment/issues).
+
+### Future Work
 
 Although no active maintenance is planned post-submission, the following updates should be performed if the project is continued:
 
-### Framework and Dependencies
-- **Meteor:** Regularly update to newer versions to maintain security and compatibility.
-- **Node.js & TypeScript:** Keep aligned with current LTS releases.
-- **Haskell API:** Rebuild against the latest library dependencies and compiler version (GHC).
+**Framework Modernization**
+- Frontend: Consider migrating from Meteor to a more modern framework such as Next.js or React + Vite for improved performance, modularity, and ecosystem support.
+- Backend: Migrate from Haskell to a more maintainable REST or GraphQL backend such as Node.js (Express, NestJS) or Python (FastAPI) if future developers are less familiar with Haskell.
 
-### Security
-- Rotate credentials stored in environment variables.
-- Regularly review MongoDB Atlas access rules (IP whitelist, database users).
-- Update base Docker images to minimize vulnerabilities.
+**Infrastructure & Deployment**
+- Introduce environment-based deployments (staging vs production).
+- Move hosting from Nectar to a long-term provider such as AWS.
+- Improve the structure of the MongoDB collections.
 
-### Infrastructure Improvements
-- Consider moving to a long-term hosting provider (e.g., AWS, Render, or Railway).
-- Automate deployment pipelines with environment-based branching.
-- Enable monitoring/logging using Docker Healthchecks or Prometheus.
+**Testing and Quality Assurance**
+- Increase test coverage in both Meteor and Haskell components.
+- Integrate automated end-to-end (E2E) tests with tools such as Cypress or Playwright.
+- Address all the linting and typecheck issues that remain in the repository.
 
+**Long-Term Sustainability**
+- Consider container orchestration (e.g., Docker Swarm or Kubernetes) if scaling becomes necessary.
+- Implement automated database backups.
+- Introduce structured logging (e.g., via Winston or Bunyan) and monitoring dashboards.
 
+## Ending Notes
 
-
-## Future Recommendations
-
-To ensure long-term viability, maintainability, and modernization, the following recommendations are suggested:
-
-1. Framework Modernization
-   Frontend: Consider migrating from Meteor to a more modern framework such as Next.js or React + Vite for improved performance, modularity, and ecosystem support.
-   Backend: Migrate from Haskell to a more maintainable REST or GraphQL backend such as Node.js (Express, NestJS) or Python (FastAPI) if future developers are less familiar with Haskell.
-
-2. Infrastructure & Deployment
-    Replace manual deployment scripts with a CI/CD pipeline that automates:
-       - Container image publishing to a registry.
-       - Environment-based deployments (staging vs production).
-       - Rollbacks and monitoring.
-    
-    Move hosting from Nectar to a long-term provider:
-       - Render, Fly.io, or Railway for container-based hosting.
-
-    MongoDB Atlas can remain as-is.
-
-3. Testing and Quality Assurance
-   Increase test coverage in both Meteor and Haskell components.
-   Integrate automated end-to-end (E2E) tests with tools such as Cypress or Playwright.
-   Add continuous testing to GitHub Actions pipelines.
-
-4. Documentation and Developer Onboarding
-    Expand the README with:
-       - Architectural diagrams.
-       - API endpoint documentation.
-       - Add a developer onboarding guide with setup scripts for local testing.
-
-5. Security and Performance
-    Regularly scan Docker images for vulnerabilities.
-    Enable rate limiting or authentication on the API layer.
-
-6. Long-Term Sustainability
-   Consider container orchestration (e.g., Docker Swarm or Kubernetes) if scaling becomes necessary.
-   Implement automated database backups.
-   Introduce structured logging (e.g., via Winston or Bunyan) and monitoring dashboards.
-
-
-## Summary
-
-- **Post-Semester Ownership:** None (project handed over as-is).  
-- **Hosting:** Nectar ARDC instance (to be terminated after semester).  
-- **Database:** MongoDB Atlas Free Tier (no ongoing costs).  
-- **Domain:** Squarespace, requires yearly renewal.  
-- **Deployment:** Fully automated with GitHub Actions and Docker Compose.  
-- **Documentation:** Comprehensive setup and deployment guides in the README.  
-
-This plan ensures that any future developer can easily reproduce, redeploy, or extend the system with minimal friction, even after the original team’s departure.
+This project has been the culmination of the work of 15 people over the course of a year. For those who plan to continue to maintain this repository please treat it with as much care as those who have developed before you.
