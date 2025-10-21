@@ -136,7 +136,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
                               {emails.map((email, idx) => (
                                 <span
                                   key={`${email}-${idx}`}
-                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-git-int-secondary text-white border border-git-stroke-primary"
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-git-int-secondary text-white border border-white"
                                 >
                                   {email}
                                 </span>

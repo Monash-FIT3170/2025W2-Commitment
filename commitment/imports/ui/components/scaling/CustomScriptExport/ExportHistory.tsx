@@ -164,7 +164,7 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {item.metrics.map((metric) => (
-                        <span key={metric} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-git-int-secondary text-white border border-git-stroke-primary">
+                        <span key={metric} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-git-int-secondary text-white border border-white">
                           {metric}
                         </span>
                       ))}
