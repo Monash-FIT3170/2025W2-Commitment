@@ -19,7 +19,7 @@ RUN npm install -g npm@11.6.2
 RUN useradd -ms /bin/bash -G node devuser
 USER devuser
 
-WORKDIR /projects/commitment/commitment
+WORKDIR /projects/commitment
 
 # Copy project files
 COPY --chown=devuser:devuser . .
@@ -30,7 +30,8 @@ RUN ls -a
 # --- Build Stage ---
 FROM base AS build
 
-WORKDIR /projects/commitment/commitment
+WORKDIR /projects/commitment
+RUN cd commitment
 
 RUN pwd
 RUN ls -a
