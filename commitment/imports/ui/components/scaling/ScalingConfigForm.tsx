@@ -94,7 +94,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         smallGroupCache[repoUrl] = result;
 
         setMethodOptions(
-          result
+          result //If the group is considered "small", then result should be true and only Compact Scaling will be allowed
             ? ["Compact Scaling"]
             : ["Percentiles", "Mean +/- Std", "Quartiles"]
         );
