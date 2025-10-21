@@ -48,13 +48,13 @@ We can interface with the api using code like this:
 
 ```
 fetch("http://" + API_CONN_ENDPOINT, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({ url }),
-}).then((response) => {
-if (!response.ok) reject(`Haskell API returned status ${response.status}`);
-response.json().then((d) => resolve(d.data));
-})
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+    }).then((response) => {
+        if (!response.ok) reject(`Haskell API returned status ${response.status}`);
+        response.json().then((d) => resolve(d.data));
+    })
 ```
 
 Things to note:
@@ -94,20 +94,22 @@ The socket can respond like this:
 
 ```
 socket.onmessage = (event: WebSocket.MessageEvent) => {
-
     try {
 
         const { data } = event;
         const parsed = JSON.parse(data);
 
         if (parsed.type === "text_update" && notifier !== null) notifier.next(parsed.data);
+
         else if (parsed.type === "error") {
           reject(parsed.message);
           socket.close();
+
         } else if (parsed.type === "value") {
           resolve(parsed.data);
           socket.close();
         }
+
     } catch (err) {
         reject(err);
         socket.close();
@@ -147,36 +149,30 @@ having key: value entries where the key will be a
 parameter inside the object
 
 This is the type that will be sent to you:
+
 ```
 type RepositoryData = Readonly<{
-
     name: string;
     branches: BranchData[];
     allCommits: Map<string, CommitData>;
     contributors: Map<string, ContributorData>;
-
 }>;
 
 type BranchData = Readonly<{
-
     branchName: string;
     commitHashes: string[];
-
 }>;
 
 type CommitData = Readonly<{
-
     commitHash: string;
     commitTitle: string;
     contributorName: string;
     description: string;
     timestamp: string;
     fileData: FileChanges[];
-
 }>;
 
 type FileChanges = Readonly<{
-
     filepath: string;
     oldFilePath: string;
     char: ChangeType;
@@ -184,16 +180,13 @@ type FileChanges = Readonly<{
     newLines: number;
     deletedLines: number;
     diff: string[];
-
 }>;
 
 type ChangeType = "A" | "M" | "D" | "R" | "C";
 
 type ContributorData = Readonly<{
-
     name: string;
     emails: string[];
-
 }>;
 ```
 
