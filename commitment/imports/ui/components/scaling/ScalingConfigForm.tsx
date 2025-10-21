@@ -116,7 +116,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
 
   const metricOptions = [
     "Total No. Commits",
-    // "Use AI to filter out commits",
     "LOC",
     "LOC Per Commit",
   ];
