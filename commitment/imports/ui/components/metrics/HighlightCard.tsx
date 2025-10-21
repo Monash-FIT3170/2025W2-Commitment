@@ -28,18 +28,18 @@ export const HighlightCardWithGraph: React.FC<HighlightCardWithGraphProps> = ({
   const fillColor = isPositive ? "#59A14F" : "#E15759";
   return (
     <Card
-      className={`font-mono text-foreground justify-between flex flex-col w-full min-w-[220px] min-h-[100px] 2xl:min-h-[168px] gap-2 rounded-xl outline-solid outline-2 outline-git-bg-secondary bg-git-bg-bottom`}
+      className={`font-mono text-foreground justify-between flex flex-col w-full min-w-[220px] min-h-[60px] 2xl:min-h-[80px] gap-2 rounded-xl outline-solid outline-2 outline-git-bg-secondary bg-git-bg-bottom`}
     >
-      <div className="flex flex-row justify-between items-start h-full p-4">
+      <div className="flex flex-row justify-between items-center h-full p-3">
         {/* Title */}
         <div className="flex-1">
-          <CardTitle className="text-xl font-bold text-foreground leading-tight">
+          <CardTitle className="text-lg font-bold text-foreground leading-tight">
             {title}
           </CardTitle>
         </div>
         {/* Value */}
         <div className="text-right">
-          <div className="text-3xl font-bold text-foreground">
+          <div className="text-2xl font-bold text-foreground">
             {typeof value === 'string' ? value : value.toLocaleString()}
           </div>
         </div>
