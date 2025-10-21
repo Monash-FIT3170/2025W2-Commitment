@@ -5,7 +5,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface FeatureCardProps {
   title: string;
   description: string;
-  image: string;
+  imageLight: string;
+  imageDark?: string;
   alt: string;
   className?: string;
 }
@@ -13,7 +14,8 @@ interface FeatureCardProps {
 export function FeatureCard({
   title,
   description,
-  image,
+  imageLight,
+  imageDark,
   alt,
   className = "",
 }: FeatureCardProps) {
@@ -27,16 +29,25 @@ export function FeatureCard({
         ${className}`}
     >
       <div>
-        <h2 className="text-lg sm:text-xl lg:text-2xl font-mono font-semibold git-card-text-secondary mb-4">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-mono font-semibold mb-4 text-gray-900 dark:text-gray-100">
           {title}
         </h2>
         <img
-          src={image}
+          src={imageLight}
           alt={alt}
-          className="object-cover rounded-md mb-4 scale-75 sm:scale-90 lg:scale-100 mx-auto"
+          className="object-cover rounded-md mb-4 scale-75 sm:scale-90 lg:scale-100 mx-auto block dark:hidden"
         />
+        {imageDark &&  (
+        <img
+          src={imageDark}
+          alt={alt}
+          className="object-cover rounded-md mb-4 scale-75 sm:scale-90 lg:scale-100 mx-auto hidden dark:block"
+        />
+        )}
       </div>
-      <p className="text-sm sm:text-base font-mono">{description}</p>
+      <p className="text-sm sm:text-base font-mono text-gray-700 dark:text-gray-300">
+        {description}
+      </p>
     </div>
   );
 }
@@ -44,7 +55,8 @@ export function FeatureCard({
 interface Feature {
   title: string;
   description: string;
-  image: string;
+  imageLight: string;
+  imageDark?: string;
   alt: string;
 }
 
@@ -53,35 +65,41 @@ const features: Feature[] = [
     title: "Repository Analytics Dashboard",
     description:
       "View summary analytics for each Git repository, including activity levels and trends.",
-    image: "/dashboard.png",
+    imageLight: "/dashboard_light.png",
+    imageDark: "/dashboard_dark.png",
     alt: "Alt image.",
   },
   {
     title: "Team Comparison View",
     description:
       "Compare multiple users across contribution metrics for peer review or group assessment.",
-    image: "/comparison.png",
+    imageLight: "/comparison_light.png",
+    imageDark: "/comparison_dark.png",
     alt: "Compare multiple users across a repository.",
   },
   {
     title: "Custom Filtering",
     description:
       "Filter analytics by time frame, contributor or branch to focus on different analytics.",
-    image: "/filter.png",
+    imageLight: "/filter_light.png",
+    imageDark: "/filter_dark.png",
     alt: "Filter analytics by different stats.",
+    
   },
   {
     title: "Moodle Gradebook Integration",
     description:
       "As an educator, upload a gradebook to apply scaling based on metrics for streamlined grading.",
-    image: "/gradebook.png",
+    imageLight: "/gradebook_light.png",
+    imageDark: "/gradebook_dark.png",
     alt: "Upload a gradebook to apply scaling for streamlined grading.",
   },
   {
     title: "Per-User Contribution Insights",
     description:
       "Track individual contributions such as commit frequency and lines of code.",
-    image: "/peruser.png",
+    imageLight: "/peruser_light.png",
+    imageDark: "/peruser_dark.png",
     alt: "Track individual user contributions.",
   },
 ];
@@ -133,7 +151,8 @@ export function FeatureCarousel() {
                 <FeatureCard
                   title={feature.title}
                   description={feature.description}
-                  image={feature.image}
+                  imageLight={feature.imageLight}
+                  imageDark={feature.imageDark}
                   alt={feature.alt}
                   className={isSelected ? "shadow-xl" : ""}
                 />
