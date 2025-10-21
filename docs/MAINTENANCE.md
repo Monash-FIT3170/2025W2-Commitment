@@ -10,19 +10,16 @@
     - [Database (MongoDB Atlas)](#database-mongodb-atlas)
     - [Infrastructure (Docker + CI/CD)](#infrastructure-docker--cicd)
   - [Hosting and Deployment](#hosting-and-deployment)
-    - [Current Hosting Environment](#current-hosting-environment)
-      - [Nectar ARDC](#nectar-ardc)
-      - [MongoDB Atlas](#mongodb-atlas)
-      - [Domains](#domains)
-    - [Post-Semester Plan](#post-semester-plan)
+    - [Nectar ARDC](#nectar-ardc)
+    - [MongoDB Atlas](#mongodb-atlas)
+    - [Domains](#domains)
+  - [Post-Semester Plan](#post-semester-plan)
+    - [Costs and Responsibilities](#costs-and-responsibilities)
     - [Redeployment Instructions](#redeployment-instructions)
-  - [Costs and Responsibilities](#costs-and-responsibilities)
   - [Maintenance and Update Recommendations](#maintenance-and-update-recommendations)
     - [Framework and Dependencies](#framework-and-dependencies)
     - [Security](#security)
     - [Infrastructure Improvements](#infrastructure-improvements)
-  - [Access and Credentials](#access-and-credentials)
-  - [Handover and Continuity](#handover-and-continuity)
   - [Future Recommendations](#future-recommendations)
   - [Summary](#summary)
 
@@ -77,21 +74,19 @@ This maintenance plan provides a clear record of the project’s operational set
 - **Deployment Scripts:** Included in the `README` with detailed setup steps.
 
 ## Hosting and Deployment
-
-### Current Hosting Environment
-#### Nectar ARDC
+### Nectar ARDC
 
  Nectar ARDC (Australian Research Data Commons) provides free large scale computing infrastructure, software and data access to eligible Australian researchers, Monash students also fall under this. The Meteor Container and Haskell API Container are hosted on this solution.
 - **Type:** Free student cloud allocation
 - **Access:** Deployed using Docker Compose over SSH with environment variables stored securely.
 
-#### MongoDB Atlas
+### MongoDB Atlas
 A fully managed cloud database service that simplifies deploying, managing, and scaling MongoDB databases. The data fetched from GitHub repositories is stored here. Steps for setting this up are found in the [Atlas Setup README](/docs/ATLAS_SETUP.md).
 - **Type:** Free student cloud allocation
 - **Access:** Hosted on Atlas, can be accessed via login or remotely through a Mongo connection.
 
-#### Domains
-Currently the project uses [this domain](commitmentfit310.net) to allow users to access the web application. This requires a domain to be purchased and a DNS registrar set up to resolve the domain name. Steps for this are outline in the [Deployment README](/docs/DEPLOYMENT.md).
+### Domains
+Currently the project uses [this domain](commitmentfit310.net) to allow users to access the web application. This requires a domain to be purchased and a DNS registrar set up to resolve the domain name. Steps for this are outlined in the [Deployment README](/docs/DEPLOYMENT.md).
 
 - **Domain Name:**
   - Domain name was purchased on [Squarespace Domains](https://domains.squarespace.com/?channel=pbr&subchannel=go&campaign=pbr-go-au-en-core_category-e&subcampaign=(domains-en_squarespace-domains_e)&gclsrc=aw.ds&&cid=16750987370&aid=133807081854&tid=aud-307746717000:kwd-95472161576&mt=e&eid=&loc_p_ms=9071445&loc_i_ms=&nw=g&d=c&adid=602205694451&channel2=pbr&subchannel2=go&gad_source=1&gad_campaignid=16750987370&gbraid=0AAAAADxS_FKppSxP1k2Gh0o6Z7rzi4HUd&gclid=CjwKCAjwu9fHBhAWEiwAzGRC_51ix7197voPgVy5CcTJ85GtTbS-E4L6lGuYsKi_XMXbj43svKEPShoCnmwQAvD_BwE)
@@ -101,31 +96,54 @@ Currently the project uses [this domain](commitmentfit310.net) to allow users to
   - Uses the free-tier
   - Only accessibly via the Commitment email
 
+## Post-Semester Plan
 
+After submission:
+- There will be **no designated maintainer or ongoing support**, the project will be abandoned after submission.
+- The **GitHub repository** will still remain accessible for viewing and forking.
+- Ongoing costs will not be maintained and all hosting solutions will cease to run.
 
-### Post-Semester Plan
+The following outlines the 
+
 - The **Nectar instance will be terminated** after the semester ends as part of the student allocation lifecycle.
 - **Domain Name:** Purchased via Squarespace and linked to the app.  
   - Renewal required **annually** to maintain active access.
   - Managed through the Commitment team email account.
 
+### Costs and Responsibilities
+The below are all the related costs/responsibilities that are associated with the project. Note that all of these will be decomissioned/abandoned at project completion.
+
+| Component          | Description                        | Cost                      | Responsibility                             |
+| ------------------ | ---------------------------------- | ------------------------- | ------------------------------------------ |
+| Nectar ARDC        | Cloud hosting for app containers   | Free (student allocation) | Expires post-semester                      |
+| MongoDB Atlas      | Cloud database                     | Free Tier                 | Expires post-semester                      |
+| Cloudflare DNS     | Managing DNS                       | Free Tier                 | Expires post-semester                      |
+| Commitment Email   | Used as admin account for services | Free Google Account       | Abandoned/Deleted post-semester            |
+| Squarespace Domain | Custom web domain                  | Annual Renewal Fee        | Paid via team email, expires on 08/10/2026 |
+| GitHub Actions     | CI/CD automation                   | Free for Public Pepos     | None                                       |
+
+
 ### Redeployment Instructions
 Deployment can be reproduced following the steps in the project’s `README`. All environment variables (`.env`), database URIs, and API endpoints are defined in the documentation.
 
----
 
-## Costs and Responsibilities
-
-| Component          | Description                      | Cost                      | Responsibility        |
-| ------------------ | -------------------------------- | ------------------------- | --------------------- |
-| Nectar ARDC        | Cloud hosting for app containers | Free (student allocation) | Expires post-semester |
-| MongoDB Atlas      | Cloud database (Free tier)       | Free                      | No ongoing charges    |
-| Squarespace Domain | Custom web domain                | Annual renewal fee        | Paid via team email   |
-| GitHub Actions     | CI/CD automation                 | Free for public repos     | None                  |
 
 After Week 12, **no team member is responsible for continuing costs or maintenance**.  
 The domain may expire if not renewed.
 
+
+
+
+- All deployment and setup instructions are preserved in the README.
+- Interested individuals or teams can:
+  - Fork the project and redeploy independently.
+  - Build upon existing functionality using Docker.
+  - Extend the system using the defined API and architecture.
+
+Future contributors are encouraged to:
+- Address existing **open issues** on GitHub.
+- Explore **migration paths** to modern frameworks (e.g., Next.js, Express, or FastAPI).
+- Refactor code for modularity and long-term scalability.
 
 ## Maintenance and Update Recommendations
 
@@ -146,31 +164,8 @@ Although no active maintenance is planned post-submission, the following updates
 - Automate deployment pipelines with environment-based branching.
 - Enable monitoring/logging using Docker Healthchecks or Prometheus.
 
-## Access and Credentials
 
-All project credentials (MongoDB Atlas, Squarespace, and Nectar ARDC) are stored securely and are not publicly shared in the repository.
 
-If credentials are required for redeployment or maintenance, they can be obtained by **contacting one of the System Architect contributors** from the original development team.
-
-- **GitHub Repository:** Public access (read-only).
-- **Forking:** Permitted for anyone interested in continuing development.
-- **Secrets:** Stored in GitHub Actions for build and deploy pipelines.
-
-## Handover and Continuity
-
-After submission:
-- There will be **no designated maintainer or ongoing support**.
-- The **GitHub repository** will remain accessible for viewing and forking.
-- All deployment and setup instructions are preserved in the README.
-- Interested individuals or teams can:
-  - Fork the project and redeploy independently.
-  - Build upon existing functionality using Docker.
-  - Extend the system using the defined API and architecture.
-
-Future contributors are encouraged to:
-- Address existing **open issues** on GitHub.
-- Explore **migration paths** to modern frameworks (e.g., Next.js, Express, or FastAPI).
-- Refactor code for modularity and long-term scalability.
 
 ## Future Recommendations
 
