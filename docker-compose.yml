@@ -8,7 +8,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
+      # Mount the Meteor project into container
       - ./commitment:/projects/commitment
+      # Mount the API folder so its files are accessible
+      - ./api:/projects/api
     env_file:
       - ./commitment/.env
     tty: true
