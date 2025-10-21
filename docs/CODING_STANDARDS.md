@@ -1,82 +1,180 @@
-Hi! If you are reading this, you are interested in getting gud at FP (functional programming)
+# Functional Programming (FP) Coding Standards
 
-Here are some of the dogmas behind FP:
+## Table of Contents
+- [Functional Programming (FP) Coding Standards](#functional-programming-fp-coding-standards)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Core FP Dogmas](#core-fp-dogmas)
+  - [Why We Do This](#why-we-do-this)
+  - [Granular Functions in Practice](#granular-functions-in-practice)
+  - [Currying and Composability](#currying-and-composability)
+    - [Without Currying](#without-currying)
+    - [With Currying](#with-currying)
+  - [Data Purity and Immutability](#data-purity-and-immutability)
+    - [Impure Code](#impure-code)
+    - [Pure Code](#pure-code)
+  - [Benefits of Functional Programming](#benefits-of-functional-programming)
+  - [Naming Conventions and Code Style](#naming-conventions-and-code-style)
+    - [General Rules](#general-rules)
+    - [Variable Naming](#variable-naming)
+    - [Function Naming](#function-naming)
+    - [Comments and Documentation](#comments-and-documentation)
+  - [Applying FP in This Codebase](#applying-fp-in-this-codebase)
+  - [Future-Proofing Your Code](#future-proofing-your-code)
+  - [Final Thoughts](#final-thoughts)
 
-1: write as little code as possible (granular functions)
-2: maintain data purity
-3: focus on how data changes rather then state management
 
-Here are some of the reasons we do this:
+## Introduction
 
-- reduces the change of state-related / runtime bugs (server crashing)
-- reduces meteor compilation time by having to sift through less code
-- creates easily refactorable components so minimal refactoring can create large changes
-- reduces the need to error manage: if you use FP well all your errors will automatically propagate upwards!
+Hi!  
+If you’re reading this, you’re probably interested in getting *gud* at FP (Functional Programming).  
+This document outlines the mindset and principles behind FP, as well as how to write clean, readable, and maintainable code in this project.
 
-You might want to look through the Haskell API (even if you don't understand Haskell)
-and look at how the code is structured. Haskell is a purely FP language, that does not offer
-any alternatives. For this reason, many optimisations can be made when running a
-Haskell program, which makes it as fast as any old well written C code (blazingly fast)!
+## Core FP Dogmas
 
-You might notice that the code is well structured, and many function declarations are just one line of code each.
-This is what we call a granular function, as it is only responsible for doing a small amount of work.
-The whole point of FP is that you can build an architecture of granular functions, and each time you
-made a new function those functions can do increasingly more and more powerful things while remaining
-small and easily changeable. For a good typescript example look at server/helper_functions.
+1. **Write as little code as possible** – build small, composable (granular) functions.  
+2. **Maintain data purity** – avoid mutable state or side effects.  
+3. **Focus on transformations, not state** – think in terms of *what changes* rather than *what stores data*.
 
-If you look at the threading file, you will see many functions with "submit" in them. Just from
-making the "submit" functions, only three functions later in a single line I can send two functions
-through a fully atomically optimised async pipeline to process one of the functions on one threadpool
-and another function on another thread pool, ensuring load balancing occurs between parsing operations.
-This is what makes functional programming incredibly powerful with so little code!
+## Why We Do This
 
-One reason Haskell allows you to leverage granular functions so well is by a concept called "currying":
-https://en.wikipedia.org/wiki/Currying
+- **Minimises runtime and state-related bugs** (e.g., server crashes).  
+- **Speeds up Meteor compilation** by keeping code modular.  
+- **Simplifies refactoring** – small, pure functions are easy to reason about.  
+- **Improves error propagation** – well-designed functions naturally pass errors upward.
 
-You can read the top summary on the Wiki page for what they are. This allows functions to take other
-functions as arguments, and allows functions to be saved into variables to be reused, and as such
-it makes using functions very dynamic, intrinsic and small. It also allows you to avoid defining the
-bounds by which the data is used, and only focus on how the functions are applied, avoiding any state management!
-Curring is a good technique to employ when you want to reuse a captured variable. For example:
+## Granular Functions in Practice
 
-const executeLocally = execCommmand(local_path)
+In FP, **granularity** means building functions that each perform *one specific task*.  
+When you compose them, small, single-purpose functions create complex behaviour.
 
-We see that the variable executeLocally is actually a function, which takes a Command as an argument.
-This means that if we wanted to run multiple commands in that directory, you can do so:
+In the Haskell API, many functions are just one line long, but each builds upon others.  
+That’s the essence of FP: power through simplicity and composition.
 
-const r1 = executeLocally(c1)
-const r2 = executeLocally(c2)
+You can see similar structure in our TypeScript code under `commitment.server/helper_functions`.
 
-which looks a lot better than:
+## Currying and Composability
 
-const r1 = execCommmand(local_path, c1)
-const r2 = execCommmand(local_path, c2)
+Currying allows partial application of functions — it’s one of FP’s secret weapons.
 
-It makes things readable when you employ good variable naming strategies and reduces the length of your code.
-Its a nice to have when trying to find the error you made 2 months ago, or when peer programming when
-you might not fully understand what the code is doing.
+### Without Currying
+```typescript
+const r1 = execCommand(localPath, c1);
+const r2 = execCommand(localPath, c2);
+```
 
-By default, no variable in Haskell is mutable, which is to say once it is instantiated the variable can
-no longer be changed. This is called data "purity", as it means data will never get muddied with any other value,
-which reduces the chance of your code exploding our app.
+### With Currying
+```typescript
+const executeLocally = execCommand(localPath);
+const r1 = executeLocally(c1);
+const r2 = executeLocally(c2);
+```
 
-Wierd bugs could arise from this code:
+This makes your code:
+- More **readable** and **concise**
+- Easier to **reuse**
+- Better aligned with FP principles
 
-let a: number | undefined = undefined
+> 📖 Learn more: [Currying (Wikipedia)](https://en.wikipedia.org/wiki/Currying)
+
+## Data Purity and Immutability
+
+Variables should be **immutable**, once defined, they shouldn’t change.  
+This ensures your data is “pure” and predictable.
+
+### Impure Code
+```typescript
+let a: number | undefined = undefined;
 
 switch (text) {
-case "yeet" -> number = 69
-case "yo mama" -> number = 420
+  case "yeet": a = 69; break;
+  case "yo mama": a = 420; break;
 }
-// a could still be undefined here :/
+// a could still be undefined 😬
+```
 
-or you could do something like this:
+### Pure Code
+```typescript
+const a: number = text === "yeet" ? 69 : 420;
+```
 
-const a: number = text === "yeet" ? 69 : 420
+Immutable data avoids bugs, unexpected state changes, and race conditions.
 
-this ensures a is properly defined, and no wierd runtime bugs occur as a result of delegating the value of the variable
-to a later process. also, look at how many lines you saved!
+## Benefits of Functional Programming
 
-Hopefully you have learned a little bit more about the infamous FP! Try using these principles as best
-as you can in this Repo's code base, because it makes the code a lot easier to work on later,
-and it avoids any server crashes :D. Happy Coding!
+- **Predictable behaviour** – no hidden state changes.  
+- **High performance** – small, stateless functions are easily optimized.  
+- **Reusable components** – composable building blocks simplify new features.  
+- **Clean architecture** – modularity leads to better readability and testability.
+
+## Naming Conventions and Code Style
+
+Consistent naming and structure make the codebase easier to understand, debug, and extend.
+
+### General Rules
+- Use **camelCase** for variables and function names.  
+- Use **PascalCase** for components, classes, and TypeScript types/interfaces.  
+- Avoid abbreviations unless they’re *obvious* (e.g., `id`, `url`).  
+- Always use **descriptive names** that express intent rather than type.
+
+### Variable Naming
+| Type             | Convention                           | Example                                 |
+| ---------------- | ------------------------------------ | --------------------------------------- |
+| Boolean          | Prefix with `is`, `has`, or `should` | `isLoading`, `hasAccess`, `shouldRetry` |
+| Function         | Use a **verb** or action phrase      | `fetchUserData()`, `validateInput()`    |
+| Constant         | Use `const` and meaningful names     | `const MAX_RETRY_COUNT = 3;`            |
+| Pure Data        | Nouns describing data                | `userProfile`, `repositoryList`         |
+| Temporary Values | Keep short but clear                 | `tempResult`, `parsedValue`             |
+
+### Function Naming
+- Keep functions **short and descriptive** – name them after their purpose, not their implementation.  
+- Pure functions should describe **what** they do, not **how** they do it.  
+  - Good - `filterValidRepos()`  
+  - Bad - `loopThroughRepoListAndRemoveInvalidOnes()`
+- Higher-order or curried functions can be prefixed by their action:  
+  - `createFetcher()`, `buildParser()`, `makeHandler()`
+
+### Comments and Documentation
+- Use comments **to explain why**, not **what**.  
+- If a function’s intent isn’t clear, refactor its name before adding comments.  
+- For public or reused functions, include JSDoc-style annotations:
+  ```typescript
+  /**
+   * Filters repositories by language.
+   * @param repos - List of repositories.
+   * @param language - Language to filter by.
+   * @returns Repositories matching the language.
+   */
+  const filterByLanguage = (repos, language) => repos.filter(r => r.lang === language);
+  ```
+
+## Applying FP in This Codebase
+
+- Use **small, composable** functions wherever possible.  
+- Avoid **global mutable variables**, keep data flow predictable.  
+- Employ **currying and pure transformations** to simplify logic.  
+- Prefer **functional composition** over nested callbacks or loops.  
+- Let **errors bubble up** rather than catching everything prematurely.  
+- Structure code consistently using **imports**, **aliases**, and **naming conventions** defined above.
+
+## Future-Proofing Your Code
+
+When adding new features or refactoring:
+- Keep functions *pure* and *predictable*.  
+- Avoid deeply nested logic.  
+- Extract logic into helpers when reused.  
+- Ensure type safety through TypeScript annotations.  
+- Document functions that affect shared data or critical processes.
+
+## Final Thoughts
+
+Functional Programming isn’t just a style, it’s a philosophy focused on clarity, composability, and correctness.  
+
+By writing **pure**, **granular**, and **well-named** functions, you’ll:
+- Write cleaner, safer code  
+- Spend less time debugging  
+- Help future contributors (and yourself) understand the code instantly
+
+So go forth and be functional!
+ 
+**Happy Coding!**
