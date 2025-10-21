@@ -36,7 +36,6 @@ interface ScalingViewLocationState {
   repoUrl?: string;
 }
 
-
 const smallGroupCache: Record<string, boolean> = {}; // potential solution
 
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
@@ -75,6 +74,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     const fetchSmallGroup = async () => {
       if (!repoUrl) return;
 
+      // ✅ Check persistent cache first
       if (smallGroupCache[repoUrl] !== undefined) {
         setMethodOptions(
           smallGroupCache[repoUrl]
@@ -91,8 +91,8 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
           11
         )) as boolean;
 
-        // update cache
-        smallGroupCache["repoUrl"] = result;
+        // ✅ Save result in cache
+        smallGroupCache[repoUrl] = result;
 
         setMethodOptions(
           result
@@ -114,11 +114,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     }
   }, [methodOptions, form]);
 
-  const metricOptions = [
-    "Total No. Commits",
-    "LOC",
-    "LOC Per Commit",
-  ];
+  const metricOptions = ["Total No. Commits", "LOC", "LOC Per Commit"];
 
   return (
     <div className="w-full">
