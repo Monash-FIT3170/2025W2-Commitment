@@ -10,6 +10,7 @@ import { ExportPreview, ExportData } from './ExportPreview';
 import { ExportHistory, useExportHistory, ExportHistoryItem } from './ExportHistory';
 import { ScriptExecution } from './ScriptExecution';
 import { useCSVExport, generateFilename, generateCSV } from './ExportButton';
+import { ExportDataService } from './exportDataService';
 
 interface CustomScriptExportProps {
   availableBranches: string[];
@@ -33,6 +34,17 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
   const { history, addExport, deleteExport, clearHistory } = useExportHistory();
   const { exportToCSV, isExporting } = useCSVExport();
+  const exportDataService = ExportDataService.getInstance();
+
+  // Helper function to calculate file size
+  const getFileSize = (data: ExportData): string => {
+    const csvContent = generateCSV(data);
+    const actualSize = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }).size;
+    
+    if (actualSize < 1024) return `${actualSize} B`;
+    if (actualSize < 1024 * 1024) return `${(actualSize / 1024).toFixed(1)} KB`;
+    return `${(actualSize / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
   // Handle configuration changes
   const handleConfigChange = (config: DataSelectionConfig) => {
@@ -131,10 +143,74 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
   };
 
   // Handle re-export from history
-  const handleReExport = (_item: ExportHistoryItem) => {
-    // For re-export, we would need to reconstruct the config from the history item
-    // This is a simplified version - in practice, you might want to store more config details
-    setError('Re-export functionality requires additional configuration storage');
+  const handleReExport = async (item: ExportHistoryItem) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Reconstruct the config from the history item
+      const dateParts = item.dateRange.split(' - ');
+      if (dateParts.length !== 2) {
+        throw new Error(`Invalid date range format: ${item.dateRange}`);
+      }
+      
+      // Parse DD/MM/YYYY format to proper Date objects
+      const parseDate = (dateStr: string): Date => {
+        const [day, month, year] = dateStr.split('/');
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      };
+      
+      const fromDate = parseDate(dateParts[0]);
+      const toDate = parseDate(dateParts[1]);
+      
+      if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+        throw new Error(`Invalid date values: ${item.dateRange}`);
+      }
+      
+      const reExportConfig: DataSelectionConfig = {
+        branch: item.branch,
+        dateRange: {
+          from: fromDate,
+          to: toDate
+        },
+        selectedMetrics: item.metrics,
+        groupBy: 'contributor' // Default to contributor grouping
+      };
+      
+      console.log('Parsed date range:', reExportConfig.dateRange);
+      
+      console.log('Re-exporting with config:', reExportConfig);
+      
+      // Fetch fresh data with the reconstructed config
+      const freshData = await exportDataService.fetchExportData(reExportConfig, repoUrl);
+      
+      // Generate new filename with current timestamp
+      const repoName = repoUrl.split('/').pop()?.replace('.git', '') || 'repository';
+      const filename = generateFilename(repoName, item.branch);
+      
+      // Export the fresh data
+      await exportToCSV(freshData, filename);
+      
+      // Add to history with new timestamp
+      const newHistoryItem = {
+        filename,
+        branch: item.branch,
+        dateRange: item.dateRange,
+        metrics: item.metrics,
+        rowCount: freshData.rows.length,
+        fileSize: getFileSize(freshData)
+      };
+      
+      addExport(newHistoryItem);
+      
+      console.log('Re-export completed successfully');
+      
+    } catch (error) {
+      console.error('Error during re-export:', error);
+      setError(`Failed to re-export: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle close preview
