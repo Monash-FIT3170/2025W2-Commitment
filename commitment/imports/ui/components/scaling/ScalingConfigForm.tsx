@@ -36,9 +36,8 @@ interface ScalingViewLocationState {
   repoUrl?: string;
 }
 
-const [isSmallGroupCache, setIsSmallGroupCache] = useState<
-    Record<string, boolean>
-  >({}); //defining problem
+
+const smallGroupCache: Record<string, boolean> = {}; // potential solution
 
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
