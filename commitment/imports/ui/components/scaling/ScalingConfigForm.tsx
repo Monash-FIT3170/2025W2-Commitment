@@ -36,7 +36,7 @@ interface ScalingViewLocationState {
   repoUrl?: string;
 }
 
-const smallGroupCache: Record<string, boolean> = {}; 
+const smallGroupCache: Record<string, boolean> = {}; // cache for keeping track of small contributors
 
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
