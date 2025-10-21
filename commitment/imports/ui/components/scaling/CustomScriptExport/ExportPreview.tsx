@@ -172,14 +172,15 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
             <Button 
               variant="outline" 
               onClick={onClose}
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary rounded-xl"
+              className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
             >
               Cancel
             </Button>
             <Button 
+              variant="outline"
               onClick={onExport} 
               disabled={isLoading}
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover rounded-xl"
+              className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
             >
               <Download className="h-4 w-4 mr-2" />
               {isLoading ? 'Exporting...' : 'Export CSV'}
