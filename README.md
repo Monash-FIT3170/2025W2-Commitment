@@ -8,9 +8,6 @@
       - [Select Target Platform](#select-target-platform)
       - [Install Docker Desktop](#install-docker-desktop)
       - [Install Verification](#install-verification)
-    - [Atlas Database Setup](#atlas-database-setup)
-      - [Creating an Atlas Account](#creating-an-atlas-account)
-      - [Setting Up Your Cloud Database](#setting-up-your-cloud-database)
     - [Building the Environment](#building-the-environment)
   - [Running Project](#running-project)
     - [Docker Commands](#docker-commands)
@@ -74,49 +71,7 @@ Depending on your device you can choose the target platform:
 
 _If there are any issues please contact an SA for help._
 
-### Atlas Database Setup
 
-To run this project, you will need to set up a MongoDB Atlas cloud database. Follow these steps to create your Atlas account and configure your database.
-
-#### Creating an Atlas Account
-
-1. Navigate to [MongoDB Atlas](https://www.mongodb.com/atlas) in your web browser.
-2. Click **"Try Free"** or **"Start Free"** to begin the registration process.
-3. Fill out the registration form with your email address and create a secure password.
-4. Verify your email address through the confirmation email sent by MongoDB.
-5. Complete your profile setup and accept the terms of service.
-
-#### Setting Up Your Cloud Database
-
-1. **Create a New Cluster**:
-   - Once logged into Atlas, click **"Build a Database"** on the main dashboard.
-   - Choose the **"FREE"** tier (M0) for development purposes.
-   - Select a cloud provider and region closest to your location.
-   - Give your cluster a name (e.g., "commitment-cluster") and click **"Create Cluster"**.
-
-2. **Configure Database Access**:
-   - Navigate to **"Database Access"** in the left sidebar.
-   - Click **"Add New Database User"**.
-   - Choose **"Password"** as the authentication method.
-   - Create a username and generate a secure password (save these credentials securely).
-   - Under **"Database User Privileges"**, select **"Atlas admin"** for full access.
-   - Click **"Add User"** to create the database user.
-
-3. **Configure Network Access**:
-   - Go to **"Network Access"** in the left sidebar.
-   - Click **"Add IP Address"**.
-   - For development, you can click **"Allow Access from Anywhere"** (0.0.0.0/0) - this allows connections from any IP address.
-   - Click **"Confirm"** to save the network access rule.
-
-4. **Get Your Connection String**:
-   - Return to **"Database"** in the left sidebar and click **"Connect"** on your cluster.
-   - Choose **"Connect your application"**.
-   - Select **"Node.js"** as the driver and version **"4.1 or later"**.
-   - Copy the connection string that appears (it will look like: `mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`).
-
-5. **Update Your .env File**:
-   - Replace the placeholder values in your `.env` file with your actual Atlas credentials:
-     - The steps for this are down below
 
 ### Building the Environment
 
@@ -124,12 +79,18 @@ These next steps are required to build and spin up the Docker image that will be
 
 1. Create the `.env` file for Mongo connection in the `commitment` directory, example show below.
 
-```
+```bash
 MONGO_URL=mongodb+srv://<user>:<password>@database.c8q1uxt.mongodb.net/<database>?retryWrites=true&w=majority&appName=<Database>
 SERVER_HOST=0.0.0.0
 PORT=3000
 DB_NAME=commitment_db
 NODE_ENV=development
+
+# OAuth Configuration (your personal dev credentials)
+GOOGLE_CLIENT_ID=your_google_client_id_here
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+GITHUB_CLIENT_ID=your_github_client_id_here
+GITHUB_CLIENT_SECRET=your_github_client_secret_here
 ```
 
 2. Ensure that you are in the **root directory** of the project and open a terminal.

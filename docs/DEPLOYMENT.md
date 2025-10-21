@@ -1,6 +1,8 @@
 # Deployment
-
+## Table of Contents
 - [Deployment](#deployment)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
   - [Initial Setup](#initial-setup)
     - [1. Acquire Instance](#1-acquire-instance)
     - [2. Dockerhub Setup](#2-dockerhub-setup)
@@ -12,6 +14,8 @@
     - [(Optional) SSL Certbot Auth](#optional-ssl-certbot-auth)
     - [3. Repository Setup](#3-repository-setup)
 
+
+## Overview
 
 At the conclusion of **Semester 2 (2025) at Monash University**, the Commitment web app is accessible [via this url](https://commitmentfit3170.net/).
 
@@ -193,5 +197,11 @@ These next steps will have the repository set up initially before any pipelines 
   NODE_ENV=production
   ROOT_URL=<YOUR_DOMAIN_NAME>
   API_CONN_ENDPOINT=haskell-api:8081
+
+  # OAuth Configuration (your personal dev credentials)
+  GOOGLE_CLIENT_ID=your_google_client_id_here
+  GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+  GITHUB_CLIENT_ID=your_github_client_id_here
+  GITHUB_CLIENT_SECRET=your_github_client_secret_here
   ```
 Now the everything is setup for deploment. Pushes to main will trigger the workflow for deployment.
