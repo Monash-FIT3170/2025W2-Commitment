@@ -31,7 +31,7 @@ function makePlotData(contributors: ContributorScaledData[]) {
 
   for (const c of contributors) {
     const pct = Number(c.scaledMetric.percentile ?? 0);
-    const q = String(Math.round(pct)); // x bucket
+    const q = String(Math.round((pct/10))*10); // x bucket
     const sub = Math.round(pct); // sub-bucket used for stacking within a quartile
 
     counters[q] ||= {};
