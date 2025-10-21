@@ -204,4 +204,4 @@ These next steps will have the repository set up initially before any pipelines 
   GITHUB_CLIENT_ID=your_github_client_id_here
   GITHUB_CLIENT_SECRET=your_github_client_secret_here
   ```
-Now the everything is setup for deploment. Pushes to main will trigger the workflow for deployment.
+Now the everything is setup for deployment. Pushes to main will trigger the workflow for deployment.
