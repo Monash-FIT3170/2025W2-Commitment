@@ -9,9 +9,21 @@ import { cn } from "@ui/lib/utils"
 interface InfoButtonProps {
   description: string
   className?:string
+  variant?: 'default' | 'muted' | 'active'
 }
 
-const InfoButton: React.FC<InfoButtonProps> = ({ description,className }) => {
+const InfoButton: React.FC<InfoButtonProps> = ({ description, className, variant = 'default' }) => {
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'muted':
+        return "text-muted-foreground hover:text-foreground"
+      case 'active':
+        return "text-foreground"
+      default:
+        return "text-foreground"
+    }
+  }
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -19,7 +31,11 @@ const InfoButton: React.FC<InfoButtonProps> = ({ description,className }) => {
           <Button
           variant="ghost"
           size="icon"
-          className={cn("rounded-full! h-[18px] w-[18px] p-0 mt-4",className)}
+          className={cn(
+            "rounded-full! h-[18px] w-[18px] p-0 mt-4 transition-colors",
+            getVariantStyles(),
+            className
+          )}
         >
           <Info className="w-6! h-6!" />
         </Button>

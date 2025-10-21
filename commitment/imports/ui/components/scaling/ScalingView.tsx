@@ -400,7 +400,7 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
           {/* Header */}
           <div className="mb-10">
             <div className="flex items-center gap-4">
-              <h1 className="text-5xl text-foreground font-robotoFlex">
+              <h1 className="text-3xl text-foreground font-robotoFlex">
                 Scaling
               </h1>
               <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
@@ -424,6 +424,7 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
                 Custom Script Export
                 <InfoButton
                   className={"mt-0 ml-2"}
+                  variant={activeTab === "export" ? "active" : "muted"}
                   description=
                     "Export raw metrics data for your custom scaling scripts. Select the data you need,preview it, and download as CSV for use in external tools or scripts."
                 />
