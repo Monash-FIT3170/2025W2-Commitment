@@ -14,7 +14,7 @@ The parsed information is logically coalated into types and is send back to you!
 
 # How it works
 
-# Calling the API from your application
+## Calling the API from your application
 
 You can call the API via HTTP or using Websockets to recieve a reactive message!
 
@@ -26,7 +26,9 @@ while the data loads in the background
 Both methods require you to send a payload of some sorts. This payload should be in standard format, where
 git can clone the url safely from the command line taking it as an argument:
 
+```
 https://github.com/<OWNER>/<REPOSITORY_NAME>
+```
 
 If your repo is public, you have nothing to worry about! It should work automatically.
 However, if your repo is private, the request may time out and give you an error because git
@@ -34,7 +36,9 @@ did not have permission to clone the repo. To fix this, ensure that you are prov
 key inside your payload, which will help git authentication to approve cloning the repo! The
 general format for such a payload is the following (using https as an example):
 
+```
 https://<YOUR_USERNAME>:<YOUR_PRIVATE_KEY>@github.com/<OWNER>/<REPOSITORY_NAME>
+```
 
 # How our code interfaces with the API
 
@@ -42,6 +46,7 @@ https://<YOUR_USERNAME>:<YOUR_PRIVATE_KEY>@github.com/<OWNER>/<REPOSITORY_NAME>
 
 We can interface with the api using code like this:
 
+```
 fetch("http://" + API_CONN_ENDPOINT, {
 method: "POST",
 headers: { "Content-Type": "application/json" },
@@ -50,6 +55,7 @@ body: JSON.stringify({ url }),
 if (!response.ok) reject(`Haskell API returned status ${response.status}`);
 response.json().then((d) => resolve(d.data));
 })
+```
 
 Things to note:
 the method should always be POST, otherwise the API will reject the request
@@ -59,11 +65,14 @@ the method should always be POST, otherwise the API will reject the request
 Websockets can get a little complicated, so bear with me.
 For every new repository you want analytics on, you must create a new Socket each time:
 
+```
 const socket = new WebSocket("ws://" + API_CONN_ENDPOINT)
+```
 
 this ensures that reactive messages from other repositories do not get tangled, and requests are handled efficiently
 you can setup the socket like this:
 
+```
 socket.onopen = () => {
 
     // notify that connection to the api was successful
@@ -77,11 +86,13 @@ socket.onopen = () => {
     );
 
 };
+```
 
 When the socket opens, you can safely send the payload containing the url you want to your analytics on
 
 The socket can respond like this:
 
+```
 socket.onmessage = (event: WebSocket.MessageEvent) => {
 
     try {
@@ -103,6 +114,7 @@ socket.onmessage = (event: WebSocket.MessageEvent) => {
     }
 
 };
+```
 
 You can see that the kind of data you are fetching can be three kinds:
 parsed.type === "text_update": the data is a string which contains the most recent loading stages of your repository
@@ -111,6 +123,7 @@ parsed.type === "value": the API has sent you your analytics! You can safely res
 
 Make sure that you are also guarding for errors and are closing the socket after it is used up:
 
+```
 socket.onerror = (\_err: WebSocket.ErrorEvent) => {
 
     const s = "Encountered a Websocket Error";
@@ -119,6 +132,7 @@ socket.onerror = (\_err: WebSocket.ErrorEvent) => {
     socket.close();
 
 };
+```
 
 # Types
 
@@ -133,6 +147,7 @@ having key: value entries where the key will be a
 parameter inside the object
 
 This is the type that will be sent to you:
+```
 type RepositoryData = Readonly<{
 
     name: string;
@@ -180,6 +195,7 @@ type ContributorData = Readonly<{
     emails: string[];
 
 }>;
+```
 
 # Final words
 
