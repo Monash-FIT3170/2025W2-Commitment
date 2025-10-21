@@ -36,6 +36,8 @@ interface ScalingViewLocationState {
   repoUrl?: string;
 }
 
+const smallGroupCache: Record<string, boolean> = {};
+
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
 
@@ -66,23 +68,16 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     }
   };
 
-  const [isSmallGroupCache, setIsSmallGroupCache] = useState<
-    Record<string, boolean>
-  >({});
-  const [methodOptions, setMethodOptions] = useState<string[]>([
-    "Percentiles",
-    "Mean +/- Std",
-    "Quartiles",
-  ]);
+  const [methodOptions, setMethodOptions] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchSmallGroup = async () => {
       if (!repoUrl) return;
 
-      // check cache first
-      if (isSmallGroupCache[repoUrl] !== undefined) {
+      // check persistent cache first
+      if (smallGroupCache["result"] !== undefined) {
         setMethodOptions(
-          isSmallGroupCache[repoUrl]
+          smallGroupCache["result"]
             ? ["Compact Scaling"]
             : ["Percentiles", "Mean +/- Std", "Quartiles"]
         );
@@ -93,11 +88,10 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         const result = (await Meteor.callAsync(
           "isSmallContributorGroup",
           repoUrl,
-          7
+          11
         )) as boolean;
 
-        // update cache
-        setIsSmallGroupCache((prev) => ({ ...prev, [repoUrl]: result }));
+        smallGroupCache["result"] =  result// persist result
 
         setMethodOptions(
           result
@@ -110,7 +104,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     };
 
     void fetchSmallGroup();
-  }, [repoUrl, isSmallGroupCache]);
+  }, [repoUrl]);
 
   // Automatically select the first method option whenever it changes
   useEffect(() => {
