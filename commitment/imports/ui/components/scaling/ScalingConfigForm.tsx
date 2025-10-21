@@ -36,6 +36,10 @@ interface ScalingViewLocationState {
   repoUrl?: string;
 }
 
+const [isSmallGroupCache, setIsSmallGroupCache] = useState<
+    Record<string, boolean>
+  >({}); //defining problem
+
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
 
@@ -66,9 +70,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     }
   };
 
-  const [isSmallGroupCache, setIsSmallGroupCache] = useState<
-    Record<string, boolean>
-  >({}); //defining problem
   const [methodOptions, setMethodOptions] = useState<string[]>([]);
 
   useEffect(() => {
