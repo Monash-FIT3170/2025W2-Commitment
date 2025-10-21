@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
 import { Button } from '@base/button';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@base/table';
-import { ScrollArea } from '@base/scroll-area';
+import { HighlightCardWithGraph } from '../../metrics/HighlightCard';
 
 export interface ExportData {
   headers: string[];
@@ -57,55 +57,22 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
       <CardHeader className="bg-git-int-primary">
         <div className="flex items-center justify-between">
           <CardTitle className="text-git-int-text">Export Preview</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onClose}
-              className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary"
-            >
-              Close
-            </Button>
-          </div>
+
         </div>
-        <p className="text-sm text-git-text-secondary">
+        <p className="text-sm text-git-int-text/90">
           Review your data before exporting to CSV
         </p>
       </CardHeader>
       <CardContent className="space-y-4 bg-git-bg-elevated dark:bg-git-bg-primary pt-6">
         {/* Summary Information */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-git-text-primary">Total Rows</p>
-            <p className="text-2xl font-bold text-git-text-primary">{data.summary.totalRows.toLocaleString()}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-git-text-primary">Date Range</p>
-            <p className="text-sm text-git-text-secondary">{data.summary.dateRange}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-git-text-primary">Branch</p>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-git-int-primary text-git-int-text">
-              {data.summary.branch}
-            </span>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-git-text-primary">Estimated Size</p>
-            <p className="text-sm text-git-text-secondary">{getFileSize()}</p>
-          </div>
-        </div>
+              <div className="grid   grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 text-2xl"> 
 
-        {/* Metrics Summary */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-git-text-primary">Selected Metrics</p>
-          <div className="flex flex-wrap gap-2">
-            {data.summary.metrics.map((metric) => (
-              <span key={metric} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-git-int-primary text-git-int-text border border-git-stroke-primary">
-                {metric}
-              </span>
-            ))}
-          </div>
-        </div>
+        <HighlightCardWithGraph title={"Total Rows"} value={data.summary.totalRows.toLocaleString()}/>
+        <HighlightCardWithGraph title={"Date Range"} value={data.summary.dateRange}/>
+        <HighlightCardWithGraph title={"Branch"} value={data.summary.branch}/>
+        <HighlightCardWithGraph title={"Estimated Size"} value={getFileSize()}/>
+        </div> 
+
 
         {/* Data Table */}
         <div className="space-y-2">
@@ -121,11 +88,11 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
           <div className="w-full border border-git-stroke-primary rounded-md overflow-auto max-h-96">
             <Table className="min-w-full">
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-git-int-primary hover:bg-git-int-primary-hover">
                   {data.headers.map((header, index) => (
                     <TableHead 
                       key={index} 
-                      className="sticky top-0 bg-git-int-secondary text-git-text-primary whitespace-nowrap px-3 py-2 text-left font-medium"
+                      className="sticky top-0 text-git-int-text whitespace-nowrap px-3 py-2 text-left font-medium"
                     >
                       {header}
                     </TableHead>
@@ -171,12 +138,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
               </TableBody>
             </Table>
           </div>
-          
-          {data.headers.length > 8 && (
-            <p className="text-xs text-git-text-secondary text-center">
-              💡 Scroll horizontally to see all {data.headers.length} columns
-            </p>
-          )}
+
           
         </div>
 

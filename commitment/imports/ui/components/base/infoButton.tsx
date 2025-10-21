@@ -4,12 +4,14 @@ import React from "react"
 import { Info } from "lucide-react"
 import { Button } from "@base/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@base/tooltip"
+import { cn } from "@ui/lib/utils"
 
 interface InfoButtonProps {
   description: string
+  className?:string
 }
 
-const InfoButton: React.FC<InfoButtonProps> = ({ description }) => {
+const InfoButton: React.FC<InfoButtonProps> = ({ description,className }) => {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -17,7 +19,7 @@ const InfoButton: React.FC<InfoButtonProps> = ({ description }) => {
           <Button
           variant="ghost"
           size="icon"
-          className="rounded-full! h-[18px] w-[18px] p-0 mt-4"
+          className={cn("rounded-full! h-[18px] w-[18px] p-0 mt-4",className)}
         >
           <Info className="w-6! h-6!" />
         </Button>

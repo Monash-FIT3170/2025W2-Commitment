@@ -148,16 +148,6 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
-      <Card className="bg-git-bg-elevated border-git-stroke-primary rounded-lg">
-        <CardHeader className="bg-git-int-primary">
-          <CardTitle className="text-git-int-text">Custom Script Data Export</CardTitle>
-          <p className="text-sm text-git-int-text/90">
-            Export raw metrics data for your custom scaling scripts. Select the data you need,
-            preview it, and download as CSV for use in external tools or scripts.
-          </p>
-        </CardHeader>
-      </Card>
 
       {/* Help Section - collapsible */}
       <Card className="bg-git-bg-elevated border-git-stroke-primary rounded-lg">
