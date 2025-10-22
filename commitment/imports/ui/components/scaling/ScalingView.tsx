@@ -33,6 +33,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@hook/useAuth";
 import CustomScriptExport from "./CustomScriptExport";
 import { exportDataService } from "./CustomScriptExport/exportDataService";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@base/tooltip";
 
 interface ScalingConfig {
   metrics: string[];
@@ -65,11 +66,12 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
     { name: string; rawIdentifiers: string[] }[]
   >([]);
   const [showAliasDialog, setShowAliasDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<"scaling" | "export">("scaling");
+  const [activeTabRaw, setActiveTab] = useState<"scaling" | "export">("scaling");
 
   const navigate = useNavigate();
 
   const isLoggedIn = useAuth();
+  const activeTab = isLoggedIn ? activeTabRaw : "scaling";
 
   useEffect(() => {
     if (!repoUrl || !isLoggedIn) return;
@@ -393,6 +395,35 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
     return await exportDataService.fetchExportData(config, repoUrl);
   };
 
+  const customScriptExportTabTrigger = (
+    <TabsTrigger
+      disabled={!isLoggedIn}
+      value="export"
+      className="text-base font-medium flex flex-row align-middle rounded-md data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text data-[state=inactive]:text-git-text-secondary hover:text-git-text-primary transition-all"
+    >
+      Custom Script Export
+      <InfoButton
+        className={"mt-0 ml-2"}
+        variant={activeTab === "export" ? "active" : "muted"}
+        description="Export raw metrics data for your custom scaling scripts. Select the data you need,preview it, and download as CSV for use in external tools or scripts."
+      />
+    </TabsTrigger>
+  );
+  const wrappedCustomScriptExportTabTrigger = isLoggedIn ? customScriptExportTabTrigger : (
+    <Tooltip
+      open={isLoggedIn ? false : undefined}
+    >
+      <TooltipContent>
+        Log in to use this feature.
+      </TooltipContent>
+      <TooltipTrigger
+        className="inline-flex flex-row grow w-full items-center justify-center"
+      >
+        {customScriptExportTabTrigger}
+      </TooltipTrigger>
+    </Tooltip>
+  )
+
   return (
     <div className="w-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated dark:bg-git-bg-primary">
       <div className="flex flex-col gap-32">
@@ -428,17 +459,7 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
                   description="View each contributor's final scale and grade based on their overall commitment."
                 />
               </TabsTrigger>
-              <TabsTrigger
-                value="export"
-                className="text-base font-medium flex flex-row align-middle rounded-md data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text data-[state=inactive]:text-git-text-secondary hover:text-git-text-primary transition-all"
-              >
-                Custom Script Export
-                <InfoButton
-                  className={"mt-0 ml-2"}
-                  variant={activeTab === "export" ? "active" : "muted"}
-                  description="Export raw metrics data for your custom scaling scripts. Select the data you need,preview it, and download as CSV for use in external tools or scripts."
-                />
-              </TabsTrigger>
+              {wrappedCustomScriptExportTabTrigger}
             </TabsList>
 
             <TabsContent value="scaling" className="space-y-6">

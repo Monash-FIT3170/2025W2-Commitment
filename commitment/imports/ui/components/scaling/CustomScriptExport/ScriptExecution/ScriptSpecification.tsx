@@ -94,7 +94,7 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
   const dragging = draggingRaw && !readonly;
 
   const editorClassName = cn(
-    "bg-git-bg-primary rounded-md border-1 outline-1 mt-3 inset-shadow-md overflow-clip",
+    "bg-git-bg-primary rounded-md border-1 outline-1 mt-3 inset-shadow-sm overflow-clip",
     "flex flex-col",
     selected
       ? "outline-primary border-primary"
