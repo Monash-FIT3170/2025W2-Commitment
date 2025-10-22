@@ -190,12 +190,12 @@ These next steps will have the repository set up initially before any pipelines 
   ```
 4. Populate with the below information.
   ``` bash
-  MONGO_URL=<YOUR_MONGO_URI>
+  MONGO_URL=mongodb+srv://<user>:<password>@database.c8q1uxt.mongodb.net/<database>?retryWrites=true&w=majority&appName=<Database>
   SERVER_HOST=0.0.0.0
   PORT=3000
   DB_NAME=commitment_db
   NODE_ENV=production
-  ROOT_URL=<YOUR_DOMAIN_NAME>
+  ROOT_URL=https://commitmentfit3170.net
   API_CONN_ENDPOINT=haskell-api:8081
 
   # OAuth Configuration (your personal dev credentials)

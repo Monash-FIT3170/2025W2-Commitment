@@ -41,8 +41,28 @@ NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName;
 const NavigationMenuItem = NavigationMenuPrimitive.Item;
 
 const navigationMenuTriggerStyle = cva(
-  "group rounded-lg inline-flex h-9 w-max items-center justify-center rounded-md  px-4 py-2 text-sm font-medium transition-colors hover:bg-git-bg-bottom dark:hover:bg-git-bg-bottom/40 focus:bg-accent focus:text-accent-foreground focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-[state=open]:text-accent-foreground data-[state=open]:bg-accent/50 data-[state=open]:hover:bg-accent data-[state=open]:focus:bg-accent"
+  // Base behaviour
+  "inline-flex items-center justify-center transition-colors cursor-pointer " +
+    "hover:bg-accent hover:text-accent-foreground " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 " +
+    "disabled:pointer-events-none disabled:opacity-50 " +
+    "data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
+  {
+    variants: {
+      kind: {
+        // Text-style nav items
+        link: "h-9 rounded-md px-4 py-2 text-sm font-medium",
+        // Icon-style items
+        icon: "h-9 w-9 rounded-full p-2",
+      },
+    },
+
+    defaultVariants: {
+      kind: "link",
+    },
+  }
 );
+
 
 const NavigationMenuTrigger = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Trigger>,
