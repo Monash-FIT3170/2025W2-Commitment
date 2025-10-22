@@ -39,10 +39,11 @@ interface CommitRepoData {
 }
 
 const getCompleteDataFromDatabase = async (url: string): Promise<SerializableRepoData> => {
-  const [repoMetaData, repoCommitData]: [ServerRepoMetaData, CommitRepoData[]] = await Promise.all([
-    RepoCollection.findOneAsync({ url }),
-    CommitCollection.find({ url }).fetchAsync(),
-  ]);
+  const [repoMetaData, repoCommitData]: [ServerRepoMetaData | undefined, CommitRepoData[]] =
+    await Promise.all([
+      RepoCollection.findOneAsync({ url }),
+      CommitCollection.find({ url }).fetchAsync(),
+    ]);
 
   if (repoMetaData === undefined) throw Error(`Could not find url in database: ${url}`);
   const metaData = repoMetaData.data;
@@ -65,6 +66,54 @@ const getCompleteDataFromDatabase = async (url: string): Promise<SerializableRep
 
 const RepoCollection = new Mongo.Collection<ServerRepoMetaData>("repoCollection");
 const CommitCollection = new Mongo.Collection<CommitRepoData>("commitCollection");
+
+// -------------------------------------------------------------
+// 🧠 In-memory cache structure
+// -------------------------------------------------------------
+type InMemoryCacheEntry = {
+  data: SerializableRepoData;
+  lastAccessed: Date;
+  timeout: NodeJS.Timeout;
+};
+
+const InMemoryCache: Map<string, InMemoryCacheEntry> = new Map();
+
+// Automatically remove a cache entry after 1 minute of inactivity
+const CACHE_TTL_MS = 60_000;
+
+/**
+ * Helper to schedule or refresh the expiration timer for a cache entry.
+ */
+const refreshCacheTimer = (url: string): void => {
+  const entry = InMemoryCache.get(url);
+  if (!entry) return;
+
+  // Clear any existing timer
+  clearTimeout(entry.timeout);
+
+  // Set a new timer that removes the cache entry after inactivity
+  const timeout = setTimeout(() => {
+    clearFromCache(url);
+  }, CACHE_TTL_MS);
+
+  // Update the entry with the new timer and access time
+  entry.timeout = timeout;
+  entry.lastAccessed = new Date();
+  InMemoryCache.set(url, entry);
+};
+
+const cacheIntoLocalCache = (url: string, d: SerializableRepoData) => {
+  // ✅ Create or refresh cache entry
+  const timeout = setTimeout(() => {
+    clearFromCache(url);
+  }, CACHE_TTL_MS);
+
+  InMemoryCache.set(url, {
+    data: d,
+    lastAccessed: new Date(),
+    timeout,
+  });
+};
 
 Meteor.methods({
   /**
@@ -137,6 +186,23 @@ export const isInDatabase = async (url: string): Promise<boolean> => {
 };
 
 /**
+ * Checks if a repository exists in the local cache.
+ * @param url The repository URL to check.
+ * @returns   True if the repository exists, false otherwise.
+ */
+export const isInCache = (url: string): boolean => {
+  const doc = InMemoryCache.get(url);
+  return undefined !== doc;
+};
+
+/**
+ * Deletes an entry from the local cache
+ * @param url The repository URL
+ * @returns   True if the deletion is successful, false otherwise.
+ */
+export const clearFromCache = (url: string): boolean => InMemoryCache.delete(url);
+
+/**
  * Caches repository data in the database.
  * @param url The repository URL.
  * @param data The repository data to cache.
@@ -176,7 +242,13 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
   ).reduce((acc, i) => (acc && i.numberAffected! > 0 ? true : false), true);
 
   // res is an object like { numberAffected, insertedId }
-  return res.numberAffected! > 0 && cRes;
+  const returnResult = res.numberAffected! > 0 && cRes;
+
+  // if we are successful we also want to insert it into the local cache
+  if (returnResult) {
+    cacheIntoLocalCache(url, serialData);
+  }
+  return returnResult;
 };
 
 /**
@@ -191,6 +263,10 @@ export const removeRepo = async (url: string): Promise<boolean> => {
   if (null === doc || undefined == doc) return false;
   const res = await RepoCollection.removeAsync({ url });
   const cRes = await CommitCollection.removeAsync({ url });
+
+  // ✅ Remove from cache
+  InMemoryCache.delete(url);
+
   return res > 0 && cRes > 0;
 };
 
@@ -200,6 +276,8 @@ export const removeRepo = async (url: string): Promise<boolean> => {
 export const voidDatabase = async (): Promise<void> => {
   await RepoCollection.removeAsync({});
   await CommitCollection.removeAsync({});
+  InMemoryCache.entries().forEach(([_, entry]) => clearTimeout(entry.timeout));
+  InMemoryCache.clear();
 };
 
 /**
@@ -215,6 +293,15 @@ export const tryFromDatabaseSerialised = async (
   const emit = emitValue(notifier);
   emit("Checking database for existing data...");
 
+  // ✅ Step 1: check in-memory cache first
+  const cached = InMemoryCache.get(url);
+  if (cached) {
+    refreshCacheTimer(url); // ✅ reset expiration
+    emit("Found data in in-memory cache!");
+    return cached.data;
+  }
+
+  // ✅ Step 2: fallback to DB
   if (!isInDatabase(url)) throw Error("Data not found in database");
   emit("Found data in database!");
 
