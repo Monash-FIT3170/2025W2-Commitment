@@ -17,7 +17,7 @@ interface CustomScriptExportProps {
   repoUrl: string;
   onDataRequest: (config: DataSelectionConfig) => Promise<ExportData>;
   className?: string;
-  scalingSheet?:
+  gradingSheet?: File | null;
 }
 
 export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
@@ -25,7 +25,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
   repoUrl,
   onDataRequest,
   className = '',
-
+  gradingSheet = null,
 }) => {
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
   const [previewData, setPreviewData] = useState<ExportData | null>(null);
@@ -362,6 +362,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
             repoUrl={repoUrl}
             onConfigChange={handleConfigChange}
             onPreviewData={handlePreviewData}
+            gradingSheet={gradingSheet}
           />
         </TabsContent>
       </Tabs>
