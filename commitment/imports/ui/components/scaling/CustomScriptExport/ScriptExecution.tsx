@@ -1,20 +1,198 @@
-import React from 'react';
-import { Code, FileText, Clock } from 'lucide-react';
+import React, {useRef, useState, useMemo} from 'react';
+import {Download, FileCode2, FileText, LoaderCircle, Terminal, Upload} from 'lucide-react';
+import {Card, CardContent, CardHeader, CardTitle} from '@base/card';
+import {ExportHistoryItem} from './ExportHistory';
+import ScriptSpecification, {
+  initialScript
+} from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptSpecification";
+import {
+  DataSelectionConfig,
+  DataSelectionPanel,
+  DataSelectionPanelProps
+} from "@ui/components/scaling/CustomScriptExport/DataSelectionPanel";
+import {useLocalStorage} from "@hook/useLocalStorage";
+import {ExportData} from "@ui/components/scaling/CustomScriptExport/ExportPreview";
+import useAsync from "@hook/useAsync";
+import {PythonExecutorScalingResponse} from "@api/types";
+import {meteorCallAsync} from "@api/meteor_interface";
+import ScalingSummary from "@ui/components/scaling/ScalingSummary";
+import {cn} from "@ui/lib/utils";
+import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptEditor";
+import type {GradingSheetRow, ParseResult} from "@ui/components/utils/GradingSheetParser";
+import {Button} from "@base/button";
+import {useAuth} from "@hook/useAuth";
+import ScriptExecutionGradingSheetDialog
+  from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptExecutionGradingSheetDialog";
+import {calculateFinalGrades, generateScaledGradingSheet} from "@ui/components/scaling/ScalingUtils";
+import {toast} from "@hook/useToast";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
-import { Button } from '@base/button';
-import { ExportHistoryItem } from './ExportHistory';
-
-interface ScriptExecutionProps {
+interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
-  isLoading?: boolean;
+  onDataRequest: (config: DataSelectionConfig) => Promise<ExportData>;
+  gradingSheet?: File | null;
+  gradingSheetParseResult?: ParseResult | null,
+  setStep?: (step: "config" | "sheet" | "done") => void,
+  setShowDialog?: (value: boolean) => void,
+  handleSheetSubmit?: (
+    gradingSheet: File,
+    parsedData?: GradingSheetRow[],
+    parseResult?: ParseResult
+  ) => void;
 }
 
 export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   history,
-  isLoading = false
-}) => {
-  const latestExport = history.length > 0 ? history[0] : null;
+  onDataRequest,
+  gradingSheet,
+  gradingSheetParseResult,
+  setStep,
+  setShowDialog,
+  handleSheetSubmit,
+  ...dataSelectionPanelProps
+}: ScriptExecutionProps) => {
+  const [code, setCode] = useLocalStorage('custom-execution-script', initialScript);
+
+  const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
+  const [response, setResponseRaw] = useState<PythonExecutorScalingResponse>({});
+  const [executionLoading, setExecutionLoading] = useState<boolean>(false);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const isLoggedIn = useAuth();
+
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const userScalingSummaries = useMemo(() => {
+    if (!gradingSheetParseResult?.data || !response.data)
+      return response.data ?? [];
+    return calculateFinalGrades(response.data, gradingSheetParseResult.data);
+  }, [gradingSheetParseResult, response.data])
+
+  const errorOutput = response.error || response.stderr
+    ? [response.stderr, response.error].filter(Boolean).join('\n')
+    : undefined;
+
+  // Add side effect of toasting errors whenever the response is set
+  const setResponse = (response: PythonExecutorScalingResponse) => {
+    let success = false;
+
+    if (response.error !== undefined) {
+      toast({
+        title: "Execution Error",
+        description: response.error,
+        variant: "destructive",
+      });
+    }
+    else if ((response.stderr?.trim().length ?? 0) > 0) {
+      const lines = response.stderr!.trimEnd().split('\n');
+      const lastLine = lines[lines.length - 1];
+
+      toast({
+        title: "Script output to stderr",
+        description: lastLine,
+        variant: "destructive",
+      });
+    }
+    else {
+      success = true;
+    }
+
+    setResponseRaw(response);
+    if (success) {
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 10)
+    }
+  }
+
+  const handleDownloadScaledSheet = async () => {
+    if (!gradingSheetParseResult || !gradingSheet) return;
+
+    try {
+      // Generate the scaled grading sheet
+      const scaledFile = generateScaledGradingSheet(
+        gradingSheetParseResult,
+        userScalingSummaries
+      );
+
+      const originalName = gradingSheet.name;
+      const fileExtension = originalName.substring(
+        originalName.lastIndexOf(".")
+      );
+      const nameWithoutExtension = originalName.substring(
+        0,
+        originalName.lastIndexOf(".")
+      );
+      const scaledFileName = `scaled_${nameWithoutExtension}${fileExtension}`;
+
+      const renamedFile = new File([scaledFile], scaledFileName, {
+        type: scaledFile.type,
+      });
+
+      const url = URL.createObjectURL(renamedFile);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = scaledFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to download scaled grading sheet.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const csv = useAsync<string | null, string>(async () => {
+    if (currentConfig === null)
+      return null;
+
+    try {
+      const data = await onDataRequest(currentConfig);
+
+      const csvHeaders = data.headers.join(',');
+      // Make sure any strings that include, are quoted
+      const csvRows = data.rows
+        .map(row => (
+          row.map(cell => (
+            typeof cell === 'number'
+              ? cell
+              : cell.includes(',') && !(cell.startsWith('"') && cell.endsWith('"')
+                || cell.startsWith('\'') && cell.endsWith('\''))
+                ? `"${cell}"`
+                : cell
+          ))
+        ))
+        .map(row => row.join(','))
+        .join('\n');
+      return `${csvHeaders}\n${csvRows}`;
+    } catch (err) {
+      throw (err instanceof Error ? err.message : 'Failed to load data');
+    }
+  }, [currentConfig])
+
+  const onExecuteButton = () => {
+    if (csv.data === null)
+      return;
+
+    // Call the API!
+    setExecutionLoading(true);
+    meteorCallAsync<PythonExecutorScalingResponse>("pythonExecutorScaling")(code, csv.data)
+      .then(v => {
+        setResponse(v);
+        return v;
+      })
+      .catch((e) => {
+        console.error("Caught error trying to use python executor: ", e);
+        setResponse({
+          error: "Failed to call python executor API"
+        })
+      })
+      .finally(() => {
+        setExecutionLoading(false);
+      });
+  }
 
   return (
     <div className="space-y-6">
@@ -27,84 +205,142 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
           </p>
         </CardHeader>
         <CardContent className="bg-git-bg-elevated dark:bg-git-bg-primary pt-6 rounded-b-xl">
-          <div className="text-center py-8">
-            <Code className="h-12 w-12 mx-auto mb-4 text-git-text-secondary opacity-50" />
-            <h3 className="text-lg font-medium text-git-text-primary mb-2">Script Execution </h3>
-            <p className="text-git-text-secondary mb-6">
-              This section will allow you to execute custom scripts using the exported CSV data.
-              The functionality is currently being developed.
-            </p>
-            
-            {latestExport && (
-              <div className="mt-6 p-4 bg-git-int-secondary rounded-lg border border-git-stroke-primary">
-                <h4 className="font-medium text-git-text-primary mb-2">Latest Export Available</h4>
-                <div className="flex items-center gap-2 text-sm text-git-text-secondary">
-                  <FileText className="h-4 w-4" />
-                  <span>{latestExport.filename}</span>
-                  <Clock className="h-4 w-4 ml-2" />
-                  <span>Exported {latestExport.exportedAt.toLocaleDateString()}</span>
-                </div>
-                <p className="text-xs text-git-text-secondary mt-1">
-                  {latestExport.rowCount} rows • {latestExport.fileSize} • {latestExport.branch}
-                </p>
+          <div className="pb-3">
+            <ScriptSpecification
+              className={[
+                "mb-6 mt-0 min-h-[40vh]",
+                cn(
+                  "mb-6 mt-0 min-h-[40vh] transition-opacity ease-out duration-200 ",
+                  csv.loading && "opacity-50" || "opacity-100"
+                )
+              ]}
+              code={[
+                code,
+                csv.data ?? ""
+              ]}
+              setCode={[
+                setCode
+              ]}
+              name={[
+                "script.py",
+                "data.csv"
+              ]}
+              icon={[
+                <FileCode2 size="sm"/>,
+                csv.loading
+                  ? <LoaderCircle size="sm" className="animate-spin"/>
+                  : <FileText size="sm"/>
+              ]}
+              language={[
+                "python",
+                "csv"
+              ]}
+              readonly={[
+                false,
+                true
+              ]}
+            />
+
+          </div>
+
+          <div className="space-y-6">
+            <DataSelectionPanel
+              {...dataSelectionPanelProps}
+              minimal={true}
+              buttonLabel="Execute Script"
+              onPreviewData={onExecuteButton}
+              onConfigChange={(config) => {
+                setCurrentConfig(config);
+                dataSelectionPanelProps.onConfigChange?.(config);
+              }}
+            />
+
+            <ScriptSpecification
+              className={cn(
+                "mb-6 transition-opacity ease-out duration-200 ",
+                executionLoading && "opacity-50" || "opacity-100"
+              )}
+              code={response.stdout?.trimEnd() ?? "# Press 'Execute Script' to see output here"}
+              setCode={() => {}}
+              name={"Execution Output"}
+              icon={
+                executionLoading
+                  ? <LoaderCircle size="sm" className="animate-spin"/>
+                  : <Terminal size="sm"/>
+              }
+              language="python"
+              readonly
+            >
+              {errorOutput !== undefined && (
+                <ScriptEditor
+                  className="text-sm text-red-600 mx-2.5 pb-2.5"
+                  language="python"
+                  code={errorOutput}
+                  setCode={() => {}}
+                  readonly
+                  padding={0}
+                />
+              )}
+            </ScriptSpecification>
+          </div>
+
+          {csv.data && userScalingSummaries.length > 0 && (<>
+            <div
+              className={cn(
+                "mb-6 transition-opacity ease-out duration-200 ",
+                executionLoading && "opacity-50 " || "opacity-100"
+              )}
+            >
+              <ScalingSummary
+                userScalingSummaries={userScalingSummaries}
+                hasGradingSheet={!!gradingSheet}
+              />
+            </div>
+
+            {!dialogOpen && (
+              <div className="flex justify-center gap-4 flex-wrap p-4">
+                {/* Display the grading sheet only to logged in users */}
+                {isLoggedIn && (
+                  <Button
+                    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                    onClick={() => {
+                      setDialogOpen(true);
+                    }}
+                  >
+                    <Upload className="h-4 w-4" />
+                    {gradingSheet
+                      ? "Replace Grading Sheet"
+                      : "Upload Grading Sheet"}
+                  </Button>
+                )}
+
+                {gradingSheet && gradingSheetParseResult && (
+                  <Button
+                    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                    onClick={() => {
+                      void handleDownloadScaledSheet();
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Scaled Grading Sheet
+                  </Button>
+                )}
               </div>
             )}
-          </div>
+          </>)}
         </CardContent>
       </Card>
 
-      {/* CSV Endpoint Information */}
-      <Card className="bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary rounded-xl">
-        <CardHeader className="bg-git-int-primary rounded-t-xl">
-          <CardTitle className="text-git-int-text">CSV Data Access</CardTitle>
-          <p className="text-sm text-git-int-text/90">
-            Information about accessing exported CSV data for script execution
-          </p>
-        </CardHeader>
-        <CardContent className="bg-git-bg-elevated dark:bg-git-bg-primary pt-6 rounded-b-xl">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium text-git-text-primary mb-2">Available Data</h4>
-              <p className="text-sm text-git-text-secondary">
-                CSV files are generated from the Data Selection and Preview tabs. Each export includes:
-              </p>
-              <ul className="mt-2 text-sm text-git-text-secondary list-disc list-inside space-y-1">
-                <li>Contributor information and metrics</li>
-                <li>Date range filtering based on your selection</li>
-                <li>Selected metrics (commits, lines added/deleted, etc.)</li>
-                <li>Collaboration scores calculated for the selected period</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-git-text-primary mb-2">Export History</h4>
-              <p className="text-sm text-git-text-secondary">
-                {history.length > 0 
-                  ? `You have ${history.length} export${history.length !== 1 ? 's' : ''} available for script execution.`
-                  : 'No exports available yet. Create an export in the Data Selection tab first.'
-                }
-              </p>
-            </div>
-
-            {history.length > 0 && (
-              <div className="mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={isLoading}
-                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover border-git-stroke-primary"
-                  onClick={() => {
-                    // add logic to execute the script :)
-                  }}
-                >
-                  <Code className="h-4 w-4 mr-2" />
-                  Execute Script (Coming Soon)
-                </Button>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <ScriptExecutionGradingSheetDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        handleSheetSubmit={(...a) => {
+          handleSheetSubmit?.(...a);
+          setDialogOpen(false);
+        }}
+      />
+      {/* This dummy ref is used to automatically scroll to the bottom */}
+      <div className="relative opacity-0 h-1" ref={bottomRef}></div>
     </div>
   );
 };

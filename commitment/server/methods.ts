@@ -23,6 +23,7 @@ import { ScalingConfig } from "/imports/ui/components/scaling/ScalingConfigForm"
 import { executeCommand, assertSuccess } from "./api/shell";
 import { checkIfExists } from "./api/git_commands";
 import { getNumberOfContributors } from "./helper_functions";
+import {pythonExecutor, pythonExecutorScaling} from "/server/python_executor";
 
 export async function getFilteredRepoData(
   repoUrl: string,
@@ -153,6 +154,9 @@ Meteor.methods({
 
     return fs.readFileSync(existingPaths[0], "utf8");
   },
+
+  pythonExecutor,
+  pythonExecutorScaling,
 });
 
 export const getFilteredData = async ({
