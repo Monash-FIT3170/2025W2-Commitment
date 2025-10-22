@@ -22,6 +22,20 @@ function toUserMessage(err: unknown): string {
   }
 }
 
+/** Navigate back to previous page or home if not possible */
+function goBackOrHome(navigate: ReturnType<typeof useNavigate>): void {
+  try {
+    // In browsers, history.length > 1 usually means we can go back safely.
+    if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+  } catch {
+    // ignore and use fallback
+  }
+  navigate("/home", { replace: true });
+}
+
 /** Stage weights (sum ≈ 1.0). No backend changes needed. */
 const STAGE_WEIGHTS = {
   validate: 0.05,
@@ -268,7 +282,7 @@ const LoadingView: React.FC = () => {
         setHadError(true);
         notifier.next(`Error: ${errMsg}`);
         setTimeout(() => {
-          navigate("/home", { replace: true });
+          goBackOrHome(navigate);
         }, 8000);
       })
 
