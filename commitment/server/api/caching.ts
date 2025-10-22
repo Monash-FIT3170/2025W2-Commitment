@@ -92,13 +92,12 @@ const refreshCacheTimer = (url: string): void => {
   clearTimeout(entry.timeout);
 
   // Set a new timer that removes the cache entry after inactivity
-  const timeout = setTimeout(() => {
+  entry.lastAccessed = new Date();
+  entry.timeout = setTimeout(() => {
     clearFromCache(url);
   }, CACHE_TTL_MS);
 
   // Update the entry with the new timer and access time
-  entry.timeout = timeout;
-  entry.lastAccessed = new Date();
   InMemoryCache.set(url, entry);
 };
 
@@ -305,7 +304,7 @@ export const tryFromDatabaseSerialised = async (
   // ✅ Step 1: check in-memory cache first
   const cached = InMemoryCache.get(url);
   if (cached) {
-    refreshCacheTimer(url); // ✅ reset expiration
+    refreshCacheTimer(url); // reset expiration by updating timer
     emit("Found data in in-memory cache!");
     return cached.data;
   }
@@ -314,7 +313,13 @@ export const tryFromDatabaseSerialised = async (
   if (!isInDatabase(url)) throw Error("Data not found in database");
   emit("Found data in database!");
 
-  return getCompleteDataFromDatabase(url);
+  const r = await getCompleteDataFromDatabase(url);
+  // reinsert it if its recently accessed
+  if (!isInCache(url)) {
+    cacheIntoLocalCache(url, r);
+  }
+
+  return r;
 };
 
 export const tryFromDatabaseSerialisedViaLatest = async (
