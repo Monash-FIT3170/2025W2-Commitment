@@ -51,11 +51,11 @@ export default function ScriptEditor(props: ScriptEditorProps) {
       value={props.code}
       onValueChange={code => props.setCode(code)}
       highlight={highlightWithLineNumbers}
-      padding={props.padding ?? 10}
+      padding={props.padding}
       style={{
         outline: 'none',
         border: 'none',
-        boxShadow: 'none'
+        boxShadow: 'none',
       }}
       textareaClassName="rounded-md outline-0 border-0"
       onFocus={props.onFocus}

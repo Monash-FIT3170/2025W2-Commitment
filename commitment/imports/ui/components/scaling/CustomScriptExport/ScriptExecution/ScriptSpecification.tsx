@@ -155,7 +155,7 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
         setDragging={readonly ? undefined : setDragging}
         readonly={readonly}
         language={language}
-        padding={padding}
+        padding={padding ?? 10}
       />
       {props.children}
     </div>

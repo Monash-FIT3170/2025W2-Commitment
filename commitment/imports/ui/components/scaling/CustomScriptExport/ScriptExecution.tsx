@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useRef, useState, useMemo} from 'react';
 import {Download, FileCode2, FileText, LoaderCircle, Terminal, Upload} from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from '@base/card';
 import {ExportHistoryItem} from './ExportHistory';
@@ -13,7 +13,7 @@ import {
 import {useLocalStorage} from "@hook/useLocalStorage";
 import {ExportData} from "@ui/components/scaling/CustomScriptExport/ExportPreview";
 import useAsync from "@hook/useAsync";
-import {PythonExecutorScalingResponse} from "@api/types";
+import {PythonExecutorScalingResponse, UserScalingSummary} from "@api/types";
 import {meteorCallAsync} from "@api/meteor_interface";
 import ScalingSummary from "@ui/components/scaling/ScalingSummary";
 import {cn} from "@ui/lib/utils";
@@ -23,7 +23,7 @@ import {Button} from "@base/button";
 import {useAuth} from "@hook/useAuth";
 import ScriptExecutionGradingSheetDialog
   from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptExecutionGradingSheetDialog";
-import {generateScaledGradingSheet} from "@ui/components/scaling/ScalingUtils";
+import {calculateFinalGrades, generateScaledGradingSheet} from "@ui/components/scaling/ScalingUtils";
 import {toast} from "@hook/useToast";
 
 interface ScriptExecutionProps extends DataSelectionPanelProps {
@@ -50,20 +50,30 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   handleSheetSubmit,
   ...dataSelectionPanelProps
 }: ScriptExecutionProps) => {
-  // const latestExport = history.length > 0 ? history[0] : null;
-
   const [code, setCode] = useLocalStorage('custom-execution-script', initialScript);
+
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
   const [response, setResponseRaw] = useState<PythonExecutorScalingResponse>({});
-
-  const scaledResults = response.data ?? [];
   const [executionLoading, setExecutionLoading] = useState<boolean>(false);
-
-  const isLoggedIn = useAuth();
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const isLoggedIn = useAuth();
+
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const userScalingSummaries = useMemo(() => {
+    if (!gradingSheetParseResult?.data || !response.data)
+      return response.data ?? [];
+    return calculateFinalGrades(response.data, gradingSheetParseResult.data);
+  }, [gradingSheetParseResult, response.data])
+
+  const errorOutput = response.error || response.stderr
+    ? [response.stderr, response.error].filter(Boolean).join('\n')
+    : undefined;
 
   // Add side effect of toasting errors whenever the response is set
   const setResponse = (response: PythonExecutorScalingResponse) => {
+    let success = false;
+
     if (response.error !== undefined) {
       toast({
         title: "Execution Error",
@@ -71,7 +81,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
         variant: "destructive",
       });
     }
-    if ((response.stderr?.trim().length ?? 0) > 0) {
+    else if ((response.stderr?.trim().length ?? 0) > 0) {
       const lines = response.stderr!.trimEnd().split('\n');
       const lastLine = lines[lines.length - 1];
 
@@ -81,15 +91,17 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
         variant: "destructive",
       });
     }
+    else {
+      success = true;
+    }
 
     setResponseRaw(response);
+    if (success) {
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 10)
+    }
   }
-
-  // const responseDataJson = useMemo(() => {
-  //   if (response.data)
-  //     return JSON.stringify(response.data, null, 2);
-  //   return "";
-  // }, [response.data]);
 
   const handleDownloadScaledSheet = async () => {
     if (!gradingSheetParseResult || !gradingSheet) return;
@@ -98,7 +110,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
       // Generate the scaled grading sheet
       const scaledFile = generateScaledGradingSheet(
         gradingSheetParseResult,
-        scaledResults
+        userScalingSummaries
       );
 
       const originalName = gradingSheet.name;
@@ -182,9 +194,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
       });
   }
 
-  const errorOutput = response.error || response.stderr
-    ? [response.stderr, response.error].filter(Boolean).join('\n')
-    : undefined;
+
 
   return (
     <div className="space-y-6">
@@ -276,7 +286,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
             </ScriptSpecification>
           </div>
 
-          {csv.data && scaledResults.length > 0 && (<>
+          {csv.data && userScalingSummaries.length > 0 && (<>
             <div
               className={cn(
                 "mb-6 transition-opacity ease-out duration-200 ",
@@ -284,12 +294,12 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
               )}
             >
               <ScalingSummary
-                userScalingSummaries={scaledResults}
+                userScalingSummaries={userScalingSummaries}
                 hasGradingSheet={!!gradingSheet}
               />
             </div>
 
-            {(
+            {!dialogOpen && (
               <div className="flex justify-center gap-4 flex-wrap p-4">
                 {/* Display the grading sheet only to logged in users */}
                 {isLoggedIn && (
@@ -328,6 +338,8 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
         onOpenChange={setDialogOpen}
         handleSheetSubmit={handleSheetSubmit}
       />
+      {/* This dummy ref is used to automatically scroll to the bottom */}
+      <div className="relative opacity-0 h-1" ref={bottomRef}></div>
     </div>
   );
 };
