@@ -13,7 +13,7 @@ import {
 import {useLocalStorage} from "@hook/useLocalStorage";
 import {ExportData} from "@ui/components/scaling/CustomScriptExport/ExportPreview";
 import useAsync from "@hook/useAsync";
-import {PythonExecutorResponse, type UserScalingSummary} from "@api/types";
+import {PythonExecutorScalingResponse} from "@api/types";
 import {meteorCallAsync} from "@api/meteor_interface";
 import ScalingSummary from "@ui/components/scaling/ScalingSummary";
 import {cn} from "@ui/lib/utils";
@@ -35,9 +35,9 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
   const [code, setCode] = useLocalStorage('custom-execution-script', initialScript);
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
-  const [response, setResponse] = useState<PythonExecutorResponse>({});
+  const [response, setResponse] = useState<PythonExecutorScalingResponse>({});
 
-  const [scaledResults, setScaledResults] = useState<UserScalingSummary[]>([]);
+  const scaledResults = response.data ?? [];
   const [executionLoading, setExecutionLoading] = useState<boolean>(false);
 
   // const responseDataJson = useMemo(() => {
@@ -53,9 +53,22 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
     try {
       const data = await onDataRequest(currentConfig);
 
-      const csv_headers = data.headers.join(',');
-      const csv_rows = data.rows.map(row => row.join(',')).join('\n');
-      return `${csv_headers}\n${csv_rows}`;
+      const csvHeaders = data.headers.join(',');
+      // Make sure any strings that include, are quoted
+      const csvRows = data.rows
+        .map(row => (
+          row.map(cell => (
+            typeof cell === 'number'
+              ? cell
+              : cell.includes(',') && !(cell.startsWith('"') && cell.endsWith('"')
+                || cell.startsWith('\'') && cell.endsWith('\''))
+                ? `"${cell}"`
+                : cell
+          ))
+        ))
+        .map(row => row.join(','))
+        .join('\n');
+      return `${csvHeaders}\n${csvRows}`;
     } catch (err) {
       throw (err instanceof Error ? err.message : 'Failed to load data');
     }
@@ -67,51 +80,13 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
     // Call the API!
     setExecutionLoading(true);
-    meteorCallAsync<PythonExecutorResponse>("pythonExecutor")(code, csv.data)
+    meteorCallAsync<PythonExecutorScalingResponse>("pythonExecutorScaling")(code, csv.data)
       .then(v => {
         setResponse(v);
         return v;
       })
-      .then((response) => {
-        // Get first row to be able to convert indexed values back to identifiers
-        if (csv.data === null || response.data === undefined)
-          return;
-        const csvLines = csv.data
-          .split('\n')
-        if (csvLines.length < 2)
-          return;
-        const csvFirstCol = csvLines
-          .slice(1)
-          .map(row => row.split(',')[0]);
-
-        // Turn response data into usable UserScalingSummary objects
-        const filteredData = response.data
-          .filter((row: unknown) => {
-            // Ensure entries are arrays
-            if (row === null || !Array.isArray(row))
-              return false;
-            // Ensure entries are of the right size
-            if (row.length !== 2)
-              return false;
-
-            // Only accept arrays of [number, number] or [string, number]
-            return !((typeof row[0] !== "string" || typeof row[1] !== "number") &&
-                     (typeof row[0] !== "number" || typeof row[1] !== "number"));
-          })
-          .map(row => row as [number | string, number])
-          .map((row: [number | string, number]) => {
-            return {
-              name: (typeof row[0] === "number") ? csvFirstCol[row[0]] : row[0],
-              scale: row[1]
-            } as UserScalingSummary;
-          });
-
-        setScaledResults(filteredData);
-        return filteredData;
-      })
       .catch((e) => {
         console.error("Caught error trying to use python executor: ", e);
-        setScaledResults([]);
         setResponse({
           error: "Failed to call python executor API"
         })
@@ -214,7 +189,6 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
               )}
             </ScriptSpecification>
           </div>
-
 
           {csv.data && scaledResults.length > 0 && (
             <div
