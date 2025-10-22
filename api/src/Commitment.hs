@@ -16,7 +16,8 @@ import Control.Exception (
     catch,
     SomeException (SomeException),
     displayException,
-    bracket)
+    bracket,
+    throwIO)
 import Data.List (sortBy, isPrefixOf)
 import Data.Maybe (fromMaybe)
 import Data.Map.Strict ()
@@ -38,7 +39,7 @@ import Control.Concurrent (
     tryTakeMVar,
     getNumCapabilities,
     newEmptyMVar )
-import Control.Monad (when, void)
+import Control.Monad (when, void, unless)
 import Data.IORef
 
 import Types
@@ -115,7 +116,16 @@ createDirectory path task = do
             -- create fresh directory
             createDirectoryIfMissing True path
             -- do task to initialise directory
-            Just <$> task path
+            -- Run the task; if it fails, ensure state and filesystem are cleaned
+            (Just <$> task path)
+              `catch` \(e :: SomeException) -> do
+                  -- emit or log the error if needed
+                  -- safePrint $ "[createDirectory] Task failed for " ++ path ++ ": " ++ displayException e
+                  -- rollback directory state (both filesystem + refcount + semaphore)
+                  deleteDirectoryIfExists path (pure ())
+                  -- rethrow the exception so caller knows it failed
+                  throwIO e
+                  
        else pure Nothing
 
 -- | Delete a directory safely (only one thread per dir at a time)
@@ -131,7 +141,11 @@ deleteDirectory path callback = do
 
     -- Only delete if this call actually drops refcount to zero
     if mDelete
-        then withDirectoryLock path $ deleteDirectoryIfExists path callback
+        then withDirectoryLock path $ do
+            deleteDirectoryIfExists path callback
+            -- 🧹 Clean up semaphore when the directory is fully released
+            modifyMVar_ directorySemaphores $ pure . Map.delete path
+            pure True
         else pure False
 
 -- automatically execute shell scripts in the command pool whilst the command result is extracted and passed to the parsing pool
@@ -181,7 +195,13 @@ fetchDataFrom rawUrl notifier = do
                     commandResult <- executeCommandTimedOut 10 notifier cloneRoot (cloneRepo url repoAbsPath)
                     let parsedCloneResult = parsed "Failed to clone the repo" $ successful commandResult
 
-                    pure ()
+                    -- we want to ensure that 
+                    let gitDir = repoAbsPath </> ".git"
+                    exists <- doesDirectoryExist gitDir
+                    unless exists $ do
+                        emit notifier "Clone failed, cleaning up..."
+                        deleteDirectoryIfExists repoAbsPath (pure ())
+                        throwIO (userError "Incomplete clone directory")
                 )
 
             deleteFunction _ = deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
