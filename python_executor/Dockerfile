@@ -4,12 +4,15 @@
 FROM nixos/nix
 
 # Add dependencies to the environment
-RUN nix-env -iA nixpkgs.bash
+RUN nix-env -iA nixpkgs.bash nixpkgs.dos2unix
 
 WORKDIR /home/python
 
 # Copy application files
 COPY . .
+
+# Remove CRLF
+RUN find . -type f -exec dos2unix {} +
 
 # Build the nix project
 RUN nix-build
