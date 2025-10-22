@@ -23,6 +23,8 @@ import {Button} from "@base/button";
 import {useAuth} from "@hook/useAuth";
 import ScriptExecutionGradingSheetDialog
   from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptExecutionGradingSheetDialog";
+import {generateScaledGradingSheet} from "@ui/components/scaling/ScalingUtils";
+import {toast} from "@hook/useToast";
 
 interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
@@ -52,7 +54,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
   const [code, setCode] = useLocalStorage('custom-execution-script', initialScript);
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
-  const [response, setResponse] = useState<PythonExecutorScalingResponse>({});
+  const [response, setResponseRaw] = useState<PythonExecutorScalingResponse>({});
 
   const scaledResults = response.data ?? [];
   const [executionLoading, setExecutionLoading] = useState<boolean>(false);
@@ -60,11 +62,75 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   const isLoggedIn = useAuth();
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
+  // Add side effect of toasting errors whenever the response is set
+  const setResponse = (response: PythonExecutorScalingResponse) => {
+    if (response.error !== undefined) {
+      toast({
+        title: "Execution Error",
+        description: response.error,
+        variant: "destructive",
+      });
+    }
+    if ((response.stderr?.trim().length ?? 0) > 0) {
+      const lines = response.stderr!.trimEnd().split('\n');
+      const lastLine = lines[lines.length - 1];
+
+      toast({
+        title: "Script output to stderr",
+        description: lastLine,
+        variant: "destructive",
+      });
+    }
+
+    setResponseRaw(response);
+  }
+
   // const responseDataJson = useMemo(() => {
   //   if (response.data)
   //     return JSON.stringify(response.data, null, 2);
   //   return "";
   // }, [response.data]);
+
+  const handleDownloadScaledSheet = async () => {
+    if (!gradingSheetParseResult || !gradingSheet) return;
+
+    try {
+      // Generate the scaled grading sheet
+      const scaledFile = generateScaledGradingSheet(
+        gradingSheetParseResult,
+        scaledResults
+      );
+
+      const originalName = gradingSheet.name;
+      const fileExtension = originalName.substring(
+        originalName.lastIndexOf(".")
+      );
+      const nameWithoutExtension = originalName.substring(
+        0,
+        originalName.lastIndexOf(".")
+      );
+      const scaledFileName = `scaled_${nameWithoutExtension}${fileExtension}`;
+
+      const renamedFile = new File([scaledFile], scaledFileName, {
+        type: scaledFile.type,
+      });
+
+      const url = URL.createObjectURL(renamedFile);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = scaledFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to download scaled grading sheet.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const csv = useAsync<string | null, string>(async () => {
     if (currentConfig === null)
