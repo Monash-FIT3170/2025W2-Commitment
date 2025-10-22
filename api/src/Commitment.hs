@@ -117,7 +117,7 @@ createDirectory path task = do
             modifyMVar_ directoryRefCount $ \refMap ->
                 pure (Map.insert path 1 refMap)
             pure (Just result)
-        else Nothing
+        else pure Nothing
 
 -- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO Bool
