@@ -1,5 +1,5 @@
 import React from "react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Github } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Accounts } from "meteor/accounts-base";
 import { useTheme } from "@hook/useTheme";
@@ -35,16 +35,14 @@ export const NavBar: React.FC = () => {
   return (
     <div className="sticky top-0 z-50 flex items-center justify-between py-2 border-b bg-git-bg-bottom relative px-4">
       <NavigationMenu>
-        <NavigationMenuList className="flex space-x-4">
-          <div className="flex items-center space-x-3">
-            <NavigationMenuItem>
-              <NavigationMenuLink>
-                <Link to={isLandingPage ? "/" : "/home"}>
-                  <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-                </Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          </div>
+        <NavigationMenuList className="flex items-center space-x-4">
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild>
+              <Link to={isLandingPage ? "/" : "/home"} className="inline-flex items-center">
+                <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
 
           {isLandingPage ? (
             // Landing page navigation items
@@ -52,7 +50,7 @@ export const NavBar: React.FC = () => {
               <NavigationMenuItem>
                 <NavigationMenuLink
                   href="#about"
-                  className={navigationMenuTriggerStyle()}
+                  className={navigationMenuTriggerStyle({ kind: "link" })}
                 >
                   About
                 </NavigationMenuLink>
@@ -60,7 +58,7 @@ export const NavBar: React.FC = () => {
               <NavigationMenuItem>
                 <NavigationMenuLink
                   href="#features"
-                  className={navigationMenuTriggerStyle()}
+                  className={navigationMenuTriggerStyle({ kind: "link" })}
                 >
                   Features
                 </NavigationMenuLink>
@@ -68,7 +66,7 @@ export const NavBar: React.FC = () => {
               <NavigationMenuItem>
                 <NavigationMenuLink
                   href="#howto"
-                  className={navigationMenuTriggerStyle()}
+                  className={navigationMenuTriggerStyle({ kind: "link" })}
                 >
                   How-To
                 </NavigationMenuLink>
@@ -85,16 +83,22 @@ export const NavBar: React.FC = () => {
           ) : (
             // App navigation items
             <>
-              <NavigationMenuItem>
-                <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
-                  Dashboard
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link to="/developer-docs" className={navigationMenuTriggerStyle()}>
-                  Developer Docs
-                </Link>
-              </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link to="/dashboard" className={navigationMenuTriggerStyle({ kind: "link" })}>
+                      Dashboard
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link to="/developer-docs" className={navigationMenuTriggerStyle({ kind: "link" })}>
+                      Developer Docs
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                
               {/* <NavigationMenuItem>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Docs
@@ -110,28 +114,39 @@ export const NavBar: React.FC = () => {
         <button
           type="button"
           onClick={handleToggleDarkMode}
-          className="p-2 rounded-full hover:bg-git-bg-bottom/30 transition-colors"
+          className={navigationMenuTriggerStyle({ kind: "icon" })}
           aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
           {isDark ? (
             <Sun className="h-6 w-6 text-yellow-400" />
           ) : (
-            <Moon className="h-6 w-6 text-gray-600" />
+            <Moon className="h-6 w-6" />
           )}
         </button>
 
+        {/* Project's Github link */}  
+        <a
+          href="https://github.com/Monash-FIT3170/2025W2-Commitment"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={navigationMenuTriggerStyle({ kind: "icon" })}
+          aria-label="Project GitHub"
+        >
+          <Github className="h-6 w-6" />
+        </a>
+
         {!isLoggedIn && (
-          <div>
-            <a href="/login" className={`${navigationMenuTriggerStyle()}mr-10`}>
+          <div className="flex items-center space-x-3">
+            <a href="/login" className={navigationMenuTriggerStyle({ kind: "link" })}>
               Log in
             </a>
             {/* Sign up button */}
             <Button
-              className="font-mono w-[100px] h-auto text-white rounded-full  text-center bg-git-int-primary hover:bg-git-int-primary-hover drop-shadow-lg"
+              className="font-mono w-[100px] h-auto text-white rounded-full text-center bg-git-int-primary hover:bg-git-int-primary-hover drop-shadow-lg"
               asChild
             >
               <a href="/signup">Sign Up</a>
-            </Button>{" "}
+            </Button>
           </div>
         )}
         {isLoggedIn && <ProfileMenu onSignOut={handleSignOut} />}
