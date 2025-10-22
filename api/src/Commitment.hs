@@ -104,21 +104,20 @@ createDirectory path task = do
     withDirectoryLock path $ do
         mEntry <- modifyMVar directoryRefCount $ \refMap ->
             case Map.lookup path refMap of
-                Nothing -> pure (refMap, Nothing)                         -- directory not yet created
-                Just n  -> pure (Map.insert path (n + 1) refMap, Just ()) -- increment counter
+                Nothing -> pure (refMap, True)                         -- directory not yet created
+                Just n  -> pure (Map.insert path (n + 1) refMap, False) -- increment counter
 
-        case mEntry of
-            Just () -> pure Nothing  -- directory exists, counter incremented, no task needed
-            Nothing -> do
-                -- creating the directory to initialise
-                createDirectoryIfMissing True path
-                -- Directory is not initialized, run the creation task
-                -- which initialises the directory with all the correct information
-                result <- task path
-                -- Only after successful task, insert entry into map with counter = 1
-                modifyMVar_ directoryRefCount $ \refMap ->
-                    pure (Map.insert path 1 refMap)
-                pure (Just result)
+        if mEntry then do
+            -- creating the directory to initialise
+            createDirectoryIfMissing True path
+            -- Directory is not initialized, run the creation task
+            -- which initialises the directory with all the correct information
+            result <- task path
+            -- Only after successful task, insert entry into map with counter = 1
+            modifyMVar_ directoryRefCount $ \refMap ->
+                pure (Map.insert path 1 refMap)
+            pure (Just result)
+        else Nothing
 
 -- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO Bool
