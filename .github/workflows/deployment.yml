@@ -2,7 +2,7 @@ name: Deploy to Machine Instance
 
 on:
   push:
-    branches: ["main"]
+    branches: ["fix/prod-docker"]
 
 jobs:
   build-and-deploy:

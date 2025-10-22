@@ -25,7 +25,7 @@ services:
     stdin_open: true
     networks:
       - app-network
-      -
+
   python-executor:
     build:
       context: ./python_executor
