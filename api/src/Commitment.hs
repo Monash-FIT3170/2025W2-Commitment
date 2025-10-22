@@ -14,6 +14,7 @@ module Commitment (
 import Control.Concurrent.STM
 import Control.Exception (
     catch,
+    finally,
     SomeException (SomeException),
     displayException,
     bracket,
@@ -177,7 +178,8 @@ fetchDataFrom rawUrl notifier = (do
             repoRelativePath = last (init parts) ++ "/" ++ last parts
             repoAbsPath      = cloneRoot </> repoRelativePath
 
-            cloneFunction = createDirectory repoAbsPath $ \_ -> do
+        -- if this fails we catch it but do not delete
+        awaitClone <- createDirectory repoAbsPath $ \_ -> do
                 emit notifier "Cloning repo..."
                 commandResult <- executeCommandTimedOut 10 notifier cloneRoot (cloneRepo url repoAbsPath)
                 let _parsedCloneResult = parsed "Failed to clone the repo" $ successful commandResult
@@ -188,17 +190,17 @@ fetchDataFrom rawUrl notifier = (do
                 
                 pure ()
 
-            deleteFunction _ = deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
-
-        bracket
-            cloneFunction
-            deleteFunction
-            (\_ -> do
+        -- this part should be safe to execute 
+        -- and always delete because we have
+        -- successfully created the repository
+        let processing = do 
                 emit notifier "Getting repository data..."
                 repoData <- formulateRepoData url repoAbsPath notifier
                 emit notifier "Data processed!"
                 pure (Right repoData)
-            )
+        
+        processing `finally` 
+            deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
 
     ) `catch` \(e :: SomeException) -> do
         let errMsg = displayException e
