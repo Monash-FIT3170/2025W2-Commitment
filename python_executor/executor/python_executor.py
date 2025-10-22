@@ -11,7 +11,7 @@ import re
 PORT = 8002
 app = Flask(__name__)
 
-ALLOWED_LITERAL_PATTERN = r'\[[^\(\[\{\)\]\}]*\]'
+ALLOWED_LITERAL_PATTERN = r'\[([^\(\[\{\)\]\}]|(\"[^\"]\"))*\]'
 ALLOWED_LITERAL_RE = re.compile(ALLOWED_LITERAL_PATTERN)
 
 
