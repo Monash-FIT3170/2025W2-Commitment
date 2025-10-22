@@ -194,8 +194,6 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
       });
   }
 
-
-
   return (
     <div className="space-y-6">
       {/* Main Script Execution Card */}

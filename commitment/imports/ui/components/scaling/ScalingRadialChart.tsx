@@ -58,7 +58,7 @@ export function ScalingRadialChart({ value }: ScalingRadialChartProps) {
           dominantBaseline="middle"
           className="fill-git-int-text text-[0.7rem] font-bold"
         >
-          {value}
+          {value.toFixed(2)}
         </text>
       </RadialBarChart>
     </div>
