@@ -122,7 +122,7 @@ createDirectory path task = do
                   -- emit or log the error if needed
                   -- safePrint $ "[createDirectory] Task failed for " ++ path ++ ": " ++ displayException e
                   -- rollback directory state (both filesystem + refcount + semaphore)
-                  deleteDirectoryIfExists path (pure ())
+                  deleteDirectory path (pure ())
                   -- rethrow the exception so caller knows it failed
                   throwIO e
                   
