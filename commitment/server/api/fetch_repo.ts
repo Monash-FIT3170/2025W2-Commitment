@@ -54,7 +54,7 @@ Meteor.methods({
     const subject = sub || new Subject<string>();
 
     // returns whether it was successful in caching to the database or not
-    return await getRepoData(repoUrl, subject, queryDatabase)
+    return getRepoData(repoUrl, subject, queryDatabase)
       .then((_) => true)
       .catch((e: Error) => {
         console.log(`error upon getGitHubRepoData with url: ${repoUrl}: \n${e}`);

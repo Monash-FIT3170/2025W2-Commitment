@@ -27,9 +27,8 @@ export const fetchRepo = (
       {},
       { sort: { createdAt: -1 } }
     ).fetch();
-    messages.forEach((m: PersonalServerResponse) => (subject ? subject.next(m.text) : null));
+    subject ? messages.forEach((m: PersonalServerResponse) => subject.next(m.text)) : null;
   });
-
   return meteorCallAsync("getGitHubRepoData")(url, queryDatabase);
 };
 
@@ -48,7 +47,7 @@ export const updateRepo = async (
   notifier.next(upToDate);
   if (!upToDate) {
     const ret = await fetchRepo(url, msgs, false);
-    emitValue(msgs)("Data is ready for viewing!")
+    emitValue(msgs)("Data is ready for viewing!");
     return ret;
   }
   return false;

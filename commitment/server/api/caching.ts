@@ -79,7 +79,7 @@ type InMemoryCacheEntry = {
 };
 
 const CACHE_SIZE_LIMIT_MB = 1000; // cache size in MB
-const CACHE_SIZE_LIMIT_BYTES = CACHE_SIZE_LIMIT_MB * 1000 * 1000; // cache size in MB
+const CACHE_SIZE_LIMIT_BYTES = CACHE_SIZE_LIMIT_MB * 1_000_000;
 const InMemoryCache: Map<string, InMemoryCacheEntry> = new Map();
 
 // Automatically remove a cache entry after 5 minutes of inactivity
@@ -129,6 +129,15 @@ const cacheIntoLocalCache = (url: string, d: SerializableRepoData): void => {
   // we need to see if we have space
   let cacheMemoryUsage = getCacheMemoryUsage();
   const dSize = sizeof(d);
+
+  if (dSize > CACHE_SIZE_LIMIT_BYTES) {
+    console.log(
+      `url ${url} exceeds limit of ${CACHE_SIZE_LIMIT_MB}MB by ${
+        (dSize - CACHE_SIZE_LIMIT_BYTES) / 1_000_000
+      }MB`
+    );
+    return;
+  }
 
   // we need to make space in the cache
   if (dSize + cacheMemoryUsage > CACHE_SIZE_LIMIT_BYTES) {
@@ -366,12 +375,14 @@ export const tryFromDatabaseSerialisedViaLatest = async (
   url: string,
   notifier: Subject<string> | null
 ): Promise<SerializableRepoData> => {
+  const emit = emitValue(notifier);
   const d: SerializableRepoData = await tryFromDatabaseSerialised(url, notifier);
+  emit("Checking whether the repo is up to date...");
   const upToDate: boolean = await isUpToDate(url, d);
 
   if (!upToDate) {
     const msg = "Repo is not up to date with the latest changes";
-    emitValue(notifier)(msg);
+    emit(msg);
     throw Error(msg);
   }
 
