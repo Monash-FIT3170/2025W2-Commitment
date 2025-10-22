@@ -71,6 +71,14 @@ export const NavBar: React.FC = () => {
                   How-To
                 </NavigationMenuLink>
               </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link to="/developer-docs">Developer Docs</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
             </>
           ) : (
             // App navigation items
@@ -79,6 +87,14 @@ export const NavBar: React.FC = () => {
                   <NavigationMenuLink asChild>
                     <Link to="/dashboard" className={navigationMenuTriggerStyle({ kind: "link" })}>
                       Dashboard
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link to="/developer-docs" className={navigationMenuTriggerStyle({ kind: "link" })}>
+                      Developer Docs
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>

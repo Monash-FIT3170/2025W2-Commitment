@@ -46,7 +46,7 @@ export function applyAliasMapping(
   mapping.forEach(officialName => officialNames.add(officialName));
   
   // Process commits - update contributor names
-  const mappedCommits = data.allCommits.map(commitObj => {
+  const mappedCommits = (data.allCommits || []).map(commitObj => {
     const commit = commitObj.value;
     const originalName = commit.contributorName;
     const mappedName = mapping.get(originalName.toLowerCase()) || originalName;
@@ -63,7 +63,7 @@ export function applyAliasMapping(
   // Process contributors - consolidate and update
   const contributorMap = new Map<string, ContributorData>();
   
-  data.contributors.forEach(contributorObj => {
+  (data.contributors || []).forEach(contributorObj => {
     const contributor = contributorObj.value;
     const originalName = contributor.name;
     const mappedName = mapping.get(originalName.toLowerCase()) || originalName;
@@ -158,7 +158,7 @@ export async function applyAliasMappingIfNeeded(
   }
   
   // Check if any contributors match the config
-  const hasRelevantUsers = data.contributors.some(contributor => {
+  const hasRelevantUsers = (data.contributors || []).some(contributor => {
     const name = contributor.value.name.toLowerCase();
     const emails = contributor.value.emails.map(e => e.toLowerCase());
     
