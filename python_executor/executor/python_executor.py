@@ -53,6 +53,11 @@ def execute():
     return result
 
 
+def get_last_lines(s: str, n: int = 50) -> str:
+    lines = s.splitlines()
+    return "\n".join(lines[-n:])
+
+
 def exec_in_sandbox(command: List[str],
                     cwd: str | None = None):
     """
@@ -68,7 +73,7 @@ def exec_in_sandbox(command: List[str],
             ['python-executor-env'] + command,
             capture_output=True,
             start_new_session=True,
-            timeout=1,
+            timeout=1.0,
             text=True,
             cwd=cwd,
         )
@@ -79,16 +84,16 @@ def exec_in_sandbox(command: List[str],
         # Timed out!
         return jsonify({
             "error": "Program timed out!",
-            "stderr": stderr,
-            "stdout": stdout,
+            "stdout": get_last_lines(stdout),
+            "stderr": get_last_lines(stderr)
         }), 400
 
     # Ensure the program exited without error
     if result.returncode < 0:
         return jsonify({
             "error": f"Program returned with error code {result.returncode}",
-            "stderr": result.stderr,
-            "stdout": result.stdout,
+            "stderr": get_last_lines(result.stderr),
+            "stdout": get_last_lines(result.stdout),
         }), 400
 
     # Try parse any csv data from result.stdout
@@ -112,8 +117,8 @@ def exec_in_sandbox(command: List[str],
         if not ALLOWED_LITERAL_RE.match(line):
             return jsonify({
                 "error": f"Program returned a literal with nested structures (not allowed).",
-                "stderr": result.stderr,
-                "stdout": result.stdout,
+                "stderr": get_last_lines(result.stderr),
+                "stdout": "\n".join(lines[-50:]),
             }), 400
 
         try:
@@ -126,8 +131,8 @@ def exec_in_sandbox(command: List[str],
 
     # Return result
     return jsonify({
-        "stderr": result.stderr,
-        "stdout": stdout,
+        "stderr": get_last_lines(result.stderr),
+        "stdout": "\n".join(lines[-50:]),
         "data": data_rows,
     }), 200 if result.stderr is None or len(result.stderr.strip()) == 0 else 400
 
