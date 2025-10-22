@@ -334,7 +334,10 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
       <ScriptExecutionGradingSheetDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        handleSheetSubmit={handleSheetSubmit}
+        handleSheetSubmit={(...a) => {
+          handleSheetSubmit?.(...a);
+          setDialogOpen(false);
+        }}
       />
       {/* This dummy ref is used to automatically scroll to the bottom */}
       <div className="relative opacity-0 h-1" ref={bottomRef}></div>
