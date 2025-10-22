@@ -189,7 +189,7 @@ fetchDataFrom rawUrl notifier = do
 
                     -- we want to ensure that it is a git directory so we run a command inside of it
                     ensureSuccess <- executeCommand notifier repoAbsPath (checkIsGitDirectory repoAbsPath)
-                    let ensureSuccessResult = parsed "Failed to clone the repo" $ successful ensureSuccess
+                    let ensureSuccessResult = parsed "Failed to initialise the filepath" $ successful ensureSuccess
 
                     pure ()
                 )
