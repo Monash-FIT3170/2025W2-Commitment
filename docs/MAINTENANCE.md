@@ -83,7 +83,7 @@ A fully managed cloud database service that simplifies deploying, managing, and 
 - **Access:** Hosted on Atlas, can be accessed via login or remotely through a Mongo connection.
 
 ### Domains
-Currently the project uses [this domain](commitmentfit310.net) to allow users to access the web application. This requires a domain to be purchased and a DNS registrar set up to resolve the domain name. Steps for this are outlined in the [Deployment README](/docs/DEPLOYMENT.md).
+Currently the project uses [this domain](commitmentfit3170.net) to allow users to access the web application. This requires a domain to be purchased and a DNS registrar set up to resolve the domain name. Steps for this are outlined in the [Deployment README](/docs/DEPLOYMENT.md).
 
 - **Domain Name:**
   - Domain name was purchased on [Squarespace Domains](https://domains.squarespace.com/?channel=pbr&subchannel=go&campaign=pbr-go-au-en-core_category-e&subcampaign=(domains-en_squarespace-domains_e)&gclsrc=aw.ds&&cid=16750987370&aid=133807081854&tid=aud-307746717000:kwd-95472161576&mt=e&eid=&loc_p_ms=9071445&loc_i_ms=&nw=g&d=c&adid=602205694451&channel2=pbr&subchannel2=go&gad_source=1&gad_campaignid=16750987370&gbraid=0AAAAADxS_FKppSxP1k2Gh0o6Z7rzi4HUd&gclid=CjwKCAjwu9fHBhAWEiwAzGRC_51ix7197voPgVy5CcTJ85GtTbS-E4L6lGuYsKi_XMXbj43svKEPShoCnmwQAvD_BwE)
@@ -114,7 +114,7 @@ The below are all the related costs/responsibilities that are associated with th
 | Cloudflare DNS     | Managing DNS                       | Free Tier                 | Expires post-semester                      |
 | Commitment Email   | Used as admin account for services | Free Google Account       | Abandoned/Deleted post-semester            |
 | Squarespace Domain | Custom web domain                  | Annual Renewal Fee        | Paid via team email, expires on 08/10/2026 |
-| GitHub Actions     | CI/CD automation                   | Free for Public Pepos     | None                                       |
+| GitHub Actions     | CI/CD automation                   | Free for Public Repos     | None                                       |
 
 
 ## Maintenance and Update Recommendations

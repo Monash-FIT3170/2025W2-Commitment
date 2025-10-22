@@ -68,7 +68,7 @@ If a user comes across any issues in the system, an issue can be raised on GitHu
 
 This page can be [accessed here](https://github.com/Monash-FIT3170/2025W2-Commitment/issues), templates are provided for different issue types, all a user has to do is fill out the template and submit.
 
-| Type      | Desription                                                       |
+| Type      | Description                                                       |
 | --------- | ---------------------------------------------------------------- |
 | `bug`     | For any UI or logic bugs that don't align with user expectations |
 | `feature` | A request for new features to the application.                   |
