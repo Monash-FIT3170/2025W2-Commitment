@@ -204,7 +204,6 @@ fetchDataFrom rawUrl notifier = (do
     ) `catch` \(e :: SomeException) -> do
         let errMsg = displayException e
         emit notifier ("Error occurred:\n" ++ errMsg)
-        safePrint errMsg
         pure (Left errMsg)
 
 
