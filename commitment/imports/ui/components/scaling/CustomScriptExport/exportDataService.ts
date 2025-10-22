@@ -200,7 +200,7 @@ export class ExportDataService {
         
         // Include all emails from aliases if available
         const allEmails = [...new Set(contributorEmails)];
-        const emailsString = allEmails.length > 0 ? allEmails.join(', ') : '';
+        const emailsString = allEmails.length > 0 ? allEmails.join('; ') : '';
         
         // Contributor info (match header order: contributor_name, contributor_email)
         row.push(contributorName);
