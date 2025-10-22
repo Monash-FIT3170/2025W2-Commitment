@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptEditor";
 import {cn} from "@ui/lib/utils";
-import {FileCode2} from "lucide-react";
 
 export const initialScript = `import csv
 
@@ -28,13 +27,30 @@ with open("./data.csv", newline="", encoding="utf-8") as data_csv:
 `;
 
 export interface ScriptSpecificationProps {
-  className?: string,
-  code?: string,
-  setCode?: (code: string) => void,
-  icon?: React.ReactNode,
-  name?: string,
-  readonly?: boolean,
-  language?: string;
+  className?: string | string[],
+  code: string | string[],
+  setCode: ((code: string) => void) | ((code: string) => void)[],
+  icon?: React.ReactNode | React.ReactNode[],
+  name?: string | string[],
+  readonly?: boolean | boolean[],
+  language?: string | string[];
+}
+
+function asArrayDefault<T>(value: T | T[], defaultValue: T, tabCount: number | undefined = undefined): T[] {
+  if (tabCount === undefined)
+    tabCount = Array.isArray(value) ? value.length : 1;
+  if (value === undefined)
+    return tabCount === 1 ? [value] : Array(tabCount).fill(defaultValue);
+
+  if (Array.isArray(value)) {
+    return value.length < tabCount
+      ? [...value, ...Array(tabCount-1).fill(defaultValue)]
+      : value;
+  }
+  return tabCount === 1 ? [value] : Array(tabCount-1).fill(value);
+}
+function asArray<T>(value?: T | T[], tabCount?: number): (T | undefined)[] {
+  return asArrayDefault<T | undefined>(value, undefined, tabCount);
 }
 
 /**
@@ -44,10 +60,31 @@ export interface ScriptSpecificationProps {
  * @constructor
  */
 export default function ScriptSpecification(props: ScriptSpecificationProps) {
-  // If code and set code aren't provided, we call a hook ourselves.
-  const [code, setCode] = props.code || props.setCode
-    ? [props.code ?? "", props.setCode ?? (() => {})]
-    : useState<string>(initialScript);
+  const codes = asArrayDefault(props.code, "").map(
+    code => code ?? initialScript
+  );
+  const tabCount = codes.length;
+
+  // Unpack props used across all tabs
+  const icons = asArray(props.icon, tabCount);
+  const names = asArray(props.name, tabCount);
+
+  // The currently open editor tab
+  const [tabIndexRaw, setTabIndex] = useState<number>(0);
+  const tabIndex = tabIndexRaw < 0
+    ? 0
+    : tabIndexRaw >= tabCount
+      ? tabCount - 1
+      : tabIndexRaw;
+
+  // Current tab props
+  const code = codes[tabIndex];
+  const setCode = asArray(props.setCode, tabCount)[tabIndex] ?? (() => {});
+  const readonly = asArray(props.readonly, tabCount)[tabIndex];
+  const language = asArray(props.language, tabCount)[tabIndex] ?? "python";
+  const className = asArray(props.className, tabCount)[tabIndex];
+
+  // UI State
   const [selectedRaw, setSelected] = useState<boolean>(false);
   const [draggingRaw, setDragging] = useState<boolean>(false);
 
@@ -63,20 +100,43 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
     dragging
       ? "outline-dashed outline-2 outline-primary animate-pulse"
       : "",
-    props.className ?? ""
+    className
   )
 
-  const icon = props.icon ?? <FileCode2 size='sm'/>;
-  const name = props.name ?? "script.py";
+  const tabs = names.map((name, i) => (
+    <div
+      className={cn(
+        "text-git-text-secondary bg-git-bg-bottom border-git-stroke-tertiary border-b-1 border-e-1 rounded-br-md",
+        "transition-transform ease-out duration-100",
+        tabCount > 1 && tabIndex === i
+          ? "z-10 border-w-1 shadow-sm translate-y-0"
+          : "text-git-text-secondary bg-git-bg-bottom/75 -translate-y-0.5",
+        i > 0 && "rounded-bl-md",
+
+        tabCount > 1 && tabIndex !== i && "cursor-pointer hover:bg-git-bg hover:text-git-text-primary",
+        tabCount > 1 && tabIndex === i && "cursor-default"
+      )}
+      onClick={() => setTabIndex(i)}
+    >
+      <div
+        className={cn(
+          "text-sm pb-0.5 pt-1 pl-1 pr-3 w-fit flex flex-row items-center gap-1 justify-center",
+          tabCount > 1 && tabIndex !== i && "opacity-60",
+        )}
+      >
+        <div className="opacity-75 pb-1 pt-0.5 w-6 h-6" >
+          {icons[i]}
+        </div>
+        <span>{name ?? "script.py"}</span>
+      </div>
+    </div>
+  ));
 
   return (
     <div className={editorClassName}>
-      <p className="text-git-text-secondary bg-git-bg-bottom text-sm pt-1 pb-0.5 pl-1 pr-3 w-fit border-git-stroke-tertiary border-0 border-b-1 border-e-1  rounded-br-md flex flex-row items-center gap-1 justify-center">
-        <div className="text-git-text-secondary opacity-75 pb-1 pt-0.5 w-6 h-6" >
-          {icon}
-        </div>
-        <span>{name}</span>
-      </p>
+      <div className="flex flex-row items-center justify-start p-0">
+        {tabs}
+      </div>
       <ScriptEditor
         className="grow h-auto text-sm"
         code={code}
@@ -90,9 +150,9 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
           setDragging(false)
         }}
 
-        setDragging={props.readonly ? undefined : setDragging}
-        readonly={props.readonly}
-        language={props.language}
+        setDragging={readonly ? undefined : setDragging}
+        readonly={readonly}
+        language={language}
       />
     </div>
   )

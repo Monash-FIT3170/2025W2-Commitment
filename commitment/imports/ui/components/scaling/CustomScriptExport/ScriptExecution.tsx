@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
-import {FileText, Terminal} from 'lucide-react';
-
+import {FileCode2, FileText, LoaderCircle, Terminal} from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from '@base/card';
 import {ExportHistoryItem} from './ExportHistory';
 import ScriptSpecification, {
@@ -130,13 +129,42 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
           </p>
         </CardHeader>
         <CardContent className="bg-git-bg-elevated dark:bg-git-bg-primary pt-6 rounded-b-xl">
-          <div className="py-3">
-
+          <div className="pb-3">
             <ScriptSpecification
-              className="mb-6"
-              code={code}
-              setCode={setCode}
+              className={[
+                "mb-6 mt-0 min-h-[45vh]",
+                cn(
+                  "mb-6 mt-0 min-h-[45vh] transition-opacity ease-out duration-200 ",
+                  csv.loading && "opacity-50" || "opacity-100"
+                )
+              ]}
+              code={[
+                code,
+                csv.data ?? ""
+              ]}
+              setCode={[
+                setCode
+              ]}
+              name={[
+                "script.py",
+                "data.csv"
+              ]}
+              icon={[
+                <FileCode2 size="sm"/>,
+                csv.loading
+                  ? <LoaderCircle size="sm" className="animate-spin"/>
+                  : <FileText size="sm"/>
+              ]}
+              language={[
+                "python",
+                "csv"
+              ]}
+              readonly={[
+                false,
+                true
+              ]}
             />
+
           </div>
 
           <div className="space-y-6">
@@ -149,19 +177,6 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                 setCurrentConfig(config);
                 dataSelectionPanelProps.onConfigChange?.(config);
               }}
-            />
-
-            <ScriptSpecification
-              className={cn(
-                "mb-6 transition-opacity ease-out duration-200 ",
-                csv.loading && "opacity-50" || "opacity-100"
-              )}
-              code={csv.data ?? ""}
-              setCode={() => {}}
-              name={"data.csv"}
-              icon={<FileText size="sm"/>}
-              language="csv"
-              readonly
             />
 
             <ScriptSpecification
