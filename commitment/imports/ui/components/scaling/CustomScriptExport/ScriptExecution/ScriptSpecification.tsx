@@ -88,8 +88,8 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
   const [selectedRaw, setSelected] = useState<boolean>(false);
   const [draggingRaw, setDragging] = useState<boolean>(false);
 
-  const selected = selectedRaw && !props.readonly;
-  const dragging = draggingRaw && !props.readonly;
+  const selected = selectedRaw && !readonly;
+  const dragging = draggingRaw && !readonly;
 
   const editorClassName = cn(
     "bg-git-bg-primary rounded-md border-1 outline-1 mt-3 inset-shadow-md overflow-clip",
