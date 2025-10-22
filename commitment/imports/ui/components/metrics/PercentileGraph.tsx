@@ -54,8 +54,8 @@ function makePlotData(contributors: ContributorScaledData[]) {
 }
 
 // Optional: image “dot” renderer (falls back to a circle)
-const AvatarDot = (props) => {
-  const { cx, cy, payload, r = 10 } = props;
+const AvatarDot = (props: { cx?: any; cy?: any; payload?: any; r?: number; }) => {
+  const { cx, cy, payload, r = 20 } = props; // Default r to 20 if undefined
   const url = payload?.avatarUrl;
   const name = payload?.name || "";
   const initials = name.slice(0, 1).toUpperCase();
@@ -122,11 +122,22 @@ interface PercentileGraphProps {
   setGraphType?: (v: "percentile" | "heatmap") => void;
 }
 
-export default function PercentileGraph({ data, title, setGraphType }: PercentileGraphProps) {
+export default function PercentileGraph({
+  data,
+  title,
+  setGraphType,
+}: PercentileGraphProps) {
   const { data: plotData, maxStack } = useMemo(
     () => makePlotData(data.contributors),
     [data]
   );
+
+  
+
+  console.table(
+  plotData.reduce((m,p)=>((m[p.x]=(m[p.x]??0)+1),m),{} as Record<number,number>)
+);
+
   return (
     <GraphCard className="w-full p-0">
       <CardHeader className="pb-0">
@@ -137,7 +148,14 @@ export default function PercentileGraph({ data, title, setGraphType }: Percentil
               <InfoButton description="Each circle is a contributor. X groups by quartile (or exact percentile), Y is a stack index so overlapping values pile upward." />
             </div>
           </div>
-          <Select defaultValue="percentile" onValueChange={setGraphType ? (v: "percentile" | "heatmap") => setGraphType(v) : undefined}>
+          <Select
+            defaultValue="percentile"
+            onValueChange={
+              setGraphType
+                ? (v: "percentile" | "heatmap") => setGraphType(v)
+                : undefined
+            }
+          >
             <SelectTrigger className="w-[180px] bg-git-bg-elevated text-git-foreground font-normal shadow-none">
               <SelectValue />
             </SelectTrigger>
@@ -164,7 +182,7 @@ export default function PercentileGraph({ data, title, setGraphType }: Percentil
               dataKey="x"
               domain={[0, 100]}
               allowDuplicatedCategory={false}
-              ticks={[0,10,20,30,40,50,60,70,80,90,100]}
+              ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
               label={{
                 value: "Percentile",
                 position: "insideBottom",
