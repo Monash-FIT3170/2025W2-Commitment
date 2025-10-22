@@ -89,7 +89,6 @@ function updateModelFromMessage(m: string, prev: ProgressModel): ProgressModel {
     }
   }
 
- 
   {
     const match = m.match(/Formulating all file data\s*\((\d+)\s*\/\s*(\d+)\)/i);
     if (match) {
@@ -114,6 +113,7 @@ function updateModelFromMessage(m: string, prev: ProgressModel): ProgressModel {
 
   return model;
 }
+
 const MIN_SEEN_FRACTION = 0.05; // tiny credit if a stage is seen but totals unknown
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 
@@ -192,22 +192,7 @@ function useSmoothedProgress(target: number) {
   return progress;
 }
 
-/** Navigate back if there's a previous entry; otherwise fallback to /home */
-function goBackOrHome(navigate: ReturnType<typeof useNavigate>) {
-  try {
-    // In browsers, history.length > 1 usually means we can go back safely.
-    if (typeof window !== "undefined" && window.history && window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
-  } catch {
-    // ignore and use fallback
-  }
-  navigate("/home", { replace: true });
-}
-
-
-const LoadingPage: React.FC = () => {
+const LoadingView: React.FC = () => {
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -230,6 +215,7 @@ const LoadingPage: React.FC = () => {
     []
   );
 
+  // Rotate tips every 4s
   useEffect(() => {
     if (hadError) return;
     const id = Meteor.setInterval(() => {
@@ -247,6 +233,7 @@ const LoadingPage: React.FC = () => {
     !model.seen.commitData &&
     !model.seen.fileData;
 
+  // Fetch repository data and stream notifier
   useEffect(() => {
     if (!repoUrl) return;
 
@@ -281,7 +268,7 @@ const LoadingPage: React.FC = () => {
         setHadError(true);
         notifier.next(`Error: ${errMsg}`);
         setTimeout(() => {
-          goBackOrHome(navigate);
+          navigate("/home", { replace: true });
         }, 8000);
       })
 
@@ -295,30 +282,20 @@ const LoadingPage: React.FC = () => {
       notifier.complete();
     };
   }, [repoUrl, navigate]);
-    
+
   return !repoUrl ? (
     <Navigate to="/insert-git-repo" replace />
   ) : (
-    <div className="min-h-screen flex items-center justify-center px-6 pt-24">
-      <div className="w-full max-w-2xl flex flex-col items-center gap-6 bg-git-bg-elevated/0">
-        <h2
-          className={[
-            "text-git-text-primary",
-            "text-2xl md:text-3xl font-mono font-semibold text-center",
-            hadError ? "text-red-500" : "",
-          ].join(" ")}
-        >
-          {message}
-        </h2>
+    <div className="flex flex-col items-center justify-center h-screen pt-24 px-6">
+      <h2 className={`text-3xl font-inconsolata-bold mb-6 ${hadError ? "text-red-500" : ""}`}>
+        {message}
+      </h2>
 
-        <div className="w-full">
-          <LoadingBar progress={progress} indeterminate={indeterminate} />
-        </div>
+      <LoadingBar progress={progress} indeterminate={indeterminate} />
 
-        <TipBox tip={tips[tipIndex]} />
-      </div>
+      <TipBox tip={tips[tipIndex]} />
     </div>
   );
 };
 
-export default LoadingPage;
+export default LoadingView;
