@@ -1,5 +1,7 @@
 import { Meteor } from "meteor/meteor";
 import { Subject } from "rxjs";
+import * as fs from "fs";
+import * as path from "path";
 
 import { getFilteredRepoDataServer } from "./filter";
 import { tryFromDatabaseSerialised } from "./api/caching";
@@ -129,10 +131,28 @@ Meteor.methods({
 
     const result = getNumberOfContributors(await tryFromDatabaseSerialised(repoUrl, n));
 
-
     if (result <= largestSize) return true;
 
     return false;
+  },
+
+  /**
+   * Get the API README file content
+   * @returns Promise<string> The README content as a string
+   */
+  async "api.getReadme"(): Promise<string> {
+    const fileLocation = "/api/README.md";
+    const searchPaths = [
+      // If running from Meteor dev mode or Docker bind mount
+      path.resolve("/projects" + fileLocation),
+      // Relative to Meteor project (use environment var or known structure)
+      path.resolve(process.cwd(), ".." + fileLocation),
+      path.resolve(process.cwd(), "../.." + fileLocation),
+    ];
+    const existingPaths = searchPaths.filter(fs.existsSync);
+    if (existingPaths.length === 0) throw Error("Failed to fetch the API readme :(");
+
+    return fs.readFileSync(existingPaths[0], "utf8");
   },
 
   pythonExecutor
@@ -244,6 +264,7 @@ export const getAnalyticsData = async ({
     endDate: selections.selectedDateRange.to!,
     branch: selections.selectedBranch,
     contributor: selections.selectedContributors,
+    userId,
   });
 
   const metricsData: MetricsData = await getAllGraphData(filteredRepo, metric);

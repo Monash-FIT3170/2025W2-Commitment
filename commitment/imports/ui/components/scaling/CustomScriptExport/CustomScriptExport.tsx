@@ -4,13 +4,13 @@ import { InfoIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@base/tabs';
 import { Alert, AlertDescription } from '@base/alert';
-import { Button } from '@base/button';
 
 import { DataSelectionPanel, DataSelectionConfig } from './DataSelectionPanel';
 import { ExportPreview, ExportData } from './ExportPreview';
 import { ExportHistory, useExportHistory, ExportHistoryItem } from './ExportHistory';
 import { ScriptExecution } from './ScriptExecution';
-import { useCSVExport, generateFilename } from './ExportButton';
+import { useCSVExport, generateFilename, generateCSV } from './ExportButton';
+import { ExportDataService } from './exportDataService';
 
 interface CustomScriptExportProps {
   availableBranches: string[];
@@ -34,6 +34,17 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
   const { history, addExport, deleteExport, clearHistory } = useExportHistory();
   const { exportToCSV, isExporting } = useCSVExport();
+  const exportDataService = ExportDataService.getInstance();
+
+  // Helper function to calculate file size
+  const getFileSize = (data: ExportData): string => {
+    const csvContent = generateCSV(data);
+    const actualSize = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }).size;
+    
+    if (actualSize < 1024) return `${actualSize} B`;
+    if (actualSize < 1024 * 1024) return `${(actualSize / 1024).toFixed(1)} KB`;
+    return `${(actualSize / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
   // Handle configuration changes
   const handleConfigChange = (config: DataSelectionConfig) => {
@@ -95,13 +106,17 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
           }
         }
 
-        const filename = generateFilename(
-          currentConfig.branch,
-          currentConfig.dateRange?.from || new Date(),
-          currentConfig.dateRange?.to || new Date()
-        );
+        // Extract repo name from repoUrl
+        const repoName = repoUrl.split('/').pop()?.replace('.git', '') || 'repository';
+        const filename = generateFilename(repoName, currentConfig.branch);
 
         await exportToCSV(dataToExport, filename);
+
+        // compute a more accurate file size for the history entry
+        const csvForSize = generateCSV({ headers: dataToExport.headers, rows: dataToExport.rows });
+        const bytes = new Blob([csvForSize]).size;
+        const kb = bytes / 1024;
+        const sizeLabel = kb < 1024 ? `${kb.toFixed(2)} KB` : `${(kb / 1024).toFixed(2)} MB`;
 
         // Add to history
         const historyItem: Omit<ExportHistoryItem, 'id' | 'exportedAt'> = {
@@ -112,7 +127,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
             : 'No date range',
           metrics: currentConfig.selectedMetrics,
           rowCount: dataToExport.summary.totalRows,
-          fileSize: `${Math.round((dataToExport.rows.length * 100 + 50) / 1024)} KB`
+          fileSize: sizeLabel
         };
 
         addExport(historyItem);
@@ -128,10 +143,74 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
   };
 
   // Handle re-export from history
-  const handleReExport = (_item: ExportHistoryItem) => {
-    // For re-export, we would need to reconstruct the config from the history item
-    // This is a simplified version - in practice, you might want to store more config details
-    setError('Re-export functionality requires additional configuration storage');
+  const handleReExport = async (item: ExportHistoryItem) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Reconstruct the config from the history item
+      const dateParts = item.dateRange.split(' - ');
+      if (dateParts.length !== 2) {
+        throw new Error(`Invalid date range format: ${item.dateRange}`);
+      }
+      
+      // Parse DD/MM/YYYY format to proper Date objects
+      const parseDate = (dateStr: string): Date => {
+        const [day, month, year] = dateStr.split('/');
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      };
+      
+      const fromDate = parseDate(dateParts[0]);
+      const toDate = parseDate(dateParts[1]);
+      
+      if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+        throw new Error(`Invalid date values: ${item.dateRange}`);
+      }
+      
+      const reExportConfig: DataSelectionConfig = {
+        branch: item.branch,
+        dateRange: {
+          from: fromDate,
+          to: toDate
+        },
+        selectedMetrics: item.metrics,
+        groupBy: 'contributor' // Default to contributor grouping
+      };
+      
+      console.log('Parsed date range:', reExportConfig.dateRange);
+      
+      console.log('Re-exporting with config:', reExportConfig);
+      
+      // Fetch fresh data with the reconstructed config
+      const freshData = await exportDataService.fetchExportData(reExportConfig, repoUrl);
+      
+      // Generate new filename with current timestamp
+      const repoName = repoUrl.split('/').pop()?.replace('.git', '') || 'repository';
+      const filename = generateFilename(repoName, item.branch);
+      
+      // Export the fresh data
+      await exportToCSV(freshData, filename);
+      
+      // Add to history with new timestamp
+      const newHistoryItem = {
+        filename,
+        branch: item.branch,
+        dateRange: item.dateRange,
+        metrics: item.metrics,
+        rowCount: freshData.rows.length,
+        fileSize: getFileSize(freshData)
+      };
+      
+      addExport(newHistoryItem);
+      
+      console.log('Re-export completed successfully');
+      
+    } catch (error) {
+      console.error('Error during re-export:', error);
+      setError(`Failed to re-export: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle close preview
@@ -142,34 +221,22 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
-      <Card className="bg-git-bg-elevated border-git-stroke-primary rounded-lg">
-        <CardHeader className="bg-git-int-primary">
-          <CardTitle className="text-git-int-text">Custom Script Data Export</CardTitle>
-          <p className="text-sm text-git-int-text/90">
-            Export raw metrics data for your custom scaling scripts. Select the data you need,
-            preview it, and download as CSV for use in external tools or scripts.
-          </p>
-        </CardHeader>
-      </Card>
 
       {/* Help Section - collapsible */}
       <Card className="bg-git-bg-elevated border-git-stroke-primary rounded-lg">
-        <CardHeader className="bg-git-int-primary">
+        <CardHeader 
+          className="bg-git-int-primary rounded-t-lg cursor-pointer hover:bg-git-int-primary-hover transition-colors"
+          onClick={() => setIsHelpExpanded(!isHelpExpanded)}
+        >
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg text-git-int-text">How to Use</CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsHelpExpanded(!isHelpExpanded)}
-              className="text-git-int-text hover:bg-git-int-primary-hover p-1"
-            >
+            <div className="flex items-center">
               {isHelpExpanded ? (
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUp className="h-6 w-6 text-git-int-text" />
               ) : (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-6 w-6 text-git-int-text" />
               )}
-            </Button>
+            </div>
           </div>
         </CardHeader>
         {isHelpExpanded && (
@@ -185,7 +252,7 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
               <div>
                 <h4 className="font-medium mb-2 text-git-text-primary">2. Preview & Export</h4>
                 <p className="text-git-text-secondary">
-                  Review your data in the preview table, then export as CSV. 
+                  Review your data in the preview table, then export as CSV. Format will be provided as repo_name-branch_name-timestamp.csv
                   The file will be downloaded to your computer.
                 </p>
               </div>

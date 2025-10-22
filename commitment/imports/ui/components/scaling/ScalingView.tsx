@@ -305,11 +305,8 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
       setScaledResults(results);
     }
 
-    if (isLoggedIn) 
-      setStep("sheet");
-    else
-      handleSkipSheet()
-    
+    if (isLoggedIn) setStep("sheet");
+    else handleSkipSheet();
   };
 
   const handleSheetSubmit = (
@@ -391,7 +388,7 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
   // Handle data request for export
   const handleDataRequest = async (config: any) => {
     if (!repoUrl) {
-      throw new Error('No repository URL available');
+      throw new Error("No repository URL available");
     }
     return await exportDataService.fetchExportData(config, repoUrl);
   };
@@ -399,86 +396,115 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
   return (
     <div className="w-full m-0 scroll-smooth border-t border-git-stroke-primary/40 bg-git-bg-elevated dark:bg-git-bg-primary">
       <div className="flex flex-col gap-32">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated outline-2 outline-git-bg-secondary">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8 rounded-2xl bg-git-bg-elevated dark:bg-git-bg-primary outline-2 outline-git-bg-secondary">
           {/* Header */}
           <div className="mb-10">
             <div className="flex items-center gap-4">
-              <h1 className="text-5xl text-foreground font-robotoFlex">
+              <h1 className="text-3xl text-foreground font-robotoFlex">
                 Scaling
               </h1>
-              <InfoButton description="Configure scaling and upload a grading sheet to evaluate contributors" />
+              <InfoButton description="Scaling configurations supported by custom scripts and or alias mapping" />
             </div>
             <div className="h-[2px] bg-git-stroke-primary w-1/4 mt-2" />
           </div>
 
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "scaling" | "export")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="scaling" className="text-base font-medium">Scaling Configuration</TabsTrigger>
-              <TabsTrigger value="export" className="text-base font-medium">Custom Script Export</TabsTrigger>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) =>
+              setActiveTab(value as "scaling" | "export")
+            }
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2 mb-8 bg-git-bg-elevated dark:bg-git-bg-secondary rounded-lg p-1 gap-1">
+              <TabsTrigger
+                value="scaling"
+                className="text-base font-medium rounded-md data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text data-[state=inactive]:text-git-text-secondary hover:text-git-text-primary transition-all"
+              >
+                Scaling Configuration
+                <InfoButton
+                  className={"mt-0 ml-2"}
+                  variant={activeTab === "scaling" ? "active" : "muted"}
+                  description="View each contributor's final scale and grade based on their overall commitment."
+                />
+              </TabsTrigger>
+              <TabsTrigger
+                value="export"
+                className="text-base font-medium flex flex-row align-middle rounded-md data-[state=active]:bg-git-int-primary data-[state=active]:text-git-int-text data-[state=inactive]:text-git-text-secondary hover:text-git-text-primary transition-all"
+              >
+                Custom Script Export
+                <InfoButton
+                  className={"mt-0 ml-2"}
+                  variant={activeTab === "export" ? "active" : "muted"}
+                  description="Export raw metrics data for your custom scaling scripts. Select the data you need,preview it, and download as CSV for use in external tools or scripts."
+                />
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="scaling" className="space-y-6">
               {showAliasDialog && (
-            <AlertDialog
-              open={showAliasDialog}
-              onOpenChange={setShowAliasDialog}
-            >
-              <AlertDialogTrigger asChild />
+                <AlertDialog
+                  open={showAliasDialog}
+                  onOpenChange={setShowAliasDialog}
+                >
+                  <AlertDialogTrigger asChild />
 
-              <AlertDialogContent>
-                <div className="flex justify-between items-start">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowAliasDialog(false);
-                      if (onNavigateToMetrics) {
-                        onNavigateToMetrics();
-                      }
-                    }}
-                    className="absolute top-2 right-2 p-1 rounded-md hover:bg-gray-100 transition-colors"
-                    aria-label="Close"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+                  <AlertDialogContent>
+                    <div className="flex justify-between items-start">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAliasDialog(false);
+                          if (onNavigateToMetrics) {
+                            onNavigateToMetrics();
+                          }
+                        }}
+                        className="absolute top-2 right-2 p-1 rounded-md hover:bg-gray-100 transition-colors"
+                        aria-label="Close"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
 
-                  {/* Optional: maintain centered title alignment visually */}
-                  <AlertDialogHeader className="flex-1 text-center">
-                    <AlertDialogTitle>Unmapped Contributors</AlertDialogTitle>
-                  </AlertDialogHeader>
-                </div>
+                      {/* Optional: maintain centered title alignment visually */}
+                      <AlertDialogHeader className="flex-1 text-center">
+                        <AlertDialogTitle>
+                          Unmapped Contributors
+                        </AlertDialogTitle>
+                      </AlertDialogHeader>
+                    </div>
 
-                <AlertDialogDescription className="mt-3">
-                  The following contributors are not mapped in your alias
-                  config:
-                  <ul className="mt-2 list-disc ml-5">
-                    {unmappedUsers.map((u) => (
-                      <li key={u.name}>
-                        <strong>{u.name}</strong>
-                      </li>
-                    ))}
-                  </ul>
-                  Please upload or update your alias configuration in settings.
-                </AlertDialogDescription>
+                    <AlertDialogDescription className="mt-3">
+                      The following contributors are not mapped in your alias
+                      config:
+                      <ul className="mt-2 list-disc ml-5">
+                        {unmappedUsers.map((u) => (
+                          <li key={u.name}>
+                            <strong>{u.name}</strong>
+                          </li>
+                        ))}
+                      </ul>
+                      Please upload or update your alias configuration in
+                      settings.
+                    </AlertDialogDescription>
 
-                <AlertDialogFooter className="p-0 mt-4 flex justify-center">
-                  <div className="flex justify-center w-full">
-                    <AlertDialogAction
-                      type="button"
-                      className="inline-flex px-4 py-2 justify-center"
-                      onClick={() => {
-                        navigate("/settings", {
-                          state: { tab: "alias-config" },
-                        });
-                      }}
-                    >
-                      Go to Alias Configuration
-                    </AlertDialogAction>
-                  </div>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
+                    <AlertDialogFooter className="p-0 mt-4 flex justify-center">
+                      <div className="flex justify-center w-full">
+                        <AlertDialogAction
+                          type="button"
+                          className="inline-flex px-4 py-2 justify-center"
+                          onClick={() => {
+                            navigate("/settings", {
+                              state: { tab: "alias-config" },
+                            });
+                          }}
+                        >
+                          Go to Alias Configuration
+                        </AlertDialogAction>
+                      </div>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
 
               {/* Always render the scaling summary in the background */}
               {config && scaledResults.length > 0 && !showAliasDialog && (
@@ -489,107 +515,107 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
                   />
                 </div>
               )}
-          {/* Buttons for grading sheet or regenerate */}
-          {!showAliasDialog && (
-            <div className="flex justify-center gap-4 flex-wrap p-4">
-              <Button
-                className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                onClick={() => {
-                  setStep("config");
-                  setShowDialog(true);
+              {/* Buttons for grading sheet or regenerate */}
+              {!showAliasDialog && (
+                <div className="flex justify-center gap-4 flex-wrap p-4">
+                  <Button
+                    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                    onClick={() => {
+                      setStep("config");
+                      setShowDialog(true);
+                    }}
+                  >
+                    Create New Scaling
+                  </Button>
+
+                  {/* Display the grading sheet only to logged in users */}
+                  {isLoggedIn && (
+                    <Button
+                      className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                      onClick={() => {
+                        setStep("sheet");
+                        setShowDialog(true);
+                      }}
+                    >
+                      <Upload className="h-4 w-4" />
+                      {gradingSheet
+                        ? "Replace Grading Sheet"
+                        : "Upload Grading Sheet"}
+                    </Button>
+                  )}
+
+                  {gradingSheet && gradingSheetParseResult && (
+                    <Button
+                      className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                      onClick={() => {
+                        void handleDownloadScaledSheet();
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                      Download Scaled Grading Sheet
+                    </Button>
+                  )}
+
+                  {(config || gradingSheet || scaledResults.length > 0) && (
+                    <AlertDialog
+                      open={showClearDialog}
+                      onOpenChange={setShowClearDialog}
+                    >
+                      <AlertDialogTrigger asChild>
+                        <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
+                          Clear
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Clear Scaling</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to clear all scaling data? You
+                            will need to reconfigure scaling settings and
+                            re-upload your grading sheet if you do.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleConfirmClear}>
+                            Clear
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              )}
+              {/* Multi-Step Dialog */}
+              <Dialog
+                open={showDialog}
+                onOpenChange={(open) => {
+                  if (!open && step === "sheet") {
+                    setCompleted(true);
+                    setStep("done");
+                  }
+                  setShowDialog(open);
                 }}
               >
-                Create New Scaling
-              </Button>
-
-              {/* Display the grading sheet only to logged in users */}
-              {isLoggedIn && (
-                <Button
-                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                  onClick={() => {
-                    setStep("sheet");
-                    setShowDialog(true);
-                  }}
-                >
-                  <Upload className="h-4 w-4" />
-                  {gradingSheet
-                    ? "Replace Grading Sheet"
-                    : "Upload Grading Sheet"}
-                </Button>
-              )}
-
-              {gradingSheet && gradingSheetParseResult && (
-                <Button
-                  className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
-                  onClick={() => {
-                    void handleDownloadScaledSheet();
-                  }}
-                >
-                  <Download className="h-4 w-4" />
-                  Download Scaled Grading Sheet
-                </Button>
-              )}
-
-              {(config || gradingSheet || scaledResults.length > 0) && (
-                <AlertDialog
-                  open={showClearDialog}
-                  onOpenChange={setShowClearDialog}
-                >
-                  <AlertDialogTrigger asChild>
-                    <Button className="bg-git-int-destructive text-white hover:bg-git-int-destructive-hover px-4 py-2">
-                      Clear
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Clear Scaling</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to clear all scaling data? You
-                        will need to reconfigure scaling settings and re-upload
-                        your grading sheet if you do.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleConfirmClear}>
-                        Clear
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </div>
-          )}
-          {/* Multi-Step Dialog */}
-          <Dialog
-            open={showDialog}
-            onOpenChange={(open) => {
-              if (!open && step === "sheet") {
-                setCompleted(true);
-                setStep("done");
-              }
-              setShowDialog(open);
-            }}
-          >
-            <DialogContent className="max-w-2xl">
-              {step === "config" && (
-                <ScalingConfigForm onSubmit={handleConfigSubmit} />
-              )}
-              {step === "sheet" && (
-                <GradingSheetForm
-                  onSubmit={handleSheetSubmit}
-                  onSkip={handleSkipSheet}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
+                <DialogContent className="max-w-2xl">
+                  {step === "config" && (
+                    <ScalingConfigForm onSubmit={handleConfigSubmit} />
+                  )}
+                  {step === "sheet" && (
+                    <GradingSheetForm
+                      onSubmit={handleSheetSubmit}
+                      onSkip={handleSkipSheet}
+                    />
+                  )}
+                </DialogContent>
+              </Dialog>
             </TabsContent>
 
             <TabsContent value="export" className="space-y-6">
               <CustomScriptExport
                 availableBranches={availableBranches}
-                repoUrl={repoUrl || ''}
+                repoUrl={repoUrl || ""}
                 onDataRequest={handleDataRequest}
               />
             </TabsContent>

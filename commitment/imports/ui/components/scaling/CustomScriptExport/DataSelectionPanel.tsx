@@ -153,7 +153,6 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
   const isConfigValid = config.branch && config.selectedMetrics.length > 0;
 
   const cardContent = (<>
-
     {/* All Controls - Single Horizontal Row */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Group By Selection */}
@@ -163,7 +162,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
+              className="w-full justify-start text-left font-normal border-2 rounded-xl border-git-stroke-primary/40 text-git-text-primary"
             >
               {config.groupBy === 'contributor' ? 'Contributor' :
                 config.groupBy === 'date' ? 'Date' :
@@ -199,7 +198,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start text-left font-normal border-2 rounded-lg border-git-stroke-primary/40 text-git-text-primary"
+              className="w-full justify-start text-left font-normal border-2 rounded-xl border-git-stroke-primary/40 text-git-text-primary"
             >
               {config.branch || 'Select a branch'}
             </Button>
@@ -234,18 +233,18 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
         <Label className="text-git-text-primary">Metrics to Export</Label>
         <div className="flex gap-2">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: METRIC_OPTIONS.map(m => m.id) }))}
-            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+            className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
           >
             Select All
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => setConfig(prev => ({ ...prev, selectedMetrics: [] }))}
-            className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+            className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
           >
             Clear All
           </Button>
@@ -263,18 +262,20 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
 
             return (
               <div key={category} className="space-y-2">
-                <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
-                      <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
-                    </div>
-                    <div className="flex gap-1 ml-4">
+                <div className="bg-git-bg-primary border border-git-stroke-primary rounded-xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-git-text-primary capitalize">
+                      {category === 'commits' ? 'Commit Metrics' :
+                        category === 'code' ? 'Code Metrics' :
+                          category === 'time' ? 'Time Metrics' :
+                            `${category} Metrics`}
+                    </h4>
+                    <div className="flex gap-1">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSelectAll(category)}
-                        className="border border-git-stroke-primary/40 rounded"
+                        className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
                       >
                         All
                       </Button>
@@ -282,7 +283,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeselectAll(category)}
-                        className="border border-git-stroke-primary/40 rounded"
+                        className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
                       >
                         None
                       </Button>
@@ -325,18 +326,20 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
 
             return (
               <div key={category} className="space-y-2">
-                <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
-                      <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
-                    </div>
-                    <div className="flex gap-1 ml-4">
+                <div className="bg-git-bg-primary border border-git-stroke-primary rounded-xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-git-text-primary capitalize">
+                      {category === 'commits' ? 'Commit Metrics' :
+                        category === 'code' ? 'Code Metrics' :
+                          category === 'time' ? 'Time Metrics' :
+                            `${category} Metrics`}
+                    </h4>
+                    <div className="flex gap-1">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSelectAll(category)}
-                        className="border border-git-stroke-primary/40 rounded"
+                        className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
                       >
                         All
                       </Button>
@@ -344,7 +347,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeselectAll(category)}
-                        className="border border-git-stroke-primary/40 rounded"
+                        className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
                       >
                         None
                       </Button>
@@ -387,18 +390,20 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
 
             return (
               <div key={category} className="space-y-2">
-                <div className="bg-git-bg-primary border border-git-stroke-primary rounded-lg p-3 shadow-sm">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-git-text-primary capitalize">{category}</h4>
-                      <p className="text-sm font-semibold text-git-text-primary capitalize">Metrics</p>
-                    </div>
-                    <div className="flex gap-1 ml-4">
+                <div className="bg-git-bg-primary border border-git-stroke-primary rounded-xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-git-text-primary capitalize">
+                      {category === 'commits' ? 'Commit Metrics' :
+                        category === 'code' ? 'Code Metrics' :
+                          category === 'time' ? 'Time Metrics' :
+                            `${category} Metrics`}
+                    </h4>
+                    <div className="flex gap-1">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSelectAll(category)}
-                        className="border border-git-stroke-primary/40 rounded"
+                        className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
                       >
                         All
                       </Button>
@@ -406,7 +411,7 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeselectAll(category)}
-                        className="border border-git-stroke-primary/40 rounded"
+                        className="border border-git-stroke-primary/40 rounded-xl hover:bg-git-int-primary hover:text-git-int-text"
                       >
                         None
                       </Button>
@@ -453,17 +458,17 @@ export const DataSelectionPanel: React.FC<DataSelectionPanelProps> = ({
         {isLoading ? 'Loading...' : buttonLabel}
       </Button>
     </div>
-  </>)
+  </>);
 
   return minimal ? cardContent : (
-    <Card className="w-full bg-git-bg-elevated border-git-stroke-primary">
-      <CardHeader className="bg-git-int-primary">
+    <Card className="w-full bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary rounded-xl">
+      <CardHeader className="bg-git-int-primary rounded-t-xl">
         <CardTitle className="text-git-int-text">Select Data for Export</CardTitle>
         <p className="text-sm text-git-int-text/90">
           Choose the branch, time period, and metrics you want to export for your custom scaling script.
         </p>
       </CardHeader>
-      <CardContent className="space-y-6 bg-git-bg-elevated pt-6">
+      <CardContent className="space-y-6 bg-git-bg-elevated dark:bg-git-bg-primary pt-6">
         {cardContent}
       </CardContent>
     </Card>

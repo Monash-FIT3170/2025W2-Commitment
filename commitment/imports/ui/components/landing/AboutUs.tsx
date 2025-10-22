@@ -33,9 +33,16 @@ const Description = () => (
 const KeyFeatureImage = () => (
     <div className="mt-6">
       <img
-        src="/feature.png"
+        src="/feature_light.png" 
         alt="Features of Commitment."
-        className=" rounded-xl max-w-4xl mx-auto"
+        className=" rounded-xl max-w-4xl mx-auto block dark:hidden"
       />
+
+      <img
+      src="/feature_dark.png"
+      alt="Features of Commitment."
+      className="rounded-xl max-w-4xl mx-auto hidden dark:block"
+    />
+
     </div>
   );

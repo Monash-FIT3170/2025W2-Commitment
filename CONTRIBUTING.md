@@ -6,7 +6,7 @@ Thank you for your interest in contributing to this project!
 - Please read carefully before making contributions.
 - Be respectful of others’ work.
 - If you want to collaborate on a branch, raise a PR against that branch instead of pushing directly.
-- For help, reach out to an SA or discuss in the team Discord.
+- Please follow [this document](/docs/CODING_STANDARDS.md) outlining coding standards when contributing.
 
 ## Commits
 
@@ -61,6 +61,18 @@ More details on `type` of commits can be found [here](https://www.conventionalco
 | Refactor | `refactor/` | Code restructuring that doesn't affect behavior.                      | `refactor/auth_flow`                                      |
 | Test     | `test/`     | Adding or modifying tests.                                            | `test/user_service_tests`                                 |
 | CI/CD    | `ci/`       | Continuous Integration/Deployment configuration changes.              | `ci/add_cache_step`                                       |
+
+## Issues
+
+If a user comes across any issues in the system, an issue can be raised on GitHub.
+
+This page can be [accessed here](https://github.com/Monash-FIT3170/2025W2-Commitment/issues), templates are provided for different issue types, all a user has to do is fill out the template and submit.
+
+| Type      | Desription                                                       |
+| --------- | ---------------------------------------------------------------- |
+| `bug`     | For any UI or logic bugs that don't align with user expectations |
+| `feature` | A request for new features to the application.                   |
+
 
 ## Pull Requests (Merge Requests)
 

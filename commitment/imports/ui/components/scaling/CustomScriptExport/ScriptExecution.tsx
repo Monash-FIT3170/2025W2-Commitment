@@ -122,14 +122,14 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   return (
     <div className="space-y-6">
       {/* Main Script Execution Card */}
-      <Card className="bg-git-bg-elevated border-git-stroke-primary">
-        <CardHeader className="bg-git-int-primary">
+      <Card className="bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary rounded-xl">
+        <CardHeader className="bg-git-int-primary rounded-t-xl">
           <CardTitle className="text-git-int-text">Script Execution</CardTitle>
           <p className="text-sm text-git-int-text/90">
             Execute custom scripts using exported CSV data. This section is currently under development.
           </p>
         </CardHeader>
-        <CardContent className="bg-git-bg-elevated pt-6">
+        <CardContent className="bg-git-bg-elevated dark:bg-git-bg-primary pt-6 rounded-b-xl">
           <div className="py-3">
 
             <ScriptSpecification
