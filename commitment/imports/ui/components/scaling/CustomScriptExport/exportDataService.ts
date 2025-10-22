@@ -437,10 +437,10 @@ export class ExportDataService {
     startDate: Date,
     endDate: Date
   ): number | string {
-    const commits = (repoData.allCommits || []).filter((commit: any) => 
-      commit.value.timestamp >= startDate &&
-      commit.value.timestamp <= endDate
-    );
+    const commits = (repoData.allCommits || []).filter((commit: any) => {
+      const commitDate = new Date(commit.value.timestamp);
+      return commitDate >= startDate && commitDate <= endDate;
+    });
 
     switch (metric) {
       case 'total_commits':
@@ -541,10 +541,10 @@ export class ExportDataService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
     
-    const commitsForDate = (repoData.allCommits || []).filter((commit: any) => 
-      commit.value.timestamp >= startOfDay &&
-      commit.value.timestamp <= endOfDay
-    );
+    const commitsForDate = (repoData.allCommits || []).filter((commit: any) => {
+      const commitDate = new Date(commit.value.timestamp);
+      return commitDate >= startOfDay && commitDate <= endOfDay;
+    });
 
     switch (metric) {
       case 'total_commits':
