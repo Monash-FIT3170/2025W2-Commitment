@@ -73,8 +73,8 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
 
   if (history.length === 0) {
     return (
-      <Card className="w-full bg-git-bg-elevated border-git-stroke-primary">
-        <CardHeader className="bg-git-int-primary">
+      <Card className="w-full bg-git-bg-elevated border-git-stroke-primary rounded-xl">
+        <CardHeader className="bg-git-int-primary rounded-t-xl">
           <CardTitle className="text-git-int-text">Export History</CardTitle>
           <p className="text-sm text-git-int-text/90">
             Your previous exports will appear here
@@ -92,8 +92,8 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
   }
 
   return (
-    <Card className="w-full bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary">
-        <CardHeader className="bg-git-int-primary">
+    <Card className="w-full bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary rounded-xl">
+        <CardHeader className="bg-git-int-primary rounded-t-xl">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-git-int-text">Export History</CardTitle>
@@ -115,11 +115,11 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
       </CardHeader>
       <CardContent className="bg-git-bg-elevated dark:bg-git-bg-primary pt-6">
         <ScrollArea className="h-96 w-full">
-          <Table>
+          <Table className="rounded-lg">
             <TableHeader>
-              <TableRow>
+              <TableRow className="rounded-t-lg">
                 <TableHead 
-                  className="cursor-pointer hover:bg-git-int-secondary text-git-text-primary bg-git-int-secondary"
+                  className="cursor-pointer hover:bg-git-int-secondary text-git-text-primary bg-git-int-secondary rounded-tl-lg"
                   onClick={() => handleSort('filename')}
                 >
                   Filename {getSortIcon('filename')}
@@ -139,13 +139,13 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
                 >
                   Exported {getSortIcon('date')}
                 </TableHead>
-                <TableHead className="text-right text-git-text-primary bg-git-int-secondary">Actions</TableHead>
+                <TableHead className="text-right text-git-text-primary bg-git-int-secondary rounded-tr-lg">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sortedHistory.map((item) => (
-                <TableRow key={item.id} className="bg-git-int-primary hover:bg-git-int-primary">
-                  <TableCell className="font-medium text-git-int-text">
+                <TableRow key={item.id} className="bg-git-int-primary hover:bg-git-int-primary rounded-lg">
+                  <TableCell className="font-medium text-git-int-text rounded-l-lg">
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-git-int-text" />
                       <span className="truncate max-w-[200px] text-git-int-text" title={item.filename}>
@@ -179,7 +179,7 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
                       {format(item.exportedAt, 'MMM d, HH:mm')}
                     </div>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right rounded-r-lg">
                     <div className="flex items-center justify-end gap-2">
                       <Button
                         variant="ghost"
