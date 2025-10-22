@@ -100,53 +100,45 @@ withDirectoryLock path action = do
 -- | Create a directory if needed and run a task, tracking refcount.
 createDirectory :: FilePath -> (FilePath -> IO a) -> IO (Maybe a)
 createDirectory path task = do
-    -- Update refcount
-    isCreator <- modifyMVar directoryRefCount $ \refMap ->
-        case Map.lookup path refMap of
-            Nothing -> pure (Map.insert path 1 refMap, True)        -- add entry to map
-            Just n  -> pure (Map.insert path (n + 1) refMap, False) -- increment entry
+    -- Acquire the per-directory lock to prevent concurrent initialization
+    withDirectoryLock path $ do
+        mEntry <- modifyMVar directoryRefCount $ \refMap ->
+            case Map.lookup path refMap of
+                Nothing -> pure (refMap, Nothing)                         -- directory not yet created
+                Just n  -> pure (Map.insert path (n + 1) refMap, Just ()) -- increment counter
 
-    -- Run actual IO task only if this call is the creator and 
-    -- the path does not already exist
-    if isCreator
-       then withDirectoryLock path $ do
-            -- delete it if it already exists, it should not exist yet
-            exists <- doesDirectoryExist path
-            if exists then deleteDirectoryIfExists path (pure ()) else pure False
-            -- create fresh directory
-            createDirectoryIfMissing True path
-            -- do task to initialise directory
-            -- Run the task; if it fails, ensure state and filesystem are cleaned
-            (Just <$> task path)
-              `catch` \(e :: SomeException) -> do
-                  -- emit or log the error if needed
-                  -- safePrint $ "[createDirectory] Task failed for " ++ path ++ ": " ++ displayException e
-                  -- rollback directory state (both filesystem + refcount + semaphore)
-                  deleteDirectory path (pure ())
-                  -- rethrow the exception so caller knows it failed
-                  throwIO e
-                  
-       else pure Nothing
+        case mEntry of
+            Just () -> pure Nothing  -- directory exists, counter incremented, no task needed
+            Nothing -> do
+                -- Directory is not initialized, run the creation task
+                result <- task path
+                -- Only after successful task, insert entry into map with counter = 1
+                modifyMVar_ directoryRefCount $ \refMap ->
+                    pure (Map.insert path 1 refMap)
+                pure (Just result)
 
 -- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO Bool
-deleteDirectory path callback = do
-    mDelete <- modifyMVar directoryRefCount $ \refMap ->
-        case Map.lookup path refMap of
-            Nothing -> pure (refMap, False)                       -- nothing to do
-            Just 1  -> pure (Map.delete path refMap, True)        -- remove entry 
-            Just n  -> if n > 0
-                then pure (Map.insert path (n - 1) refMap, False) -- decrement entry if valid
-                else pure (refMap, False)                         -- do nothing if n <= 0
+deleteDirectory path callback = 
+    -- Acquire the directory lock first to avoid circular locking
+    withDirectoryLock path $ do
+        -- Now safely modify the refcount
+        mDelete <- modifyMVar directoryRefCount $ \refMap ->
+            case Map.lookup path refMap of
+                Nothing -> pure (refMap, False)                       -- nothing to do
+                Just 1  -> pure (Map.delete path refMap, True)        -- remove entry 
+                Just n  -> if n > 0
+                    then pure (Map.insert path (n - 1) refMap, False) -- decrement entry
+                    else pure (refMap, False)                         -- do nothing if n <= 0
 
-    -- Only delete if this call actually drops refcount to zero
-    if mDelete
-        then withDirectoryLock path $ do
-            deleteDirectoryIfExists path callback
-            -- 🧹 Clean up semaphore when the directory is fully released
-            modifyMVar_ directorySemaphores $ pure . Map.delete path
-            pure True
-        else pure False
+        -- Only delete if this call actually drops refcount to zero
+        if mDelete
+            then do
+                deleteDirectoryIfExists path callback
+                -- 🧹 Clean up semaphore after deletion
+                modifyMVar_ directorySemaphores $ pure . Map.delete path
+                pure True
+            else pure False
 
 -- automatically execute shell scripts in the command pool whilst the command result is extracted and passed to the parsing pool
 execAndParse :: TBQueue String -> FilePath -> Command -> (String -> ParseResult a) -> String -> IO a
