@@ -5,6 +5,7 @@ module GitCommands (
   delim,
   checkIfRepoExists,
   cloneRepo,
+  checkIsGitDirectory,
   getBranches,
   getAllCommitsFrom,
   getContributorEmails,
@@ -40,8 +41,8 @@ cloneRepo url targetDirectory = doNotLogData
   , onFail = \c e -> "Error cloning repo:\nCommand:\n" ++ c ++ "\nError Message:\n" ++ e
   }
 
-checkIsGitDirecotry :: FilePath -> Command
-checkIsGitDirecotry dir = doNotLogData
+checkIsGitDirectory :: FilePath -> Command
+checkIsGitDirectory dir = doNotLogData
   { command = "git -C " ++ quote dir ++ " rev-parse --git-dir"
   }
 
