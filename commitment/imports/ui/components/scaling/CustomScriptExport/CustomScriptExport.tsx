@@ -11,6 +11,7 @@ import { ExportHistory, useExportHistory, ExportHistoryItem } from './ExportHist
 import { ScriptExecution } from './ScriptExecution';
 import { useCSVExport, generateFilename, generateCSV } from './ExportButton';
 import { ExportDataService } from './exportDataService';
+import type {GradingSheetRow, ParseResult} from "@ui/components/utils/GradingSheetParser";
 
 interface CustomScriptExportProps {
   availableBranches: string[];
@@ -18,6 +19,14 @@ interface CustomScriptExportProps {
   onDataRequest: (config: DataSelectionConfig) => Promise<ExportData>;
   className?: string;
   gradingSheet?: File | null;
+  gradingSheetParseResult?: ParseResult | null;
+  setStep?: (step: "config" | "sheet" | "done") => void,
+  setShowDialog?: (value: boolean) => void,
+  handleSheetSubmit?: (
+    gradingSheet: File,
+    parsedData?: GradingSheetRow[],
+    parseResult?: ParseResult
+  ) => void;
 }
 
 export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
@@ -26,6 +35,10 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
   onDataRequest,
   className = '',
   gradingSheet = null,
+  gradingSheetParseResult = null,
+  setStep,
+  setShowDialog,
+  handleSheetSubmit,
 }) => {
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
   const [previewData, setPreviewData] = useState<ExportData | null>(null);
@@ -363,6 +376,10 @@ export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
             onConfigChange={handleConfigChange}
             onPreviewData={handlePreviewData}
             gradingSheet={gradingSheet}
+            gradingSheetParseResult={gradingSheetParseResult}
+            setStep={setStep}
+            setShowDialog={setShowDialog}
+            handleSheetSubmit={handleSheetSubmit}
           />
         </TabsContent>
       </Tabs>

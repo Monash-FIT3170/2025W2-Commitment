@@ -617,6 +617,11 @@ function ScalingView({ onNavigateToMetrics }: ScalingViewProps): JSX.Element {
                 availableBranches={availableBranches}
                 repoUrl={repoUrl || ""}
                 onDataRequest={handleDataRequest}
+                gradingSheet={gradingSheet}
+                gradingSheetParseResult={gradingSheetParseResult}
+                setStep={setStep}
+                setShowDialog={setShowDialog}
+                handleSheetSubmit={handleSheetSubmit}
               />
             </TabsContent>
           </Tabs>

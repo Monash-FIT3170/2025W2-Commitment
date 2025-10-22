@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {FileCode2, FileText, LoaderCircle, Terminal} from 'lucide-react';
+import {Download, FileCode2, FileText, LoaderCircle, Terminal, Upload} from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from '@base/card';
 import {ExportHistoryItem} from './ExportHistory';
 import ScriptSpecification, {
@@ -18,17 +18,34 @@ import {meteorCallAsync} from "@api/meteor_interface";
 import ScalingSummary from "@ui/components/scaling/ScalingSummary";
 import {cn} from "@ui/lib/utils";
 import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptEditor";
+import type {GradingSheetRow, ParseResult} from "@ui/components/utils/GradingSheetParser";
+import {Button} from "@base/button";
+import {useAuth} from "@hook/useAuth";
+import ScriptExecutionGradingSheetDialog
+  from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptExecutionGradingSheetDialog";
 
 interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
   onDataRequest: (config: DataSelectionConfig) => Promise<ExportData>;
   gradingSheet?: File | null;
+  gradingSheetParseResult?: ParseResult | null,
+  setStep?: (step: "config" | "sheet" | "done") => void,
+  setShowDialog?: (value: boolean) => void,
+  handleSheetSubmit?: (
+    gradingSheet: File,
+    parsedData?: GradingSheetRow[],
+    parseResult?: ParseResult
+  ) => void;
 }
 
 export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   history,
   onDataRequest,
   gradingSheet,
+  gradingSheetParseResult,
+  setStep,
+  setShowDialog,
+  handleSheetSubmit,
   ...dataSelectionPanelProps
 }: ScriptExecutionProps) => {
   // const latestExport = history.length > 0 ? history[0] : null;
@@ -39,6 +56,9 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
 
   const scaledResults = response.data ?? [];
   const [executionLoading, setExecutionLoading] = useState<boolean>(false);
+
+  const isLoggedIn = useAuth();
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   // const responseDataJson = useMemo(() => {
   //   if (response.data)
@@ -190,7 +210,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
             </ScriptSpecification>
           </div>
 
-          {csv.data && scaledResults.length > 0 && (
+          {csv.data && scaledResults.length > 0 && (<>
             <div
               className={cn(
                 "mb-6 transition-opacity ease-out duration-200 ",
@@ -202,12 +222,46 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                 hasGradingSheet={!!gradingSheet}
               />
             </div>
-          )}
 
+            {(
+              <div className="flex justify-center gap-4 flex-wrap p-4">
+                {/* Display the grading sheet only to logged in users */}
+                {isLoggedIn && (
+                  <Button
+                    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                    onClick={() => {
+                      setDialogOpen(true);
+                    }}
+                  >
+                    <Upload className="h-4 w-4" />
+                    {gradingSheet
+                      ? "Replace Grading Sheet"
+                      : "Upload Grading Sheet"}
+                  </Button>
+                )}
+
+                {gradingSheet && gradingSheetParseResult && (
+                  <Button
+                    className="bg-git-int-primary text-git-int-text hover:bg-git-int-primary-hover"
+                    onClick={() => {
+                      void handleDownloadScaledSheet();
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Scaled Grading Sheet
+                  </Button>
+                )}
+              </div>
+            )}
+          </>)}
         </CardContent>
       </Card>
 
-      {/* CSV Endpoint Information */}
+      <ScriptExecutionGradingSheetDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        handleSheetSubmit={handleSheetSubmit}
+      />
     </div>
   );
 };
