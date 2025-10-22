@@ -189,10 +189,14 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                 "mb-6 transition-opacity ease-out duration-200 ",
                 executionLoading && "opacity-50" || "opacity-100"
               )}
-              code={response.stdout?.trimEnd() ?? ""}
+              code={response.stdout?.trimEnd() ?? "# Press 'Execute Script' to see output here"}
               setCode={() => {}}
               name={"Execution Output"}
-              icon={<Terminal size="sm"/>}
+              icon={
+                executionLoading
+                  ? <LoaderCircle size="sm" className="animate-spin"/>
+                  : <Terminal size="sm"/>
+              }
               language="python"
               readonly
             >
