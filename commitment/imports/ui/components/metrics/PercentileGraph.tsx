@@ -26,20 +26,18 @@ import {
 // Build plot data with stacking per (quartile, roundedPercentile)
 function makePlotData(contributors: ContributorScaledData[]) {
   // counters[q][roundedPct] = current stack height (1..n)
-  const counters: Record<string, Record<number, number>> = {};
+  const counters: Record<number, number> = {};
   const data: any[] = [];
 
   for (const c of contributors) {
     const pct = Number(c.scaledMetric.percentile ?? 0);
-    const q = String(Math.round((pct/10))*10); // x bucket
-    const sub = Math.round(pct); // sub-bucket used for stacking within a quartile
+    const q = Math.round(pct / 10) * 10; // 0..100 as number
 
-    counters[q] ||= {};
-    counters[q][sub] = (counters[q][sub] || 0) + 0.5;
+    counters[q] = (counters[q] || 0) + 1; // increment single counter per decile
 
     data.push({
       x: q, // category x (Q1..Q4 or "0".."100")
-      y: counters[q][sub], // stack index so dots pile up
+      y: counters[q], // stack index so dots pile up
       name: c.contributor.name,
       percentile: pct,
       value: Number(c.scaledMetric.value ?? 0),
@@ -50,10 +48,7 @@ function makePlotData(contributors: ContributorScaledData[]) {
 
   data.sort((a, b) => Number(a.x) - Number(b.x));
 
-  const maxStack = Math.max(
-    1,
-    ...Object.values(counters).map((m) => Math.max(0, ...Object.values(m)))
-  );
+  const maxStack = Math.max(1, ...Object.values(counters));
 
   return { data, maxStack };
 }
