@@ -19,14 +19,14 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   return (
     <div className="space-y-6">
       {/* Main Script Execution Card */}
-      <Card className="bg-git-bg-elevated border-git-stroke-primary">
-        <CardHeader className="bg-git-int-primary">
+      <Card className="bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary rounded-xl">
+        <CardHeader className="bg-git-int-primary rounded-t-xl">
           <CardTitle className="text-git-int-text">Script Execution</CardTitle>
           <p className="text-sm text-git-int-text/90">
             Execute custom scripts using exported CSV data. This section is currently under development.
           </p>
         </CardHeader>
-        <CardContent className="bg-git-bg-elevated pt-6">
+        <CardContent className="bg-git-bg-elevated dark:bg-git-bg-primary pt-6 rounded-b-xl">
           <div className="text-center py-8">
             <Code className="h-12 w-12 mx-auto mb-4 text-git-text-secondary opacity-50" />
             <h3 className="text-lg font-medium text-git-text-primary mb-2">Script Execution </h3>
@@ -54,14 +54,14 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
       </Card>
 
       {/* CSV Endpoint Information */}
-      <Card className="bg-git-bg-elevated border-git-stroke-primary">
-        <CardHeader className="bg-git-int-primary">
+      <Card className="bg-git-bg-elevated dark:bg-git-bg-primary border-git-stroke-primary rounded-xl">
+        <CardHeader className="bg-git-int-primary rounded-t-xl">
           <CardTitle className="text-git-int-text">CSV Data Access</CardTitle>
           <p className="text-sm text-git-int-text/90">
             Information about accessing exported CSV data for script execution
           </p>
         </CardHeader>
-        <CardContent className="bg-git-bg-elevated pt-6">
+        <CardContent className="bg-git-bg-elevated dark:bg-git-bg-primary pt-6 rounded-b-xl">
           <div className="space-y-4">
             <div>
               <h4 className="font-medium text-git-text-primary mb-2">Available Data</h4>

@@ -41,7 +41,10 @@ export class ExportDataService {
       console.log('ExportDataService: Repository data commits count:', filteredData.repositoryData?.allCommits?.length || 0);
       console.log('ExportDataService: Repository data contributors count:', filteredData.repositoryData?.contributors?.length || 0);
 
-      // Metrics for the filtered data
+      // Note: Alias mapping is already applied on the server side in repo.getFilteredData
+      console.log('ExportDataService: Alias mapping already applied on server side');
+
+      // Metrics for the filtered data (already has alias mapping applied)
       const allCommits = filteredData.repositoryData?.allCommits || [];
       if (allCommits.length > 0) {
         const commitDates = allCommits.map((commit: any) => commit.value.timestamp);
@@ -62,7 +65,7 @@ export class ExportDataService {
         console.warn('ExportDataService: Could not calculate scaling results, using fallback collaboration scores:', error);
       }
 
-      // Generate export data from the real repository data
+      // Generate export data from the repository data (already has alias mapping applied)
       const exportData = this.generateExportDataFromRepoDirect(config, filteredData, scalingResults);
       
       console.log('ExportDataService: Generated export data:', exportData);
@@ -142,7 +145,7 @@ export class ExportDataService {
 
     // Add grouping columns
     if (groupBy === 'contributor') {
-      headers.push('contributor_email', 'contributor_name');
+      headers.push('contributor_name', 'contributor_email');
     } else if (groupBy === 'date') {
       headers.push('date');
     }
@@ -193,10 +196,15 @@ export class ExportDataService {
         // Get the contributor's display name for the output
         const contributorData = repoData.contributors.find(c => c.key === contributorKey);
         const contributorName = contributorData ? contributorData.value.name : contributorKey;
+        const contributorEmails: string[] = contributorData?.value?.emails || [];
         
-        // Contributor info
+        // Include all emails from aliases if available
+        const allEmails = [...new Set(contributorEmails)];
+        const emailsString = allEmails.length > 0 ? allEmails.join(', ') : '';
+        
+        // Contributor info (match header order: contributor_name, contributor_email)
         row.push(contributorName);
-        row.push(contributorName); // Use name as both email and name for now
+        row.push(emailsString);
         
         // Get metrics for this contributor directly from repository data
         metrics.forEach(metric => {
@@ -429,10 +437,10 @@ export class ExportDataService {
     startDate: Date,
     endDate: Date
   ): number | string {
-    const commits = (repoData.allCommits || []).filter((commit: any) => 
-      commit.value.timestamp >= startDate &&
-      commit.value.timestamp <= endDate
-    );
+    const commits = (repoData.allCommits || []).filter((commit: any) => {
+      const commitDate = new Date(commit.value.timestamp);
+      return commitDate >= startDate && commitDate <= endDate;
+    });
 
     switch (metric) {
       case 'total_commits':
@@ -533,10 +541,10 @@ export class ExportDataService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
     
-    const commitsForDate = (repoData.allCommits || []).filter((commit: any) => 
-      commit.value.timestamp >= startOfDay &&
-      commit.value.timestamp <= endOfDay
-    );
+    const commitsForDate = (repoData.allCommits || []).filter((commit: any) => {
+      const commitDate = new Date(commit.value.timestamp);
+      return commitDate >= startOfDay && commitDate <= endOfDay;
+    });
 
     switch (metric) {
       case 'total_commits':
