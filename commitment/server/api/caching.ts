@@ -2,6 +2,7 @@ import { Subject } from "rxjs";
 import { Mongo } from "meteor/mongo";
 import { Meteor } from "meteor/meteor";
 import { check } from "meteor/check";
+import sizeof from "object-sizeof";
 
 import {
   RepositoryData,
@@ -10,6 +11,7 @@ import {
   SerialisableMapObject,
   CommitData,
   ContributorData,
+  Maybe,
 } from "@api/types";
 import { deserializeRepoData, serializeRepoData } from "@api/serialisation";
 import { emitValue } from "@api/meteor_interface";
@@ -76,10 +78,29 @@ type InMemoryCacheEntry = {
   timeout: NodeJS.Timeout;
 };
 
+const CACHE_SIZE_LIMIT_MB = 1000; // cache size in MB
+const CACHE_SIZE_LIMIT_BYTES = CACHE_SIZE_LIMIT_MB * 1000 * 1000; // cache size in MB
 const InMemoryCache: Map<string, InMemoryCacheEntry> = new Map();
 
-// Automatically remove a cache entry after 1 minute of inactivity
-const CACHE_TTL_MS = 60_000;
+// Automatically remove a cache entry after 5 minutes of inactivity
+const cache_persistence_seconds = 300;
+const CACHE_TTL_MS = cache_persistence_seconds * 1000;
+
+const lastEnteredEntry = (): Maybe<string> => {
+  const entries = Array.from(InMemoryCache.entries());
+  if (entries.length === 0) return null;
+
+  const [latestUrl] = entries.reduce((latest, current) => {
+    const [, latestEntry] = latest;
+    const [, currentEntry] = current;
+    return currentEntry.lastAccessed < latestEntry.lastAccessed ? current : latest;
+  }, entries[0]);
+
+  return latestUrl;
+};
+
+const getCacheMemoryUsage = (): number =>
+  Array.from(InMemoryCache.values()).reduce((total, entry) => total + sizeof(entry.data), 0);
 
 /**
  * Helper to schedule or refresh the expiration timer for a cache entry.
@@ -101,11 +122,30 @@ const refreshCacheTimer = (url: string): void => {
   InMemoryCache.set(url, entry);
 };
 
-const cacheIntoLocalCache = (url: string, d: SerializableRepoData) => {
-  //
+const cacheIntoLocalCache = (url: string, d: SerializableRepoData): void => {
+  // clear if it exists already
   clearFromCache(url);
 
-  // ✅ Create or refresh cache entry
+  // we need to see if we have space
+  let cacheMemoryUsage = getCacheMemoryUsage();
+  const dSize = sizeof(d);
+
+  // we need to make space in the cache
+  if (dSize + cacheMemoryUsage > CACHE_SIZE_LIMIT_BYTES) {
+    // we want to deplete the cache of data until we hit our desired memory usage
+    while (InMemoryCache.size > 0) {
+      // gets the latest entry and removes it
+      const latest = lastEnteredEntry();
+      if (!latest) break;
+      const latestEntry = InMemoryCache.get(latest);
+      clearFromCache(latest);
+      // if we now have enough cache size we can break
+      cacheMemoryUsage -= sizeof(latestEntry);
+      if (dSize + cacheMemoryUsage <= CACHE_SIZE_LIMIT_BYTES) break;
+    }
+  }
+
+  // Create cache entry
   const timeout = setTimeout(() => {
     clearFromCache(url);
   }, CACHE_TTL_MS);
