@@ -21,19 +21,21 @@ USER devuser
 
 WORKDIR /projects/commitment
 
-# Copy project files
-COPY --chown=devuser:devuser . .
+# Copy only what’s needed into the container
+# (context is repo root, so this copies just the app folder)
+COPY --chown=devuser:devuser commitment ./commitment
+COPY --chown=devuser:devuser api ./api
 
 # --- Build Stage ---
 FROM base AS build
 
-WORKDIR /projects/commitment
+WORKDIR /projects/commitment/commitment
 
 # Install dependencies before build
 RUN meteor npm install
 
 # Build production bundle (output to /projects/build)
-RUN meteor build ../build --directory
+RUN meteor build ../../build --directory
 
 # Install server-only npm packages inside built bundle
 WORKDIR /projects/build/bundle/programs/server

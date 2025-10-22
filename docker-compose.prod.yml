@@ -26,6 +26,23 @@ services:
     networks:
       - app-network
 
+  python-executor:
+    build:
+      context: ./python_executor
+      dockerfile: Dockerfile
+    volumes:
+      - ./python_executor:/projects/python_executor
+    image: python-executor-img
+    container_name: python-executor
+    security_opt:
+      - seccomp:./python_executor/seccomp-bwrap.json
+    tty: true
+    stdin_open: true
+    ports:
+      - "8002:8002"
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
