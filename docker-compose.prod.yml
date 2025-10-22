@@ -6,6 +6,7 @@ services:
       - "3000:3000"
     volumes:
       - ./commitment:/projects/commitment
+      - ./api:/projects/api # ensure this is accesible to meteor
     env_file:
       - ./commitment/.env
     tty: true
