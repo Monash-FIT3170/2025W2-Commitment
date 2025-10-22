@@ -20,11 +20,11 @@ with open("./data.csv", newline="", encoding="utf-8") as data_csv:
   idx_name = headers.index("contributor_name")
   idx_total_commits = headers.index("total_commits")
   
-  max_total_commits = max((row[idx_total_commits] for row in data))
+  max_total_commits = max((int(row[idx_total_commits]) for row in data))
   
   for row in data:
     # output scaling for each name as total_commits / max_total_commits
-    print([row[idx_name], row[idx_total_commits] / max_total_commits])
+    print([row[idx_name], int(row[idx_total_commits]) / max_total_commits])
 `;
 
 export interface ScriptSpecificationProps {
