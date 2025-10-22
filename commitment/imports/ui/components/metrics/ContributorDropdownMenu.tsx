@@ -16,12 +16,14 @@ interface DropdownMenuCheckboxesProps {
   contributors: string[];
   selected: string[];
   onChange: (selected: string[]) => void;
+  allowSelectAll?: boolean;
 }
 
 export function ContributorDropdownMenu({
   contributors,
   selected,
   onChange,
+  allowSelectAll = true,
 }: DropdownMenuCheckboxesProps): React.JSX.Element {
   const allSelected =
     selected.length === contributors.length && contributors.length > 0;
@@ -63,15 +65,19 @@ export function ContributorDropdownMenu({
         <DropdownMenuLabel>Select Contributors</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <DropdownMenuCheckboxItem
-          checked={allSelected}
-          onSelect={(e) => e.preventDefault()}
-          onCheckedChange={handleToggleAll}
-        >
-          {allSelected ? "Unselect All" : "Select All"}
-        </DropdownMenuCheckboxItem>
+        {allowSelectAll && (
+          <>
+            <DropdownMenuCheckboxItem
+              checked={allSelected}
+              onSelect={(e) => e.preventDefault()}
+              onCheckedChange={handleToggleAll}
+            >
+              {allSelected ? "Unselect All" : "Select All"}
+            </DropdownMenuCheckboxItem>
 
-        <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
+          </>
+        )}
 
         <ScrollArea className="h-48">
           {contributors.map((contributor) => (

@@ -98,6 +98,7 @@ export default function AiSummarySection({
             contributors={contributors}
             selected={contributor ? [contributor] : []}
             onChange={(arr) => setContributor(arr[0])}
+            allowSelectAll={false}
           />
         </div>
 

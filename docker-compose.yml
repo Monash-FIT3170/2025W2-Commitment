@@ -11,6 +11,8 @@ services:
       - ./commitment:/projects/commitment
     env_file:
       - ./commitment/.env
+    environment:
+      - HASKELL_API_BASE=${HASKELL_API_BASE:-http://haskell-api:8081}
     tty: true
     stdin_open: true
     networks:
