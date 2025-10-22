@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { Meteor } from "meteor/meteor";            
 import { Button } from "@base/button";
 import BranchDropdownMenu from "../metrics/BranchDropdownMenu";
 import { ContributorDropdownMenu } from "../metrics/ContributorDropdownMenu";
@@ -23,7 +24,7 @@ export default function AiSummarySection({
   branches,
   contributors,
 }: Props): React.JSX.Element {
-  // defaults (prefer main/master if available)
+  // Prefer "main" or "master" if present
   const defaultBranch = useMemo(() => {
     if (branches.includes("main")) return "main";
     if (branches.includes("master")) return "master";
@@ -67,9 +68,12 @@ export default function AiSummarySection({
 
   return (
     <div className="mt-10">
+      {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">AI Commit Message Summarisation</h2>
+          <h2 className="text-2xl font-semibold text-foreground">
+            AI Commit Message Summarisation
+          </h2>
           <p className="text-git-text-secondary">
             Select a branch and contributor, then summarise their most recent commit messages.
           </p>
@@ -89,7 +93,7 @@ export default function AiSummarySection({
 
         <div className="flex flex-col">
           <span className="text-sm text-git-text-secondary mb-1">Contributor</span>
-          {/* The dropdown returns string[] in your regex section; we accept first item */}
+          {/* Your ContributorDropdown returns string[]; we use the first item */}
           <ContributorDropdownMenu
             contributors={contributors}
             selected={contributor ? [contributor] : []}

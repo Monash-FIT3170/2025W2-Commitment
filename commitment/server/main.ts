@@ -12,6 +12,7 @@ import "./api/fetch_repo";
 import "./api/caching";
 import "./methods";
 import "./oauth-config";
+import "./ai_commit_summary";
 
 Meteor.startup(() => {
   Meteor.publish("bookmarks", function () {
