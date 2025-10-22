@@ -40,6 +40,11 @@ cloneRepo url targetDirectory = doNotLogData
   , onFail = \c e -> "Error cloning repo:\nCommand:\n" ++ c ++ "\nError Message:\n" ++ e
   }
 
+checkIsGitDirecotry :: FilePath -> Command
+checkIsGitDirecotry dir = doNotLogData
+  { command = "git -C " ++ quote dir ++ " rev-parse --git-dir"
+  }
+
 getBranches :: Command
 getBranches = doNotLogData
   { command = "git --no-pager branch -a --format=" ++ quote "%(refname:short)"

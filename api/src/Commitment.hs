@@ -110,7 +110,10 @@ createDirectory path task = do
         case mEntry of
             Just () -> pure Nothing  -- directory exists, counter incremented, no task needed
             Nothing -> do
+                -- creating the directory to initialise
+                createDirectoryIfMissing True path
                 -- Directory is not initialized, run the creation task
+                -- which initialises the directory with all the correct information
                 result <- task path
                 -- Only after successful task, insert entry into map with counter = 1
                 modifyMVar_ directoryRefCount $ \refMap ->
@@ -180,20 +183,15 @@ fetchDataFrom rawUrl notifier = do
                     -- it already exists and another request is using it rn
                     emit notifier "Cloning repo..."
 
-                    -- creating the directory to clone into
-                    createDirectoryIfMissing True repoAbsPath
-
                     -- clones git repo into directory 
                     commandResult <- executeCommandTimedOut 10 notifier cloneRoot (cloneRepo url repoAbsPath)
                     let parsedCloneResult = parsed "Failed to clone the repo" $ successful commandResult
 
-                    -- we want to ensure that 
-                    let gitDir = repoAbsPath </> ".git"
-                    exists <- doesDirectoryExist gitDir
-                    unless exists $ do
-                        emit notifier "Clone failed, cleaning up..."
-                        deleteDirectoryIfExists repoAbsPath (pure ())
-                        throwIO (userError "Incomplete clone directory")
+                    -- we want to ensure that it is a git directory so we run a command inside of it
+                    ensureSuccess <- executeCommand notifier repoAbsPath (checkIsGitDirecotry repoAbsPath)
+                    let ensureSuccessResult = parsed "Failed to clone the repo" $ successful ensureSuccess
+
+                    pure ()
                 )
 
             deleteFunction _ = deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
