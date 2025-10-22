@@ -22,11 +22,13 @@ import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecut
 interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
   onDataRequest: (config: DataSelectionConfig) => Promise<ExportData>;
+  gradingSheet?: File | null;
 }
 
 export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
   history,
   onDataRequest,
+  gradingSheet,
   ...dataSelectionPanelProps
 }: ScriptExecutionProps) => {
   // const latestExport = history.length > 0 ? history[0] : null;
@@ -223,7 +225,7 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
             >
               <ScalingSummary
                 userScalingSummaries={scaledResults}
-                hasGradingSheet={false}
+                hasGradingSheet={!!gradingSheet}
               />
             </div>
           )}

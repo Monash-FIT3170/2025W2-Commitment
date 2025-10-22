@@ -1,5 +1,11 @@
 import dotenv from "dotenv";
-import {PythonExecutorResponse} from "@api/types";
+import {
+  AliasEmail,
+  PythonExecutorResponse, PythonExecutorScalingResponse,
+  type UserScalingSummary
+} from "@api/types";
+import {Meteor} from "meteor/meteor";
+import {StudentAlias} from "@api/alias_configs";
 
 /**
  * Checks that a given value is actually an object, not an array, or a function, or something else.
@@ -119,5 +125,98 @@ export async function pythonExecutor(script: string, data: string): Promise<Pyth
     error: Object.hasOwn(body, "error") ? body.error : undefined,
     stdout: Object.hasOwn(body, "stdout") ? body.stdout : undefined,
     stderr: Object.hasOwn(body, "stderr") ? body.stderr : undefined,
+  }
+}
+
+export async function pythonExecutorScaling(script: string, data: string) : Promise<PythonExecutorScalingResponse> {
+  // Validate given csv
+  const csvLines = data.split('\n').filter(line => line.trim().length > 0);
+  if (csvLines.length < 2) {
+    return {
+      error: "Uploaded csv has less than 2 lines.",
+    }
+  }
+
+  // Start fetching all alias configs for current user at the same time as making request to python executor
+  const aliasConfigPromise = Meteor
+    .callAsync("aliasConfigs.getAllForOwner")
+    .catch(() => null) as Promise<{ aliases: StudentAlias[] }[] | null>; // should never be null
+  const response = await pythonExecutor(script, data);
+
+  if (response.data === undefined || response.data.length === 0)
+    return response as PythonExecutorScalingResponse;
+
+  // Use the first column of csv data as the identifier, for whenever the python executor returns an index
+  const csvFirstCol = csvLines
+    .slice(1)
+    .map(row => row.split(',')[0]);
+
+  const aliasConfig = await aliasConfigPromise;
+
+  // Build a lookup map from officialName -> alias object
+  const aliasMap = new Map<string, StudentAlias>(
+    (aliasConfig?.[0]?.aliases ?? []).map((a: StudentAlias) => [a.officialName, a])
+  );
+  // Build a lookup map from alias object -> officialName
+  const officialNameMap = new Map<string, string>(
+    (aliasConfig?.[0]?.aliases ?? [])
+      .flatMap((a: StudentAlias) => [
+        ...a.emails.map(email => [email, a.officialName]),
+        ...a.gitUsernames.map(username => [username, a.officialName]),
+      ]) as [string, string][]
+  );
+
+  // Turn response data into usable UserScalingSummary objects
+  const filteredData = response.data
+    .filter((row: unknown) => {
+      // Ensure entries are arrays
+      if (row === null || !Array.isArray(row))
+        return false;
+      // Ensure entries are of the right size
+      if (row.length !== 2)
+        return false;
+
+      // Only accept arrays of [number, number] or [string, number]
+      return !((typeof row[0] !== "string" || typeof row[1] !== "number") &&
+        (typeof row[0] !== "number" || typeof row[1] !== "number"));
+    })
+    .map(row => row as [number | string, number])
+    .map((row: [number | string, number]) => (
+      [
+        (typeof row[0] === "number") ? csvFirstCol[row[0]] : (row[0] as string),
+        row[1]
+      ] as [string, number]
+    ))
+    // Apply alias
+    .map((row) => (
+      [
+        officialNameMap.get(row[0]) ?? row[0],
+        row[1]
+      ] as [string, number]
+    ));
+
+  function aliasToEmails(alias: StudentAlias): AliasEmail[]  {
+    return [
+      ...alias.emails.map(email => ({ username: alias.officialName, email })),
+      ...alias.gitUsernames.map(username => ({ username, email: null })),
+    ];
+  }
+
+  const scalingData = filteredData
+    .map((row) => {
+      const alias = aliasMap.get(row[0]);
+
+      return {
+        name: row[0],
+        scale: row[1],
+        aliases: alias ? aliasToEmails(alias) : [],
+        finalGrade: null
+      } as UserScalingSummary;
+    })
+
+  // Build final results
+  return {
+    ...response,
+    data: scalingData,
   }
 }

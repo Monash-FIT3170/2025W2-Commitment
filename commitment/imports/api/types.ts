@@ -265,3 +265,11 @@ export interface PythonExecutorResponse {
   stderr?: string,
   data?: unknown[],
 }
+
+// The object returned by the python executor API
+export interface PythonExecutorScalingResponse {
+  error?: string,
+  stdout?: string,
+  stderr?: string,
+  data?: UserScalingSummary[],
+}

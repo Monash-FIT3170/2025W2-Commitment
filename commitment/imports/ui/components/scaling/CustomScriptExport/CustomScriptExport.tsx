@@ -17,13 +17,15 @@ interface CustomScriptExportProps {
   repoUrl: string;
   onDataRequest: (config: DataSelectionConfig) => Promise<ExportData>;
   className?: string;
+  scalingSheet?:
 }
 
 export const CustomScriptExport: React.FC<CustomScriptExportProps> = ({
   availableBranches,
   repoUrl,
   onDataRequest,
-  className = ''
+  className = '',
+
 }) => {
   const [currentConfig, setCurrentConfig] = useState<DataSelectionConfig | null>(null);
   const [previewData, setPreviewData] = useState<ExportData | null>(null);
