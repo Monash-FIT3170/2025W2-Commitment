@@ -103,6 +103,9 @@ const refreshCacheTimer = (url: string): void => {
 };
 
 const cacheIntoLocalCache = (url: string, d: SerializableRepoData) => {
+  //
+  clearFromCache(url);
+
   // ✅ Create or refresh cache entry
   const timeout = setTimeout(() => {
     clearFromCache(url);
@@ -113,6 +116,29 @@ const cacheIntoLocalCache = (url: string, d: SerializableRepoData) => {
     lastAccessed: new Date(),
     timeout,
   });
+};
+
+/**
+ * Checks if a repository exists in the local cache.
+ * @param url The repository URL to check.
+ * @returns   True if the repository exists, false otherwise.
+ */
+export const isInCache = (url: string): boolean => {
+  const doc = InMemoryCache.get(url);
+  return undefined !== doc;
+};
+
+/**
+ * Deletes an entry from the local cache
+ * @param url The repository URL
+ * @returns   True if the deletion is successful, false otherwise.
+ */
+export const clearFromCache = (url: string): boolean => {
+  const entry = InMemoryCache.get(url);
+  if (!entry) return false;
+  // Clear any existing timer
+  clearTimeout(entry.timeout);
+  return InMemoryCache.delete(url);
 };
 
 Meteor.methods({
@@ -184,23 +210,6 @@ export const isInDatabase = async (url: string): Promise<boolean> => {
   const doc = await RepoCollection.findOneAsync({ url: url });
   return null !== doc;
 };
-
-/**
- * Checks if a repository exists in the local cache.
- * @param url The repository URL to check.
- * @returns   True if the repository exists, false otherwise.
- */
-export const isInCache = (url: string): boolean => {
-  const doc = InMemoryCache.get(url);
-  return undefined !== doc;
-};
-
-/**
- * Deletes an entry from the local cache
- * @param url The repository URL
- * @returns   True if the deletion is successful, false otherwise.
- */
-export const clearFromCache = (url: string): boolean => InMemoryCache.delete(url);
 
 /**
  * Caches repository data in the database.
