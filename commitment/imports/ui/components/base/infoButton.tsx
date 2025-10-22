@@ -40,8 +40,8 @@ const InfoButton: React.FC<InfoButtonProps> = ({ description, className, variant
           <Info className="w-6! h-6!" />
         </Button>
         </TooltipTrigger>
-        <TooltipContent>
-          <p>  {description}
+        <TooltipContent side="top" align="center" className="max-w-sm">
+          <p className="text-center">  {description}
           </p>
         </TooltipContent>
       </Tooltip>
