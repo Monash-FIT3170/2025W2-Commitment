@@ -24,7 +24,8 @@ export interface ScriptEditorProps {
   onBlur?: () => void,
   setDragging?: (dragging: boolean) => void,
   readonly?: boolean,
-  language?: string;
+  language?: string,
+  padding?: number,
 }
 
 /**
@@ -50,7 +51,7 @@ export default function ScriptEditor(props: ScriptEditorProps) {
       value={props.code}
       onValueChange={code => props.setCode(code)}
       highlight={highlightWithLineNumbers}
-      padding={10}
+      padding={props.padding ?? 10}
       style={{
         outline: 'none',
         border: 'none',

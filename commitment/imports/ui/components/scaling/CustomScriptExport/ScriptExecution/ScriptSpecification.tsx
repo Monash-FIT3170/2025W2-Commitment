@@ -12,8 +12,6 @@ export const initialScript = `import csv
 with open("./data.csv", newline="", encoding="utf-8") as data_csv:
   csv_rows = csv.reader(data_csv)
   headers = next(csv_rows)
-  print("found headers: ", headers)
-  
   data = [row for row in csv_rows]
   
   idx_name = headers.index("contributor_name")
@@ -24,6 +22,7 @@ with open("./data.csv", newline="", encoding="utf-8") as data_csv:
   for row in data:
     # output scaling for each name as total_commits / max_total_commits
     print([row[idx_name], int(row[idx_total_commits]) / max_total_commits])
+    
 `;
 
 export interface ScriptSpecificationProps {
@@ -33,7 +32,9 @@ export interface ScriptSpecificationProps {
   icon?: React.ReactNode | React.ReactNode[],
   name?: string | string[],
   readonly?: boolean | boolean[],
-  language?: string | string[];
+  language?: string | string[],
+  children?: React.ReactNode,
+  padding?: number | number[],
 }
 
 function asArrayDefault<T>(value: T | T[], defaultValue: T, tabCount: number | undefined = undefined): T[] {
@@ -83,6 +84,7 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
   const readonly = asArray(props.readonly, tabCount)[tabIndex];
   const language = asArray(props.language, tabCount)[tabIndex] ?? "python";
   const className = asArray(props.className, tabCount)[tabIndex];
+  const padding = asArray(props.padding, tabCount)[tabIndex];
 
   // UI State
   const [selectedRaw, setSelected] = useState<boolean>(false);
@@ -153,7 +155,9 @@ export default function ScriptSpecification(props: ScriptSpecificationProps) {
         setDragging={readonly ? undefined : setDragging}
         readonly={readonly}
         language={language}
+        padding={padding}
       />
+      {props.children}
     </div>
   )
 }

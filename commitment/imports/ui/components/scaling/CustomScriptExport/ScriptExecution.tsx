@@ -17,6 +17,7 @@ import {PythonExecutorResponse, type UserScalingSummary} from "@api/types";
 import {meteorCallAsync} from "@api/meteor_interface";
 import ScalingSummary from "@ui/components/scaling/ScalingSummary";
 import {cn} from "@ui/lib/utils";
+import ScriptEditor from "@ui/components/scaling/CustomScriptExport/ScriptExecution/ScriptEditor";
 
 interface ScriptExecutionProps extends DataSelectionPanelProps {
   history: ExportHistoryItem[];
@@ -118,6 +119,10 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
       });
   }
 
+  const errorOutput = response.error || response.stderr
+    ? [response.stderr, response.error].filter(Boolean).join('\n')
+    : undefined;
+
   return (
     <div className="space-y-6">
       {/* Main Script Execution Card */}
@@ -184,23 +189,24 @@ export const ScriptExecution: React.FC<ScriptExecutionProps> = ({
                 "mb-6 transition-opacity ease-out duration-200 ",
                 executionLoading && "opacity-50" || "opacity-100"
               )}
-              code={[response.stdout ?? "", response.stderr ?? "", response.error ?? ""].join('\n')}
+              code={response.stdout?.trimEnd() ?? ""}
               setCode={() => {}}
               name={"Execution Output"}
               icon={<Terminal size="sm"/>}
               language="python"
               readonly
-            />
-
-            {/*<ScriptSpecification*/}
-            {/*  className="mb-6"*/}
-            {/*  code={responseDataJson}*/}
-            {/*  setCode={() => {}}*/}
-            {/*  name={"data.json"}*/}
-            {/*  icon={<FileText size="sm"/>}*/}
-            {/*  language="json"*/}
-            {/*  readonly*/}
-            {/*/>*/}
+            >
+              {errorOutput !== undefined && (
+                <ScriptEditor
+                  className="text-sm text-red-600 mx-2.5 pb-2.5"
+                  language="python"
+                  code={errorOutput}
+                  setCode={() => {}}
+                  readonly
+                  padding={0}
+                />
+              )}
+            </ScriptSpecification>
           </div>
 
 
