@@ -48,12 +48,13 @@ Meteor.methods({
     // gets the current connection id to identify the stream the updates should be sent to
     const connectionId = this.connection!.id;
     const sub = clientMessageStreams[connectionId];
+    repoUrl = cleanGitUrl(repoUrl);
 
     // ensures a not null value is returned and a valid subject is used in some capacity
     const subject = sub || new Subject<string>();
 
     // returns whether it was successful in caching to the database or not
-    return await getRepoData(repoUrl.trim(), subject, queryDatabase)
+    return await getRepoData(repoUrl, subject, queryDatabase)
       .then((_) => true)
       .catch((e: Error) => {
         console.log(`error upon getGitHubRepoData with url: ${repoUrl}: \n${e}`);
@@ -67,6 +68,8 @@ Meteor.methods({
     return isInDatabase(repoUrl);
   },
 });
+
+const cleanGitUrl = (url: string): string => url.trim().replace(/\.git$/, "");
 
 // can have a case here to see if it is deployment or a docker localhost
 // this means that the API can be connected to without the connection being hard coded

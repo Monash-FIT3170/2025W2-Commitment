@@ -151,7 +151,9 @@ execAndParseAll notifier cwd cmds parser msg =
     cmds
 
 fetchDataFrom :: String -> TBQueue String -> IO (Either String RepositoryData)
-fetchDataFrom url notifier = do
+fetchDataFrom rawUrl notifier = do
+        let url = cleanGitUrl rawUrl
+        
         workingDir <- getTemporaryDirectory
         let cloneRoot = workingDir </> "cloned-repos"
 
