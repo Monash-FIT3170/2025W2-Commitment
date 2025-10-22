@@ -122,7 +122,7 @@ createDirectory path task = do
 
 -- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO Bool
-deleteDirectory path callback = 
+deleteDirectory path callback =
     -- Acquire the directory lock first to avoid circular locking
     withDirectoryLock path $ do
         -- Now safely modify the refcount
@@ -153,20 +153,20 @@ execAndParse notifier cwd cmd parser msg = await (
     )
 
 execAndParseAll :: TBQueue String -> FilePath -> [Command] -> (String -> ParseResult a) -> String -> IO [a]
-execAndParseAll notifier cwd cmds parser msg = 
+execAndParseAll notifier cwd cmds parser msg =
     passAllAsync commandPool parsingPool
     (executeCommand notifier cwd)
     (pure . parsed msg . parser . parsed msg . successful)
     cmds
 
 fetchDataFrom :: String -> TBQueue String -> IO (Either String RepositoryData)
-fetchDataFrom rawUrl notifier = do
+fetchDataFrom rawUrl notifier = (do
         let url = cleanGitUrl rawUrl
-        
+
         workingDir <- getTemporaryDirectory
         let cloneRoot = workingDir </> "cloned-repos"
 
-        awaitOutsideCloneDir <- createDirectoryIfMissing True cloneRoot
+        createDirectoryIfMissing True cloneRoot
         emit notifier "Validating repo exists..."
 
         let execCmdInWorkingDir = execAndParse notifier workingDir
@@ -178,40 +178,34 @@ fetchDataFrom rawUrl notifier = do
             repoRelativePath = last (init parts) ++ "/" ++ last parts
             repoAbsPath      = cloneRoot </> repoRelativePath
 
-            cloneFunction = createDirectory repoAbsPath (\_ -> do
-                    -- clone the repo in this case, otherwise we don't actually need to clone it as
-                    -- it already exists and another request is using it rn
-                    emit notifier "Cloning repo..."
+            cloneFunction = createDirectory repoAbsPath $ \_ -> do
+                emit notifier "Cloning repo..."
+                commandResult <- executeCommandTimedOut 10 notifier cloneRoot (cloneRepo url repoAbsPath)
+                let _parsedCloneResult = parsed "Failed to clone the repo" $ successful commandResult
 
-                    -- clones git repo into directory 
-                    commandResult <- executeCommandTimedOut 10 notifier cloneRoot (cloneRepo url repoAbsPath)
-                    let parsedCloneResult = parsed "Failed to clone the repo" $ successful commandResult
-
-                    -- we want to ensure that it is a git directory so we run a command inside of it
-                    ensureSuccess <- executeCommand notifier repoAbsPath (checkIsGitDirectory repoAbsPath)
-                    let ensureSuccessResult = parsed "Failed to initialise the filepath" $ successful ensureSuccess
-
-                    pure ()
-                )
+                -- Ensure git directory
+                ensureSuccess <- executeCommand notifier repoAbsPath (checkIsGitDirectory repoAbsPath)
+                let _ensureSuccessResult = parsed "Failed to initialise the filepath" $ successful ensureSuccess
+                
+                pure ()
 
             deleteFunction _ = deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
 
         bracket
-            -- clone the repository if it has not already been
             cloneFunction
-            -- delete the repository if it can be
             deleteFunction
-            -- run this part inside to purify any side effects
             (\_ -> do
                 emit notifier "Getting repository data..."
                 repoData <- formulateRepoData url repoAbsPath notifier
                 emit notifier "Data processed!"
                 pure (Right repoData)
             )
-            `catch` \(e :: SomeException) -> do
-            let errMsg = displayException e
-            emit notifier ("Error occurred:\n" ++ errMsg)
-            pure (Left errMsg)
+
+    ) `catch` \(e :: SomeException) -> do
+        let errMsg = displayException e
+        emit notifier ("Error occurred:\n" ++ errMsg)
+        safePrint errMsg
+        pure (Left errMsg)
 
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data
