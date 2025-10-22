@@ -13,7 +13,7 @@ import {
 import {useLocalStorage} from "@hook/useLocalStorage";
 import {ExportData} from "@ui/components/scaling/CustomScriptExport/ExportPreview";
 import useAsync from "@hook/useAsync";
-import {PythonExecutorScalingResponse, UserScalingSummary} from "@api/types";
+import {PythonExecutorScalingResponse} from "@api/types";
 import {meteorCallAsync} from "@api/meteor_interface";
 import ScalingSummary from "@ui/components/scaling/ScalingSummary";
 import {cn} from "@ui/lib/utils";
