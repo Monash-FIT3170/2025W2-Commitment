@@ -106,13 +106,15 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
           </div>
           
           <div className="w-full border border-git-stroke-primary rounded-xl overflow-auto max-h-96">
-            <Table className="min-w-full">
+            <Table className="min-w-full rounded-lg">
               <TableHeader>
-                <TableRow className="bg-git-int-primary hover:bg-git-int-primary">
+                <TableRow className="bg-git-int-secondary hover:bg-git-int-secondary rounded-t-lg">
                   {data.headers.map((header, index) => (
                     <TableHead 
                       key={index} 
-                      className="sticky top-0 text-git-int-text whitespace-nowrap px-3 py-2 text-left font-bold"
+                      className={`sticky top-0 text-git-text-primary whitespace-nowrap px-3 py-2 text-left font-bold bg-git-int-secondary ${
+                        index === 0 ? 'rounded-tl-lg' : index === data.headers.length - 1 ? 'rounded-tr-lg' : ''
+                      }`}
                     >
                       {header}
                     </TableHead>
@@ -121,7 +123,7 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
               </TableHeader>
               <TableBody>
                 {displayRows.map((row, rowIndex) => (
-                  <TableRow key={rowIndex} className="bg-git-int-primary hover:bg-git-int-primary">
+                  <TableRow key={rowIndex} className="bg-git-int-primary hover:bg-git-int-primary rounded-lg">
                     {row.map((cell, cellIndex) => {
                       const isEmailCol = data.headers[cellIndex] === 'contributor_email';
                       if (isEmailCol) {
@@ -130,7 +132,9 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
                           .map((e) => e.trim())
                           .filter((e) => e.length > 0);
                         return (
-                          <TableCell key={cellIndex} className="text-sm text-git-int-text px-3 py-2 align-top">
+                          <TableCell key={cellIndex} className={`text-sm text-git-int-text px-3 py-2 align-top ${
+                            cellIndex === 0 ? 'rounded-l-lg' : cellIndex === row.length - 1 ? 'rounded-r-lg' : ''
+                          }`}>
                             <div className="flex flex-wrap gap-1">
                               {emails.map((email, idx) => (
                                 <span
@@ -147,7 +151,9 @@ export const ExportPreview: React.FC<ExportPreviewProps> = ({
                       return (
                         <TableCell
                           key={cellIndex}
-                          className="font-mono text-sm text-git-int-text whitespace-nowrap px-3 py-2"
+                          className={`font-mono text-sm text-git-int-text whitespace-nowrap px-3 py-2 ${
+                            cellIndex === 0 ? 'rounded-l-lg' : cellIndex === row.length - 1 ? 'rounded-r-lg' : ''
+                          }`}
                         >
                           {formatValue(cell)}
                         </TableCell>

@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@base/card';
 import { Button } from '@base/button';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@base/table';
-import { ScrollArea } from '@base/scroll-area';
 
 export interface ExportHistoryItem {
   id: string;
@@ -114,8 +113,8 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
         </div>
       </CardHeader>
       <CardContent className="bg-git-bg-elevated dark:bg-git-bg-primary pt-6">
-        <ScrollArea className="h-96 w-full">
-          <Table className="rounded-lg">
+        <div className="w-full border border-git-stroke-primary rounded-xl overflow-auto max-h-96">
+          <Table className="min-w-full rounded-lg">
             <TableHeader>
               <TableRow className="rounded-t-lg">
                 <TableHead 
@@ -205,7 +204,7 @@ export const ExportHistory: React.FC<ExportHistoryProps> = ({
               ))}
             </TableBody>
           </Table>
-        </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );
