@@ -4,10 +4,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Clean Prism.js code block styling - no theme interference */
+/* Ensure consistent background and prevent text selection highlighting */
 .prism-code {
-  background: var(--git-bg-secondary);
-  border: 1px solid var(--git-stroke-secondary);
+  background: var(--git-bg-secondary) !important;
+  border: 1px solid var(--git-stroke-secondary) !important;
   border-radius: 0.5rem;
   padding: 1rem;
   margin: 1rem 0;
@@ -15,11 +15,15 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 0.875rem;
   line-height: 1.5;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .prism-code code {
-  background: transparent;
-  color: var(--git-text-primary);
+  background: transparent !important;
+  color: var(--git-text-primary) !important;
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
@@ -84,43 +88,14 @@
   color: var(--git-dv-orange);
 }
 
-/* Dark mode adjustments */
-.dark .prism-code {
-  background: var(--git-bg-elevated);
-  border-color: var(--git-stroke-primary);
-}
-
-/* Dark mode specific adjustments */
-.dark .prism-code {
-  background: var(--git-bg-elevated) !important;
-  border-color: var(--git-stroke-primary) !important;
-  text-shadow: none !important;
-  -webkit-text-stroke: none !important;
-  text-stroke: none !important;
-}
-
-.dark .prism-code code {
-  color: var(--git-text-primary) !important;
-  text-shadow: none !important;
-  -webkit-text-stroke: none !important;
-  text-stroke: none !important;
-}
-
-/* Remove any text effects from all elements inside code blocks in dark mode */
-.dark .prism-code * {
-  text-shadow: none !important;
-  -webkit-text-stroke: none !important;
-  text-stroke: none !important;
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
-  font-smooth: never !important;
-}
-
-/* Specifically target Prism token elements in dark mode */
-.dark .prism-code .token,
-.dark .prism-code .token *,
-.dark .prism-code span,
-.dark .prism-code span * {
+/* Universal text effect removal for all code elements */
+.prism-code,
+.prism-code *,
+.prism-code code,
+.prism-code .token,
+.prism-code .token *,
+.prism-code span,
+.prism-code span * {
   text-shadow: none !important;
   -webkit-text-stroke: none !important;
   text-stroke: none !important;
@@ -129,6 +104,16 @@
   font-smooth: never !important;
   filter: none !important;
   -webkit-filter: none !important;
+}
+
+/* Dark mode adjustments */
+.dark .prism-code {
+  background: var(--git-bg-elevated);
+  border-color: var(--git-stroke-primary);
+}
+
+.dark .prism-code code {
+  color: var(--git-text-primary);
 }
 
 .dark .prism-code .token.comment,
