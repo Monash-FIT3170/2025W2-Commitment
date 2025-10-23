@@ -114,7 +114,7 @@ export function ContributionPieChart({ data, title, xAxisLabel }: Props) {
                 label: "User",
               },
             }}
-            className="min-h-[300px] w-full max-w-[300px]"
+            className="h-[300px] w-full max-w-[300px]"
           >
             <PieChart>
               <Pie
