@@ -7,7 +7,12 @@ import { RepositoryData, SerializableRepoData } from "@api/types";
 import { serializeRepoData, assertRepoTyping } from "@api/serialisation";
 import { emitValue } from "@api/meteor_interface";
 
-import { cacheIntoDatabase, isInDatabase, tryFromDatabaseViaLatest } from "./caching";
+import {
+  cacheIntoLocalCache,
+  cacheIntoDatabaseSerial,
+  isInDatabase,
+  tryFromDatabaseViaLatest,
+} from "./caching";
 
 const clientMessageStreams: Record<string, Subject<string>> = {};
 
@@ -48,12 +53,13 @@ Meteor.methods({
     // gets the current connection id to identify the stream the updates should be sent to
     const connectionId = this.connection!.id;
     const sub = clientMessageStreams[connectionId];
+    repoUrl = cleanGitUrl(repoUrl);
 
     // ensures a not null value is returned and a valid subject is used in some capacity
     const subject = sub || new Subject<string>();
 
     // returns whether it was successful in caching to the database or not
-    return await getRepoData(repoUrl.trim(), subject, queryDatabase)
+    return getRepoData(repoUrl, subject, queryDatabase)
       .then((_) => true)
       .catch((e: Error) => {
         console.log(`error upon getGitHubRepoData with url: ${repoUrl}: \n${e}`);
@@ -67,6 +73,8 @@ Meteor.methods({
     return isInDatabase(repoUrl);
   },
 });
+
+const cleanGitUrl = (url: string): string => url.trim().replace(/\.git$/, "");
 
 // can have a case here to see if it is deployment or a docker localhost
 // this means that the API can be connected to without the connection being hard coded
@@ -104,8 +112,17 @@ export const pipeRepoDataViaCache =
           .then(assertRepoTyping)
           .then(async (d: RepositoryData) => {
             emitSub("Caching data into the database...");
-            const success = await cacheIntoDatabase(url, d);
-            if (!success) throw Error(`Failed to cache url into database: ${url}`);
+            // we first just want to cache it into local cache
+            const serial = serializeRepoData(d);
+            cacheIntoLocalCache(url, serial);
+            // then have a non-await into the database as that takes ages
+            cacheIntoDatabaseSerial(url, serial)
+              .then((res: boolean) => {
+                if (!res) console.error(`Failed to cache new url "${url}" into database`);
+              })
+              .catch((err: Error) => {
+                console.error(`Failed to cache url "${url}" into database:\n${err.message}`);
+              });
             return d;
           })
           .catch((e2: Error) => {

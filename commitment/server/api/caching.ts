@@ -2,6 +2,7 @@ import { Subject } from "rxjs";
 import { Mongo } from "meteor/mongo";
 import { Meteor } from "meteor/meteor";
 import { check } from "meteor/check";
+import sizeof from "object-sizeof";
 
 import {
   RepositoryData,
@@ -10,6 +11,7 @@ import {
   SerialisableMapObject,
   CommitData,
   ContributorData,
+  Maybe,
 } from "@api/types";
 import { deserializeRepoData, serializeRepoData } from "@api/serialisation";
 import { emitValue } from "@api/meteor_interface";
@@ -39,13 +41,19 @@ interface CommitRepoData {
 }
 
 const getCompleteDataFromDatabase = async (url: string): Promise<SerializableRepoData> => {
-  const [repoMetaData, repoCommitData]: [ServerRepoMetaData, CommitRepoData[]] = await Promise.all([
-    RepoCollection.findOneAsync({ url }),
-    CommitCollection.find({ url }).fetchAsync(),
-  ]);
-
+  const repoMetaData = await RepoCollection.findOneAsync({ url });
   if (repoMetaData === undefined) throw Error(`Could not find url in database: ${url}`);
   const metaData = repoMetaData.data;
+
+  const uniqueCommitHashes: string[] = [
+    ...new Set(metaData.branches.map((b) => b.commitHashes).flat()),
+  ];
+
+  const repoCommitData: CommitRepoData[] = (
+    await Promise.all(
+      uniqueCommitHashes.map((hash) => CommitCollection.findOneAsync({ url, hash }))
+    )
+  ).filter((d) => d !== undefined);
 
   const allCommits = repoCommitData.map(
     (e) =>
@@ -65,6 +73,126 @@ const getCompleteDataFromDatabase = async (url: string): Promise<SerializableRep
 
 const RepoCollection = new Mongo.Collection<ServerRepoMetaData>("repoCollection");
 const CommitCollection = new Mongo.Collection<CommitRepoData>("commitCollection");
+
+// -------------------------------------------------------------
+// 🧠 In-memory cache structure
+// -------------------------------------------------------------
+type InMemoryCacheEntry = {
+  data: SerializableRepoData;
+  lastAccessed: Date;
+  timeout: NodeJS.Timeout;
+};
+
+const CACHE_SIZE_LIMIT_MB = 1000; // cache size in MB
+const CACHE_SIZE_LIMIT_BYTES = CACHE_SIZE_LIMIT_MB * 1_000_000;
+const InMemoryCache: Map<string, InMemoryCacheEntry> = new Map();
+
+// Automatically remove a cache entry after 5 minutes of inactivity
+const cache_persistence_seconds = 300;
+const CACHE_TTL_MS = cache_persistence_seconds * 1000;
+
+const lastEnteredEntry = (): Maybe<string> => {
+  const entries = Array.from(InMemoryCache.entries());
+  if (entries.length === 0) return null;
+
+  const [latestUrl] = entries.reduce((latest, current) => {
+    const [, latestEntry] = latest;
+    const [, currentEntry] = current;
+    return currentEntry.lastAccessed < latestEntry.lastAccessed ? current : latest;
+  }, entries[0]);
+
+  return latestUrl;
+};
+
+export const getCacheMemoryUsage = (): number =>
+  Array.from(InMemoryCache.values()).reduce((total, entry) => total + sizeof(entry.data), 0);
+
+/**
+ * Helper to schedule or refresh the expiration timer for a cache entry.
+ */
+export const refreshCacheTimer = (url: string): void => {
+  const entry = InMemoryCache.get(url);
+  if (!entry) return;
+
+  // Clear any existing timer
+  clearTimeout(entry.timeout);
+
+  // Set a new timer that removes the cache entry after inactivity
+  entry.lastAccessed = new Date();
+  entry.timeout = setTimeout(() => {
+    clearFromCache(url);
+  }, CACHE_TTL_MS);
+
+  // Update the entry with the new timer and access time
+  InMemoryCache.set(url, entry);
+};
+
+export const cacheIntoLocalCache = (url: string, d: SerializableRepoData): void => {
+  // clear if it exists already
+  clearFromCache(url);
+
+  // we need to see if we have space
+  let cacheMemoryUsage = getCacheMemoryUsage();
+  const dSize = sizeof(d);
+
+  if (dSize > CACHE_SIZE_LIMIT_BYTES) {
+    console.log(
+      `url ${url} exceeds limit of ${CACHE_SIZE_LIMIT_MB}MB by ${
+        (dSize - CACHE_SIZE_LIMIT_BYTES) / 1_000_000
+      }MB`
+    );
+    return;
+  }
+
+  // we need to make space in the cache
+  if (dSize + cacheMemoryUsage > CACHE_SIZE_LIMIT_BYTES) {
+    // we want to deplete the cache of data until we hit our desired memory usage
+    while (InMemoryCache.size > 0) {
+      // gets the latest entry and removes it
+      const latest = lastEnteredEntry();
+      if (!latest) break;
+      const latestEntry = InMemoryCache.get(latest);
+      clearFromCache(latest);
+      // if we now have enough cache size we can break
+      cacheMemoryUsage -= sizeof(latestEntry);
+      if (dSize + cacheMemoryUsage <= CACHE_SIZE_LIMIT_BYTES) break;
+    }
+  }
+
+  // Create cache entry
+  const timeout = setTimeout(() => {
+    clearFromCache(url);
+  }, CACHE_TTL_MS);
+
+  InMemoryCache.set(url, {
+    data: d,
+    lastAccessed: new Date(),
+    timeout,
+  });
+};
+
+/**
+ * Checks if a repository exists in the local cache.
+ * @param url The repository URL to check.
+ * @returns   True if the repository exists, false otherwise.
+ */
+export const isInCache = (url: string): boolean => {
+  const doc = InMemoryCache.get(url);
+  return undefined !== doc;
+};
+
+/**
+ * Deletes an entry from the local cache
+ * @param url The repository URL
+ * @returns   True if the deletion is successful, false otherwise.
+ */
+export const clearFromCache = (url: string): boolean => {
+  const entry = InMemoryCache.get(url);
+  if (!entry) return false;
+  // Clear any existing timer
+  clearTimeout(entry.timeout);
+  return InMemoryCache.delete(url);
+};
 
 Meteor.methods({
   /**
@@ -136,13 +264,18 @@ export const isInDatabase = async (url: string): Promise<boolean> => {
   return null !== doc;
 };
 
+export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> =>
+  cacheIntoDatabaseSerial(url, serializeRepoData(data));
+
 /**
  * Caches repository data in the database.
  * @param url The repository URL.
  * @param data The repository data to cache.
  */
-export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> => {
-  const serialData = serializeRepoData(data);
+export const cacheIntoDatabaseSerial = async (
+  url: string,
+  serialData: SerializableRepoData
+): Promise<boolean> => {
   const s: ServerRepoMetaData = {
     url,
     createdAt: new Date(),
@@ -176,7 +309,13 @@ export const cacheIntoDatabase = async (url: string, data: RepositoryData): Prom
   ).reduce((acc, i) => (acc && i.numberAffected! > 0 ? true : false), true);
 
   // res is an object like { numberAffected, insertedId }
-  return res.numberAffected! > 0 && cRes;
+  const returnResult = res.numberAffected! > 0 && cRes;
+
+  // if we are successful we also want to insert it into the local cache
+  if (returnResult) {
+    cacheIntoLocalCache(url, serialData);
+  }
+  return returnResult;
 };
 
 /**
@@ -191,6 +330,10 @@ export const removeRepo = async (url: string): Promise<boolean> => {
   if (null === doc || undefined == doc) return false;
   const res = await RepoCollection.removeAsync({ url });
   const cRes = await CommitCollection.removeAsync({ url });
+
+  // ✅ Remove from cache
+  InMemoryCache.delete(url);
+
   return res > 0 && cRes > 0;
 };
 
@@ -200,6 +343,8 @@ export const removeRepo = async (url: string): Promise<boolean> => {
 export const voidDatabase = async (): Promise<void> => {
   await RepoCollection.removeAsync({});
   await CommitCollection.removeAsync({});
+  InMemoryCache.entries().forEach(([_, entry]) => clearTimeout(entry.timeout));
+  InMemoryCache.clear();
 };
 
 /**
@@ -215,22 +360,39 @@ export const tryFromDatabaseSerialised = async (
   const emit = emitValue(notifier);
   emit("Checking database for existing data...");
 
+  // ✅ Step 1: check in-memory cache first
+  const cached = InMemoryCache.get(url);
+  if (cached) {
+    refreshCacheTimer(url); // reset expiration by updating timer
+    emit("Found data in in-memory cache!");
+    return cached.data;
+  }
+
+  // ✅ Step 2: fallback to DB
   if (!isInDatabase(url)) throw Error("Data not found in database");
   emit("Found data in database!");
 
-  return getCompleteDataFromDatabase(url);
+  const r = await getCompleteDataFromDatabase(url);
+  // reinsert it if its recently accessed
+  if (!isInCache(url)) {
+    cacheIntoLocalCache(url, r);
+  }
+
+  return r;
 };
 
 export const tryFromDatabaseSerialisedViaLatest = async (
   url: string,
   notifier: Subject<string> | null
 ): Promise<SerializableRepoData> => {
+  const emit = emitValue(notifier);
   const d: SerializableRepoData = await tryFromDatabaseSerialised(url, notifier);
+  emit("Checking whether the repo is up to date...");
   const upToDate: boolean = await isUpToDate(url, d);
 
   if (!upToDate) {
     const msg = "Repo is not up to date with the latest changes";
-    emitValue(notifier)(msg);
+    emit(msg);
     throw Error(msg);
   }
 

@@ -152,6 +152,6 @@ export const deleteAllFromDirectory = async (dirPath: string) => {
         return fs_promise.unlink(fullPath);
       }
     }),
-    fs_promise.rmdir(dirPath, { recursive: true }), // removes dirPath as well as all subdirectories
+    fs_promise.rm(dirPath, { recursive: true }), // removes dirPath as well as all subdirectories
   ]);
 };
