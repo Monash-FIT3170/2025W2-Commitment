@@ -33,7 +33,7 @@ function makePlotData(contributors: ContributorScaledData[]) {
     const pct = Number(c.scaledMetric.percentile ?? 0);
     const q = Math.round(pct / 10) * 10; // 0..100 as number
 
-    counters[q] = (counters[q] || 0) + 1; // increment single counter per decile
+    counters[q] = (counters[q] || 0) + .5; // increment single counter per decile
 
     data.push({
       x: q, // category x (Q1..Q4 or "0".."100")
@@ -175,7 +175,7 @@ export default function PercentileGraph({
           }}
           className="w-full h-full"
         >
-          <ScatterChart margin={{ top: 16, right: 24, bottom: 8, left: 8 }}>
+          <ScatterChart margin={{ top: 16, right: 24, bottom: 8, left: 24 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
             <XAxis
               type="number"
