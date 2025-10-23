@@ -20,6 +20,7 @@
     - [System Architects](#system-architects)
     - [Product Managers](#product-managers)
     - [Release Train Engineers](#release-train-engineers)
+  - [Generative AI Statement](#generative-ai-statement)
 
 # 2025W2-Commitment
 
@@ -228,3 +229,7 @@ Release Train Engineers acted as a servant leader and coach for an Agile Release
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
+## Generative AI Statement
+
+Generative AI was used in the development of this project.
