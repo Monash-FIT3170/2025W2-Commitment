@@ -32,8 +32,6 @@ Temporary Items
 
 # Dependencies
 node_modules/
-/package.json
-/package-lock.json
 
 # api
 .stack-work/

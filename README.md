@@ -20,6 +20,7 @@
     - [System Architects](#system-architects)
     - [Product Managers](#product-managers)
     - [Release Train Engineers](#release-train-engineers)
+  - [Generative AI Statement](#generative-ai-statement)
 
 # 2025W2-Commitment
 
@@ -150,12 +151,12 @@ This project will not be actively maintained at the conclusion of the second 202
 Below are useful links for learning a little more about the project from the READMEs scattered throughout.
 | README Name        | Info / Description                                             | Link                                                 |
 | ------------------ | -------------------------------------------------------------- | ---------------------------------------------------- |
-| Coding Standards   | Quick guide to coding standards in the repository              | [View README](docs/CODING_STANDARDS.md)              |
+| Coding Standards   | Quick guide to coding standards in the repository.             | [View README](docs/CODING_STANDARDS.md)              |
 | Mongo Setup        | More information on playing with Mongo.                        | [View README](commitment/atlas/README_DATA_ENTRY.md) |
 | Mongo Architecture | Documentation on the architecture of Mongo in our application. | [View README](docs/ARCHITECTURE.md)                  |
 | Tailwind How-To    | Example usage and demos for applying tailwind in the project.  | [View README](docs/TAILWIND_COLOURS.md)              |
 | ESLint Guide       | Usage and documentation of eslint in the project.              | [View README](docs/ESLINT.md)                        |
-| Contribution Guide | Guidelines for contributing to the project                     | [View README](CONTRIBUTING.md)                       |
+| Contribution Guide | Guidelines for contributing to the project.                    | [View README](CONTRIBUTING.md)                       |
 
 ## Contributors ✨
 
@@ -228,3 +229,7 @@ Release Train Engineers acted as a servant leader and coach for an Agile Release
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
+## Generative AI Statement
+
+Generative AI was used in the development of this project.
