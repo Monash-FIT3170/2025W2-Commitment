@@ -2,6 +2,7 @@ import React from "react";
 import { Separator } from "@base/separator";
 import { Card, CardContent } from "@base/card";
 import GetStartedButton from "./getStartedButton";
+import UserGuideButton from "./userGuideButton";
 
 const Header = () => (
   <div className="flex flex-col justify-center items-center">
@@ -89,6 +90,10 @@ const purpose = () => (
     <CircleNumber />
 
     <PurposeCard />
+
+    <div className="mt-8">
+      <UserGuideButton />
+    </div>
 
     <div className="mt-20">
       <GetStartedButton />
