@@ -1,5 +1,27 @@
 # Contributing Guidelines
 
+## Table of Contents
+
+- [Contributing Guidelines](#contributing-guidelines)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Commits](#commits)
+  - [Branching](#branching)
+    - [Locked Branches](#locked-branches)
+    - [Feature Branches](#feature-branches)
+    - [Branch Naming](#branch-naming)
+  - [Issues](#issues)
+  - [Pull Requests (Merge Requests)](#pull-requests-merge-requests)
+    - [PR Checklist](#pr-checklist)
+  - [Versioning](#versioning)
+    - [How Semantic Versioning Works](#how-semantic-versioning-works)
+    - [Automatic Versioning via Conventional Commits](#automatic-versioning-via-conventional-commits)
+    - [When Merging to `main`](#when-merging-to-main)
+    - [Example Workflow](#example-workflow)
+
+
+## Introduction
+
 Thank you for your interest in contributing to this project!
 
 - This document outlines the process and standards we follow to keep our work consistent and collaborative.
@@ -68,7 +90,7 @@ If a user comes across any issues in the system, an issue can be raised on GitHu
 
 This page can be [accessed here](https://github.com/Monash-FIT3170/2025W2-Commitment/issues), templates are provided for different issue types, all a user has to do is fill out the template and submit.
 
-| Type      | Description                                                       |
+| Type      | Description                                                      |
 | --------- | ---------------------------------------------------------------- |
 | `bug`     | For any UI or logic bugs that don't align with user expectations |
 | `feature` | A request for new features to the application.                   |
@@ -108,12 +130,12 @@ The version format is:
 ### Automatic Versioning via Conventional Commits
 
 Commit messages determine how the version is bumped during releases:
-| Commit Type | Example | Version Impact |
-|--------------|----------|----------------|
-| `feat:` | `feat(metrics): add new graph filtering options` | **MINOR** bump |
-| `fix:` | `fix(login): resolve null session bug` | **PATCH** bump |
-| `chore:`, `docs:`, `style:`, `refactor:` | `chore(deps): update dependencies` | No version change |
-| `feat!:` or any commit containing a `BREAKING CHANGE:` note | `feat!: overhaul authentication system` | **MAJOR** bump |
+| Commit Type                                                 | Example                                          | Version Impact    |
+| ----------------------------------------------------------- | ------------------------------------------------ | ----------------- |
+| `feat:`                                                     | `feat(metrics): add new graph filtering options` | **MINOR** bump    |
+| `fix:`                                                      | `fix(login): resolve null session bug`           | **PATCH** bump    |
+| `chore:`, `docs:`, `style:`, `refactor:`                    | `chore(deps): update dependencies`               | No version change |
+| `feat!:` or any commit containing a `BREAKING CHANGE:` note | `feat!: overhaul authentication system`          | **MAJOR** bump    |
 
 > Example:  
 > If the current version is `1.2.3` and a new `feat:` commit is merged, the next release version becomes `1.3.0`.  
