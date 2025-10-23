@@ -4,6 +4,7 @@ import {
   UserCircle,
   Bookmark,
   Code2,
+  GitBranch,
   FileSpreadsheet,
   FileText,
   BookOpen,
@@ -16,6 +17,7 @@ import AnalysingRepositoriesTab from "@ui/components/docs/AnalysingRepositoriesT
 import AccountManagementTab from "@ui/components/docs/AccountManagementTab";
 import BookmarksTab from "@ui/components/docs/BookmarksTab";
 import CustomScalingTab from "@ui/components/docs/CustomScalingTab";
+import AliasConfigTab from "@ui/components/docs/AliasConfigTab";
 import GradingSheetTab from "@ui/components/docs/GradingSheetTab";
 import RESTAPITab from "@ui/components/docs/RESTAPITab";
 import CommitmentTab from "@ui/components/docs/CommitmentTab";
@@ -26,6 +28,7 @@ type DocSection =
   | "account-management"
   | "bookmarks"
   | "custom-scaling"
+  | "alias-config"
   | "grading-sheet"
   | "rest-api";
 
@@ -71,9 +74,10 @@ const sidebarItems: SidebarItem[] = [
     icon: UserCircle,
     number: "2.0",
     subSections: [
-      { id: "section-2-1", label: "Account Creation", number: "2.1" },
+      { id: "section-2-1", label: "Account Creation & Sign Up", number: "2.1" },
       { id: "section-2-2", label: "Login", number: "2.2" },
-      { id: "section-2-3", label: "Personalisation", number: "2.3" },
+      { id: "section-2-3", label: "Sign Out", number: "2.3" },
+      { id: "section-2-4", label: "Personalisation", number: "2.4" },
     ],
   },
   {
@@ -81,6 +85,10 @@ const sidebarItems: SidebarItem[] = [
     label: "Bookmarks & Dashboard",
     icon: Bookmark,
     number: "3.0",
+    subSections: [
+      { id: "section-3-1", label: "Bookmarking a Repository", number: "3.1" },
+      { id: "section-3-2", label: "Unbookmarking a Repository", number: "3.2" },
+    ],
   },
   {
     id: "custom-scaling",
@@ -89,21 +97,32 @@ const sidebarItems: SidebarItem[] = [
     number: "4.0",
   },
   {
+    id: "alias-config",
+    label: "Alias Configuration",
+    icon: GitBranch,
+    number: "5.0",
+    subSections: [
+      { id: "section-5-1", label: "Config JSON Structure", number: "5.1" },
+      { id: "section-5-2", label: "Alias Config Walkthrough", number: "5.2" },
+    ],
+  },
+  {
     id: "grading-sheet",
     label: "Grading Sheet Upload",
     icon: FileSpreadsheet,
-    number: "5.0",
+    number: "6.0",
+    subSections: [
+      { id: "section-6-1", label: "Sheet Format", number: "6.1" },
+      { id: "section-6-2", label: "New Grading Sheet Upload", number: "6.2" },
+      { id: "section-6-3", label: "Grading Sheet Download", number: "6.3" },
+      { id: "section-6-4", label: "Updating the Grading Sheet", number: "6.4" },
+    ],
   },
   {
     id: "rest-api",
     label: "REST API",
     icon: FileText,
-    number: "6.0",
-    subSections: [
-      { id: "rest-api-calling", label: "Calling the API", number: "6.1" },
-      { id: "rest-api-usage", label: "How We Use It", number: "6.2" },
-      { id: "rest-api-further", label: "Further Queries", number: "6.3" },
-    ],
+    number: "7.0",
   },
 ];
 
@@ -355,6 +374,8 @@ const DocsView: React.FC = () => {
         return <BookmarksTab />;
       case "custom-scaling":
         return <CustomScalingTab />;
+      case "alias-config":
+        return <AliasConfigTab />;
       case "grading-sheet":
         return <GradingSheetTab />;
       case "rest-api":

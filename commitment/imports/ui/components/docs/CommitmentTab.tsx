@@ -190,6 +190,13 @@ const CommitmentTab: React.FC = () => {
           </a>
         </div>
       </div>
+      <div className="overflow-hidden rounded-lg border border-git-stroke-primary bg-git-bg-elevated p-4">
+        <img
+          src="/docs_images/Picture1.png"
+          alt="Commitment landing page preview"
+          className="mx-auto w-full max-w-3xl rounded-md shadow-lg"
+        />
+      </div>
     </div>
   );
 };

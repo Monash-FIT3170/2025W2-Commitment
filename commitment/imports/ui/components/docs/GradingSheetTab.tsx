@@ -1,85 +1,113 @@
 import React from "react";
-import { FileSpreadsheet, Upload } from "lucide-react";
+import { FileSpreadsheet } from "lucide-react";
+
+const imageCard = (src: string, alt: string, caption?: string): React.ReactElement => (
+  <figure className="overflow-hidden rounded-lg border border-git-stroke-primary bg-git-bg-elevated shadow-lg">
+    <img src={src} alt={alt} className="h-auto w-full rounded-lg" />
+    {caption && (
+      <figcaption className="border-t border-git-stroke-secondary bg-git-bg-secondary px-4 py-2 text-sm text-git-text-secondary">
+        {caption}
+      </figcaption>
+    )}
+  </figure>
+);
 
 const GradingSheetTab: React.FC = () => {
   return (
     <div className="space-y-6">
-      <div className="p-6 bg-git-bg-elevated border border-git-stroke-primary rounded-lg">
-        <div className="flex items-center gap-2 mb-4">
-          <FileSpreadsheet className="h-6 w-6 text-git-accent-primary" />
-          <h2 className="text-2xl font-semibold text-git-text-primary">5.0 Grading Sheet Upload</h2>
+      <section
+        id="section-6-1"
+        className="space-y-4 rounded-lg border border-git-stroke-primary bg-git-bg-elevated p-6"
+      >
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <FileSpreadsheet className="h-6 w-6 text-git-accent-primary" />
+            <h2 className="text-2xl font-semibold text-git-text-primary">6.0 Grading Sheet Upload</h2>
+          </div>
+          <p className="text-git-text-secondary">
+            Grading sheets align repository metrics with assessment results. Upload a CSV or Excel file to calculate
+            scaled grades directly within Commitment.
+          </p>
         </div>
-        <p className="text-git-text-secondary mb-6">
-          Upload and manage grading sheets to map student contributions to grades and assessments.
+
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold text-git-text-primary">6.1 Sheet Format</h3>
+          <p className="text-git-text-secondary">
+            Ensure your grading sheet follows the required column structure before uploading.
+          </p>
+          {imageCard(
+            "/docs_images/gradingsheet/Picture35.png",
+            "Example grading sheet column layout."
+          )}
+        </div>
+      </section>
+
+      <section
+        id="section-6-2"
+        className="space-y-4 rounded-lg border border-git-stroke-primary bg-git-bg-elevated p-6"
+      >
+        <h3 className="text-xl font-semibold text-git-text-primary">6.2 New Grading Sheet Upload</h3>
+        <p className="text-git-text-secondary">
+          After analysing a repository, open the Scaling view to upload a grading sheet.
         </p>
+        {imageCard(
+          "/docs_images/gradingsheet/Picture36.png",
+          "Metrics page with navigation to the Scaling tab."
+        )}
+        <p className="text-sm text-git-text-secondary">Metrics page</p>
+        <p className="text-git-text-secondary">
+          If scaling has not yet been generated for this repository, you&apos;ll be prompted to configure it.
+        </p>
+        {imageCard(
+          "/docs_images/gradingsheet/Picture37.png",
+          "Generate Scaling modal prompting for configuration."
+        )}
+        <p className="text-sm text-git-text-secondary">Generate Scaling prompt</p>
+        <p className="text-git-text-secondary">
+          Once scaling options are selected, upload your grading sheet when prompted.
+        </p>
+        {imageCard(
+          "/docs_images/gradingsheet/Picture38.png",
+          "Upload grading sheet dialog with drag-and-drop area."
+        )}
+        <p className="text-sm text-git-text-secondary">Upload Grading Sheet prompt</p>
+        <p className="text-git-text-secondary">
+          After the file is processed, the final grade column reflects scaled grades for each student.
+        </p>
+        {imageCard(
+          "/docs_images/gradingsheet/Picture39.png",
+          "Scaled grades displayed after applying the grading sheet."
+        )}
+        <p className="text-sm text-git-text-secondary">Scaled grades</p>
+      </section>
 
-        <div className="space-y-4 text-git-text-secondary">
-          <div>
-            <h3 className="text-lg font-semibold text-git-text-primary mb-2 flex items-center gap-2">
-              <Upload className="h-5 w-5 text-git-accent-primary" />
-              What is a Grading Sheet?
-            </h3>
-            <p className="ml-6">
-              A grading sheet is a CSV or Excel file that maps contributor information to assessment criteria.
-              It allows educators to link repository contributions to student grades and track assessment outcomes.
-            </p>
-          </div>
+      <section
+        id="section-6-3"
+        className="space-y-4 rounded-lg border border-git-stroke-primary bg-git-bg-elevated p-6"
+      >
+        <h3 className="text-xl font-semibold text-git-text-primary">6.3 Grading Sheet Download</h3>
+        <p className="text-git-text-secondary">
+          After scaling, download the updated grading sheet from the toolbar at the bottom of the Scaling view.
+        </p>
+        {imageCard(
+          "/docs_images/gradingsheet/Picture40.png",
+          "Toolbar showing the download grading sheet option."
+        )}
+      </section>
 
-          <div>
-            <h3 className="text-lg font-semibold text-git-text-primary mb-2">File Format Requirements</h3>
-            <div className="ml-6">
-              <p className="mb-3">Your grading sheet must include the following columns:</p>
-              <ul className="list-disc list-inside ml-4 space-y-1 mb-4">
-                <li><strong>Student Name:</strong> Full name of the student</li>
-                <li><strong>Email:</strong> Student's email address (used for matching)</li>
-                <li><strong>Git Username:</strong> GitHub/GitLab username</li>
-                <li><strong>Student ID:</strong> Unique identifier for the student</li>
-                <li><strong>Assessment Task:</strong> Name or code of the assessment</li>
-                <li><strong>Expected Contribution:</strong> Expected percentage or absolute contribution</li>
-              </ul>
-
-              <h4 className="font-semibold text-git-text-primary mb-2">Supported File Formats</h4>
-              <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>CSV (.csv)</li>
-                <li>Excel (.xlsx, .xls)</li>
-                <li>Tab-delimited text (.tsv)</li>
-              </ul>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-git-text-primary mb-2">How to Upload</h3>
-            <div className="ml-6">
-              <ol className="list-decimal list-inside ml-4 space-y-2">
-                <li>Navigate to the Scaling view for your repository</li>
-                <li>Click the "Upload Grading Sheet" button</li>
-                <li>Select your formatted CSV or Excel file</li>
-                <li>Review the preview and mapping suggestions</li>
-                <li>Confirm the upload to apply the grading sheet</li>
-              </ol>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-git-text-primary mb-2">Download Template</h3>
-            <p className="ml-6 mb-3">
-              Download a pre-formatted template to ensure your grading sheet meets all requirements:
-            </p>
-            <div className="ml-6">
-              <button className="px-4 py-2 bg-git-int-primary hover:bg-git-int-primary-hover text-git-int-text rounded-lg transition-colors">
-                Download Grading Sheet Template
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-blue-800 dark:text-blue-200 text-sm">
-              <strong>Tip:</strong> Grading sheets are stored per-repository and can be updated at any time.
-              Changes will be reflected in scaling calculations immediately.
-            </p>
-          </div>
-        </div>
-      </div>
+      <section
+        id="section-6-4"
+        className="space-y-4 rounded-lg border border-git-stroke-primary bg-git-bg-elevated p-6"
+      >
+        <h3 className="text-xl font-semibold text-git-text-primary">6.4 Updating the Grading Sheet</h3>
+        <p className="text-git-text-secondary">
+          To refresh grades, either replace the existing sheet or create a new scaling configuration before uploading.
+        </p>
+        {imageCard(
+          "/docs_images/gradingsheet/Picture41.png",
+          "Options to replace the grading sheet or create new scaling."
+        )}
+      </section>
     </div>
   );
 };

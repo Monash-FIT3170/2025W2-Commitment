@@ -29,14 +29,7 @@ export default function App() {
           <Route path="/loading" element={<LoadingView />} />
           <Route path="/metrics" element={<MetricsPage />} />
           <Route path="/developer-docs" element={<DeveloperDocsView />} />
-          <Route
-            path="/docs"
-            element={
-              <Authorized>
-                <DocsView />
-              </Authorized>
-            }
-          />
+          <Route path="/user-guides" element={<DocsView />} />
           <Route
             path="/dashboard"
             element={

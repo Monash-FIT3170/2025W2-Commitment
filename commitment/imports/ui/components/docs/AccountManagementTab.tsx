@@ -1,78 +1,122 @@
 import React from "react";
-import { UserCircle, LogIn, UserPlus, Settings } from "lucide-react";
+import { UserCircle } from "lucide-react";
+
+const imageCard = (src: string, alt: string, caption?: string): React.ReactElement => (
+  <figure className="overflow-hidden rounded-lg border border-git-stroke-primary bg-git-bg-elevated shadow-lg">
+    <img src={src} alt={alt} className="h-auto w-full rounded-lg" />
+    {caption && (
+      <figcaption className="border-t border-git-stroke-secondary bg-git-bg-secondary px-4 py-2 text-sm text-git-text-secondary">
+        {caption}
+      </figcaption>
+    )}
+  </figure>
+);
 
 const AccountManagementTab: React.FC = () => {
   return (
     <div className="space-y-6">
-      <div className="p-6 bg-git-bg-elevated border border-git-stroke-primary rounded-lg">
-        <div className="flex items-center gap-2 mb-4">
-          <UserCircle className="h-6 w-6 text-git-accent-primary" />
-          <h2 className="text-2xl font-semibold text-git-text-primary">2.0 Account Management and Personalisation</h2>
+      <section
+        id="section-2-1"
+        className="space-y-4 rounded-lg border border-git-stroke-primary bg-git-bg-elevated p-6"
+      >
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <UserCircle className="h-6 w-6 text-git-accent-primary" />
+            <h2 className="text-2xl font-semibold text-git-text-primary">
+              2.0 Account Management and Personalisation
+            </h2>
+          </div>
+          <p className="text-git-text-secondary">
+            There are various features exclusive to registered users:
+          </p>
+          <ul className="list-disc space-y-1 pl-6 text-git-text-secondary">
+            <li>
+              <span className="font-semibold text-git-text-primary">Alias configuration</span> allows
+              mapping multiple accounts and emails to a single individual (see Section 5.0).
+            </li>
+            <li>
+              <span className="font-semibold text-git-text-primary">Grading sheet</span> applies
+              generated scalings to a Moodle grading sheet (see Section 6.0).
+            </li>
+            <li>
+              <span className="font-semibold text-git-text-primary">Custom scaling</span> enables
+              uploading scripts to generate custom scalings (see Section 4.0).
+            </li>
+          </ul>
         </div>
-        <p className="text-git-text-secondary mb-6">
-          Manage your account, personalize your experience, and access authenticated features.
+
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold text-git-text-primary">2.1 Account Creation and Sign Up</h3>
+          <p className="text-git-text-secondary">
+            On the navigation bar select the <span className="font-semibold text-git-text-primary">Sign Up</span> button
+            to navigate to the sign up page.
+          </p>
+          {imageCard(
+            "/docs_images/accountman/Picture15.png",
+            "Navigation bar highlighting the Sign Up button."
+          )}
+          <p className="text-sm text-git-text-secondary">Location of the Sign Up button</p>
+          <p className="text-git-text-secondary">
+            On the sign up page, there are three options for registering an account:
+          </p>
+          <ul className="list-disc space-y-1 pl-6 text-git-text-secondary">
+            <li>Through email and password</li>
+            <li>Through Google OAuth</li>
+            <li>Through GitHub OAuth</li>
+          </ul>
+          {imageCard(
+            "/docs_images/accountman/Picture16.png",
+            "Sign up form showing email, password, Google, and GitHub options."
+          )}
+        </div>
+      </section>
+
+      <section
+        id="section-2-2"
+        className="space-y-4 rounded-lg border border-git-stroke-primary bg-git-bg-elevated p-6"
+      >
+        <h3 className="text-xl font-semibold text-git-text-primary">2.2 Login</h3>
+        <p className="text-git-text-secondary">
+          Enter the email and password associated with your account, or sign in using Google or GitHub
+          OAuth.
         </p>
+        {imageCard(
+          "/docs_images/accountman/Picture17.png",
+          "Login form with email, password, and OAuth options."
+        )}
+      </section>
 
-        {/* Section 2.1 */}
-        <div className="mb-6" id="section-2-1">
-          <h3 className="text-xl font-semibold text-git-text-primary mb-3 flex items-center gap-2">
-            <UserPlus className="h-5 w-5 text-git-accent-primary" />
-            <span className="text-git-accent-primary">2.1</span> Account Creation
-          </h3>
-          <div className="ml-6 space-y-3 text-git-text-secondary">
-            <p>How to create a new account and get started with Commitment.</p>
-            <ul className="list-disc list-inside ml-4 space-y-1">
-              <li>Sign up process</li>
-              <li>Email verification</li>
-              <li>Setting up your profile</li>
-            </ul>
-          </div>
-        </div>
+      <section
+        id="section-2-3"
+        className="space-y-4 rounded-lg border border-git-stroke-primary bg-git-bg-elevated p-6"
+      >
+        <h3 className="text-xl font-semibold text-git-text-primary">2.3 Sign Out</h3>
+        <p className="text-git-text-secondary">
+          Open the profile menu on the navigation bar and choose <span className="font-semibold text-git-text-primary">Sign Out</span>.
+        </p>
+        {imageCard(
+          "/docs_images/accountman/Picture18.png",
+          "Profile menu showing the Sign Out action."
+        )}
+      </section>
 
-        {/* Section 2.2 */}
-        <div className="mb-6" id="section-2-2">
-          <h3 className="text-xl font-semibold text-git-text-primary mb-3 flex items-center gap-2">
-            <LogIn className="h-5 w-5 text-git-accent-primary" />
-            <span className="text-git-accent-primary">2.2</span> Login
-          </h3>
-          <div className="ml-6 space-y-3 text-git-text-secondary">
-            <p>Access your account and manage sessions.</p>
-            <ul className="list-disc list-inside ml-4 space-y-1">
-              <li>Login with email and password</li>
-              <li>OAuth authentication options</li>
-              <li>Password recovery</li>
-              <li>Logout procedure</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Section 2.3 */}
-        <div id="section-2-3">
-          <h3 className="text-xl font-semibold text-git-text-primary mb-3 flex items-center gap-2">
-            <Settings className="h-5 w-5 text-git-accent-primary" />
-            <span className="text-git-accent-primary">2.3</span> Personalisation
-          </h3>
-          <div className="ml-6 space-y-4 text-git-text-secondary">
-            <p className="mb-3">Features available to signed-in users:</p>
-            <div>
-              <h4 className="font-semibold text-git-text-primary mb-2">Bookmarks and Dashboard</h4>
-              <p>Save and manage your favorite repositories for quick access.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-git-text-primary mb-2">Custom Scaling</h4>
-              <p>Create personalized scaling functions for your analysis needs.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-git-text-primary mb-2">Alias Management</h4>
-              <p>Configure contributor aliases to consolidate identities.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-git-text-primary mb-2">Grading Sheet Upload</h4>
-              <p>Upload and manage grading sheets for educational purposes.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <section
+        id="section-2-4"
+        className="space-y-4 rounded-lg border border-git-stroke-primary bg-git-bg-elevated p-6"
+      >
+        <h3 className="text-xl font-semibold text-git-text-primary">2.4 Personalisation</h3>
+        <p className="text-git-text-secondary">
+          Use the theme toggle on the navigation bar to switch between light and dark modes.
+        </p>
+        {imageCard(
+          "/docs_images/accountman/Picture19.png",
+          "Navigation bar theme toggle highlighted."
+        )}
+        {imageCard(
+          "/docs_images/accountman/Picture20.png",
+          "Example of the interface after changing the theme."
+        )}
+      </section>
     </div>
   );
 };
