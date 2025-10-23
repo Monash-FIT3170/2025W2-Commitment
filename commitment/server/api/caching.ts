@@ -99,13 +99,13 @@ const lastEnteredEntry = (): Maybe<string> => {
   return latestUrl;
 };
 
-const getCacheMemoryUsage = (): number =>
+export const getCacheMemoryUsage = (): number =>
   Array.from(InMemoryCache.values()).reduce((total, entry) => total + sizeof(entry.data), 0);
 
 /**
  * Helper to schedule or refresh the expiration timer for a cache entry.
  */
-const refreshCacheTimer = (url: string): void => {
+export const refreshCacheTimer = (url: string): void => {
   const entry = InMemoryCache.get(url);
   if (!entry) return;
 
@@ -122,7 +122,7 @@ const refreshCacheTimer = (url: string): void => {
   InMemoryCache.set(url, entry);
 };
 
-const cacheIntoLocalCache = (url: string, d: SerializableRepoData): void => {
+export const cacheIntoLocalCache = (url: string, d: SerializableRepoData): void => {
   // clear if it exists already
   clearFromCache(url);
 
@@ -259,13 +259,18 @@ export const isInDatabase = async (url: string): Promise<boolean> => {
   return null !== doc;
 };
 
+export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> =>
+  cacheIntoDatabaseSerial(url, serializeRepoData(data));
+
 /**
  * Caches repository data in the database.
  * @param url The repository URL.
  * @param data The repository data to cache.
  */
-export const cacheIntoDatabase = async (url: string, data: RepositoryData): Promise<boolean> => {
-  const serialData = serializeRepoData(data);
+export const cacheIntoDatabaseSerial = async (
+  url: string,
+  serialData: SerializableRepoData
+): Promise<boolean> => {
   const s: ServerRepoMetaData = {
     url,
     createdAt: new Date(),
