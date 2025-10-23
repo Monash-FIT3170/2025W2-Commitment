@@ -14,9 +14,11 @@ module Commitment (
 import Control.Concurrent.STM
 import Control.Exception (
     catch,
+    finally,
     SomeException (SomeException),
     displayException,
-    bracket)
+    bracket,
+    throwIO)
 import Data.List (sortBy, isPrefixOf)
 import Data.Maybe (fromMaybe)
 import Data.Map.Strict ()
@@ -38,7 +40,7 @@ import Control.Concurrent (
     tryTakeMVar,
     getNumCapabilities,
     newEmptyMVar )
-import Control.Monad (when, void)
+import Control.Monad (when, void, unless)
 import Data.IORef
 
 import Types
@@ -99,40 +101,47 @@ withDirectoryLock path action = do
 -- | Create a directory if needed and run a task, tracking refcount.
 createDirectory :: FilePath -> (FilePath -> IO a) -> IO (Maybe a)
 createDirectory path task = do
-    -- Update refcount
-    isCreator <- modifyMVar directoryRefCount $ \refMap ->
-        case Map.lookup path refMap of
-            Nothing -> pure (Map.insert path 1 refMap, True)        -- add entry to map
-            Just n  -> pure (Map.insert path (n + 1) refMap, False) -- increment entry
+    -- Acquire the per-directory lock to prevent concurrent initialization
+    withDirectoryLock path $ do
+        mEntry <- modifyMVar directoryRefCount $ \refMap ->
+            case Map.lookup path refMap of
+                Nothing -> pure (refMap, True)                         -- directory not yet created
+                Just n  -> pure (Map.insert path (n + 1) refMap, False) -- increment counter
 
-    -- Run actual IO task only if this call is the creator and 
-    -- the path does not already exist
-    if isCreator
-       then withDirectoryLock path $ do
-            -- delete it if it already exists, it should not exist yet
-            exists <- doesDirectoryExist path
-            if exists then deleteDirectoryIfExists path (pure ()) else pure False
-            -- create fresh directory
+        if mEntry then do
+            -- creating the directory to initialise
             createDirectoryIfMissing True path
-            -- do task to initialise directory
-            Just <$> task path
-       else pure Nothing
+            -- Directory is not initialized, run the creation task
+            -- which initialises the directory with all the correct information
+            result <- task path
+            -- Only after successful task, insert entry into map with counter = 1
+            modifyMVar_ directoryRefCount $ \refMap ->
+                pure (Map.insert path 1 refMap)
+            pure (Just result)
+        else pure Nothing
 
 -- | Delete a directory safely (only one thread per dir at a time)
 deleteDirectory :: FilePath -> IO () -> IO Bool
-deleteDirectory path callback = do
-    mDelete <- modifyMVar directoryRefCount $ \refMap ->
-        case Map.lookup path refMap of
-            Nothing -> pure (refMap, False)                       -- nothing to do
-            Just 1  -> pure (Map.delete path refMap, True)        -- remove entry 
-            Just n  -> if n > 0
-                then pure (Map.insert path (n - 1) refMap, False) -- decrement entry if valid
-                else pure (refMap, False)                         -- do nothing if n <= 0
+deleteDirectory path callback =
+    -- Acquire the directory lock first to avoid circular locking
+    withDirectoryLock path $ do
+        -- Now safely modify the refcount
+        mDelete <- modifyMVar directoryRefCount $ \refMap ->
+            case Map.lookup path refMap of
+                Nothing -> pure (refMap, False)                       -- nothing to do
+                Just 1  -> pure (Map.delete path refMap, True)        -- remove entry 
+                Just n  -> if n > 0
+                    then pure (Map.insert path (n - 1) refMap, False) -- decrement entry
+                    else pure (refMap, False)                         -- do nothing if n <= 0
 
-    -- Only delete if this call actually drops refcount to zero
-    if mDelete
-        then withDirectoryLock path $ deleteDirectoryIfExists path callback
-        else pure False
+        -- Only delete if this call actually drops refcount to zero
+        if mDelete
+            then do
+                deleteDirectoryIfExists path callback
+                -- 🧹 Clean up semaphore after deletion
+                modifyMVar_ directorySemaphores $ pure . Map.delete path
+                pure True
+            else pure False
 
 -- automatically execute shell scripts in the command pool whilst the command result is extracted and passed to the parsing pool
 execAndParse :: TBQueue String -> FilePath -> Command -> (String -> ParseResult a) -> String -> IO a
@@ -144,18 +153,20 @@ execAndParse notifier cwd cmd parser msg = await (
     )
 
 execAndParseAll :: TBQueue String -> FilePath -> [Command] -> (String -> ParseResult a) -> String -> IO [a]
-execAndParseAll notifier cwd cmds parser msg = 
+execAndParseAll notifier cwd cmds parser msg =
     passAllAsync commandPool parsingPool
     (executeCommand notifier cwd)
     (pure . parsed msg . parser . parsed msg . successful)
     cmds
 
 fetchDataFrom :: String -> TBQueue String -> IO (Either String RepositoryData)
-fetchDataFrom url notifier = do
+fetchDataFrom rawUrl notifier = (do
+        let url = cleanGitUrl rawUrl
+
         workingDir <- getTemporaryDirectory
         let cloneRoot = workingDir </> "cloned-repos"
 
-        awaitOutsideCloneDir <- createDirectoryIfMissing True cloneRoot
+        createDirectoryIfMissing True cloneRoot
         emit notifier "Validating repo exists..."
 
         let execCmdInWorkingDir = execAndParse notifier workingDir
@@ -167,39 +178,36 @@ fetchDataFrom url notifier = do
             repoRelativePath = last (init parts) ++ "/" ++ last parts
             repoAbsPath      = cloneRoot </> repoRelativePath
 
-            cloneFunction = createDirectory repoAbsPath (\_ -> do
-                    -- clone the repo in this case, otherwise we don't actually need to clone it as
-                    -- it already exists and another request is using it rn
-                    emit notifier "Cloning repo..."
+        -- if this fails we catch it but do not delete
+        awaitClone <- createDirectory repoAbsPath $ \_ -> do
+                emit notifier "Cloning repo..."
+                commandResult <- executeCommandTimedOut 10 notifier cloneRoot (cloneRepo url repoAbsPath)
+                let _parsedCloneResult = parsed "Failed to clone the repo" $ successful commandResult
 
-                    -- creating the directory to clone into
-                    createDirectoryIfMissing True repoAbsPath
+                -- Ensure git directory
+                ensureSuccess <- executeCommand notifier repoAbsPath (checkIsGitDirectory repoAbsPath)
+                let _ensureSuccessResult = parsed "Failed to initialise the filepath" $ successful ensureSuccess
+                
+                pure ()
 
-                    -- clones git repo into directory 
-                    commandResult <- executeCommandTimedOut 10 notifier cloneRoot (cloneRepo url repoAbsPath)
-                    let parsedCloneResult = parsed "Failed to clone the repo" $ successful commandResult
-
-                    pure ()
-                )
-
-            deleteFunction _ = deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
-
-        bracket
-            -- clone the repository if it has not already been
-            cloneFunction
-            -- delete the repository if it can be
-            deleteFunction
-            -- run this part inside to purify any side effects
-            (\_ -> do
+        -- this part should be safe to execute 
+        -- and always delete because we have
+        -- successfully created the repository
+        let processing = do 
                 emit notifier "Getting repository data..."
                 repoData <- formulateRepoData url repoAbsPath notifier
                 emit notifier "Data processed!"
                 pure (Right repoData)
-            )
-            `catch` \(e :: SomeException) -> do
-            let errMsg = displayException e
-            emit notifier ("Error occurred:\n" ++ errMsg)
-            pure (Left errMsg)
+        
+        processing `finally` 
+            deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
+
+    ) `catch` \(e :: SomeException) -> do
+        let ex = displayException e
+            errMsg = "Encountered error:\n" ++ ex
+        emit notifier errMsg
+        safePrint errMsg
+        pure (Left ex)
 
 
 -- | High-level function to orchestrate parsing, transforming, and assembling data

@@ -160,7 +160,6 @@ export interface AnalyticsData {
 export enum MetricType {
   LOC = "LOC",
   LOC_PER_COMMIT = "LOC Per Commit",
-  COMMITS_PER_DAY = "Commits per Day",
   TOTAL_COMMITS = "Total No. Commits",
 }
 
@@ -187,7 +186,6 @@ export type AllMetricsData = {
     "Total No. Commits": number;
     LOC: number;
     "LOC Per Commit": number;
-    "Commits Per Day": number;
   };
 };
 
@@ -259,3 +257,19 @@ export type ScoreFn = (
   users: { name: string; values: (number | null)[] }[],
   selectedMetrics: string[]
 ) => number;
+
+// The object returned by the python executor API
+export interface PythonExecutorResponse {
+  error?: string,
+  stdout?: string,
+  stderr?: string,
+  data?: unknown[],
+}
+
+// The object returned by the python executor API
+export interface PythonExecutorScalingResponse {
+  error?: string,
+  stdout?: string,
+  stderr?: string,
+  data?: UserScalingSummary[],
+}

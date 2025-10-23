@@ -1,6 +1,192 @@
 @import "tailwindcss";
 
+/* Custom clean syntax highlighting - no Prism theme to avoid text effects */
+
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Ensure consistent background and prevent text selection highlighting */
+.prism-code {
+  background: var(--git-bg-secondary) !important;
+  border: 1px solid var(--git-stroke-secondary) !important;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.prism-code code {
+  background: transparent !important;
+  color: var(--git-text-primary) !important;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Clean token styling with improved readability */
+.prism-code .token.comment,
+.prism-code .token.prolog,
+.prism-code .token.doctype,
+.prism-code .token.cdata {
+  color: var(--git-text-secondary);
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.prism-code .token.punctuation {
+  color: var(--git-text-primary);
+}
+
+.prism-code .token.property,
+.prism-code .token.tag,
+.prism-code .token.boolean,
+.prism-code .token.number,
+.prism-code .token.constant,
+.prism-code .token.symbol,
+.prism-code .token.deleted {
+  color: var(--git-dv-red);
+}
+
+.prism-code .token.selector,
+.prism-code .token.attr-name,
+.prism-code .token.string,
+.prism-code .token.char,
+.prism-code .token.builtin,
+.prism-code .token.inserted {
+  color: var(--git-dv-green);
+}
+
+.prism-code .token.operator,
+.prism-code .token.entity,
+.prism-code .token.url,
+.prism-code .language-css .token.string,
+.prism-code .style .token.string {
+  color: var(--git-text-primary);
+}
+
+.prism-code .token.atrule,
+.prism-code .token.attr-value,
+.prism-code .token.keyword {
+  color: var(--git-dv-purple);
+  font-weight: 600;
+}
+
+.prism-code .token.function,
+.prism-code .token.class-name {
+  color: var(--git-dv-blue);
+}
+
+.prism-code .token.regex,
+.prism-code .token.important,
+.prism-code .token.variable {
+  color: var(--git-dv-orange);
+}
+
+/* Universal text effect removal for all code elements */
+.prism-code,
+.prism-code *,
+.prism-code code,
+.prism-code .token,
+.prism-code .token *,
+.prism-code span,
+.prism-code span * {
+  text-shadow: none !important;
+  -webkit-text-stroke: none !important;
+  text-stroke: none !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-smooth: never !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* Dark mode adjustments */
+.dark .prism-code {
+  background: var(--git-bg-elevated);
+  border-color: var(--git-stroke-primary);
+}
+
+.dark .prism-code code {
+  color: var(--git-text-primary);
+}
+
+.dark .prism-code .token.comment,
+.dark .prism-code .token.prolog,
+.dark .prism-code .token.doctype,
+.dark .prism-code .token.cdata {
+  color: var(--git-text-secondary) !important;
+  opacity: 0.9 !important;
+}
+
+.dark .prism-code .token.punctuation {
+  color: var(--git-text-primary) !important;
+}
+
+.dark .prism-code .token.property,
+.dark .prism-code .token.tag,
+.dark .prism-code .token.boolean,
+.dark .prism-code .token.number,
+.dark .prism-code .token.constant,
+.dark .prism-code .token.symbol,
+.dark .prism-code .token.deleted {
+  color: var(--git-dv-red) !important;
+}
+
+.dark .prism-code .token.selector,
+.dark .prism-code .token.attr-name,
+.dark .prism-code .token.string,
+.dark .prism-code .token.char,
+.dark .prism-code .token.builtin,
+.dark .prism-code .token.inserted {
+  color: var(--git-dv-green) !important;
+}
+
+.dark .prism-code .token.operator,
+.dark .prism-code .token.entity,
+.dark .prism-code .token.url,
+.dark .prism-code .language-css .token.string,
+.dark .prism-code .style .token.string {
+  color: var(--git-text-primary) !important;
+}
+
+.dark .prism-code .token.atrule,
+.dark .prism-code .token.attr-value,
+.dark .prism-code .token.keyword {
+  color: var(--git-dv-purple) !important;
+}
+
+.dark .prism-code .token.function,
+.dark .prism-code .token.class-name {
+  color: var(--git-dv-blue) !important;
+}
+
+.dark .prism-code .token.regex,
+.dark .prism-code .token.important,
+.dark .prism-code .token.variable {
+  color: var(--git-dv-orange) !important;
+}
+
+/* Inline code styling */
+.inline-code {
+  background: var(--git-bg-primary);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  color: var(--git-text-primary);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+}
+
+/* Dark mode inline code */
+.dark .inline-code {
+  background: var(--git-bg-elevated);
+  color: var(--git-text-primary);
+}
 
 /* put vars which refer to others */
 @theme inline {
@@ -393,3 +579,5 @@
     @apply hidden;
   }
 }
+
+@import './prism-theme.css';

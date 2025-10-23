@@ -4,7 +4,7 @@ import Authorized from "@ui/components/shared/Authorized";
 import LandingPage from "./views/LandingView";
 import LoginView from "/imports/ui/views/LoginView";
 import InsertGitRepoView from "./views/HomeView";
-import LoadingPage from "./views/LoadingView";
+import LoadingView from "./views/LoadingView";
 import MetricsPage from "./views/MetricsView";
 import DashboardView from "./views/DashboardView";
 import DocsView from "./views/DocsView";
@@ -26,7 +26,7 @@ export default function App() {
 
           {/* Add more routes as needed */}
 
-          <Route path="/loading" element={<LoadingPage />} />
+          <Route path="/loading" element={<LoadingView />} />
           <Route path="/metrics" element={<MetricsPage />} />
           <Route path="/developer-docs" element={<DeveloperDocsView />} />
           <Route

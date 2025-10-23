@@ -1,12 +1,34 @@
 # Contributing Guidelines
 
+## Table of Contents
+
+- [Contributing Guidelines](#contributing-guidelines)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Commits](#commits)
+  - [Branching](#branching)
+    - [Locked Branches](#locked-branches)
+    - [Feature Branches](#feature-branches)
+    - [Branch Naming](#branch-naming)
+  - [Issues](#issues)
+  - [Pull Requests (Merge Requests)](#pull-requests-merge-requests)
+    - [PR Checklist](#pr-checklist)
+  - [Versioning](#versioning)
+    - [How Semantic Versioning Works](#how-semantic-versioning-works)
+    - [Automatic Versioning via Conventional Commits](#automatic-versioning-via-conventional-commits)
+    - [When Merging to `main`](#when-merging-to-main)
+    - [Example Workflow](#example-workflow)
+
+
+## Introduction
+
 Thank you for your interest in contributing to this project!
 
 - This document outlines the process and standards we follow to keep our work consistent and collaborative.
 - Please read carefully before making contributions.
 - Be respectful of others’ work.
 - If you want to collaborate on a branch, raise a PR against that branch instead of pushing directly.
-- For help, reach out to an SA or discuss in the team Discord.
+- Please follow [this document](/docs/CODING_STANDARDS.md) outlining coding standards when contributing.
 
 ## Commits
 
@@ -62,6 +84,18 @@ More details on `type` of commits can be found [here](https://www.conventionalco
 | Test     | `test/`     | Adding or modifying tests.                                            | `test/user_service_tests`                                 |
 | CI/CD    | `ci/`       | Continuous Integration/Deployment configuration changes.              | `ci/add_cache_step`                                       |
 
+## Issues
+
+If a user comes across any issues in the system, an issue can be raised on GitHub.
+
+This page can be [accessed here](https://github.com/Monash-FIT3170/2025W2-Commitment/issues), templates are provided for different issue types, all a user has to do is fill out the template and submit.
+
+| Type      | Description                                                      |
+| --------- | ---------------------------------------------------------------- |
+| `bug`     | For any UI or logic bugs that don't align with user expectations |
+| `feature` | A request for new features to the application.                   |
+
+
 ## Pull Requests (Merge Requests)
 
 - **All changes** must go through a Pull Request.
@@ -80,3 +114,42 @@ More details on `type` of commits can be found [here](https://www.conventionalco
 - [ ] Branch follows naming conventions.
 - [ ] PR description is clear and complete.
 - [ ] Changes reviewed by at least one teammate.
+
+## Versioning
+
+This project follows **[Semantic Versioning (SemVer)](https://semver.org/)** for release management.
+
+The version format is:
+`MAJOR . MINOR .  PATCH`
+
+### How Semantic Versioning Works
+- **MAJOR** – Incremented for **breaking changes** (e.g., changes that are not backward-compatible).
+- **MINOR** – Incremented when a **new feature** is added that is backward-compatible.
+- **PATCH** – Incremented for **bug fixes** and small backward-compatible changes.
+
+### Automatic Versioning via Conventional Commits
+
+Commit messages determine how the version is bumped during releases:
+| Commit Type                                                 | Example                                          | Version Impact    |
+| ----------------------------------------------------------- | ------------------------------------------------ | ----------------- |
+| `feat:`                                                     | `feat(metrics): add new graph filtering options` | **MINOR** bump    |
+| `fix:`                                                      | `fix(login): resolve null session bug`           | **PATCH** bump    |
+| `chore:`, `docs:`, `style:`, `refactor:`                    | `chore(deps): update dependencies`               | No version change |
+| `feat!:` or any commit containing a `BREAKING CHANGE:` note | `feat!: overhaul authentication system`          | **MAJOR** bump    |
+
+> Example:  
+> If the current version is `1.2.3` and a new `feat:` commit is merged, the next release version becomes `1.3.0`.  
+> If a `fix:` commit is merged, it becomes `1.2.4`.  
+> A breaking change would bump it to `2.0.0`.
+
+### When Merging to `main`
+- Before merging, ensure your commits correctly reflect the nature of the change.  
+- **Use the right commit type** (`feat`, `fix`, or `!` for breaking changes) so automated tools or maintainers can accurately determine the next version.  
+- Avoid squashing multiple unrelated commit types into one message; this can cause incorrect version bumps.  
+- Tag releases are generated automatically in GitHub following the derived SemVer version.
+
+### Example Workflow
+1. Develop your feature in a branch: `feat/new_dashboard`
+2. Commit using Conventional Commit format (e.g., `feat(dashboard): add export button`)
+3. Open a PR → get review → squash & merge into `main`
+4. GitHub Actions updates release tag if applicable (e.g., `v1.4.0`)

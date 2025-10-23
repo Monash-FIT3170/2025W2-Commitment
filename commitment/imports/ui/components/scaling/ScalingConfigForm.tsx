@@ -33,8 +33,10 @@ interface ScalingConfigFormProps {
 }
 
 interface ScalingViewLocationState {
-repoUrl?: string;
+  repoUrl?: string;
 }
+
+const smallGroupCache: Record<string, boolean> = {}; // cache for keeping track of small contributors
 
 function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const location = useLocation();
@@ -42,8 +44,6 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
   const state = location.state as ScalingViewLocationState | null;
   const repoUrl: string | null = state?.repoUrl ?? null;
 
-  //   Make a repo call here to get the number of contributors
-  
   const form = useForm<ScalingConfig>({
     resolver: zodResolver(scalingConfigSchema),
     defaultValues: {
@@ -66,23 +66,17 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     }
   };
 
-  const [isSmallGroupCache, setIsSmallGroupCache] = useState<
-    Record<string, boolean>
-  >({});
-  const [methodOptions, setMethodOptions] = useState<string[]>([
-    "Percentiles",
-    "Mean +/- Std",
-    "Quartiles",
-  ]);
+  const [methodOptions, setMethodOptions] = useState<string[]>([]);
 
+  // This useEffect() is for getting the small contributor group and changing available metrics accordingly
   useEffect(() => {
     const fetchSmallGroup = async () => {
       if (!repoUrl) return;
 
-      // check cache first
-      if (isSmallGroupCache[repoUrl] !== undefined) {
+      // Check the persistent cache first
+      if (smallGroupCache[repoUrl] !== undefined) {
         setMethodOptions(
-          isSmallGroupCache[repoUrl]
+          smallGroupCache[repoUrl]
             ? ["Compact Scaling"]
             : ["Percentiles", "Mean +/- Std", "Quartiles"]
         );
@@ -93,14 +87,14 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
         const result = (await Meteor.callAsync(
           "isSmallContributorGroup",
           repoUrl,
-          15
+          7
         )) as boolean;
 
-        // update cache
-        setIsSmallGroupCache((prev) => ({ ...prev, [repoUrl]: result }));
+        // Save the result in the cache
+        smallGroupCache[repoUrl] = result;
 
         setMethodOptions(
-          result
+          result //If the group is considered "small", then result should be true and only Compact Scaling will be allowed
             ? ["Compact Scaling"]
             : ["Percentiles", "Mean +/- Std", "Quartiles"]
         );
@@ -110,7 +104,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     };
 
     void fetchSmallGroup();
-  }, [repoUrl, isSmallGroupCache]);
+  }, [repoUrl]);
 
   // Automatically select the first method option whenever it changes
   useEffect(() => {
@@ -119,13 +113,7 @@ function ScalingConfigForm({ onSubmit }: ScalingConfigFormProps) {
     }
   }, [methodOptions, form]);
 
-  const metricOptions = [
-    "Total No. Commits",
-    // "Use AI to filter out commits",
-    "LOC",
-    "LOC Per Commit",
-    "Commits Per Day",
-  ];
+  const metricOptions = ["Total No. Commits", "LOC", "LOC Per Commit"];
 
   return (
     <div className="w-full">

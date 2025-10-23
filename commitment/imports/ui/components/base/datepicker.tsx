@@ -57,7 +57,7 @@ export function DateRangePicker({
             variant={"outline"}
             className={cn(
               "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              !(value?.from || value?.to) && "text-git-text-secondary dark:text-git-card-text"
             )}
           >
             <CalendarIcon />

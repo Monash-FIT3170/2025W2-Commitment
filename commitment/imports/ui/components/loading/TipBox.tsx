@@ -5,7 +5,7 @@ export interface TipBoxProps {
 }
 
 const TipBox: FC<TipBoxProps> = ({ tip }) => (
-  <p className="mt-4 md:mt-6 text-git-text-secondary italic text-center">
+  <p className="mt-6 text-inconsolata-italic">
     {tip}
   </p>
 );

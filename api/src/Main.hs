@@ -5,11 +5,9 @@
 
 module Main (main) where
 
-
-import Control.Concurrent (forkIO)
 import Control.Exception (bracket)
 import System.Environment (getEnvironment, setEnv, unsetEnv)
-import Control.Concurrent (getNumCapabilities)
+import Control.Concurrent (forkIO, getNumCapabilities)
 import GHC.Conc (getNumProcessors, setNumCapabilities)
 
 import Network.Wai.Handler.WebSockets (websocketsOr)

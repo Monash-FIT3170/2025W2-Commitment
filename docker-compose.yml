@@ -8,7 +8,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
+      # Mount the Meteor project into container
       - ./commitment:/projects/commitment
+      # Mount the API folder so its files are accessible
+      - ./api:/projects/api
     env_file:
       - ./commitment/.env
     tty: true
@@ -26,6 +29,23 @@ services:
       - ./commitment:/projects/api
     ports:
       - "8081:8081"
+    networks:
+      - app-network
+
+  python-executor:
+    build:
+      context: ./python_executor
+      dockerfile: Dockerfile
+    volumes:
+      - ./python_executor:/projects/python_executor
+    image: python-executor-img
+    container_name: python-executor
+    security_opt:
+      - seccomp:./python_executor/seccomp-bwrap.json
+    tty: true
+    stdin_open: true
+    ports:
+      - "8002:8002"
     networks:
       - app-network
 

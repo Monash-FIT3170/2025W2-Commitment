@@ -6,6 +6,7 @@ services:
       - "3000:3000"
     volumes:
       - ./commitment:/projects/commitment
+      - ./api:/projects/api # ensure this is accesible to meteor
     env_file:
       - ./commitment/.env
     tty: true
@@ -22,6 +23,24 @@ services:
       - "8081:8081"
     tty: true
     stdin_open: true
+    networks:
+      - app-network
+
+  python-executor:
+    build:
+      context: ./python_executor
+      dockerfile: Dockerfile
+    volumes:
+      - ./python_executor:/projects/python_executor
+    image: python-executor-img
+    container_name: python-executor
+    security_opt:
+      - seccomp:./python_executor/seccomp-bwrap.json
+      - apparmor=unconfined
+    tty: true
+    stdin_open: true
+    ports:
+      - "8002:8002"
     networks:
       - app-network
 

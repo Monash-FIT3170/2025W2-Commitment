@@ -22,7 +22,8 @@ module Parsing (
   parseFileDataFromDiff,
   pairByFilePath,
   mergeFileMetaData,
-  lastElem
+  lastElem,
+  cleanGitUrl
 ) where
 
 import Text.Read (readMaybe)
@@ -91,8 +92,8 @@ parsed :: String -> ParseResult a -> a
 parsed _   (Result r)  = r
 parsed ""  (Error "")  = error "Got blank string"
 parsed ""  (Error msg) = error msg
-parsed msg (Error e)   = error $ msg ++ ":\n" ++ e
---                     = error $ msg 
+parsed msg (Error e)   = error msg 
+--                     = error msg 
 --                     = error $ msg ++ ":\n" ++ e
 
 parsedLists :: String -> [ParseResult a] -> [a]
@@ -349,3 +350,8 @@ tails x@(_:xs) = x : tails xs
 lastElem :: [a] -> Maybe a
 lastElem [] = Nothing
 lastElem xs = Just (last xs)
+
+cleanGitUrl :: String -> String
+cleanGitUrl url
+  | ".git" `isSuffixOf` url = take (length url - 4) url
+  | otherwise               = url
