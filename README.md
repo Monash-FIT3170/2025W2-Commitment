@@ -232,4 +232,4 @@ Release Train Engineers acted as a servant leader and coach for an Agile Release
 
 ## Generative AI Statement
 
-Generative AI was used in the development of this project.
+Generative AI tools were utilised throughout the development process to support tasks such as code drafting and documentation refinement. All AI-generated content was critically reviewed and verified by the project team to ensure accuracy, originality, and alignment with project requirements.
