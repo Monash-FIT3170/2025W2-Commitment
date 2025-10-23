@@ -26,20 +26,18 @@ import {
 // Build plot data with stacking per (quartile, roundedPercentile)
 function makePlotData(contributors: ContributorScaledData[]) {
   // counters[q][roundedPct] = current stack height (1..n)
-  const counters: Record<string, Record<number, number>> = {};
+  const counters: Record<number, number> = {};
   const data: any[] = [];
 
   for (const c of contributors) {
     const pct = Number(c.scaledMetric.percentile ?? 0);
-    const q = String(Math.round((pct/10))*10); // x bucket
-    const sub = Math.round(pct); // sub-bucket used for stacking within a quartile
+    const q = Math.round(pct / 10) * 10; // 0..100 as number
 
-    counters[q] ||= {};
-    counters[q][sub] = (counters[q][sub] || 0) + 0.5;
+    counters[q] = (counters[q] || 0) + .5; // increment single counter per decile
 
     data.push({
       x: q, // category x (Q1..Q4 or "0".."100")
-      y: counters[q][sub], // stack index so dots pile up
+      y: counters[q], // stack index so dots pile up
       name: c.contributor.name,
       percentile: pct,
       value: Number(c.scaledMetric.value ?? 0),
@@ -50,17 +48,14 @@ function makePlotData(contributors: ContributorScaledData[]) {
 
   data.sort((a, b) => Number(a.x) - Number(b.x));
 
-  const maxStack = Math.max(
-    1,
-    ...Object.values(counters).map((m) => Math.max(0, ...Object.values(m)))
-  );
+  const maxStack = Math.max(1, ...Object.values(counters));
 
   return { data, maxStack };
 }
 
 // Optional: image “dot” renderer (falls back to a circle)
-const AvatarDot = (props) => {
-  const { cx, cy, payload, r = 10 } = props;
+const AvatarDot = (props: { cx?: any; cy?: any; payload?: any; r?: number; }) => {
+  const { cx, cy, payload, r = 20 } = props; // Default r to 20 if undefined
   const url = payload?.avatarUrl;
   const name = payload?.name || "";
   const initials = name.slice(0, 1).toUpperCase();
@@ -127,11 +122,22 @@ interface PercentileGraphProps {
   setGraphType?: (v: "percentile" | "heatmap") => void;
 }
 
-export default function PercentileGraph({ data, title, setGraphType }: PercentileGraphProps) {
+export default function PercentileGraph({
+  data,
+  title,
+  setGraphType,
+}: PercentileGraphProps) {
   const { data: plotData, maxStack } = useMemo(
     () => makePlotData(data.contributors),
     [data]
   );
+
+  
+
+  console.table(
+  plotData.reduce((m,p)=>((m[p.x]=(m[p.x]??0)+1),m),{} as Record<number,number>)
+);
+
   return (
     <GraphCard className="w-full p-0">
       <CardHeader className="pb-0">
@@ -142,7 +148,14 @@ export default function PercentileGraph({ data, title, setGraphType }: Percentil
               <InfoButton description="Each circle is a contributor. X groups by quartile (or exact percentile), Y is a stack index so overlapping values pile upward." />
             </div>
           </div>
-          <Select defaultValue="percentile" onValueChange={setGraphType ? (v: "percentile" | "heatmap") => setGraphType(v) : undefined}>
+          <Select
+            defaultValue="percentile"
+            onValueChange={
+              setGraphType
+                ? (v: "percentile" | "heatmap") => setGraphType(v)
+                : undefined
+            }
+          >
             <SelectTrigger className="w-[180px] bg-git-bg-elevated text-git-foreground font-normal shadow-none">
               <SelectValue />
             </SelectTrigger>
@@ -162,14 +175,14 @@ export default function PercentileGraph({ data, title, setGraphType }: Percentil
           }}
           className="w-full h-full"
         >
-          <ScatterChart margin={{ top: 16, right: 24, bottom: 8, left: 8 }}>
+          <ScatterChart margin={{ top: 16, right: 24, bottom: 8, left: 24 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
             <XAxis
               type="number"
               dataKey="x"
               domain={[0, 100]}
               allowDuplicatedCategory={false}
-              ticks={[0,10,20,30,40,50,60,70,80,90,100]}
+              ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
               label={{
                 value: "Percentile",
                 position: "insideBottom",
