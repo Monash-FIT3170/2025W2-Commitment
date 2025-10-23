@@ -70,11 +70,6 @@
   },
   "devDependencies": {
     "@meteorjs/eslint-config-meteor": "^1.0.5",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^10.0.4",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.1",
-    "@semantic-release/release-notes-generator": "^11.0.7",
     "@tailwindcss/postcss": "^4.1.11",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
@@ -105,7 +100,6 @@
     "mocha": "^11.7.1",
     "postcss": "^8.5.6",
     "postcss-load-config": "^6.0.1",
-    "semantic-release": "^24.2.0",
     "sinon": "^21.0.0",
     "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2"
