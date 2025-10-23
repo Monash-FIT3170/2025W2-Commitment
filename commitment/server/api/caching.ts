@@ -41,14 +41,19 @@ interface CommitRepoData {
 }
 
 const getCompleteDataFromDatabase = async (url: string): Promise<SerializableRepoData> => {
-  const [repoMetaData, repoCommitData]: [ServerRepoMetaData | undefined, CommitRepoData[]] =
-    await Promise.all([
-      RepoCollection.findOneAsync({ url }),
-      CommitCollection.find({ url }).fetchAsync(),
-    ]);
-
+  const repoMetaData = await RepoCollection.findOneAsync({ url });
   if (repoMetaData === undefined) throw Error(`Could not find url in database: ${url}`);
   const metaData = repoMetaData.data;
+
+  const uniqueCommitHashes: string[] = [
+    ...new Set(metaData.branches.map((b) => b.commitHashes).flat()),
+  ];
+
+  const repoCommitData: CommitRepoData[] = (
+    await Promise.all(
+      uniqueCommitHashes.map((hash) => CommitCollection.findOneAsync({ url, hash }))
+    )
+  ).filter((d) => d !== undefined);
 
   const allCommits = repoCommitData.map(
     (e) =>
