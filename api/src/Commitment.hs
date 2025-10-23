@@ -203,9 +203,9 @@ fetchDataFrom rawUrl notifier = (do
             deleteDirectory repoAbsPath (emit notifier "Cleaning Up Directory...")
 
     ) `catch` \(e :: SomeException) -> do
-        let errMsg = displayException e
-        emit notifier ("Error occurred:\n" ++ errMsg)
-        safePrint $ "Encountered error:\n" ++ errmsg
+        let errMsg = "Encountered error:\n" ++ displayException e
+        emit notifier errMsg
+        safePrint errMsg
         pure (Left errMsg)
 
 
