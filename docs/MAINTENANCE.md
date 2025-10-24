@@ -20,6 +20,7 @@
     - [Known Issues](#known-issues)
     - [Future Work](#future-work)
   - [Ending Notes](#ending-notes)
+  - [Generative AI Statement](#generative-ai-statement)
 
 
 ## Overview
@@ -176,3 +177,7 @@ Although no active maintenance is planned post-submission, the following updates
 This project represents the collaborative effort of 15 dedicated contributors over a full academic year.  
 For those who choose to continue its development, we encourage maintaining the same level of care, attention to detail, and collaborative spirit that defined its creation.  
 While active maintenance will cease, the repository will remain as a record of best practices, teamwork, and innovation.
+
+## Generative AI Statement
+
+Generative AI tools were not utilised for the creation of this document.
