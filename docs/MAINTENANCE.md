@@ -7,6 +7,7 @@
   - [System Architecture](#system-architecture)
     - [Frontend (Meteor Application)](#frontend-meteor-application)
     - [Backend (Haskell API)](#backend-haskell-api)
+    - [Backend (Python Executor)](#backend-python-executor)
     - [Database (MongoDB Atlas)](#database-mongodb-atlas)
     - [Infrastructure (Docker + CI/CD)](#infrastructure-docker--cicd)
   - [Hosting and Deployment](#hosting-and-deployment)
@@ -27,7 +28,7 @@ This document outlines the maintenance and sustainability plan for the **Commitm
 
 The system integrates several core technologies:
 - **Frontend:** Meteor + TypeScript
-- **Backend:** Haskell API
+- **Backend:** Haskell API, Python Executor
 - **Database:** MongoDB Atlas
 - **Infrastructure:** Docker for containerization and GitHub Actions for CI/CD automation
 
@@ -51,6 +52,14 @@ This maintenance plan provides a clear record of the project’s operational set
   - Performs data computation and provides structured responses to the Meteor app.
   - Acts as the intermediary between the frontend and external data sources.
 - **Deployment:** Docker container that runs concurrently with the Meteor app in production.
+
+### Backend (Python Executor)
+- **Description:** REST API that allows for arbitrary python code to be executed in a sandboxed environment with a given 'data.csv' csv file available to it.
+- **Responsibilities:**
+  - Executing user provided python code for custom scaling strategies in a sandboxed environment.
+- **Deployment:** Docker container that runs concurrently with the Meteor app in production.
+- **Key Maintenance Considerations:**
+  - Security requirements of executing arbitrary user-provided code.
 
 ### Database (MongoDB Atlas)
 - **Description:** Cloud-hosted MongoDB instance storing persistent data, such as repository, user information, and alias configuration.
