@@ -13,6 +13,7 @@
     - [2. NGINX Setup](#2-nginx-setup)
     - [(Optional) SSL Certbot Auth](#optional-ssl-certbot-auth)
     - [3. Repository Setup](#3-repository-setup)
+    - [4. Create a `systemd` service to run docker-compose](#4-create-a-systemd-service-to-run-docker-compose)
 
 
 ## Overview
@@ -38,6 +39,13 @@ There a number of options available but must meet a set of system requirements.
 - **Cores**: 2
 - **RAM**: 4 GB
 - **Storage**: 15 GB
+
+Python scaling script execution functionality depends on your instance having permissions to make the following 
+syscalls, which it uses to make sandboxes for python scripts to execute in:
+- `clone`
+- `pivot_root`
+- `mount`
+- `umount2`
 
 Once an instance has been acquired it will primarily be accessed via [SSH](https://www.ssh.com/academy/ssh/protocol). To do this a service will provide you with 3 things:
 - **Host Name**: An IP Address or DNS.
@@ -205,3 +213,43 @@ These next steps will have the repository set up initially before any pipelines 
   GITHUB_CLIENT_SECRET=your_github_client_secret_here
   ```
 Now the everything is setup for deployment. Pushes to main will trigger the workflow for deployment.
+
+### 4. Create a `systemd` service to run docker-compose
+
+To automatically run docker compose on startup in your instance, you can create a `systemd` service on the instance.
+
+1. On the instance, create a `commitment-docker-compose.service` file in `/etc/systemd/system/`
+  ``` bash
+  sudo nano /etc/systemd/system/commitment-docker-compose.service
+  ```
+2. Populate with the below information, changing `WorkingDirectory` to equal the absolute path to the repository (this can be found by running `cd ~/2025W2-Commitment && pwd`).
+  ```
+  [Unit]
+  Description=Commitment Docker Compose
+  Requires=docker.service
+  After=docker.service
+  
+  [Service]
+  Type=oneshot
+  RemainAfterExit=yes
+  ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml up -d
+  ExecStop=/usr/bin/docker compose -f docker-compose.prod.yml down
+  TimeoutStartSec=0
+  Nice=-20
+  IOSchedulingClass=realtime
+  IOSchedulingPriority=0
+   
+  # TODO: Change this to the location you cloned the repository.
+  WorkingDirectory=/home/ubuntu/2025W2-Commitment
+  
+  [Install]
+  WantedBy=multi-user.target
+  ```
+3. Enable the new service
+  ```
+  sudo systemctl daemon-reload
+  sudo systemctl enable commitment-docker-compose.service
+  sudo systemctl start commitment-docker-compose.service
+  ```
+
+The website should now be running and should restart when the server restarts.
