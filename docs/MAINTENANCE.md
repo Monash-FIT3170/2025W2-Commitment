@@ -1,3 +1,9 @@
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo.light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo.dark.svg">
+  <img src="docs/assets/logo.light.svg" width="500px" alt="Commitment logo">
+</picture>
+
 # Maintenance Plan
 
 ## Table of Contents
