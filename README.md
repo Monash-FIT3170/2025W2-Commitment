@@ -1,7 +1,7 @@
 <picture>
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo.light.svg">
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo.dark.svg">
-  <img src="docs/assets/logo.light.svg" width="500px" alt="Commitment logo">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/Monash-FIT3170/2025W2-Commitment/raw/main/docs/assets/logo.light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Monash-FIT3170/2025W2-Commitment/raw/main/docs/assets/logo.dark.svg">
+  <img src="https://github.com/Monash-FIT3170/2025W2-Commitment/raw/main/docs/assets/logo.light.svg" width="500px" alt="Commitment logo">
 </picture>
 
 
