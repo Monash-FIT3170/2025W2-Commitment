@@ -1,3 +1,12 @@
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo.light.svg">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo.dark.svg">
+    <img src="docs/assets/logo.light.svg" width="625px" alt="Commitment logo">
+  </picture>
+</div>
+
+
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
