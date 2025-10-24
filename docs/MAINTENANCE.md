@@ -54,9 +54,9 @@ This maintenance plan provides a clear record of the project’s operational set
 - **Deployment:** Docker container that runs concurrently with the Meteor app in production.
 
 ### Backend (Python Executor)
-- **Description:** REST API that allows for arbitrary python code to be executed in a sandboxed environment with a given 'data.csv' csv file available to it.
+- **Description:** REST API that can execute arbitrary python code.
 - **Responsibilities:**
-  - Executing user provided python code for custom scaling strategies in a sandboxed environment.
+  - Executes user-provided python code for custom scaling strategies in a sandboxed environment.
 - **Deployment:** Docker container that runs concurrently with the Meteor app in production.
 - **Key Maintenance Considerations:**
   - Security requirements of executing arbitrary user-provided code.
