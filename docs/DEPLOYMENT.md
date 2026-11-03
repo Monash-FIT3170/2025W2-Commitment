@@ -186,7 +186,7 @@ This optional step only applies if domain names have been acquired. This step wi
 These next steps will have the repository set up initially before any pipelines can be run.
 1. Clone the repository into the root directory.
   ``` bash
-  git clone https://github.com/Monash-FIT3170/2025W2-Commitment.git
+  git clone --recurse-submodules https://github.com/Monash-FIT3170/2025W2-Commitment.git
   ```
 2. Navigate to the commitment directory.
   ``` bash

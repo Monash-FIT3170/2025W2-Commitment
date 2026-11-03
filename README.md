@@ -117,6 +117,8 @@ GITHUB_CLIENT_SECRET=your_github_client_secret_here
 ```
 
 2. Ensure that you are in the **root directory** of the project and open a terminal.
+   - The Git API in `api/` is a submodule ([git-metrics](https://github.com/Densetsu152637/git-metrics)).
+     Fetch it with `git submodule update --init` (or clone with `--recurse-submodules`).
 3. Run `docker-compose build` to build the image.
    - This may take some time!
 4. Run `docker-compose up -d` to spin it up and attach to a container.

@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       ####################################################
       #  DOCKER BUILD + PUSH (METEOR)
@@ -62,6 +64,8 @@ jobs:
             git fetch origin $GITHUB_REF_NAME
             git checkout $GITHUB_REF_NAME
             git reset --hard origin/$GITHUB_REF_NAME
+            git submodule sync --recursive
+            git submodule update --init --recursive
 
             echo "=== Cleaning old images and containers ==="
             sudo docker compose -f docker-compose.prod.yml down --volumes || true
